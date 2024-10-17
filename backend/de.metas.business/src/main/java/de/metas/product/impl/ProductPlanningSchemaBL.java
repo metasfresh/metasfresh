@@ -160,5 +160,6 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		builder.distributionNetworkId(schema.getDistributionNetworkId());
 		builder.isPickDirectlyIfFeasible(schema.isPickDirectlyIfFeasible());
 		builder.onMaterialReceiptWithDestWarehouse(schema.getOnMaterialReceiptWithDestWarehouse());
+		builder.manufacturingAggregationId(schema.getManufacturingAggregationId());
 	}
 }

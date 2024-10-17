@@ -1,256 +1,416 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.model.*;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DD_NetworkDistribution
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_DD_NetworkDistribution 
 {
 
-    /** TableName=DD_NetworkDistribution */
-    public static final String Table_Name = "DD_NetworkDistribution";
+	String Table_Name = "DD_NetworkDistribution";
 
-    /** AD_Table_ID=53060 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53060 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(3);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
 
-    /** Column name CopyFrom */
-    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_CopyFrom = new ModelColumn<>(I_DD_NetworkDistribution.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
-	/** Set Copy From.
-	  * Copy From Record
-	  */
-	public void setCopyFrom (String CopyFrom);
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-	/** Get Copy From.
-	  * Copy From Record
-	  */
-	public String getCopyFrom();
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Created = new ModelColumn<>(I_DD_NetworkDistribution.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Set Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Get Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDD_NetworkDistribution_ID();
 
-    /** Column name DD_NetworkDistribution_ID */
-    public static final String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_DD_NetworkDistribution.class, "DD_NetworkDistribution_ID", null);
+	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
-	/** Set Network Distribution	  */
-	public void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Network Distribution	  */
-	public int getDD_NetworkDistribution_ID();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Description = new ModelColumn<>(I_DD_NetworkDistribution.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNo();
 
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_DocumentNo = new ModelColumn<>(I_DD_NetworkDistribution.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
-	/** Set Document No.
-	  * Document sequence number of the document
-	  */
-	public void setDocumentNo (String DocumentNo);
+	/**
+	 * Set Help.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHelp (@Nullable java.lang.String Help);
 
-	/** Get Document No.
-	  * Document sequence number of the document
-	  */
-	public String getDocumentNo();
+	/**
+	 * Get Help.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHelp();
 
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Help = new ModelColumn<>(I_DD_NetworkDistribution.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
-	/** Set Comment/Help.
-	  * Comment or Hint
-	  */
-	public void setHelp (String Help);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Comment/Help.
-	  * Comment or Hint
-	  */
-	public String getHelp();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_IsActive = new ModelColumn<>(I_DD_NetworkDistribution.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set IsHUDestroyed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHUDestroyed (boolean IsHUDestroyed);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get IsHUDestroyed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHUDestroyed();
 
-    /** Column name M_ChangeNotice_ID */
-    public static final String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_IsHUDestroyed = new ModelColumn<>(I_DD_NetworkDistribution.class, "IsHUDestroyed", null);
+	String COLUMNNAME_IsHUDestroyed = "IsHUDestroyed";
 
-	/** Set Change Notice.
-	  * Bill of Materials (Engineering) Change Notice (Version)
-	  */
-	public void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
+	/**
+	 * Set Change Notice.
+	 * Bill of Materials (Engineering) Change Notice (Version)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
-	/** Get Change Notice.
-	  * Bill of Materials (Engineering) Change Notice (Version)
-	  */
-	public int getM_ChangeNotice_ID();
+	/**
+	 * Get Change Notice.
+	 * Bill of Materials (Engineering) Change Notice (Version)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ChangeNotice_ID();
 
-	public I_M_ChangeNotice getM_ChangeNotice() throws RuntimeException;
+	@Nullable org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	void setM_ChangeNotice(@Nullable org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	ModelColumn<I_DD_NetworkDistribution, org.compiere.model.I_M_ChangeNotice> COLUMN_M_ChangeNotice_ID = new ModelColumn<>(I_DD_NetworkDistribution.class, "M_ChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
+	String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-	/** Set Process Now	  */
-	public void setProcessing (boolean Processing);
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Name = new ModelColumn<>(I_DD_NetworkDistribution.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
-	/** Get Process Now	  */
-	public boolean isProcessing();
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
 
-    /** Column name Revision */
-    public static final String COLUMNNAME_Revision = "Revision";
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
 
-	/** Set Revision	  */
-	public void setRevision (String Revision);
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Processing = new ModelColumn<>(I_DD_NetworkDistribution.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
-	/** Get Revision	  */
-	public String getRevision();
+	/**
+	 * Set Revision.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRevision (@Nullable java.lang.String Revision);
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	/**
+	 * Get Revision.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRevision();
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Revision = new ModelColumn<>(I_DD_NetworkDistribution.class, "Revision", null);
+	String COLUMNNAME_Revision = "Revision";
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Updated = new ModelColumn<>(I_DD_NetworkDistribution.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
 
-	/** Set Valid from.
-	  * Valid from including this date (first day)
-	  */
-	public void setValidFrom (Timestamp ValidFrom);
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/** Get Valid from.
-	  * Valid from including this date (first day)
-	  */
-	public Timestamp getValidFrom();
+	/**
+	 * Set Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
 
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
+	/**
+	 * Get Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidFrom();
 
-	/** Set Valid to.
-	  * Valid to including this date (last day)
-	  */
-	public void setValidTo (Timestamp ValidTo);
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_ValidFrom = new ModelColumn<>(I_DD_NetworkDistribution.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
-	/** Get Valid to.
-	  * Valid to including this date (last day)
-	  */
-	public Timestamp getValidTo();
+	/**
+	 * Set Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	/**
+	 * Get Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidTo();
 
-	/** Set Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public void setValue (String Value);
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_ValidTo = new ModelColumn<>(I_DD_NetworkDistribution.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 
-	/** Get Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public String getValue();
+	/**
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setValue (java.lang.String Value);
+
+	/**
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getValue();
+
+	ModelColumn<I_DD_NetworkDistribution, Object> COLUMN_Value = new ModelColumn<>(I_DD_NetworkDistribution.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

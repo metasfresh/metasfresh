@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -52,10 +53,12 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -86,47 +89,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
+@RequiredArgsConstructor
 public class M_PriceList_StepDef
 {
-	private final CurrencyRepository currencyRepository;
-	private final M_Product_StepDefData productTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final M_PriceList_StepDefData priceListTable;
-	private final M_PriceList_Version_StepDefData priceListVersionTable;
-	private final M_ProductPrice_StepDefData productPriceTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final AD_Org_StepDefData orgTable;
-
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final M_PriceList_StepDefData priceListTable;
+	@NonNull private final M_PriceList_Version_StepDefData priceListVersionTable;
+	@NonNull private final M_ProductPrice_StepDefData productPriceTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
 
 	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
-
-	public M_PriceList_StepDef(
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final M_PriceList_StepDefData priceListTable,
-			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
-			@NonNull final M_ProductPrice_StepDefData productPriceTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final AD_Org_StepDefData orgTable)
-	{
-		this.currencyRepository = currencyRepository;
-		this.productTable = productTable;
-		this.pricingSystemTable = pricingSystemTable;
-		this.priceListTable = priceListTable;
-		this.priceListVersionTable = priceListVersionTable;
-		this.productPriceTable = productPriceTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.orgTable = orgTable;
-	}
+	private static final String DEFAULT_TaxCategory_InternalName = "Normal";
 
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
@@ -163,66 +145,75 @@ public class M_PriceList_StepDef
 
 	private void createM_PriceList(@NonNull final DataTableRow row)
 	{
+		I_M_PriceList priceList = null;
+
 		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupIn(pricingSystemTable);
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+		final I_C_Country country = extractOptionalCountry(row).orElse(null);
+		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));
+		if (country != null)
+		{
+			final CountryId countryId = CountryId.ofRepoId(country.getC_Country_ID());
+			priceList = getExistingPriceList(soTrx, pricingSystemId, countryId).orElse(null);
+		}
 
-		final String countryCode = row.getAsOptionalString("C_Country.CountryCode").orElse(null);
-		final String currencyISOCode = row.getAsString("C_Currency.ISO_Code");
-		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + countryCode);
-		final String description = row.getAsOptionalString("Description").orElse(null);
-		final boolean soTrx = row.getAsBoolean("SOTrx");
-		final boolean isTaxIncluded = row.getAsOptionalBoolean("IsTaxIncluded").orElseFalse();
-		final int pricePrecision = row.getAsOptionalInt("PricePrecision").orElse(2);
-		final boolean isActive = row.getAsOptionalBoolean("IsActive").orElseTrue();
+		if (priceList == null)
+		{
+			priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+		}
+
 		final OrgId orgId = row.getAsOptionalIdentifier("AD_Org_ID").map(orgTable::getId).orElse(StepDefConstants.ORG_ID);
+		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + (country != null ? country.getCountryCode() : "-") + "_" + soTrx);
 
-		final CurrencyId currencyId = getCurrencyIdByCurrencyISO(currencyISOCode);
+		priceList.setAD_Org_ID(orgId.getRepoId());
+		priceList.setM_PricingSystem_ID(pricingSystemId.getRepoId());
+		priceList.setC_Currency_ID(extractCurrencyId(row).getRepoId());
+		priceList.setName(name);
+		priceList.setIsTaxIncluded(row.getAsOptionalBoolean("IsTaxIncluded").orElseFalse());
+		priceList.setPricePrecision(row.getAsOptionalInt("PricePrecision").orElse(2));
+		priceList.setIsActive(row.getAsOptionalBoolean("IsActive").orElseTrue());
+		priceList.setIsSOPriceList(soTrx.toBoolean());
+		priceList.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
 
-		final int pricingSystemId = pricingSystem.getM_PricingSystem_ID();
-		CountryId countryId = null;
-		final I_M_PriceList m_priceList;
-		if (countryCode != null)
-		{
-			final I_C_Country countryPO = Services.get(ICountryDAO.class).retrieveCountryByCountryCode(countryCode);
-			countryId = CountryId.ofRepoIdOrNull(countryPO.getC_Country_ID());
-			m_priceList = getExistingPriceList(soTrx, pricingSystemId, countryId);
-		}
-		else
-		{
-			m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		}
+		row.getAsOptionalString("Description").ifPresent(priceList::setDescription);
 
-		m_priceList.setAD_Org_ID(orgId.getRepoId());
-		m_priceList.setM_PricingSystem_ID(pricingSystemId);
-		m_priceList.setC_Currency_ID(currencyId.getRepoId());
-		m_priceList.setName(name);
-		m_priceList.setIsTaxIncluded(isTaxIncluded);
-		m_priceList.setPricePrecision(pricePrecision);
-		m_priceList.setIsActive(isActive);
-		m_priceList.setIsSOPriceList(soTrx);
-		m_priceList.setC_Country_ID(CountryId.toRepoId(countryId));
-
-		if (description != null)
-		{
-			m_priceList.setDescription(description);
-		}
-
-		saveRecord(m_priceList);
-		row.getAsIdentifier().putOrReplace(priceListTable, m_priceList);
+		saveRecord(priceList);
+		row.getAsIdentifier().putOrReplace(priceListTable, priceList);
 	}
 
-	private I_M_PriceList getExistingPriceList(final boolean soTrx, final int pricingSystemId, final CountryId countryId)
+	private Optional<I_M_PriceList> getExistingPriceList(@NonNull final SOTrx soTrx, @NonNull final PricingSystemId pricingSystemId, final CountryId countryId)
 	{
-		final I_M_PriceList m_priceList;
-		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(PricingSystemId.ofRepoId(pricingSystemId), countryId, SOTrx.ofBoolean(soTrx));
-		m_priceList = existingPriceLists.isEmpty() ? InterfaceWrapperHelper.newInstance(I_M_PriceList.class) : existingPriceLists.get(0);
-		return m_priceList;
+		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx);
+		return existingPriceLists.isEmpty()
+				? Optional.empty()
+				: Optional.of(existingPriceLists.get(0));
+	}
+
+	private Optional<I_C_Country> extractOptionalCountry(final DataTableRow row)
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> row.getAsOptionalString("C_Country_ID"),
+						() -> row.getAsOptionalString("C_Country.CountryCode")
+				)
+				.map(countryDAO::retrieveCountryByCountryCode);
 	}
 
 	@NonNull
-	private CurrencyId getCurrencyIdByCurrencyISO(@NonNull final String currencyISO)
+	private CurrencyId extractCurrencyId(final DataTableRow row)
 	{
-		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(currencyISO);
-		return currencyRepository.getCurrencyIdByCurrencyCode(convertedToCurrencyCode);
+		final CurrencyCode currencyCode = extractCurrencyCode(row);
+		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+	}
+
+	@NonNull
+	private static CurrencyCode extractCurrencyCode(final DataTableRow row)
+	{
+		final String currencyCodeStr = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> row.getAsOptionalString("C_Currency_ID").orElse(null),
+				() -> row.getAsString("C_Currency.ISO_Code")
+		);
+
+		return CurrencyCode.ofThreeLetterCode(currencyCodeStr);
 	}
 
 	@And("metasfresh contains M_PriceList_Versions")
@@ -314,12 +305,7 @@ public class M_PriceList_StepDef
 
 		final BigDecimal priceStd = row.getAsBigDecimal(I_M_ProductPrice.COLUMNNAME_PriceStd);
 
-		final String taxCategoryInternalName = row.getAsString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
-		final TaxCategoryId taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
-				.orElseThrow(() -> new AdempiereException("Missing taxCategory for internalName: " + taxCategoryInternalName));
-
-		final String x12de355Code = row.getAsString("C_UOM_ID.X12DE355");
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("C_UOM_ID"));
 
 		final @NonNull StepDefDataIdentifier plvIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID);
 		final Optional<I_M_PriceList_Version> priceListVersionOptional = priceListVersionTable.getOptional(plvIdentifier);
@@ -337,7 +323,7 @@ public class M_PriceList_StepDef
 		productPrice.setM_Product_ID(productId);
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
-		productPrice.setC_TaxCategory_ID(taxCategoryId.getRepoId());
+		productPrice.setC_TaxCategory_ID(extractTaxCategoryId(row).getRepoId());
 
 		row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_UseScalePrice).ifPresent(productPrice::setUseScalePrice);
 		row.getAsOptionalEnum(I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn.class).ifPresent(invoiceableQtyBasedOn -> productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn.getCode()));
@@ -357,6 +343,18 @@ public class M_PriceList_StepDef
 
 		saveRecord(productPrice);
 		row.getAsOptionalIdentifier().ifPresent(id -> id.putOrReplace(productPriceTable, productPrice));
+	}
+
+	private TaxCategoryId extractTaxCategoryId(final @NonNull DataTableRow row)
+	{
+		final String taxCategoryInternalName = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID).orElse(null),
+				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName).orElse(null),
+				() -> DEFAULT_TaxCategory_InternalName
+		);
+
+		return taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
+				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "` of row " + row));
 	}
 
 	private I_M_ProductPrice lookupForProductPrice(@NonNull final DataTableRow row)
@@ -395,7 +393,6 @@ public class M_PriceList_StepDef
 				.orElse(null);
 	}
 
-	@NonNull
 	private boolean filterProductPriceByASI(@NonNull final DataTableRow row, @NonNull final I_M_ProductPrice productPrice)
 	{
 		final AttributesKey expectedAttributesKey = row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)

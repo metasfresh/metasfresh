@@ -52,6 +52,7 @@ import java.time.Instant;
 public class PPOrderCandidateCreateUpdateRequest
 {
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
+	@Nullable PPOrderCandidateId parentPPOrderCandidateId;
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
@@ -73,7 +74,8 @@ public class PPOrderCandidateCreateUpdateRequest
 	@Nullable HuId issueHuId;
 
 	public PPOrderCandidateCreateUpdateRequest(
-			@Nullable final PPOrderCandidateId ppOrderCandidateId,
+			@Nullable final PPOrderCandidateId ppOrderCandidateId, 
+			@Nullable final PPOrderCandidateId parentPPOrderCandidateId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -94,7 +96,6 @@ public class PPOrderCandidateCreateUpdateRequest
 			@Nullable final MaturingConfigId maturingConfigId,
 			@Nullable final HuId issueHuId)
 	{
-
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 		final boolean isMaturingActual = isMaturing != null && isMaturing;
 		if (isMaturingActual)
@@ -105,6 +106,7 @@ public class PPOrderCandidateCreateUpdateRequest
 
 		}
 		this.ppOrderCandidateId = ppOrderCandidateId;
+		this.parentPPOrderCandidateId = parentPPOrderCandidateId;
 		this.clientAndOrgId = clientAndOrgId;
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;

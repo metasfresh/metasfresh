@@ -97,6 +97,7 @@ const translations = {
       switchToQrCodeInput: 'QR scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
+      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -108,6 +109,13 @@ const translations = {
         Current: 'Offenes Gebinde',
         CloseTarget: 'Schließen',
       },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -160,6 +168,11 @@ const translations = {
         newHU: 'Neues Gebinde',
         target: 'Empf. Soll',
         picked: 'Ist',
+      },
+      validateSourceLocator: {
+        noValidOption: 'Keine gültige Option verfügbar',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Der gescannte QR stimmt nicht mit der Quelle Locator überein!`,
       },
     },
   },

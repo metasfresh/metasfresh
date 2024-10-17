@@ -42,6 +42,7 @@ import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -131,6 +132,18 @@ public class PPOrderCandidateDAO
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public ImmutableSet<PPOrderId> getPPOrderIds(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
+				.create()
+				.stream()
+				.map(record -> PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

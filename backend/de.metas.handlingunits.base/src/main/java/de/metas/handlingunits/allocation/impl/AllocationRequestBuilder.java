@@ -34,6 +34,7 @@ import java.util.List;
 	@Nullable private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
 	private List<EmptyHUListener> emptyHUListeners = null;
+	private Boolean deleteEmptyAndJustCreatedAggregatedTUs = null;
 
 	@Override
 	public IAllocationRequestBuilder setBaseAllocationRequest(final IAllocationRequest baseAllocationRequest)
@@ -245,6 +246,27 @@ import java.util.List;
 	}
 
 	@Override
+	public IAllocationRequestBuilder setDeleteEmptyAndJustCreatedAggregatedTUs(@Nullable final Boolean deleteEmptyAndJustCreatedAggregatedTUs)
+	{
+		this.deleteEmptyAndJustCreatedAggregatedTUs = deleteEmptyAndJustCreatedAggregatedTUs;
+		return this;
+	}
+
+	private boolean isDeleteEmptyAndJustCreatedAggregatedTUs()
+	{
+		if (deleteEmptyAndJustCreatedAggregatedTUs != null)
+		{
+			return deleteEmptyAndJustCreatedAggregatedTUs;
+		}
+		else if (baseAllocationRequest != null)
+		{
+			return baseAllocationRequest.isDeleteEmptyAndJustCreatedAggregatedTUs();
+		}
+
+		return false;
+	}
+
+	@Override
 	public IAllocationRequest create()
 	{
 		final IHUContext huContext = getHUContextToUse();
@@ -262,6 +284,7 @@ import java.util.List;
 				date,
 				fromTableRecord,
 				forceQtyAllocation,
-				clearanceStatusInfo);
+				clearanceStatusInfo,
+				isDeleteEmptyAndJustCreatedAggregatedTUs());
 	}
 }

@@ -2,29 +2,34 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 import { useEffect, useState } from 'react';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 
 export const usePickTargets = ({ wfProcessId }) => {
   const [loading, setLoading] = useState(false);
   const [targets, setTargets] = useState([]);
+  const [tuTargets, setTuTargets] = useState([]);
 
   useEffect(() => {
     setLoading(true);
     getPickTargets({ wfProcessId })
-      .then(setTargets)
+      .then((data) => {
+        setTargets(data.targets);
+        setTuTargets(data.tuTargets);
+      })
       .finally(() => setLoading(false));
   }, [wfProcessId]);
 
   return {
     isTargetsLoading: loading,
     targets,
+    tuTargets,
   };
 };
 
 const getPickTargets = ({ wfProcessId }) => {
   return axios
     .get(`${apiBasePath}/picking/job/${wfProcessId}/target/available`)
-    .then((response) => unboxAxiosResponse(response))
-    .then((data) => data.targets);
+    .then((response) => unboxAxiosResponse(response));
 };
 
 export const setPickTarget = ({ wfProcessId, target }) => {
@@ -33,9 +38,21 @@ export const setPickTarget = ({ wfProcessId, target }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const setTUPickTarget = ({ wfProcessId, target }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, target)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const closePickTarget = ({ wfProcessId }) => {
   return axios
     .post(`${apiBasePath}/picking/job/${wfProcessId}/target/close`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const closeTUPickTarget = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/tu/close`)
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -57,6 +74,9 @@ export const postStepPicked = ({
   lotNo,
   isCloseTarget = false,
 }) => {
+  const realRejectedQtyReason =
+    qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
+
   return postEvent({
     wfProcessId,
     wfActivityId: activityId,
@@ -65,7 +85,7 @@ export const postStepPicked = ({
     type: 'PICK',
     huQRCode,
     qtyPicked,
-    qtyRejectedReasonCode,
+    qtyRejectedReasonCode: realRejectedQtyReason,
     qtyRejected,
     catchWeight,
     pickWholeTU,

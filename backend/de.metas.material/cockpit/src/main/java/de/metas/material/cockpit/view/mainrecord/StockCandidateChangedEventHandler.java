@@ -57,7 +57,7 @@ public class StockCandidateChangedEventHandler implements MaterialEventHandler<S
 	@Override
 	public void handleEvent(@NonNull final StockCandidateChangedEvent event)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(event.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(event.getOrgId());
 
 		final UpdateMainStockDataRequest updateMainStockDataRequest = UpdateMainStockDataRequest.builder()
 				.identifier(MainDataRecordIdentifier.createForMaterial(event.getMaterialDescriptor(), orgZoneId))

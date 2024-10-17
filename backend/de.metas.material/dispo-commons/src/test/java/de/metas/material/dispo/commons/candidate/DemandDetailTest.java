@@ -2,7 +2,7 @@ package de.metas.material.dispo.commons.candidate;
 
 import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -122,7 +122,7 @@ public class DemandDetailTest
 				.orderLineId(40)
 				.shipmentScheduleId(50)
 				.subscriptionProgressId(60)
-				.materialDescriptor(createMaterialDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
 				.build();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 

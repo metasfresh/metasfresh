@@ -117,7 +117,7 @@ Feature: Handling unit data export audit
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And transform CU to new TUs
-      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
       | createdCU           | 10    | huAuditProductTU                   | createdTU                 | newCreatedCU              |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:

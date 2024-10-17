@@ -4,12 +4,16 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 
@@ -39,13 +43,12 @@ import javax.annotation.Nullable;
 @Builder
 public class ProductionDetailsQuery
 {
-	public static final int NO_PP_ORDER_LINE_ID = Integer.MIN_VALUE;
-
 	public static final ProductionDetailsQuery NO_PRODUCTION_DETAIL = ProductionDetailsQuery.builder()
 			.productPlanningId(-10)
 			.productBomLineId(-10)
-			.ppOrderId(-10)
-			.ppOrderLineId(-10).build();
+			.ppOrderId(null)
+			.ppOrderLineIds(InSetPredicate.any())
+			.build();
 
 	public static ProductionDetailsQuery ofProductionDetailOrNull(
 			@Nullable final ProductionDetail productionDetail)
@@ -59,36 +62,43 @@ public class ProductionDetailsQuery
 				.productPlanningId(productionDetail.getProductPlanningId())
 				.productBomLineId(productionDetail.getProductBomLineId())
 				.ppOrderId(productionDetail.getPpOrderId())
-				.ppOrderLineId(productionDetail.getPpOrderLineId())
+				.ppOrderLineIds(InSetPredicate.onlyOrAny(productionDetail.getPpOrderBOMLineId()))
 				.ppOrderCandidateId(productionDetail.getPpOrderCandidateId())
 				.build();
 	}
 
 	int productPlanningId;
-
 	int productBomLineId;
 
-	int ppOrderId;
-
+	@Nullable PPOrderId ppOrderId;
+	@NonNull @Builder.Default InSetPredicate<PPOrderBOMLineId> ppOrderLineIds = InSetPredicate.any();
 	int ppOrderCandidateId;
-
-	int ppOrderLineId;
-
 	int ppOrderCandidateLineId;
 
 	/**
 	 * Convenience method that uses this instance to kickstart an return a builder.
-	 *
-	 * @return
 	 */
 	public ProductionDetailBuilder toProductionDetailBuilder()
 	{
 		return ProductionDetail.builder()
 				.productPlanningId(productPlanningId)
 				.productBomLineId(productBomLineId)
+				.ppOrderRef(toPPOrderRef());
+	}
+
+	@Nullable
+	private PPOrderRef toPPOrderRef()
+	{
+		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		{
+			return null;
+		}
+
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(ppOrderCandidateId)
+				.ppOrderLineCandidateId(ppOrderCandidateLineId)
 				.ppOrderId(ppOrderId)
-				.ppOrderLineId(ppOrderLineId)
-				.ppOrderCandidateId(ppOrderCandidateId);
+				.build();
 	}
 
 	public void augmentQueryBuilder(@NonNull final IQueryBuilder<I_MD_Candidate> builder)
@@ -118,15 +128,15 @@ public class ProductionDetailsQuery
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productBomLineId);
 				doFilter = true;
 			}
-			if (ppOrderId > 0)
+			if (ppOrderId != null)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_ID, ppOrderId);
 				doFilter = true;
 			}
 
-			if (ppOrderLineId > 0)
+			if (ppOrderLineIds.isOnly())
 			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_BOMLine_ID, ppOrderLineId);
+				productDetailSubQueryBuilder.addInArrayFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID, ppOrderLineIds.toSet());
 				doFilter = true;
 			}
 
@@ -140,9 +150,9 @@ public class ProductionDetailsQuery
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID, ppOrderCandidateLineId);
 				doFilter = true;
 			}
-			else if (ppOrderLineId == NO_PP_ORDER_LINE_ID)
+			else if (ppOrderLineIds.isNone())
 			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_BOMLine_ID, null);
+				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID, null);
 				doFilter = true;
 			}
 

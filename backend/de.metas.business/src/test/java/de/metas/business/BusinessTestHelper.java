@@ -127,7 +127,7 @@ public class BusinessTestHelper
 		return uom;
 	}
 
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision, final int costingPrecission)
 	{
 		final I_C_UOM uom = createUOM(name);
 		uom.setStdPrecision(stdPrecision);
@@ -136,13 +136,13 @@ public class BusinessTestHelper
 		return uom;
 	}
 
-	public I_C_UOM createUOM(final String name)
+	public I_C_UOM createUOM(@NonNull final String name)
 	{
 		final X12DE355 x12de355 = X12DE355.ofCode(name);
 		return createUOM(name, x12de355);
 	}
 
-	public I_C_UOM createUOM(final String name, final X12DE355 x12de355)
+	public I_C_UOM createUOM(@NonNull final String name, @Nullable final X12DE355 x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
@@ -156,7 +156,13 @@ public class BusinessTestHelper
 	}
 
 	@NonNull
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final X12DE355 x12de355)
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision)
+	{
+		return createUOM(name, stdPrecision, null);
+	}
+
+	@NonNull
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision, @Nullable final X12DE355 x12de355)
 	{
 		final I_C_UOM uom = createUOM(name, x12de355);
 		uom.setStdPrecision(stdPrecision);

@@ -1,14 +1,14 @@
 package de.metas.material.planning.ddorder;
 
 import de.metas.material.planning.ProductPlanning;
+import de.metas.shipping.ShipperId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
+import java.time.Duration;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -46,8 +46,19 @@ public class DDOrderUtilTests
 		return ProductPlanning.builder();
 	}
 
+	private DistributionNetworkLine.DistributionNetworkLineBuilder distributionNetworkLine()
+	{
+		return DistributionNetworkLine.builder()
+				.id(DistributionNetworkLineId.ofRepoId(1))
+				.sourceWarehouseId(WarehouseId.ofRepoId(2))
+				.targetWarehouseId(WarehouseId.ofRepoId(3))
+				.shipperId(ShipperId.ofRepoId(4))
+				//.transferDuration()
+				;
+	}
+
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1635
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/1635">task</a>
 	 */
 	@Test
 	public void testCalculateDurationDays()
@@ -66,30 +77,27 @@ public class DDOrderUtilTests
 
 		{
 			final ProductPlanning productPlanning = productPlanning().transferTimeDays(3).build();
-			final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
+			final DistributionNetworkLine networkDistributionLine = distributionNetworkLine().transferDuration(Duration.ZERO).build();
 			assertThat(DDOrderUtil.calculateDurationDays(productPlanning, networkDistributionLine)).isEqualTo(3);
 			assertThat(DDOrderUtil.calculateDurationDays(null, networkDistributionLine)).isZero();
 		}
 
 		{
-			final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
-			networkDistributionLine.setTransfertTime(new BigDecimal("4"));
+			final DistributionNetworkLine networkDistributionLine = distributionNetworkLine().transferDuration(Duration.ofDays(4)).build();
 			assertThat(DDOrderUtil.calculateDurationDays(null, networkDistributionLine)).isEqualTo(4);
 		}
 
 		// if the network distribution line has a transfer time, then the product planning value shall be ignored
 		{
 			final ProductPlanning productPlanning = productPlanning().transferTimeDays(3).build();
-			final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
-			networkDistributionLine.setTransfertTime(new BigDecimal("4"));
+			final DistributionNetworkLine networkDistributionLine = distributionNetworkLine().transferDuration(Duration.ofDays(4)).build();
 			assertThat(DDOrderUtil.calculateDurationDays(productPlanning, networkDistributionLine)).isEqualTo(4);
 		}
 
 		// the product planning delivery time and the network distribution line's transfer time shall be added up
 		{
 			final ProductPlanning productPlanning = productPlanning().transferTimeDays(3).leadTimeDays(2).build();
-			final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
-			networkDistributionLine.setTransfertTime(new BigDecimal("4"));
+			final DistributionNetworkLine networkDistributionLine = distributionNetworkLine().transferDuration(Duration.ofDays(4)).build();
 			assertThat(DDOrderUtil.calculateDurationDays(productPlanning, networkDistributionLine)).isEqualTo(6);
 		}
 

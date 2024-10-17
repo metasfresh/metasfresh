@@ -37,10 +37,9 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2022-09-18T21:00:00.00Z | -10 | -10                    |
-      | c_2        | SUPPLY            |                               | p_1                     | 2022-09-18T21:00:00.00Z | 10  | 0                      |
     And metasfresh generates this MD_Candidate_Demand_Detail data
       | Identifier | MD_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | PlannedQty |
       | cdd_1      | c_1                        | ol_1                      | 10         |

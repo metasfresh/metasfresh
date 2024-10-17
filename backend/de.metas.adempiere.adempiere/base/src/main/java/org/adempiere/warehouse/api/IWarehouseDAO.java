@@ -165,6 +165,9 @@ public interface IWarehouseDAO extends ISingletonService
 
 	ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId);
 
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorId);
+
 	@Value
 	class WarehouseQuery
 	{

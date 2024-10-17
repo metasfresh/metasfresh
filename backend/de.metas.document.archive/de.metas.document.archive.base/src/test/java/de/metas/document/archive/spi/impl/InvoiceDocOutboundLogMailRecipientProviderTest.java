@@ -108,6 +108,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		userRecord.setEMail("userRecord.EMail");
 		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		userRecord.setAD_Language(AD_Language_en_GB);
+		userRecord.setIsInvoiceEmailEnabled("Y");
 		saveRecord(userRecord);
 
 		// invoke the method under test
@@ -141,6 +142,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		userRecord.setEMail("userRecord.EMail");
 		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		userRecord.setAD_Language(AD_Language_en_GB);
+		userRecord.setIsInvoiceEmailEnabled("Y");
 		saveRecord(userRecord);
 
 		createSysConfigOrderEmailPropagation("N");
@@ -176,6 +178,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		userRecord.setEMail("userRecord.EMail");
 		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		userRecord.setAD_Language(AD_Language_en_GB);
+		userRecord.setIsInvoiceEmailEnabled("Y");
 		saveRecord(userRecord);
 
 		createSysConfigOrderEmailPropagation(I_C_Doc_Outbound_Log.Table_Name);

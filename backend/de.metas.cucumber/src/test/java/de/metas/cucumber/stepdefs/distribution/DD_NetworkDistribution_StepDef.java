@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,47 +22,60 @@
 
 package de.metas.cucumber.stepdefs.distribution;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_NetworkDistribution;
 
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-
+@RequiredArgsConstructor
 public class DD_NetworkDistribution_StepDef
 {
-	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
-
-	public DD_NetworkDistribution_StepDef(@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable)
-	{
-		this.ddNetworkTable = ddNetworkTable;
-	}
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 
 	@And("metasfresh contains DD_NetworkDistribution")
 	public void metasfresh_contains_DD_NetworkDistribution(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_Name);
-			final String value = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_Value);
-			final String documentNo = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_DocumentNo);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.forEach(this::metasfresh_contains_DD_NetworkDistribution);
+	}
 
-			final I_DD_NetworkDistribution ddNetwork = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
+	private void metasfresh_contains_DD_NetworkDistribution(final DataTableRow row)
+	{
+		final I_DD_NetworkDistribution record = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
 
-			ddNetwork.setValue(value);
-			ddNetwork.setName(name);
-			ddNetwork.setDocumentNo(documentNo);
+		final ValueAndName valueAndName = row.suggestValueAndName();
+		record.setValue(valueAndName.getValue());
+		record.setName(valueAndName.getName());
 
-			InterfaceWrapperHelper.save(ddNetwork);
+		row.getAsOptionalString(I_DD_NetworkDistribution.COLUMNNAME_DocumentNo).ifPresent(record::setDocumentNo);
 
-			final String ddNetworkIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
-			ddNetworkTable.put(ddNetworkIdentifier, ddNetwork);
-		}
+		InterfaceWrapperHelper.save(record);
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ddNetworkTable.put(identifier, record));
+	}
+
+	@And("load DD_NetworkDistribution:")
+	public void load_DD_NetworkDistribution(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(I_DD_NetworkDistribution.COLUMNNAME_Value);
+					final I_DD_NetworkDistribution record = queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
+							.addEqualsFilter(I_DD_NetworkDistribution.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyNotNull(I_DD_NetworkDistribution.class);
+
+					ddNetworkTable.putOrReplace(row.getAsIdentifier(), record);
+				});
 	}
 }
