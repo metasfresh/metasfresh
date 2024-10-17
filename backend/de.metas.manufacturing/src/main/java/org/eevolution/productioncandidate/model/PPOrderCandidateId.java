@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class PPOrderCandidateId implements RepoIdAware
@@ -47,6 +48,11 @@ public class PPOrderCandidateId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new PPOrderCandidateId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final PPOrderCandidateId ppOrderCandidateId)
+	{
+		return ppOrderCandidateId != null ? ppOrderCandidateId.getRepoId() : -1;
+	}
+	
 	private PPOrderCandidateId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "PP_Order_Candidate_ID");
@@ -57,4 +63,7 @@ public class PPOrderCandidateId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static boolean equals(@Nullable final PPOrderCandidateId id1, @Nullable final PPOrderCandidateId id2) {return Objects.equals(id1, id2);}
+
 }

@@ -8,6 +8,9 @@ import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 import { toQRCodeString } from '../../utils/qrCode/hu';
+import { trl } from '../../utils/translations';
+
+export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
@@ -109,7 +112,18 @@ export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {
-  return activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
+  let reasons = activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
+
+  if (reasons.length > 0 && activity?.dataStored?.isAllowSkippingRejectedReason) {
+    reasons = [
+      ...reasons,
+      {
+        key: QTY_REJECTED_REASON_TO_IGNORE_KEY,
+        caption: trl('activities.picking.qtyRejectedIgnoreReason'),
+      },
+    ];
+  }
+  return reasons;
 };
 
 export const getScaleDeviceFromActivity = (activity) => {

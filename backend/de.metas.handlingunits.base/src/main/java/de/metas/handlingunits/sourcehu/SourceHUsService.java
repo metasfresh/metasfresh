@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.concurrent.Immutable;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -199,6 +200,12 @@ public class SourceHUsService
 	public List<I_M_Source_HU> retrieveMatchingSourceHuMarkers(@NonNull final MatchingSourceHusQuery query)
 	{
 		return sourceHuDAO.retrieveActiveSourceHuMarkers(query);
+	}
+
+	@NonNull
+	public ImmutableList<I_M_Source_HU> retrieveSourceHuMarkers(@NonNull final Collection<HuId> huIds)
+	{
+		return sourceHuDAO.retrieveSourceHuMarkers(huIds);
 	}
 
 	public Set<HuId> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)

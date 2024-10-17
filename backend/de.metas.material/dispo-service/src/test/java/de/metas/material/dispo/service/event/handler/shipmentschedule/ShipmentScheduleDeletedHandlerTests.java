@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -24,12 +23,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -60,23 +58,19 @@ public class ShipmentScheduleDeletedHandlerTests
 
 	private ShipmentScheduleDeletedHandler shipmentScheduleDeletedHandler;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 

@@ -7,7 +7,6 @@ import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -76,11 +75,9 @@ public class TransactionEventHandlerForStockRecords
 	{
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 
-		final EventDescriptor eventDescriptor = event.getEventDescriptor();
-
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.clientId(eventDescriptor.getClientId())
-				.orgId(eventDescriptor.getOrgId())
+				.clientId(event.getClientId())
+				.orgId(event.getOrgId())
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.productId(ProductId.ofRepoId(materialDescriptor.getProductId()))
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())

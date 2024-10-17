@@ -14,7 +14,6 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -275,7 +274,6 @@ public class JsonConverters
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
 		final String orgCode = orgDAO.retrieveOrgValue(orgId);
-		final OrderLineGroup orderLineGroup = olCand.getOrderLineGroup();
 
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -290,7 +288,7 @@ public class JsonConverters
 				.dropShipBPartner(toJson(orgCode, olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
-				.dateOrdered(olCand.getDateDoc())
+				.dateOrdered(olCand.getDateOrdered())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

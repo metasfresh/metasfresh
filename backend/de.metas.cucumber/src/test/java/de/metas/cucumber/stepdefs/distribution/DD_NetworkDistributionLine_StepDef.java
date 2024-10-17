@@ -22,79 +22,44 @@
 
 package de.metas.cucumber.stepdefs.distribution;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
-
+@RequiredArgsConstructor
 public class DD_NetworkDistributionLine_StepDef
 {
-	private final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable;
-	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final M_Shipper_StepDefData shipperTable;
-
-	public DD_NetworkDistributionLine_StepDef(
-			@NonNull final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable,
-			@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_Shipper_StepDefData shipperTable)
-	{
-		this.ddNetworkLineTable = ddNetworkLineTable;
-		this.ddNetworkTable = ddNetworkTable;
-		this.warehouseTable = warehouseTable;
-		this.shipperTable = shipperTable;
-	}
+	@NonNull private final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable;
+	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
 
 	@And("metasfresh contains DD_NetworkDistributionLine")
 	public void metasfresh_contains_DD_NetworkDistributionLine(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String ddNetworkIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
+		DataTableRows.of(dataTable).forEach(this::metasfresh_contains_DD_NetworkDistributionLine);
+	}
 
-			final String sourceWarehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistributionLine.COLUMNNAME_M_WarehouseSource_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String targetWarehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistributionLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistributionLine.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+	private void metasfresh_contains_DD_NetworkDistributionLine(final DataTableRow row)
+	{
+		final I_DD_NetworkDistributionLine record = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistributionLine.class);
+		record.setDD_NetworkDistribution_ID(row.getAsIdentifier(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID).lookupIdIn(ddNetworkTable).getRepoId());
+		record.setM_WarehouseSource_ID(row.getAsIdentifier(I_DD_NetworkDistributionLine.COLUMNNAME_M_WarehouseSource_ID).lookupIdIn(warehouseTable).getRepoId());
+		record.setM_Warehouse_ID(row.getAsIdentifier(I_DD_NetworkDistributionLine.COLUMNNAME_M_Warehouse_ID).lookupIdIn(warehouseTable).getRepoId());
+		record.setM_Shipper_ID(row.getAsIdentifier(I_DD_NetworkDistributionLine.COLUMNNAME_M_Shipper_ID).lookupIdIn(shipperTable).getRepoId());
+		record.setPercent(BigDecimal.valueOf(100));
+		InterfaceWrapperHelper.saveRecord(record);
 
-			final I_DD_NetworkDistributionLine ddNetworkLine = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistributionLine.class);
-
-			final I_DD_NetworkDistribution ddNetwork = ddNetworkTable.get(ddNetworkIdentifier);
-			assertThat(ddNetwork).isNotNull();
-			ddNetworkLine.setDD_NetworkDistribution_ID(ddNetwork.getDD_NetworkDistribution_ID());
-
-			final I_M_Warehouse sourceWarehouse = warehouseTable.get(sourceWarehouseIdentifier);
-			assertThat(sourceWarehouse).isNotNull();
-			ddNetworkLine.setM_WarehouseSource_ID(sourceWarehouse.getM_Warehouse_ID());
-
-			final I_M_Warehouse targetWarehouse = warehouseTable.get(targetWarehouseIdentifier);
-			assertThat(targetWarehouse).isNotNull();
-			ddNetworkLine.setM_Warehouse_ID(targetWarehouse.getM_Warehouse_ID());
-
-			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-			assertThat(shipper).isNotNull();
-			ddNetworkLine.setM_Shipper_ID(shipper.getM_Shipper_ID());
-			ddNetworkLine.setPercent(BigDecimal.valueOf(100));
-
-			InterfaceWrapperHelper.saveRecord(ddNetworkLine);
-
-			final String ddNetworkLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistributionLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			ddNetworkLineTable.put(ddNetworkLineIdentifier, ddNetworkLine);
-		}
+		row.getAsOptionalIdentifier(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistributionLine_ID)
+				.ifPresent(identifier -> ddNetworkLineTable.put(identifier, record));
 	}
 }

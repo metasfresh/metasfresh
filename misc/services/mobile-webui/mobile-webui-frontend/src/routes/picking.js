@@ -10,6 +10,9 @@ import { SelectPickTargetScreen } from '../containers/activities/picking/SelectP
 export const selectPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}`;
 
+export const selectTUPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}?tu=true`;
+
 export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
 

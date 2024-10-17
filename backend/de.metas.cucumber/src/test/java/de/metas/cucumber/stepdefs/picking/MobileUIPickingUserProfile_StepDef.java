@@ -23,10 +23,10 @@
 package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
-import de.metas.picking.config.MobileUIPickingUserProfile;
-import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;

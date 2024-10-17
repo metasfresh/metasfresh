@@ -57,8 +57,8 @@ public class APIResponse
 	public int getByJsonPathAsInt(@NonNull final String jsonPath) throws JsonProcessingException
 	{
 		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
-		JsonNode rootNode = mapper.readTree(content);
-		JsonNode node = rootNode.at(jsonPath);
+		final JsonNode rootNode = mapper.readTree(content);
+		final JsonNode node = rootNode.at(jsonPath);
 		return node.asInt();
 	}
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -56,6 +56,7 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
@@ -98,6 +99,7 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -154,6 +156,7 @@ public class HUTransformService
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 
 	private final IHUContext huContext;
@@ -1010,9 +1013,15 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
+		final HuPackingInstructionsId tuPackingInstruction = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
 		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
-		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+
+		final I_M_HU_PI_Item luPIItem = tuPackingInstruction.isRealPackingInstructions()
+				? handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPackingInstruction, bpartnerId)
+				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId + ", " + tuPackingInstruction))
+				: handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
 				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId));
+
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
 	}
 
@@ -1099,6 +1108,8 @@ public class HUTransformService
 				huItemOfLU.setM_HU_PI_Item(handlingUnitsBL.getPIItem(sourceLUItem));
 				InterfaceWrapperHelper.save(huItemOfLU);
 
+				huAttributesBL.updateHUAttribute(huContext, lu, sourceTuHU, AttributeConstants.ATTR_LotNumber);
+				
 				return LUTUResult.ofLU(lu, TU.ofAggregatedTU(sourceTuHU, qtyTUEffective));
 			}
 			else

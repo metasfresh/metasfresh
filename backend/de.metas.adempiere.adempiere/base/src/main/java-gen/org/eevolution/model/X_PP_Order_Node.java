@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Node
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1712971244L;
+	private static final long serialVersionUID = -1792738769L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -343,6 +343,12 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
 	/** CallExternalSystem = CallExternalSystem */
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
+	/** Validate Locator = ValidateLocator */
+	public static final String PP_ACTIVITY_TYPE_ValidateLocator = "ValidateLocator";
+	/** Issue Only What Was Received = IssueOnlyWhatWasReceived */
+	public static final String PP_ACTIVITY_TYPE_IssueOnlyWhatWasReceived = "IssueOnlyWhatWasReceived";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{
@@ -355,7 +361,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/**
+	/** 
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -371,7 +377,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser()
+	public java.lang.String getPP_AlwaysAvailableToUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
@@ -452,7 +458,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_UserInstructions()
+	public java.lang.String getPP_UserInstructions() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
 	}
@@ -521,6 +527,25 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsInt(COLUMNNAME_QueuingTime);
 	}
 
+	/** 
+	 * RawMaterialsIssueStrategy AD_Reference_ID=541877
+	 * Reference name: RawMaterialsIssueStrategy
+	 */
+	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
+	/** Only assigned HUs = AssignedHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AssignedHUsOnly";
+	@Override
+	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
+	{
+		set_Value (COLUMNNAME_RawMaterialsIssueStrategy, RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public java.lang.String getRawMaterialsIssueStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_RawMaterialsIssueStrategy);
+	}
+
 	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
@@ -555,7 +580,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getScannedQRCode()
+	public java.lang.String getScannedQRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}

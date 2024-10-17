@@ -206,6 +206,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext()
 	{
 		final Properties ctx = getCtx();
+		ctx.setProperty("#AD_Client_ID", "1");
+		ctx.setProperty("#AD_Org_ID", "1");
+
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		final PlainDunningContext dunningContext = new PlainDunningContext(ctx, trxRunConfig);
 		final DunningConfig config = dunningContext.getDunningConfig();

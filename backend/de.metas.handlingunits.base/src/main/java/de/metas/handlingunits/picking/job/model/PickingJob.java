@@ -33,6 +33,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -65,7 +66,8 @@ public final class PickingJob
 	@NonNull private final PickingJobHeader header;
 
 	@NonNull @Getter private final Optional<PickingSlotIdAndCaption> pickingSlot;
-	@NonNull @Getter private final Optional<PickingTarget> pickTarget;
+	@NonNull @Getter private final Optional<LUPickingTarget> luPickTarget;
+	@NonNull @Getter private final Optional<TUPickingTarget> tuPickTarget;
 
 	@Getter
 	@NonNull private final ImmutableList<PickingJobLine> lines;
@@ -85,7 +87,8 @@ public final class PickingJob
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
-			final @Nullable Optional<PickingTarget> pickTarget,
+			final @Nullable Optional<LUPickingTarget> luPickTarget,
+			final @Nullable Optional<TUPickingTarget> tuPickTarget,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus)
@@ -95,7 +98,8 @@ public final class PickingJob
 		this.id = id;
 		this.header = header;
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
-		this.pickTarget = pickTarget != null ? pickTarget : Optional.empty();
+		this.luPickTarget = luPickTarget != null ? luPickTarget : Optional.empty();
+		this.tuPickTarget = tuPickTarget != null ? tuPickTarget : Optional.empty();
 		this.lines = lines;
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
@@ -157,11 +161,28 @@ public final class PickingJob
 
 	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
 
-	public PickingJob withPickTarget(@Nullable final PickingTarget pickTarget)
+	@NonNull
+	public PickingJob withLuPickTarget(@Nullable final LUPickingTarget pickTarget)
 	{
-		return PickingTarget.equals(this.pickTarget.orElse(null), pickTarget)
+		if (LUPickingTarget.equals(this.luPickTarget.orElse(null), pickTarget))
+		{
+			return this;
+		}
+
+		return LUPickingTarget.equals(this.luPickTarget.orElse(null), pickTarget)
 				? this
-				: toBuilder().pickTarget(Optional.ofNullable(pickTarget)).build();
+				: toBuilder()
+				.luPickTarget(Optional.ofNullable(pickTarget))
+				.tuPickTarget(pickTarget == null ? Optional.empty() : this.getTuPickTarget())
+				.build();
+	}
+
+	@NonNull
+	public PickingJob withTuPickTarget(@Nullable final TUPickingTarget pickTarget)
+	{
+		return TUPickingTarget.equals(this.tuPickTarget.orElse(null), pickTarget)
+				? this
+				: toBuilder().tuPickTarget(Optional.ofNullable(pickTarget)).build();
 	}
 
 	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
@@ -255,5 +276,13 @@ public final class PickingJob
 	public PickingJob withNewStep(@NonNull final AddStepRequest request)
 	{
 		return withChangedLine(request.getLineId(), line -> line.withNewStep(request));
+	}
+
+	@NonNull
+	public ImmutableSet<ProductId> getProductIds()
+	{
+		return lines.stream()
+				.map(PickingJobLine::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

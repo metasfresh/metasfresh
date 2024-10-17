@@ -1,17 +1,17 @@
 package de.metas.material.event.pporder;
 
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
 import de.metas.common.util.time.SystemTime;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor.ChangedPPOrderLineDescriptorBuilder;
+import org.eevolution.api.PPOrderAndBOMLineId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -48,8 +48,8 @@ public class PPOrderChangedEventTest
 				.builder()
 				.productDescriptor(EventTestHelper.createProductDescriptor())
 				.issueOrReceiveDate(SystemTime.asInstant())
-				.oldPPOrderLineId(10)
-				.newPPOrderLineId(20);
+				.oldPPOrderLineId(PPOrderAndBOMLineId.ofRepoIds(1, 10))
+				.newPPOrderLineId(PPOrderAndBOMLineId.ofRepoIds(1, 20));
 	}
 
 	/**

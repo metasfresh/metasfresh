@@ -53,7 +53,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -72,9 +72,9 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
-		final OrgId orgId = ppOrderChangedEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = ppOrderChangedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
+
 		final List<UpdateMainDataRequest> requests = new ArrayList<>();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
@@ -83,9 +83,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 					.date(TimeUtil.getDay(newPPOrderLine.getPpOrderLineData().getIssueOrReceiveDate(), timeZone))
 					.build();
 
-			final BigDecimal qtyRequiredForProduction = //
-					newPPOrderLine.getPpOrderLineData().getQtyRequired()
-							.subtract(newPPOrderLine.getPpOrderLineData().getQtyDelivered());
+			final BigDecimal qtyRequiredForProduction = newPPOrderLine.getPpOrderLineData().getQtyOpenNegateIfReceipt();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
@@ -139,7 +137,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 	private void updateMainData(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getProductDescriptor())

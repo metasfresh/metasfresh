@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.Splitter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.springframework.core.io.Resource;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -49,4 +51,13 @@ public class ResourceReader
 			throw new UncheckedIOException(e);
 		}
 	}
+
+	@NonNull
+	public static List<String> asStringLines(@NonNull final Resource resource)
+	{
+		final String content = asString(resource);
+		final String contentNorm = content.trim().replace("\r\n", "\n");
+		return Splitter.on("\n").splitToList(contentNorm);
+	}
+
 }

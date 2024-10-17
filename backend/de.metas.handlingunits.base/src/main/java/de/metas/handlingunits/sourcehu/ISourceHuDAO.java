@@ -1,13 +1,16 @@
 package de.metas.handlingunits.sourcehu;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.util.proxy.Cached;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -49,6 +52,9 @@ public interface ISourceHuDAO extends ISingletonService
 
 	@Nullable
 	I_M_Source_HU retrieveSourceHuMarkerOrNull(I_M_HU hu);
+
+	@NonNull
+	ImmutableList<I_M_Source_HU> retrieveSourceHuMarkers(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * Returns those fine picking source HUs whose location and product match any the given query.

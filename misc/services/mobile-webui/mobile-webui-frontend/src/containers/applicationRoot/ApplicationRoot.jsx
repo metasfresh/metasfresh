@@ -26,6 +26,11 @@ const ApplicationRoot = () => {
   const auth = useAuth();
   const dispatch = useDispatch();
 
+  const handleSettingsResponse = (map) => {
+    window.showAllErrorMessages = map?.showAllErrorMessages === 'Y';
+    dispatch(putSettingsAction(map));
+  };
+
   // If endpoint call returned 401 - Authentication error
   // then redirect user to login page
   useConstructor(() => {
@@ -55,7 +60,7 @@ const ApplicationRoot = () => {
     if (isLoggedIn) {
       api
         .getSettings()
-        .then((map) => dispatch(putSettingsAction(map)))
+        .then(handleSettingsResponse)
         .catch((axiosError) => console.log('Failed to fetch settings', { axiosError }));
     }
   }, [isLoggedIn]);

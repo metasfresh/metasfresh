@@ -28,6 +28,13 @@
   font-size: 1.5em;
 }
 
+.green-border-button {
+  background-color: white;
+  color: $base-mf-green;
+  border-color: $base-mf-green;
+  font-size: 1.25rem;
+}
+
 @media only screen and (max-width: $small-screen-width) {
   .picking-to-pick {
     padding-top: 0;

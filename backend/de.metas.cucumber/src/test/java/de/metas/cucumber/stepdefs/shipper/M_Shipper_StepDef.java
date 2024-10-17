@@ -22,40 +22,60 @@
 
 package de.metas.cucumber.stepdefs.shipper;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.organization.OrgId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
+@RequiredArgsConstructor
 public class M_Shipper_StepDef
 {
-	private final M_Shipper_StepDefData shipperTable;
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
-	public M_Shipper_StepDef(@NonNull final M_Shipper_StepDefData shipperTable)
+	@NonNull private final M_Shipper_StepDefData shipperTable;
+
+	@And("contains M_Shippers")
+	public void createOrUpdateShippers(@NonNull final DataTable dataTable)
 	{
-		this.shipperTable = shipperTable;
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Shipper.COLUMNNAME_M_Shipper_ID)
+				.forEach(this::createOrUpdateShipper);
 	}
 
-	@And("load M_Shipper")
-	public void load_M_Shipper(@NonNull final DataTable dataTable)
+	public void createOrUpdateShipper(@NonNull final DataTableRow row)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final int id = DataTableUtil.extractIntForColumnName(row, I_M_Shipper.COLUMNNAME_M_Shipper_ID);
-			final I_M_Shipper shipper = InterfaceWrapperHelper.load(id, I_M_Shipper.class);
-			assertThat(shipper).isNotNull();
+		final ValueAndName valueAndName = row.suggestValueAndName();
+		final OrgId orgId = Env.getOrgId();
 
-			final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Shipper.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipperTable.put(shipperIdentifier, shipper);
-		}
+		final I_M_Shipper record = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> shipperDAO.getShipperIdByValue(valueAndName.getValue(), orgId).map(shipperDAO::getById).orElse(null),
+				() -> shipperDAO.getByName(valueAndName.getName()).orElse(null),
+				() -> InterfaceWrapperHelper.newInstance(I_M_Shipper.class)
+		);
+
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setValue(valueAndName.getValue());
+		record.setName(valueAndName.getName());
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_InternalName)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setInternalName);
+
+		InterfaceWrapperHelper.save(record);
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> shipperTable.put(identifier, record));
 	}
+
 }

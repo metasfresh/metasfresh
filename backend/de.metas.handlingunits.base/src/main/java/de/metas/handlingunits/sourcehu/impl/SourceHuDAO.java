@@ -23,6 +23,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,8 @@ import java.util.Set;
 
 public class SourceHuDAO implements ISourceHuDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
 	public boolean isSourceHu(@NonNull final HuId huId)
@@ -73,6 +76,18 @@ public class SourceHuDAO implements ISourceHuDAO
 				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.firstOnly(I_M_Source_HU.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Source_HU> retrieveSourceHuMarkers(@NonNull final Collection<HuId> huIds)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Source_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.listImmutable(I_M_Source_HU.class);
 	}
 
 	@Override

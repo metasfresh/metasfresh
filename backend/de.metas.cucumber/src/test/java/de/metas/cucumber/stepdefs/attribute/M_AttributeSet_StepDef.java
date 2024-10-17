@@ -23,53 +23,45 @@
 package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSet;
 
-import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID;
 
+@RequiredArgsConstructor
 public class M_AttributeSet_StepDef
 {
-	private final M_AttributeSet_StepDefData attributeSetTable;
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_AttributeSet_StepDef(@NonNull final M_AttributeSet_StepDefData attributeSetTable)
-	{
-		this.attributeSetTable = attributeSetTable;
-	}
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
 
 	@And("load M_AttributeSet:")
 	public void load_M_AttributeSet(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_Name);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_AttributeSet_ID)
+				.forEach(row -> {
+					final String name = row.getAsString(I_M_AttributeSet.COLUMNNAME_Name);
 
-			final I_M_AttributeSet attributeSetRecord = queryBL.createQueryBuilder(I_M_AttributeSet.class)
-					.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.firstOnly(I_M_AttributeSet.class);
+					final I_M_AttributeSet attributeSetRecord = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+							.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
+							.addOnlyActiveRecordsFilter()
+							.create()
+							.firstOnlyNotNull(I_M_AttributeSet.class);
 
-			assertThat(attributeSetRecord).isNotNull();
-
-			final String attributeSetIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			attributeSetTable.putOrReplace(attributeSetIdentifier, attributeSetRecord);
-		}
+					attributeSetTable.putOrReplace(row.getAsIdentifier(), attributeSetRecord);
+				});
 	}
 
 	@And("add M_AttributeSet:")

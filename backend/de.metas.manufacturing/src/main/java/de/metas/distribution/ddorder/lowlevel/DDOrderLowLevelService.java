@@ -41,6 +41,7 @@ import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
@@ -59,20 +60,15 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DDOrderLowLevelService
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
-	public DDOrderLowLevelService(
-			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO)
-	{
-		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
-	}
+	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderLowLevelService.class);
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public I_DD_Order getById(final DDOrderId ddOrderId)
 	{

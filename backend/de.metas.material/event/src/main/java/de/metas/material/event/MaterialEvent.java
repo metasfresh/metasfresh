@@ -1,14 +1,17 @@
 package de.metas.material.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -40,10 +43,17 @@ import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
 
 /**
  * These are the high-level event pojos. We serialize and deserialize them and let them ride inside {@link de.metas.event.Event} instances.
@@ -58,11 +68,16 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 		@JsonSubTypes.Type(name = AttributesChangedEvent.TYPE, value = AttributesChangedEvent.class),
 
-		@JsonSubTypes.Type(name = DDOrderAdvisedEvent.TYPE, value = DDOrderAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCreatedEvent.TYPE, value = DDOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDocStatusChangedEvent.TYPE, value = DDOrderDocStatusChangedEvent.class),
-		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDeletedEvent.TYPE, value = DDOrderDeletedEvent.class),
+
+		@JsonSubTypes.Type(name = DDOrderCandidateAdvisedEvent.TYPE, value = DDOrderCandidateAdvisedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateCreatedEvent.TYPE, value = DDOrderCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateUpdatedEvent.TYPE, value = DDOrderCandidateUpdatedEvent.class),
+		// @JsonSubTypes.Type(name = DDOrderCandidateDocStatusChangedEvent.TYPE, value = DDOrderCandidateDocStatusChangedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateRequestedEvent.TYPE, value = DDOrderCandidateRequestedEvent.class),
+		// @JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 
@@ -102,6 +117,7 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = StockEstimateDeletedEvent.TYPE, value = StockEstimateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
+		@JsonSubTypes.Type(name = NoSupplyAdviceEvent.TYPE, value = NoSupplyAdviceEvent.class),
 
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
@@ -116,4 +132,24 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 public interface MaterialEvent
 {
 	EventDescriptor getEventDescriptor();
+
+	@NonNull
+	@JsonIgnore
+	default String getEventId() {return getEventDescriptor().getEventId();}
+
+	@NonNull
+	@JsonIgnore
+	default ClientId getClientId() {return getEventDescriptor().getClientId();}
+
+	@NonNull
+	@JsonIgnore
+	default OrgId getOrgId() {return getEventDescriptor().getOrgId();}
+
+	@NonNull
+	@JsonIgnore
+	default ClientAndOrgId getClientAndOrgId() {return getEventDescriptor().getClientAndOrgId();}
+
+	@Nullable
+	@JsonIgnore
+	default String getTraceId() {return getEventDescriptor().getTraceId();}
 }

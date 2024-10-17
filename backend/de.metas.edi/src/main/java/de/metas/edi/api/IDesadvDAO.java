@@ -22,7 +22,6 @@
 
 package de.metas.edi.api;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -47,7 +46,7 @@ public interface IDesadvDAO extends ISingletonService
 	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
 	 */
 	@Nullable
-	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, IContextAware ctxAware);
+	I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull String poReference, IContextAware ctxAware);
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
@@ -121,4 +120,14 @@ public interface IDesadvDAO extends ISingletonService
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
 	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_SeqNo} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackSeqNo(@NonNull EDIDesadvId desadvId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item#COLUMNNAME_Line} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackItemLine(@NonNull EDIDesadvId ediDesadvId);
 }

@@ -27,41 +27,31 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-
+@RequiredArgsConstructor
 public class M_HU_PackagingCode_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
-
-	public M_HU_PackagingCode_StepDef(@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
-	{
-		this.huPackagingCodeTable = huPackagingCodeTable;
-	}
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 
 	@And("load M_HU_PackagingCode:")
 	public void load_M_HU_PackagingCode(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String packagingCode = DataTableUtil.extractStringForColumnName(row, I_M_HU_PackagingCode.COLUMNNAME_PackagingCode);
-			final String unitType = DataTableUtil.extractStringForColumnName(row, I_M_HU_PackagingCode.COLUMNNAME_HU_UnitType);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_HU_PackagingCode.COLUMNNAME_M_HU_PackagingCode_ID)
+				.forEach(row -> {
+					final String packagingCode = row.getAsString(I_M_HU_PackagingCode.COLUMNNAME_PackagingCode);
+					final String unitType = row.getAsString(I_M_HU_PackagingCode.COLUMNNAME_HU_UnitType);
 
-			final I_M_HU_PackagingCode huPackagingCodeRecord = queryBL.createQueryBuilder(I_M_HU_PackagingCode.class)
-					.addEqualsFilter(I_M_HU_PackagingCode.COLUMNNAME_PackagingCode, packagingCode)
-					.addEqualsFilter(I_M_HU_PackagingCode.COLUMNNAME_HU_UnitType, unitType)
-					.create()
-					.firstOnlyNotNull(I_M_HU_PackagingCode.class);
+					final I_M_HU_PackagingCode huPackagingCodeRecord = queryBL.createQueryBuilder(I_M_HU_PackagingCode.class)
+							.addEqualsFilter(I_M_HU_PackagingCode.COLUMNNAME_PackagingCode, packagingCode)
+							.addEqualsFilter(I_M_HU_PackagingCode.COLUMNNAME_HU_UnitType, unitType)
+							.create()
+							.firstOnlyNotNull(I_M_HU_PackagingCode.class);
 
-			final String huPackagingCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PackagingCode.COLUMNNAME_M_HU_PackagingCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			huPackagingCodeTable.put(huPackagingCodeIdentifier, huPackagingCodeRecord);
-		}
+					huPackagingCodeTable.put(row.getAsIdentifier(), huPackagingCodeRecord);
+				});
 	}
 }

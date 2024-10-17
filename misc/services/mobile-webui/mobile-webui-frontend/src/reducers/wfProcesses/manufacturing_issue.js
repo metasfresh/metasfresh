@@ -24,7 +24,7 @@ const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
-  draftStep.qtyIssued = qtyPicked;
+  draftStep.qtyIssued = Number(qtyPicked);
   draftStep.qtyRejected = Math.max(draftStep.qtyToIssue - qtyPicked, 0);
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 

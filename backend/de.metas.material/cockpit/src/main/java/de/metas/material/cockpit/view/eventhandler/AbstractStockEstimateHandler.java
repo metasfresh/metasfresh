@@ -73,7 +73,7 @@ public class AbstractStockEstimateHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
-		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = stockEstimateEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()

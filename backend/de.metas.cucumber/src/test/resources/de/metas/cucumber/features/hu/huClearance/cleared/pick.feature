@@ -77,7 +77,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 

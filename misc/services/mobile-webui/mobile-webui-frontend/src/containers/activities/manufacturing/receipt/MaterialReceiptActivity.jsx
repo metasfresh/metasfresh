@@ -46,8 +46,8 @@ const MaterialReceiptActivity = (props) => {
             onClick={() => onButtonClick({ lineId })}
           >
             <ButtonQuantityProp
-              qtyCurrent={lineItem.qtyReceived}
-              qtyTarget={lineItem.qtyToReceive}
+              qtyCurrent={Number(lineItem.qtyReceived)}
+              qtyTarget={Number(lineItem.qtyToReceive)}
               uom={lineItem.uom}
               applicationId={applicationId}
               subtypeId="receipts"

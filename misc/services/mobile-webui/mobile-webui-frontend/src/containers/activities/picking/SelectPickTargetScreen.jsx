@@ -1,14 +1,29 @@
 import React, { useEffect } from 'react';
-import { closePickTarget, setPickTarget, usePickTargets } from '../../../api/picking';
+import {
+  closePickTarget,
+  closeTUPickTarget,
+  setPickTarget,
+  setTUPickTarget,
+  usePickTargets,
+} from '../../../api/picking';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
 import Spinner from '../../../components/Spinner';
-import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import {
+  useCurrentPickTarget,
+  useCurrentTUPickTarget,
+} from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router';
+
+const isItAboutTUs = (location) => {
+  const queryParams = new URLSearchParams(location.search);
+  return queryParams.get('tu') === 'true';
+};
 
 export const SelectPickTargetScreen = () => {
   const dispatch = useDispatch();
@@ -18,12 +33,20 @@ export const SelectPickTargetScreen = () => {
     params: { workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
-  const currentTarget = useCurrentPickTarget({ wfProcessId, activityId });
+  const location = useLocation();
+  const useTUFunctions = isItAboutTUs(location);
+  const pickTargetFunctions = {
+    closePickTargetFunc: useTUFunctions ? closeTUPickTarget : closePickTarget,
+    useCurrentPickTargetFunc: useTUFunctions ? useCurrentTUPickTarget : useCurrentPickTarget,
+  };
+
+  const currentTarget = pickTargetFunctions.useCurrentPickTargetFunc({ wfProcessId, activityId });
 
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    closePickTarget({ wfProcessId })
+    pickTargetFunctions
+      .closePickTargetFunc({ wfProcessId })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => history.go(-1)); // go back to Picking Job
   };
@@ -51,10 +74,18 @@ const NewTargets = ({ wfProcessId }) => {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  const { isTargetsLoading, targets } = usePickTargets({ wfProcessId });
+  const { isTargetsLoading, targets, tuTargets } = usePickTargets({ wfProcessId });
+
+  const location = useLocation();
+  const useTUFunctions = isItAboutTUs(location);
+  const pickTargetHelper = {
+    setPickTarget: useTUFunctions ? setTUPickTarget : setPickTarget,
+    actualTargets: useTUFunctions ? tuTargets : targets,
+  };
 
   const onSelectTargetClicked = async (target) => {
-    setPickTarget({ wfProcessId, target })
+    pickTargetHelper
+      .setPickTarget({ wfProcessId, target })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => history.go(-1)); // go back to Picking Job
   };
@@ -62,10 +93,15 @@ const NewTargets = ({ wfProcessId }) => {
   return (
     <>
       {isTargetsLoading && <Spinner />}
-      {targets &&
-        targets.map((target, index) => {
+      {pickTargetHelper.actualTargets &&
+        pickTargetHelper.actualTargets.map((target, index) => {
           return (
-            <ButtonWithIndicator key={index} caption={target.caption} onClick={() => onSelectTargetClicked(target)} />
+            <ButtonWithIndicator
+              key={index}
+              caption={target.caption}
+              onClick={() => onSelectTargetClicked(target)}
+              additionalCssClass={target.default ? 'green-border-button' : undefined}
+            />
           );
         })}
     </>
