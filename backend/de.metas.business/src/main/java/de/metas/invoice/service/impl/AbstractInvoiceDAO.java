@@ -356,7 +356,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice)
+	public boolean isReferencedInvoiceReversed(@NonNull final I_C_Invoice invoice)
 	{
 		final org.compiere.model.I_C_Invoice referencedInvoice = getReferencedInvoice(invoice);
 		final DocStatus originalInvoiceDocStatus;
@@ -372,7 +372,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Nullable
-	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
+	private org.compiere.model.I_C_Invoice getReferencedInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		if (!invoiceBL.isInvoice(invoice))
 		{
