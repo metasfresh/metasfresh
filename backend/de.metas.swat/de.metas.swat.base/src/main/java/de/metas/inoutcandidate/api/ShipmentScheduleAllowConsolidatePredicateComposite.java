@@ -22,17 +22,18 @@
 
 package de.metas.inoutcandidate.api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ShipmentScheduleAllowConsolidatePredicateComposite
 {
-	private final ImmutableList<IShipmentScheduleAllowConsolidatePredicate> shipmentScheduleAllowConsolidatePredicates;
+	private final List<IShipmentScheduleAllowConsolidatePredicate> shipmentScheduleAllowConsolidatePredicates;
 
-	public ShipmentScheduleAllowConsolidatePredicateComposite(@NonNull final ImmutableList<IShipmentScheduleAllowConsolidatePredicate> shipmentScheduleAllowConsolidatePredicates)
+	public ShipmentScheduleAllowConsolidatePredicateComposite(@NonNull final List<IShipmentScheduleAllowConsolidatePredicate> shipmentScheduleAllowConsolidatePredicates)
 	{
 		this.shipmentScheduleAllowConsolidatePredicates = shipmentScheduleAllowConsolidatePredicates;
 	}
