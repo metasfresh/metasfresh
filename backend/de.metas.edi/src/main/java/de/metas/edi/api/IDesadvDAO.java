@@ -123,6 +123,8 @@ public interface IDesadvDAO extends ISingletonService
 
 	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
 
+	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
+
 	/**
 	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_Line} value for the given desadvId.
 	 */

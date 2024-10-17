@@ -31,6 +31,7 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -106,6 +107,8 @@ public interface IDesadvBL extends ISingletonService
 	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
 	 */
 	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
+
+	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
 
 	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
 	
