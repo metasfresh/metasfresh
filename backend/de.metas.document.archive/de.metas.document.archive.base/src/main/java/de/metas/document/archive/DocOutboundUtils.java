@@ -67,7 +67,7 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final DocTypeId doctypeID = findDocTypeId(docOutboundLog, ctx);
+		final DocTypeId doctypeID = findDocTypeId(docOutboundLog);
 
 		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
