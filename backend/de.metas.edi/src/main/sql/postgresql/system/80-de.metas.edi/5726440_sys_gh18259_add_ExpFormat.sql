@@ -45,7 +45,7 @@ $$
 
             -- 2022-06-10T09:30:33.407354400Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_CH');
+            /* DDL */ PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_CH');
 
             -- 2022-06-10T09:30:36.425277300Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -53,11 +53,11 @@ $$
 
             -- 2022-06-10T09:30:36.426314Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_DE');
+            /* DDL */ PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_DE');
 
             -- 2022-06-10T09:30:36.435100800Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-            /* DDL */ SELECT update_ad_element_on_ad_element_trl_update(581020, 'de_DE');
+            /* DDL */ PERFORM update_ad_element_on_ad_element_trl_update(581020, 'de_DE');
 
             -- 2022-06-10T09:30:43.561692Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -65,7 +65,7 @@ $$
 
             -- 2022-06-10T09:30:43.562727300Z
             -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'en_US');
+            /* DDL */ PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'en_US');
 
         END IF;
     END;
