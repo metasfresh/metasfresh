@@ -63,7 +63,7 @@ class DefaultModelArchiverTest
 
 		helper = new DefaultModelArchiverTestHelper();
 		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
-		SpringContextHolder.registerJUnitBean(new DocOutboundConfigService());
+		SpringContextHolder.registerJUnitBean(new DocOutboundConfigService(DocOutboundConfigRepository.instance));
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 	}
