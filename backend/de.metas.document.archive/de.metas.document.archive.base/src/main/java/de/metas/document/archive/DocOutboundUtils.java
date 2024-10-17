@@ -67,7 +67,7 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final DocTypeId doctypeID = findDocTypeId(docOutboundLog, documentBL, ctx);
+		final DocTypeId doctypeID = findDocTypeId(docOutboundLog, ctx);
 
 		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
@@ -75,13 +75,14 @@ public class DocOutboundUtils
 	}
 
 	@Nullable
-	private DocTypeId findDocTypeId(final @NonNull I_C_Doc_Outbound_Log docOutboundLog, final IDocumentBL documentBL, final Properties ctx)
+	private DocTypeId findDocTypeId(final @NonNull I_C_Doc_Outbound_Log docOutboundLog)
 	{
+		final Properties ctx = getCtx(docOutboundLog);
 		DocTypeId doctypeID = Services.get(IArchiveBL.class).getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
 
 		if (doctypeID == null)
 		{
-			doctypeID = DocTypeId.ofRepoIdOrNull(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
+			doctypeID = DocTypeId.ofRepoIdOrNull(Services.get(IDocumentBL.class).getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
 		}
 		return doctypeID;
 	}
