@@ -406,6 +406,29 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
 
 	/**
+	 * Set Trade Margin.
+	 * Average Prices will be reduced by given value.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTradeMargin (BigDecimal TradeMargin);
+
+	/**
+	 * Get Trade Margin.
+	 * Average Prices will be reduced by given value.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTradeMargin();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_TradeMargin = new ModelColumn<>(I_ModCntr_Settings.class, "TradeMargin", null);
+	String COLUMNNAME_TradeMargin = "TradeMargin";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
+package de.metas.contracts.modular.computing.purchasecontract.sales.processed.receivedqty;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;

@@ -48,6 +48,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -70,11 +71,19 @@ public class ComputingMethodService
 {
 	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
-	@NonNull private final ModularContractLogService contractLogService;
+
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+
+	@NonNull private final ModularContractLogService contractLogService;
+
+	public static ComputingMethodService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ComputingMethodService(ModularContractLogService.newInstanceForJUnitTesting());
+	}
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
