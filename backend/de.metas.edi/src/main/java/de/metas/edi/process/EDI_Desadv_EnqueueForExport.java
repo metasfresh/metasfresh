@@ -24,6 +24,7 @@ package de.metas.edi.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
@@ -40,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
@@ -56,6 +58,8 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
@@ -66,6 +70,12 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+
+		if (sysConfigBL.getBooleanValue(EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment, false))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

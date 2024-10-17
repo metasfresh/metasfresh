@@ -22,18 +22,18 @@ package de.metas.aggregation.api;
  * #L%
  */
 
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.aggregation.api.AggregationItem.Type;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Evaluatees;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 @Value
 public final class Aggregation
@@ -76,5 +76,12 @@ public final class Aggregation
 		}
 
 		return false;
+	}
+
+	public boolean hasInvoicePerShipmentAttribute()
+	{
+		return getItems().stream()
+				.filter(item -> item.getType() == Type.Attribute && item.getAttribute() != null)
+				.anyMatch(item -> ("@" + I_M_InOut.COLUMNNAME_M_InOut_ID + "@").equals(item.getAttribute().evaluate(Evaluatees.empty())));
 	}
 }

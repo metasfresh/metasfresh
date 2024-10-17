@@ -29,6 +29,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
@@ -275,6 +278,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -2213,6 +2217,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						{
 							logger.debug("candidate.invoiceRule={} ; => not closing invoice candidate with id={}", candidateInvoiceRule, candidate.getC_Invoice_Candidate_ID());
 							continue;
+						}
+
+						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
+						if (aggregationId != null)
+						{
+							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
+							if (aggregation.hasInvoicePerShipmentAttribute())
+							{
+								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+								continue;
+							}
 						}
 
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
