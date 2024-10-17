@@ -36,7 +36,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 {
 	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWrite;
-	@NonNull private final CandidateChangeService candidateChangeHandler;
+	@NonNull protected final CandidateChangeService candidateChangeHandler;
 	@NonNull private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
 	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
 

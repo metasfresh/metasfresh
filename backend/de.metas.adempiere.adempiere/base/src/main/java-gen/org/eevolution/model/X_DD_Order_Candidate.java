@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2080912459L;
+	private static final long serialVersionUID = -1961719567L;
 
     /** Standard Constructor */
     public X_DD_Order_Candidate (final Properties ctx, final int DD_Order_Candidate_ID, @Nullable final String trxName)
@@ -75,6 +75,33 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getC_OrderLineSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLineSO_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
 
 	@Override

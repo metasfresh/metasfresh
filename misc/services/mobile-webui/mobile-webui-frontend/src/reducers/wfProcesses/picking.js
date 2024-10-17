@@ -156,9 +156,10 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
 //
 
 const normalizePickingLines = (lines) => {
-  return lines.reduce((accum, line) => {
+  return lines.reduce((accum, line, index) => {
     accum[line.pickingLineId] = {
       ...line,
+      sortingIndex: index,
       steps: normalizePickingSteps(line.steps),
     };
     return accum;
@@ -179,6 +180,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isAllowNewTU = fromActivity.componentProps.isAllowNewTU;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
   draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromActivity.componentProps.isShowPromptWhenOverPicking;
 
   //
   // Copy lines

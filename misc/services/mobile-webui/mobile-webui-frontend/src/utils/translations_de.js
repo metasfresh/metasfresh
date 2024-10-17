@@ -115,6 +115,8 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
+      reopenLU: 'LU wieder öffnen',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

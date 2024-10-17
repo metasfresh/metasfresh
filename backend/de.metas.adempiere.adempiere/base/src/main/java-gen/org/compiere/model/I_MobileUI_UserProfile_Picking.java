@@ -2,6 +2,8 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for MobileUI_UserProfile_Picking
  *  @author metasfresh (generated) 
  */
@@ -276,6 +278,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
+	 * Set Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
+
+	/**
+	 * Get Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowConfirmationPromptWhenOverPick();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
+	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
+
+	/**
 	 * Set Mobile UI Picking Profile.
 	 *
 	 * <br>Type: ID
@@ -316,6 +339,48 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Picking line group by.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingLineGroupBy (@Nullable java.lang.String PickingLineGroupBy);
+
+	/**
+	 * Get Picking line group by.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingLineGroupBy();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingLineGroupBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingLineGroupBy", null);
+	String COLUMNNAME_PickingLineGroupBy = "PickingLineGroupBy";
+
+	/**
+	 * Set Picking line sort by.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingLineSortBy (@Nullable java.lang.String PickingLineSortBy);
+
+	/**
+	 * Get Picking line sort by.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingLineSortBy();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingLineSortBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingLineSortBy", null);
+	String COLUMNNAME_PickingLineSortBy = "PickingLineSortBy";
 
 	/**
 	 * Get Updated.

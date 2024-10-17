@@ -50,7 +50,7 @@ public class MaturingConfigLineId implements RepoIdAware
 		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final MaturingConfigLineId id)
+	public static int toRepoId(@Nullable final MaturingConfigLineId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

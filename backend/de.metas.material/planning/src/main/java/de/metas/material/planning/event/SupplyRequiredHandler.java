@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,14 +108,17 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			final NoSupplyAdviceEvent noSupplyAdviceEvent = NoSupplyAdviceEvent.of(descriptor.withNewEventId());
 			Loggables.addLog("No advice events were created. Firing {}", noSupplyAdviceEvent);
 
-			postMaterialEventService.postEventAsync(noSupplyAdviceEvent);
+			postMaterialEventService.enqueueEventNow(noSupplyAdviceEvent);
 		}
 		else
 		{
-			events.forEach(postMaterialEventService::postEventAsync);
+			// enqueing the response only after commit;
+			// i don't know that anothing we did here creates/changes data that would be needed by the event's handler(s), but better safe than sorry
+			events.forEach(postMaterialEventService::enqueueEventAfterNextCommit);
 		}
 	}
 
+	@Nullable
 	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();

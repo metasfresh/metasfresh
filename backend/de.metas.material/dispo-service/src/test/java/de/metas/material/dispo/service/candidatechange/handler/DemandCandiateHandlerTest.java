@@ -195,7 +195,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.postEventAfterNextCommit(eventCaptor.capture());
+				.enqueueEventAfterNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 
@@ -230,7 +230,7 @@ public class DemandCandiateHandlerTest
 
 		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any(), Mockito.any());
+				.enqueueEventNow(Mockito.any());
 	}
 
 	@SuppressWarnings("SameParameterValue")

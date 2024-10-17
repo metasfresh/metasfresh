@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -77,7 +78,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-
+	
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -420,6 +421,7 @@ public class DataTableUtil
 		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
 	}
 
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,

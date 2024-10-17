@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -678002359L;
+	private static final long serialVersionUID = -1727879137L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -144,6 +144,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsShowConfirmationPromptWhenOverPick (final boolean IsShowConfirmationPromptWhenOverPick)
+	{
+		set_Value (COLUMNNAME_IsShowConfirmationPromptWhenOverPick, IsShowConfirmationPromptWhenOverPick);
+	}
+
+	@Override
+	public boolean isShowConfirmationPromptWhenOverPick() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowConfirmationPromptWhenOverPick);
+	}
+
+	@Override
 	public void setMobileUI_UserProfile_Picking_ID (final int MobileUI_UserProfile_Picking_ID)
 	{
 		if (MobileUI_UserProfile_Picking_ID < 1) 
@@ -168,5 +180,47 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * PickingLineGroupBy AD_Reference_ID=541899
+	 * Reference name: PickingLineGroupByValues
+	 */
+	public static final int PICKINGLINEGROUPBY_AD_Reference_ID=541899;
+	/** Product_Category = product_category */
+	public static final String PICKINGLINEGROUPBY_Product_Category = "product_category";
+	@Override
+	public void setPickingLineGroupBy (final @Nullable java.lang.String PickingLineGroupBy)
+	{
+		set_Value (COLUMNNAME_PickingLineGroupBy, PickingLineGroupBy);
+	}
+
+	@Override
+	public java.lang.String getPickingLineGroupBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingLineGroupBy);
+	}
+
+	/** 
+	 * PickingLineSortBy AD_Reference_ID=541900
+	 * Reference name: PickingLineSortByValues
+	 */
+	public static final int PICKINGLINESORTBY_AD_Reference_ID=541900;
+	/** ORDER_LINE_SEQ_NO = ORDER_LINE_SEQ_NO */
+	public static final String PICKINGLINESORTBY_ORDER_LINE_SEQ_NO = "ORDER_LINE_SEQ_NO";
+	/** QTY_TO_PICK_ASC = QTY_TO_PICK_ASC */
+	public static final String PICKINGLINESORTBY_QTY_TO_PICK_ASC = "QTY_TO_PICK_ASC";
+	/** QTY_TO_PICK_DESC = QTY_TO_PICK_DESC */
+	public static final String PICKINGLINESORTBY_QTY_TO_PICK_DESC = "QTY_TO_PICK_DESC";
+	@Override
+	public void setPickingLineSortBy (final @Nullable java.lang.String PickingLineSortBy)
+	{
+		set_Value (COLUMNNAME_PickingLineSortBy, PickingLineSortBy);
+	}
+
+	@Override
+	public java.lang.String getPickingLineSortBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingLineSortBy);
 	}
 }

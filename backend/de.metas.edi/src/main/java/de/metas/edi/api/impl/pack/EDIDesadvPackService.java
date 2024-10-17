@@ -416,12 +416,16 @@ public class EDIDesadvPackService
 			return StockQtyAndUOMQtys.createZero(productId, desadvUomId);
 		}
 
-		final StockQtyAndUOMQty qtyCUsPerLU = getQuantity(rootLU, productId);
+		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
+		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
+		// That's why we need to invoke min(..)
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(rootLU, productId)
+				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(
 				rootLU,
 				bPartnerId,
-				qtyCUsPerLU,
+				qtyCUsPerTopLevelHU,
 				productId,
 				desadvLineRecord,
 				inOutLineRecord,
@@ -432,7 +436,7 @@ public class EDIDesadvPackService
 
 		ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
 
-		return qtyCUsPerLU;
+		return qtyCUsPerTopLevelHU;
 	}
 
 	@NonNull
@@ -533,7 +537,8 @@ public class EDIDesadvPackService
 		}
 		else
 		{
-			final SSCC18 sscc18 = sscc18CodeService.generate(rootHU.getOrgId(), rootHU.getId().getRepoId());
+			// don't use M_HU_ID because multiple packs can have the same HU and each pack needs an individual SSCC
+			final SSCC18 sscc18 = sscc18CodeService.generate(rootHU.getOrgId() /*, rootHU.getId().getRepoId()*/);
 
 			createEDIDesadvPackRequestBuilder.sscc18(sscc18.asString());
 			createEDIDesadvPackRequestBuilder.isManualIpaSSCC(true);

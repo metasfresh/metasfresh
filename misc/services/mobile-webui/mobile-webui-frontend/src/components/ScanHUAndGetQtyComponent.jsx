@@ -45,6 +45,7 @@ const ScanHUAndGetQtyComponent = ({
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  getConfirmationPromptForQty,
   onResult,
   onClose: onCloseCallback,
 }) => {
@@ -261,6 +262,7 @@ const ScanHUAndGetQtyComponent = ({
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
+          getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
@@ -306,6 +308,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   invalidQtyMessageKey: PropTypes.string,
   //
   // Functions
+  getConfirmationPromptForQty: PropTypes.func,
   onResult: PropTypes.func,
   onClose: PropTypes.func,
 };
