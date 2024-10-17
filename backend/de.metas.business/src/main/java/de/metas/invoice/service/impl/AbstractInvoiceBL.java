@@ -125,7 +125,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -201,9 +200,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotBePaid,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+						invoice.getDocumentNo());
 			}
 
 			//
@@ -216,16 +213,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotHaveOpenAmtZero,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+						invoice.getDocumentNo());
 			}
 
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
-		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
+		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
@@ -241,7 +236,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return creditMemo;
 	}
 
-	private DocTypeId getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final DocTypeId docTypeId)
+	private DocTypeId getTarget_DocType_ID(final I_C_Invoice invoice, final DocTypeId docTypeId)
 	{
 		if (docTypeId != null)
 		{
@@ -285,7 +280,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
 	}
 
-	private final org.compiere.model.I_C_Invoice copyFrom(
+	private org.compiere.model.I_C_Invoice copyFrom(
 			final org.compiere.model.I_C_Invoice from,
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
@@ -503,9 +498,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	/**
 	 * Gets Invoice Grand Total (absolute value).
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
 	{
@@ -817,7 +809,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
 		updateDescriptionFromDocTypeTargetId(invoice, null, null);
@@ -1001,10 +993,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
 
-		Collections.sort(lines, cmp);
+		lines.sort(cmp);
 	}
 
-	private final Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -1015,7 +1007,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean sortILsByShipmentLineOrders = sysConfigBL.getBooleanValue(SYSCONFIG_SortILsByShipmentLineOrders, false); // fallback false (if not configured)
 		if (sortILsByShipmentLineOrders)
 		{
-			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator(lines);
+			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator();
 			ilComparator.addComparator(orderLineComparator);
 		}
 
@@ -1035,9 +1027,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * Set M_InOut_ID for comment lines: The Invoice Lines are initially ordered by their M_InOut_ID, so that there is a "Block" of invoice lines for each InOut. There are 2 comment lines in front of
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
-	 *
-	 * @param lines
-	 * @return comparator
 	 */
 	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
@@ -1115,21 +1104,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final int line1No = line1.getLine();
 			final int line2No = line2.getLine();
 
-			if (line1No > line2No)
-			{
-				return 1;
-			}
-			if (line1No < line2No)
-			{
-				return -1;
-			}
+			return Integer.compare(line1No, line2No);
 
-			return 0;
 		};
 		return cmp;
 	}
 
-	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
 	{
 		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
 
@@ -1426,7 +1407,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1775,6 +1756,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return pricingResult.getTaxCategoryId();
 	}
 
+	// Note: C_Invoice_Line_Allocations are handled in InvoiceCandBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
