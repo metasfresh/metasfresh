@@ -98,33 +98,6 @@ public class X_C_Doc_Outbound_Config_CC extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public I_C_DocType getOverride_DocType()
-	{
-		return get_ValueAsPO(COLUMNNAME_Override_DocType_ID, I_C_DocType.class);
-	}
-
-	@Override
-	public void setOverride_DocType(final I_C_DocType Override_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_Override_DocType_ID, I_C_DocType.class, Override_DocType);
-	}
-
-	@Override
-	public void setOverride_DocType_ID (final int Override_DocType_ID)
-	{
-		if (Override_DocType_ID < 1)
-			set_Value (COLUMNNAME_Override_DocType_ID, null);
-		else
-			set_Value (COLUMNNAME_Override_DocType_ID, Override_DocType_ID);
-	}
-
-	@Override
-	public int getOverride_DocType_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Override_DocType_ID);
-	}
-
-	@Override
 	public int getC_Doc_Outbound_Config_CC_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Doc_Outbound_Config_CC_ID);
