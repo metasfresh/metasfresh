@@ -24,7 +24,7 @@ package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.util.Check;
+import de.metas.document.DocTypeId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -53,7 +53,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public class DocOutboundConfigRepository
 {
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
-	public static final transient DocOutboundConfigRepository instance = new DocOutboundConfigRepository();
+	public static final DocOutboundConfigRepository instance = new DocOutboundConfigRepository();
 
 	private final CCache<Integer, DocOutboundConfigMap> cache = CCache.<Integer, DocOutboundConfigMap>builder()
 			.tableName(I_C_Doc_Outbound_Config.Table_Name)
@@ -91,6 +91,7 @@ public class DocOutboundConfigRepository
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.tableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
 				.printFormatId(PrintFormatId.ofRepoIdOrNull(record.getAD_PrintFormat_ID()))
+				.ccPath(record.getCCPath())
 				.lines(configCCList)
 				.build();
 	}
@@ -103,7 +104,7 @@ public class DocOutboundConfigRepository
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
 	@Nullable
-	public final I_C_Doc_Outbound_Config retrieveConfig(final Properties ctx, @NonNull final AdTableId tableId)
+	public final DocOutboundConfig retrieveConfig(final Properties ctx, @NonNull final AdTableId tableId)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 
@@ -126,8 +127,7 @@ public class DocOutboundConfigRepository
 			}
 		}
 
-		DocOutboundConfig finaConfig = coalesce(config, configSys);
-		return finaConfig != null ? load(coalesce(config, configSys).getId()) : null;
+		return coalesce(config, configSys);
 	}
 
 	private void throwExceptionIfNotNull(
@@ -148,7 +148,7 @@ public class DocOutboundConfigRepository
 				.markAsUserValidationError(); // this error message is not exactly nice, but we still need to inform the user
 	}
 
-	public final I_C_Doc_Outbound_Config retrieveConfigForModel(@NonNull final Object model)
+	public final DocOutboundConfig retrieveConfigForModel(@NonNull final Object model)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final AdTableId adTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.getModelTableId(model));
@@ -187,11 +187,11 @@ public class DocOutboundConfigRepository
 			return Optional.empty();
 		}
 
-		final I_C_Doc_Outbound_Config config = retrieveConfigForModel(model);
+		final DocOutboundConfig config = retrieveConfigForModel(model);
 
 		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
+				.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getId())
 				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Config_CC.COLUMN_AD_PrintFormat_ID, printFormatId)
@@ -218,7 +218,7 @@ public class DocOutboundConfigRepository
 				.docOutboundConfigId(DocOutboundConfigId.ofRepoId(record.getC_Doc_Outbound_Config_ID()))
 				.columnId(AdColumnId.ofRepoId(record.getBPartner_ColumnName_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
+				.overrideDocTypeId(DocTypeId.ofRepoIdOrNull(record.getOverride_DocType_ID()))
 				.build();
 	}
-
 }

@@ -43,7 +43,7 @@ import java.util.Properties;
  */
 public interface IArchiveDAO extends ISingletonService
 {
-	I_AD_Archive getArchiveRecordById(@NonNull ArchiveId id);
+	I_AD_Archive getRecordById(@NonNull ArchiveId id);
 
 	/**
 	 * Retrieves all archive records for context's AD_Client_ID by using given whereClause. Records will be ordered by Created.
@@ -76,8 +76,6 @@ public interface IArchiveDAO extends ISingletonService
 	 */
 	@Nullable
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
-
-	I_AD_Archive retrieveArchive(ArchiveId archiveId);
 
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 

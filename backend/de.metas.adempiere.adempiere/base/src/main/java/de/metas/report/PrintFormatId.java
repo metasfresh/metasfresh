@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value
@@ -67,5 +68,10 @@ public class PrintFormatId implements RepoIdAware
 	public static int toRepoId(@Nullable final PrintFormatId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(@Nullable final PrintFormatId id1, @Nullable final PrintFormatId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

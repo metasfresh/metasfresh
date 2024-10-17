@@ -31,6 +31,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocOutboundConfigRepository;
+import de.metas.report.DocOutboundConfigService;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -65,6 +66,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 
 		helper = new DefaultModelArchiverTestHelper();
 		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
+		SpringContextHolder.registerJUnitBean(new DocOutboundConfigService(DocOutboundConfigRepository.instance));
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 	}

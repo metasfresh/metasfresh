@@ -1,10 +1,10 @@
 package de.metas.report;
 
+import de.metas.document.DocTypeId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.table.api.AdTableId;
 
 import javax.annotation.Nullable;
 
@@ -16,4 +16,5 @@ public class DocOutboundConfigCC
 	@NonNull DocOutboundConfigId docOutboundConfigId;
 	@NonNull PrintFormatId printFormatId;
 	@NonNull AdColumnId columnId;
+	@Nullable DocTypeId overrideDocTypeId;
 }

@@ -24,6 +24,7 @@ package org.adempiere.archive.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -55,6 +56,7 @@ import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +70,7 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public AdArchive getById(@NonNull final ArchiveId id)
 	{
-		return toAdArchive(archiveDAO.getArchiveRecordById(id));
+		return toAdArchive(archiveDAO.getRecordById(id));
 	}
 
 	@Override
@@ -346,4 +348,17 @@ public class ArchiveBL implements IArchiveBL
 				.build();
 	}
 
+	@Override
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId archiveId)
+	{
+		return archiveDAO.getRecordById(archiveId);
+	}
+
+	@Override
+	@Nullable
+	public DocTypeId getOverrideDocTypeId(final ArchiveId archiveId)
+	{
+		final I_AD_Archive archive = getRecordById(archiveId);
+		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
+	}
 }

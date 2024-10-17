@@ -51,7 +51,7 @@ public interface I_C_Doc_Outbound_Config_CC
 
 	/**
 	 * Set Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -61,7 +61,7 @@ public interface I_C_Doc_Outbound_Config_CC
 
 	/**
 	 * Get Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -103,8 +103,37 @@ public interface I_C_Doc_Outbound_Config_CC
 	ModelColumn<I_C_Doc_Outbound_Config_CC, org.compiere.model.I_AD_Column> COLUMN_BPartner_ColumnName_ID = new ModelColumn<>(I_C_Doc_Outbound_Config_CC.class, "BPartner_ColumnName_ID", org.compiere.model.I_AD_Column.class);
 	String COLUMNNAME_BPartner_ColumnName_ID = "BPartner_ColumnName_ID";
 
+
 	/**
-	 * Set Ausgehende Belege Konfig CC.
+	 * Set Override DocType
+	 * Override_DocType_ID
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOverride_DocType_ID (int Override_DocType_ID);
+
+	/**
+	 * Get Override DocType
+	 * Override_DocType_ID
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOverride_DocType_ID();
+
+	I_C_DocType getOverride_DocType();
+
+	void setOverride_DocType(I_C_DocType Override_DocType);
+
+	ModelColumn<I_C_Doc_Outbound_Config_CC, I_C_DocType> COLUMN_Override_DocType_ID = new ModelColumn<>(I_C_Doc_Outbound_Config_CC.class, "Override_DocType_ID", I_C_DocType.class);
+	String COLUMNNAME_Override_DocType_ID = "Override_DocType_ID";
+
+	/**
+	 * Set Outbound Doc Config CC.
+	 * Table used to add several print formats that shall be used for the same table
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -113,7 +142,8 @@ public interface I_C_Doc_Outbound_Config_CC
 	void setC_Doc_Outbound_Config_CC_ID (int C_Doc_Outbound_Config_CC_ID);
 
 	/**
-	 * Get Ausgehende Belege Konfig CC.
+	 * Get Outbound Doc Config CC.
+	 * Table used to add several print formats that shall be used for the same table
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
