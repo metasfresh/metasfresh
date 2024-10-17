@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.money.Money;
 import de.metas.pos.product.POSProductCategory;
 import de.metas.pos.product.POSProductCategoryId;
+import de.metas.pos.product.POSProductsSearchRequest;
 import de.metas.pos.product.POSProductsSearchResult;
 import de.metas.pos.product.POSProductsService;
 import de.metas.pos.remote.RemotePOSOrder;
@@ -89,7 +90,16 @@ public class POSService
 			@NonNull final Instant evalDate,
 			@Nullable final String queryString)
 	{
-		return productsService.getProducts(posTerminalId, evalDate, queryString);
+		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posTerminalId);
+		
+		return productsService.getProducts(
+				POSProductsSearchRequest.builder()
+						.priceListId(posTerminal.getPriceListId())
+						.currency(posTerminal.getCurrency())
+						.evalDate(evalDate)
+						.queryString(queryString)
+						.build()
+		);
 	}
 
 	public ImmutableSet<POSProductCategory> getActiveProductCategoriesByIds(final Collection<POSProductCategoryId> ids)

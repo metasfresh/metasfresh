@@ -2,7 +2,6 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.order.OrderId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
