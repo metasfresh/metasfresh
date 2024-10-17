@@ -23,29 +23,18 @@
 package de.metas.report;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-
 @Service
+@RequiredArgsConstructor
 public class DocOutboundConfigService
 {
+	@NonNull
 	private final DocOutboundConfigRepository docOutboundConfigRepository;
 
-	public DocOutboundConfigService(@NonNull DocOutboundConfigRepository docOutboundConfigRepository)
+	public DocOutboundConfig getById(@NonNull final DocOutboundConfigId id)
 	{
-		this.docOutboundConfigRepository = docOutboundConfigRepository;
+		return docOutboundConfigRepository.getById(id);
 	}
-
-	@Nullable
-	public DocOutboundConfigCC retrieveDocOutboundConfigCCByPrintFormatId(@NonNull final DocOutboundConfigId docOutboundConfigId, @NonNull PrintFormatId printFormatId)
-	{
-		final DocOutboundConfig config = docOutboundConfigRepository.getById(docOutboundConfigId);
-		return config.getLines()
-				.stream()
-				.filter(configCC -> printFormatId.equals(configCC.getPrintFormatId()))
-				.findFirst()
-				.orElse(null);
-	}
-
 }

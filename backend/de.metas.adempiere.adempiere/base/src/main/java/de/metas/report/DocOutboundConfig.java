@@ -12,6 +12,7 @@ import org.adempiere.service.ClientId;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @EqualsAndHashCode
@@ -42,5 +43,13 @@ public class DocOutboundConfig
 	public ImmutableList<DocOutboundConfigCC> getLines()
 	{
 		return ImmutableList.copyOf(lines);
+	}
+
+	public Optional<DocOutboundConfigCC> getCCByPrintFormatId(@NonNull PrintFormatId printFormatId)
+	{
+		return getLines()
+				.stream()
+				.filter(configCC -> printFormatId.equals(configCC.getPrintFormatId()))
+				.findFirst();
 	}
 }

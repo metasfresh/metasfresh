@@ -15,6 +15,7 @@ import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfig;
 import de.metas.report.DocOutboundConfigCC;
 import de.metas.report.DocOutboundConfigId;
 import de.metas.report.DocOutboundConfigRepository;
@@ -163,13 +164,15 @@ public class DefaultModelArchiver
 			for (final PrintFormatId printFormatId : printFormatIdList)
 			{
 				final DocOutboundConfigId docOutboundConfigId = DocOutboundConfigId.ofRepoIdOrNull(getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID).orElse(-1));
+				final DocOutboundConfig docOutboundConfig = docOutboundConfigService.getById(docOutboundConfigId);
 
-				final DocOutboundConfigCC docOutboundConfigCC = docOutboundConfigService.retrieveDocOutboundConfigCCByPrintFormatId(docOutboundConfigId, printFormatId);
+				final Optional<DocOutboundConfigCC> docOutboundConfigCC = docOutboundConfig.getCCByPrintFormatId(printFormatId);
 				DocTypeId docTypeId = null;
-				if (docOutboundConfigCC !=null)
+				if (docOutboundConfigCC.isPresent())
 				{
-					docTypeId = docOutboundConfigCC.getOverrideDocTypeId();
+					docTypeId = docOutboundConfigCC.get().getOverrideDocTypeId();
 				}
+
 				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
 				sendToCCPathIfAvailable(recordRef, archiveResult);
 				result.add(archiveResult);
