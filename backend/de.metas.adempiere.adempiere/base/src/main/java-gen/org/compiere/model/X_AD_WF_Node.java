@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_Node
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1639212581L;
+	private static final long serialVersionUID = -1923961648L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -683,6 +683,12 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
 	/** CallExternalSystem = CallExternalSystem */
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
+	/** Validate Locator = ValidateLocator */
+	public static final String PP_ACTIVITY_TYPE_ValidateLocator = "ValidateLocator";
+	/** Issue Only What Was Received = IssueOnlyWhatWasReceived */
+	public static final String PP_ACTIVITY_TYPE_IssueOnlyWhatWasReceived = "IssueOnlyWhatWasReceived";
 	@Override
 	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
 	{
@@ -695,7 +701,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/**
+	/** 
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -711,7 +717,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser()
+	public java.lang.String getPP_AlwaysAvailableToUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
@@ -723,7 +729,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public java.lang.String getPP_UserInstructions()
+	public java.lang.String getPP_UserInstructions() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
 	}
@@ -779,6 +785,52 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
 	}
 
+	/** 
+	 * RawMaterialsIssueStrategy AD_Reference_ID=541877
+	 * Reference name: RawMaterialsIssueStrategy
+	 */
+	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
+	/** Only assigned HUs = AllocatedSourceHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AllocatedSourceHUsOnly";
+	@Override
+	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
+	{
+		set_Value (COLUMNNAME_RawMaterialsIssueStrategy, RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public java.lang.String getRawMaterialsIssueStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
 	@Override
 	public void setSetupTime (final int SetupTime)
 	{
@@ -812,34 +864,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return get_ValueAsString(COLUMNNAME_SplitElement);
 	}
 
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1)
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	/**
+	/** 
 	 * StartMode AD_Reference_ID=303
 	 * Reference name: WF_Start-Finish Mode
 	 */

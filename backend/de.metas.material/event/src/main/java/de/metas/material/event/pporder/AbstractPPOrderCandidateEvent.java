@@ -22,6 +22,7 @@
 
 package de.metas.material.event.pporder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -37,10 +38,9 @@ import javax.annotation.Nullable;
 @ToString
 public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 {
-	protected final EventDescriptor eventDescriptor;
-	protected final PPOrderCandidate ppOrderCandidate;
-
-	protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@NonNull protected final EventDescriptor eventDescriptor;
+	@NonNull protected final PPOrderCandidate ppOrderCandidate;
+	@Nullable protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	public AbstractPPOrderCandidateEvent(
 			@NonNull final EventDescriptor eventDescriptor,
@@ -51,4 +51,7 @@ public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 		this.ppOrderCandidate = ppOrderCandidate;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
+
+	@JsonIgnore
+	public int getPpOrderCandidateId() {return getPpOrderCandidate().getPpOrderCandidateId();}
 }

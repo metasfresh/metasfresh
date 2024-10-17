@@ -34,6 +34,7 @@ import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,6 +58,7 @@ import static org.eevolution.productioncandidate.service.PPOrderCandidatePojoCon
 
 @Interceptor(I_PP_Order_Candidate.class)
 @Component
+@RequiredArgsConstructor
 public class PP_Order_Candidate
 {
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
@@ -67,16 +69,6 @@ public class PP_Order_Candidate
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
 	private final PPOrderCandidateService ppOrderCandidateService;
-
-	public PP_Order_Candidate(
-			@NonNull final PPOrderCandidatePojoConverter ppOrderCandidateConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final PPOrderCandidateService ppOrderCandidateService)
-	{
-		this.ppOrderCandidateConverter = ppOrderCandidateConverter;
-		this.materialEventService = materialEventService;
-		this.ppOrderCandidateService = ppOrderCandidateService;
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -168,7 +160,7 @@ public class PP_Order_Candidate
 				.build();
 
 		ppOrderCandidateService.deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()));
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateDeletedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateDeletedEvent);
 	}
 
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -186,7 +178,7 @@ public class PP_Order_Candidate
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
 	}
 
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -194,14 +186,14 @@ public class PP_Order_Candidate
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
-				getMaterialDispoTraceId(ppOrderCandidateRecord));
+																					  getMaterialDispoTraceId(ppOrderCandidateRecord));
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
 				.eventDescriptor(eventDescriptor)
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateCreatedEvent);
 	}
 
 	private void validateQtyEntered(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -217,8 +209,8 @@ public class PP_Order_Candidate
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-					qtyEnteredColumnTrl,
-					qtyProcessedColumnTrl);
+																			 qtyEnteredColumnTrl,
+																			 qtyProcessedColumnTrl);
 
 			throw new AdempiereException(message)
 					.appendParametersToMessage()

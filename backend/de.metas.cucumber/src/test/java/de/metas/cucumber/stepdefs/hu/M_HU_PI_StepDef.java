@@ -51,30 +51,30 @@ public class M_HU_PI_StepDef
 	@And("metasfresh contains M_HU_PI:")
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final String name = row.suggestValueAndName().getName();
-			final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("M_HU_PI_ID")
+				.forEach((row) -> {
+					final String name = row.suggestValueAndName().getName();
+					final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();
 
-			final I_M_HU_PI huPiRecord = CoalesceUtil.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_M_HU_PI.class)
-							.addEqualsFilter(COLUMNNAME_Name, name)
-							.addEqualsFilter(COLUMNNAME_IsActive, active)
-							.create()
-							.firstOnlyOrNull(I_M_HU_PI.class),
-					() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class));
+					final I_M_HU_PI huPiRecord = CoalesceUtil.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_M_HU_PI.class)
+									.addEqualsFilter(COLUMNNAME_Name, name)
+									.addEqualsFilter(COLUMNNAME_IsActive, active)
+									.create()
+									.firstOnlyOrNull(I_M_HU_PI.class),
+							() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class));
 
-			assertThat(huPiRecord).isNotNull();
+					assertThat(huPiRecord).isNotNull();
 
-			huPiRecord.setName(name);
-			huPiRecord.setIsActive(active);
+					huPiRecord.setName(name);
+					huPiRecord.setIsActive(active);
 
-			saveRecord(huPiRecord);
+					saveRecord(huPiRecord);
 
-			row.getAsOptionalIdentifier()
-					.orElseGet(() -> row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID))
-					.putOrReplace(huPiTable, huPiRecord);
-			
-			restTestContext.setIntVariableFromRow(row, huPiRecord::getM_HU_PI_ID);
-		});
+					row.getAsIdentifier().putOrReplace(huPiTable, huPiRecord);
+
+					restTestContext.setIntVariableFromRow(row, huPiRecord::getM_HU_PI_ID);
+				});
 	}
 
 	@And("load M_HU_PI:")

@@ -106,8 +106,17 @@ public class ShipperDAO implements IShipperDAO
 		return Optional.ofNullable(shipperId);
 	}
 
+	@Override
+	public Optional<I_M_Shipper> getByName(@NonNull final String name)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipper.class)
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional(I_M_Shipper.class);
+	}
+
 	@NonNull
-	public Map<ShipperId,I_M_Shipper> getByIds(@NonNull final Set<ShipperId> shipperIds)
+	public Map<ShipperId, I_M_Shipper> getByIds(@NonNull final Set<ShipperId> shipperIds)
 	{
 		if (Check.isEmpty(shipperIds))
 		{
@@ -124,7 +133,7 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@NonNull
-	public ImmutableMap<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
+	public ImmutableMap<String, I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
 	{
 		if (Check.isEmpty(internalNameSet))
 		{

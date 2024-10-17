@@ -13,7 +13,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
@@ -81,7 +81,7 @@ public class MobileUI_Picking_StepDef
 	public void setPickingLUTarget(@NonNull final String packingInstructionsIdentifier)
 	{
 		final HuPackingInstructionsId luPIId = huPiTable.getId(packingInstructionsIdentifier);
-		final PickingTarget pickingTarget = PickingTarget.ofPackingInstructions(luPIId, packingInstructionsIdentifier);
+		final LUPickingTarget pickingTarget = LUPickingTarget.ofPackingInstructions(luPIId, packingInstructionsIdentifier);
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingTarget(context.getWfProcessIdNotNull(), pickingTarget);
 		context.setWfProcess(wfProcess);
@@ -95,7 +95,7 @@ public class MobileUI_Picking_StepDef
 
 		row.getAsOptionalIdentifier("Existing_LU")
 				.ifPresent(luIdentifier -> {
-					final PickingTarget actualPickingTarget = mobileUIPickingClient.getPickingTarget(wfProcessId).orElse(null);
+					final LUPickingTarget actualPickingTarget = mobileUIPickingClient.getPickingTarget(wfProcessId).orElse(null);
 					assertThat(actualPickingTarget).as("actual picking LU target").isNotNull();
 					assertThat(actualPickingTarget.isExistingLU()).as(() -> "actual picking LU target is existing LU: " + actualPickingTarget).isTrue();
 

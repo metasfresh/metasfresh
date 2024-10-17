@@ -168,6 +168,32 @@ public final class SpringContextHolder
 		}
 	}
 
+	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			if (beanImpl != null)
+			{
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType)
+					.setParameter("name", name);
+		}
+		// noinspection ConstantConditions
+		return springApplicationContext.getBean(name, requiredType);
+	}
+
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */

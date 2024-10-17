@@ -706,4 +706,19 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 			 return 0;
 		return ii.intValue();
 	}
+
+	@Override
+	public void setC_Manufacturing_Aggregation_ID (final int C_Manufacturing_Aggregation_ID)
+	{
+		if (C_Manufacturing_Aggregation_ID < 1)
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, C_Manufacturing_Aggregation_ID);
+	}
+
+	@Override
+	public int getC_Manufacturing_Aggregation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Manufacturing_Aggregation_ID);
+	}
 }

@@ -1,6 +1,7 @@
 package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
@@ -8,9 +9,12 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -19,12 +23,15 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
+import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
@@ -38,6 +45,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
@@ -66,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -77,6 +86,9 @@ public class ManufacturingJobService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -91,6 +103,7 @@ public class ManufacturingJobService
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
+			final @NonNull ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
@@ -98,6 +111,7 @@ public class ManufacturingJobService
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
@@ -115,6 +129,7 @@ public class ManufacturingJobService
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.huQRCodeService(huQRCodeService)
+				.sourceHUService(ppOrderSourceHUService)
 				.build();
 	}
 
@@ -419,7 +434,7 @@ public class ManufacturingJobService
 		trxManager.runInThreadInheritedTrx(() -> streamAlreadyAssignedManufacturingOrders(responsibleId).forEach(this::unassignFromResponsible));
 	}
 
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
+	public ManufacturingJob withActivityCompleted(final ManufacturingJob job, final ManufacturingJobActivityId jobActivityId)
 	{
 		final PPOrderId ppOrderId = job.getPpOrderId();
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
@@ -607,5 +622,54 @@ public class ManufacturingJobService
 		}
 
 		return loaderAndSaver.load(ppOrderId);
+	}
+
+	@NonNull
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderId);
+	}
+
+	@NonNull
+	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull PPOrderId ppOrderId)
+	{
+		final ManufacturingJob job = getJobById(ppOrderId);
+		final ManufacturingJob changedJob = job.withChangedRawMaterialIssue(
+				rawMaterialsIssue -> rawMaterialsIssue.withChangedLines(this::recomputeQtyToIssueForSteps));
+
+		if (!changedJob.equals(job))
+		{
+			saveActivityStatuses(changedJob);
+		}
+
+		return changedJob;
+	}
+
+	@NonNull
+	private RawMaterialsIssueLine recomputeQtyToIssueForSteps(final @NonNull RawMaterialsIssueLine line)
+	{
+		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
+		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
+
+		for (final RawMaterialsIssueStep step : line.getSteps())
+		{
+			if (step.isIssued())
+			{
+				updatedStepsListBuilder.add(step);
+			}
+			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			{
+				updatedStepsListBuilder.add(step);
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+			}
+			else
+			{
+				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
+				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
+				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
+			}
+		}
+
+		return line.withSteps(updatedStepsListBuilder.build());
 	}
 }

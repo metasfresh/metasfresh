@@ -25,6 +25,8 @@ package de.metas.ui.web.handlingunits.report;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.stream.Stream;
@@ -50,4 +52,9 @@ public interface HUReportAwareViewRow
 	boolean isTopLevel();
 
 	Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows();
+
+	default boolean applies(@NonNull final ProcessDescriptor processDescriptor)
+	{
+		return true;
+	}
 }

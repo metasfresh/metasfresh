@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.material.dispo.service.simulation.ProductionSimulationService;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.order.OrderLineId;
@@ -34,10 +34,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID;
@@ -60,22 +56,13 @@ public class ProductionSimulation_StepDef
 	@And("create and process 'simulated demand' for:")
 	public void invoke_simulation(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			invokeSimulation(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::invokeSimulation);
 	}
 
-	private void invokeSimulation(@NonNull final Map<String, String> tableRow)
+	private void invokeSimulation(@NonNull final DataTableRow tableRow)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
-
-		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
+		final I_C_Order orderRecord = tableRow.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupIn(orderTable);
+		final OrderLineId orderLineId = tableRow.getAsIdentifier(COLUMNNAME_C_OrderLine_ID).lookupIdIn(orderLineTable);
 
 		final OrderLineDescriptor orderLineDescriptor = OrderLineDescriptor.builder()
 				.orderId(orderRecord.getC_Order_ID())

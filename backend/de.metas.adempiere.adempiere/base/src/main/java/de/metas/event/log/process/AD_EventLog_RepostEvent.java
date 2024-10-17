@@ -1,7 +1,5 @@
 package de.metas.event.log.process;
 
-import org.compiere.SpringContextHolder;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -11,7 +9,9 @@ import de.metas.event.log.EventLogId;
 import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -42,14 +42,18 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 	{
 		final I_AD_EventLog eventLogRecord = getRecord(I_AD_EventLog.class);
 
+		Check.assumeNotNull(eventLogRecord.getEventTopicName(), "EventTopicName is null");
+		Check.assumeNotNull(eventLogRecord.getEventTypeName(), "EventTypeName is null");
+
 		final Topic topic = Topic.builder()
 				.name(eventLogRecord.getEventTopicName())
 				.type(Type.valueOf(eventLogRecord.getEventTypeName()))
 				.build();
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
-		if (topic.getType().equals(Type.REMOTE) && !eventBus.getType().equals(Type.REMOTE))
+
+		final boolean typeMismatchBetweenTopicAndBus = !Type.valueOf(eventLogRecord.getEventTypeName()).equals(topic.getType());
+		if (typeMismatchBetweenTopicAndBus)
 		{
-			addLog("The given event log record has a REMOTE topic, but we only got a LOCAL event bus!");
+			addLog("The given event log record has a different topic than the event bus!");
 		}
 
 		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID());
@@ -57,7 +61,8 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 		final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 		final Event event = eventLogService.loadEventForReposting(eventLogId);
 
-		eventBus.postEvent(event);
+		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
+		eventBus.enqueueEvent(event);
 
 		return MSG_OK;
 	}

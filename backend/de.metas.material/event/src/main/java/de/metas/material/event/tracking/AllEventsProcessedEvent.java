@@ -22,32 +22,19 @@
 
 package de.metas.material.event.tracking;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
+@Builder
+@Jacksonized
 public class AllEventsProcessedEvent implements MaterialEvent
 {
 	public static final String TYPE = "AllEventsProcessedEvent";
 
-	@NonNull
-	EventDescriptor eventDescriptor;
-
-	@NonNull
-	String traceId;
-
-	@JsonCreator
-	@Builder
-	public AllEventsProcessedEvent(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("traceId") @NonNull final String traceId)
-	{
-		this.eventDescriptor = eventDescriptor;
-		this.traceId = traceId;
-	}
+	@NonNull EventDescriptor eventDescriptor;
 }

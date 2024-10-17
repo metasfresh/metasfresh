@@ -40,6 +40,12 @@ public class DataTableRows
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));
 	}
 
+	public DataTableRows setAdditionalRowIdentifierColumnName(String columnName)
+	{
+		list.forEach(row -> row.setAdditionalRowIdentifierColumnName(columnName));
+		return this;
+	}
+
 	public int size() {return list.size();}
 
 	public Stream<DataTableRow> stream() {return list.stream();}

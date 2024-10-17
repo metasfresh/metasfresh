@@ -2,12 +2,12 @@ package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -35,9 +35,15 @@ import java.util.UUID;
  * #L%
  */
 @Value
+@Builder(toBuilder = true)
+@Jacksonized
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class EventDescriptor
 {
+	@NonNull String eventId;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@Nullable String traceId;
+
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
 		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
@@ -50,37 +56,24 @@ public class EventDescriptor
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), null);
+		return builder()
+				.eventId(newEventId())
+				.clientAndOrgId(clientAndOrgId)
+				.build();
 	}
 
 	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
 	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), traceId);
+		return builder()
+				.eventId(newEventId())
+				.clientAndOrgId(clientAndOrgId)
+				.traceId(traceId)
+				.build();
 	}
 
-	public static EventDescriptor ofEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
+	private static String newEventId()
 	{
-		return ofClientOrgAndTraceId(eventDescriptor.clientAndOrgId, eventDescriptor.getTraceId());
-	}
-
-	@JsonProperty("clientAndOrgId")
-	ClientAndOrgId clientAndOrgId;
-
-	@JsonProperty("eventId")
-	String eventId;
-
-	@JsonProperty("traceId")
-	String traceId;
-
-	@JsonCreator
-	private EventDescriptor(
-			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
-			@JsonProperty("eventId") @NonNull final String eventId,
-			@JsonProperty("traceId") @Nullable final String traceId)
-	{
-		this.clientAndOrgId = clientAndOrgId;
-		this.eventId = eventId;
-		this.traceId = traceId;
+		return UUID.randomUUID().toString();
 	}
 
 	public ClientId getClientId()
@@ -91,5 +84,12 @@ public class EventDescriptor
 	public OrgId getOrgId()
 	{
 		return getClientAndOrgId().getOrgId();
+	}
+
+	public EventDescriptor withNewEventId()
+	{
+		return toBuilder()
+				.eventId(newEventId())
+				.build();
 	}
 }

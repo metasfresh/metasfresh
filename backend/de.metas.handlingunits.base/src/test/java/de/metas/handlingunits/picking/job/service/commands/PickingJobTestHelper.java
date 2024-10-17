@@ -30,6 +30,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
@@ -71,9 +72,6 @@ import de.metas.test.SnapshotFunctionFactory;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.workplace.WorkplaceRepository;
-import de.metas.workplace.WorkplaceService;
-import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -146,8 +144,8 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
-		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
+		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -165,7 +163,7 @@ public class PickingJobTestHelper
 						pickingJobSlotService,
 						bpartnerBL,
 						huQRCodeService,
-						workplaceService
+						profileRepository
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
@@ -176,7 +174,7 @@ public class PickingJobTestHelper
 				),
 				inventoryService,
 				huReservationService,
-				workplaceService);
+				profileRepository);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)

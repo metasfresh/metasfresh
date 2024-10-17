@@ -55,4 +55,6 @@ public interface PickingJobLoaderSupportingServices
 	HUQRCode getQRCodeByHUId(HuId huId);
 
 	SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(Collection<ShipmentScheduleId> shipmentScheduleIds);
+
+	boolean isCatchWeightTUPickingEnabled();
 }

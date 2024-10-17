@@ -248,4 +248,6 @@ public class CandidatesQuery
 		this.stockChangeDetailQuery = stockChangeDetailQuery;
 		this.simulatedQueryQualifier = CoalesceUtil.coalesceNotNull(simulatedQueryQualifier, SimulatedQueryQualifier.EXCLUDE_SIMULATED);
 	}
+
+	public boolean isFalse() {return FALSE.equals(this);}
 }

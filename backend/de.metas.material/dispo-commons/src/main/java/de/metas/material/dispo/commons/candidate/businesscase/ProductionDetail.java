@@ -2,14 +2,19 @@ package de.metas.material.dispo.commons.candidate.businesscase;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -37,8 +42,7 @@ public class ProductionDetail implements BusinessCaseDetail
 {
 	public static ProductionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{
-		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof ProductionDetail;
-		return canBeCast ? cast(businessCaseDetail) : null;
+		return businessCaseDetail instanceof ProductionDetail ? cast(businessCaseDetail) : null;
 	}
 
 	public static ProductionDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
@@ -55,15 +59,9 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	String description;
 
-	int ppOrderId;
-
-	int ppOrderCandidateId;
-
-	int ppOrderLineCandidateId;
+	@Nullable PPOrderRef ppOrderRef;
 
 	DocStatus ppOrderDocStatus;
-
-	int ppOrderLineId;
 
 	Flag advised;
 
@@ -78,11 +76,8 @@ public class ProductionDetail implements BusinessCaseDetail
 			final int productPlanningId,
 			final int productBomLineId,
 			final String description,
-			final int ppOrderId,
-			final int ppOrderCandidateId,
-			final int ppOrderLineCandidateId,
+			@Nullable final PPOrderRef ppOrderRef,
 			final DocStatus ppOrderDocStatus,
-			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,
 			@NonNull final BigDecimal qty)
@@ -103,11 +98,8 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.productPlanningId = productPlanningId;
 		this.productBomLineId = productBomLineId;
 		this.description = description;
-		this.ppOrderId = ppOrderId;
-		this.ppOrderCandidateId = ppOrderCandidateId;
-		this.ppOrderLineCandidateId = ppOrderLineCandidateId;
+		this.ppOrderRef = ppOrderRef;
 		this.ppOrderDocStatus = ppOrderDocStatus;
-		this.ppOrderLineId = ppOrderLineId;
 		this.qty = qty;
 	}
 
@@ -117,13 +109,39 @@ public class ProductionDetail implements BusinessCaseDetail
 		return CandidateBusinessCase.PRODUCTION;
 	}
 
-	public boolean isFinishedGoodsCandidate()
+	public int getPpOrderCandidateId() {return ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1;}
+
+	public int getPpOrderLineCandidateId() {return ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1;}
+
+	@Nullable
+	public PPOrderId getPpOrderId() {return ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;}
+
+	@Nullable
+	public PPOrderBOMLineId getPpOrderBOMLineId() {return ppOrderRef != null ? ppOrderRef.getPpOrderBOMLineId() : null;}
+
+	@Nullable
+	public PPOrderAndBOMLineId getPpOrderAndBOMLineId() {return ppOrderRef != null ? ppOrderRef.getPpOrderAndBOMLineId() : null;}
+
+	public boolean isFinishedGoods()
 	{
-		return getPpOrderLineId() <= 0;
+		return this.ppOrderRef != null && this.ppOrderRef.isFinishedGoods();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isBOMLine()
 	{
-		return getPpOrderLineId() > 0;
+		return this.ppOrderRef != null && this.ppOrderRef.isBOMLine();
 	}
+
+	public ProductionDetail withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	{
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
+		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+	}
+
 }

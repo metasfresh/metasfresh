@@ -357,7 +357,7 @@ public class JsonConverters
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
-				.dateOrdered(olCand.getDateDoc())
+				.dateOrdered(olCand.getDateOrdered())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

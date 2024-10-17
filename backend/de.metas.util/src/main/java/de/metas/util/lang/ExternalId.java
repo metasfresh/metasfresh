@@ -3,7 +3,6 @@ package de.metas.util.lang;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 

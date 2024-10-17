@@ -640,7 +640,7 @@ jobs:
       max-parallel: 10
       fail-fast: false
       matrix:
-        profile: [profile1, profile2, catchall]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, catchall ]
         include:
           - profile: profile1
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
@@ -770,11 +770,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
-#      - name: run api health checks
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./apiHealthChecks.sh
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./apiHealthChecks.sh
       - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()

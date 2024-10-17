@@ -143,7 +143,7 @@ public class OLCandBL implements IOLCandBL
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryRule()))
 		{
 			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
 		}
@@ -167,7 +167,7 @@ public class OLCandBL implements IOLCandBL
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryViaRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryViaRule()))
 		{
 			return DeliveryViaRule.ofCode(olCandRecord.getDeliveryViaRule());
 		}
@@ -199,17 +199,8 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public InvoiceRule getInvoiceRule(
-			@NonNull final I_C_OLCand olCandRecord,
-			@Nullable final BPartnerOrderParams bPartnerOrderParams,
-			@Nullable final OLCandOrderDefaults orderDefaults)
+	public InvoiceRule getInvoiceRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		final InvoiceRule olCandInvoiceRule = InvoiceRule.ofNullableCode(olCandRecord.getInvoiceRule());
-		if (olCandInvoiceRule != null)
-		{
-			return olCandInvoiceRule;
-		}
-		
 		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
 		{
 			return bPartnerOrderParams.getInvoiceRule().get();

@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * This DAO's methods all use a standard ordering which is relevant if a list of items is returned, or (even more relevant) if only the first one out of many matching records is returned. This
@@ -137,6 +138,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 */
 	List<I_M_HU_PI_Item_Product> retrieveAllForProduct(I_M_Product product);
 
+	List<I_M_HU_PI_Item_Product> retrieveForProducts(Set<ProductId> productIdSet, BPartnerId partnerId);
+
 	/**
 	 * Invoke {@link #retrieveTUs(Properties, ProductId, BPartnerId, boolean)} with {@code allowInfiniteCapacity = false}.
 	 */
@@ -152,4 +155,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
 
 	Optional<HUPIItemProductId> retrieveDefaultIdForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
+
+	@Nullable
+	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
 }

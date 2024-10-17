@@ -22,8 +22,10 @@
 
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +33,8 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * NOTE: when extending this class with more values, please don't set valid default values (like huUnitType=TU) because it's confusing for API user.
@@ -42,7 +46,7 @@ import java.time.ZonedDateTime;
 /* package */ final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
-	private int productId = -1;
+	private ImmutableSet<ProductId> onlyProductIds = null;
 	@Nullable
 	private PriceListVersionId priceListVersionId = null;
 	private int bpartnerId = -1;
@@ -79,13 +83,42 @@ import java.time.ZonedDateTime;
 	@Override
 	public int getM_Product_ID()
 	{
-		return productId;
+		if (onlyProductIds == null || onlyProductIds.size() != 1)
+		{
+			return -1;
+		}
+
+		return onlyProductIds.iterator().next().getRepoId();
 	}
 
 	@Override
 	public void setM_Product_ID(final int productId)
 	{
-		this.productId = productId <= 0 ? -1 : productId;
+		final ProductId productRepoId = ProductId.ofRepoIdOrNull(productId);
+
+		if (productRepoId == null)
+		{
+			this.onlyProductIds = null;
+		}
+		else
+		{
+			this.onlyProductIds = ImmutableSet.of(productRepoId);
+		}
+	}
+
+	@Override
+	@Nullable
+	public Set<ProductId> getOnlyProductIds()
+	{
+		return onlyProductIds != null && !onlyProductIds.isEmpty()
+				? onlyProductIds
+				: null;
+	}
+
+	@Override
+	public void setOnlyProductIds(final Collection<ProductId> productIds)
+	{
+		this.onlyProductIds = ImmutableSet.copyOf(productIds);
 	}
 
 	@Override
