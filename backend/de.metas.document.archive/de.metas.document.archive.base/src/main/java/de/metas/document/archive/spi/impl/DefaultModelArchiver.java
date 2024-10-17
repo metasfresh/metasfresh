@@ -164,7 +164,7 @@ public class DefaultModelArchiver
 			{
 				final DocOutboundConfigId docOutboundConfigId = DocOutboundConfigId.ofRepoIdOrNull(getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID).orElse(-1));
 
-				final DocOutboundConfigCC docOutboundConfigCC = docOutboundConfigService.getDocOutboundConfigCC(docOutboundConfigId, printFormatId);
+				final DocOutboundConfigCC docOutboundConfigCC = docOutboundConfigService.retrieveDocOutboundConfigCCByPrintFormatId(docOutboundConfigId, printFormatId);
 				DocTypeId docTypeId = null;
 				if (docOutboundConfigCC !=null)
 				{
@@ -197,7 +197,7 @@ public class DefaultModelArchiver
 						.documentRef(recordRef)
 						.reportProcessId(reportProcessId)
 						.printFormatIdToUse(printFormatId)
-						.override_DocTypeId(override_DocTypeId)
+						.overrideDocTypeId(override_DocTypeId)
 						.printPreview(true)
 						.asyncBatchId(asyncBatchId)
 						//

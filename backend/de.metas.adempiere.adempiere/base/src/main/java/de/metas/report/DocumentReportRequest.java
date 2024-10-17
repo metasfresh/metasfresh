@@ -47,7 +47,7 @@ public class DocumentReportRequest
 	@Nullable
 	PrintFormatId printFormatIdToUse;
 	@Nullable
-	DocTypeId override_DocTypeId;
+	DocTypeId overrideDocTypeId;
 	@NonNull
 	@Builder.Default
 	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
@@ -110,10 +110,10 @@ public class DocumentReportRequest
 				: this;
 	}
 
-	public DocumentReportRequest withOverride_DocTypeId(final DocTypeId override_DocTypeId)
+	public DocumentReportRequest withOverrideDocTypeId(final DocTypeId override_DocTypeId)
 	{
-		return this.override_DocTypeId != override_DocTypeId
-				? toBuilder().override_DocTypeId(override_DocTypeId).build()
+		return this.overrideDocTypeId != override_DocTypeId
+				? toBuilder().overrideDocTypeId(override_DocTypeId).build()
 				: this;
 	}
 }

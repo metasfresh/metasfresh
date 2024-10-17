@@ -83,7 +83,7 @@ public class DocOutboundConfigRepository
 	private static DocOutboundConfig fromRecord(@NonNull final I_C_Doc_Outbound_Config record)
 	{
 		final DocOutboundConfigId id = DocOutboundConfigId.ofRepoId(record.getC_Doc_Outbound_Config_ID());
-		final ImmutableList<DocOutboundConfigCC> configCCList = retrieveDocOutboundConfigCC(id);
+		final ImmutableList<DocOutboundConfigCC> configCCList = retrieveDocOutboundConfigCCByPrintFormatId(id);
 
 		return DocOutboundConfig.builder()
 				.id(id)
@@ -200,7 +200,7 @@ public class DocOutboundConfigRepository
 				.firstIdOnlyOptional(AdColumnId::ofRepoIdOrNull);
 	}
 
-	private static ImmutableList<DocOutboundConfigCC> retrieveDocOutboundConfigCC(@NonNull final DocOutboundConfigId docOutboundConfigId)
+	private static ImmutableList<DocOutboundConfigCC> retrieveDocOutboundConfigCCByPrintFormatId(@NonNull final DocOutboundConfigId docOutboundConfigId)
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config_CC.class)
 				.addOnlyActiveRecordsFilter()
@@ -219,18 +219,4 @@ public class DocOutboundConfigRepository
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}
-
-	@Nullable
-	public DocOutboundConfigCC retrieveDocOutboundConfigCC(@NonNull final DocOutboundConfigId docOutboundConfigId, @NonNull PrintFormatId printFormatId)
-	{
-		final DocOutboundConfig config = getById(docOutboundConfigId);
-		return config.getLines()
-				.stream()
-				.filter(configCC -> configCC.getPrintFormatId().getRepoId() == printFormatId.getRepoId())
-				.findFirst()
-				.map(configCC -> configCC)
-				.orElse(null);
-
-	}
-
 }

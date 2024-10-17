@@ -1,7 +1,6 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.DocTypeId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

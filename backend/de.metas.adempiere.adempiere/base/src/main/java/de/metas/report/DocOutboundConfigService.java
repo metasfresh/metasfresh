@@ -38,7 +38,7 @@ public class DocOutboundConfigService
 	}
 
 	@Nullable
-	public DocOutboundConfigCC getDocOutboundConfigCC(@NonNull final DocOutboundConfigId docOutboundConfigId, @NonNull PrintFormatId printFormatId)
+	public DocOutboundConfigCC retrieveDocOutboundConfigCCByPrintFormatId(@NonNull final DocOutboundConfigId docOutboundConfigId, @NonNull PrintFormatId printFormatId)
 	{
 		final DocOutboundConfig config = docOutboundConfigRepository.getById(docOutboundConfigId);
 		return config.getLines()
