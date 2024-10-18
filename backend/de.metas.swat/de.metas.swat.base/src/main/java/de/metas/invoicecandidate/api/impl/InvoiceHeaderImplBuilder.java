@@ -348,9 +348,19 @@ public class InvoiceHeaderImplBuilder
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
+	/**
+	 * Set the header to the given {@code overrideDueDate}, if it is after a previously set value.
+	 */
 	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
 	{
-		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
+		if (_overrideDueDate == null)
+		{
+			_overrideDueDate = overrideDueDate;
+		}
+		else if (overrideDueDate != null && _overrideDueDate.isBefore(overrideDueDate))
+		{
+			_overrideDueDate = overrideDueDate;
+		}
 	}
 
 	public int getAD_Org_ID()
