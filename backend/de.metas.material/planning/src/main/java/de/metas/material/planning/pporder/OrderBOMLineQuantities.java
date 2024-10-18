@@ -39,6 +39,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Value
 public class OrderBOMLineQuantities
@@ -211,15 +212,31 @@ public class OrderBOMLineQuantities
 
 	public void assertQtyToIssueToleranceIsRespected(@Nullable final Quantity roundToScale)
 	{
-		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual, roundToScale);
-		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual, roundToScale);
+		final AdempiereException lowerBoundException = assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual, roundToScale)
+				.orElse(null);
+		if (lowerBoundException != null)
+		{
+			throw lowerBoundException;
+		}
+		final AdempiereException upperBoundException = assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual, roundToScale)
+				.orElse(null);
+		if (upperBoundException != null)
+		{
+			throw upperBoundException;
+		}
 	}
 
-	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
+	public boolean isQtyIssuedWithinTolerance(@Nullable final Quantity roundToScale)
+	{
+		return !assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual, roundToScale).isPresent()
+				&& !assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual, roundToScale).isPresent();
+	}
+
+	private Optional<AdempiereException> assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
 	{
 		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
-			return;
+			return Optional.empty();
 		}
 
 		final Quantity qtyIssuedOrReceivedActualMin = roundToQuantity(issuingToleranceSpec.subtractFrom(qtyRequired), roundToScale);
@@ -234,16 +251,17 @@ public class OrderBOMLineQuantities
 					.append(issuingToleranceSpec.toTranslatableString())
 					.append(")")
 					.build();
-			throw new AdempiereException(MSG_CannotIssueLessThan, qtyStr)
-					.markAsUserValidationError();
+			return Optional.of(new AdempiereException(MSG_CannotIssueLessThan, qtyStr)
+									   .markAsUserValidationError());
 		}
+		return Optional.empty();
 	}
 
-	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
+	private Optional<AdempiereException> assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
 	{
 		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
-			return;
+			return Optional.empty();
 		}
 
 		final Quantity qtyIssuedOrReceivedActualMax = roundToQuantity(issuingToleranceSpec.addTo(qtyRequired), roundToScale);
@@ -258,9 +276,10 @@ public class OrderBOMLineQuantities
 					.append(issuingToleranceSpec.toTranslatableString())
 					.append(")")
 					.build();
-			throw new AdempiereException(MSG_CannotIssueMoreThan, qtyStr)
-					.markAsUserValidationError();
+			return Optional.ofNullable(new AdempiereException(MSG_CannotIssueMoreThan, qtyStr)
+											   .markAsUserValidationError());
 		}
+		return Optional.empty();
 	}
 
 	@NonNull

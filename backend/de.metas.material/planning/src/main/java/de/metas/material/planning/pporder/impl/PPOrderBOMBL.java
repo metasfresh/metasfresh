@@ -94,6 +94,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	//FIXME: just a quick way of allowing qtyIssued to be more than planned; such configs should be available on the proper records (pp_product_planning, pp_order_bomLine..)
 	private final static String SYS_CONFIG_DO_NOT_RESTRICT_QTY_ISSUED = "de.metas.material.planning.pporder.impl.DO_NOT_RESTRICT_QTY_ISSUED";
+	private final static String SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING = "de.metas.material.planning.pporder.impl.SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING";
 
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
@@ -656,6 +657,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void validateBeforeClose(final I_PP_Order_BOMLine line, @Nullable final Quantity roundToScale)
 	{
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING, false))
+		{
+			return;
+		}
 		getQuantities(line).assertQtyToIssueToleranceIsRespected(roundToScale);
 	}
 
