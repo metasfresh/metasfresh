@@ -317,6 +317,24 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
+
+	@Override
+	public void setOverride_DocType_ID (final int Override_DocType_ID)
+	{
+		if (Override_DocType_ID < 1)
+			set_Value (COLUMNNAME_Override_DocType_ID, null);
+		else
+			set_Value (COLUMNNAME_Override_DocType_ID, Override_DocType_ID);
+	}
+
+	@Override
+	public int getOverride_DocType_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Override_DocType_ID);
+	}
+
+
+
 	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{

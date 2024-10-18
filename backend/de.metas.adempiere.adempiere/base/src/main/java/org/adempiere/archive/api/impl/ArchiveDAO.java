@@ -58,7 +58,7 @@ public class ArchiveDAO implements IArchiveDAO
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
 	@Override
-	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId id)
 	{
 		return load(id, I_AD_Archive.class);
 	}
@@ -143,12 +143,6 @@ public class ArchiveDAO implements IArchiveDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 		return InterfaceWrapperHelper.create(ctx, tableName, recordId, modelClass, trxName);
-	}
-
-	@Override
-	public I_AD_Archive retrieveArchive(@NonNull final ArchiveId archiveId)
-	{
-		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
 	}
 
 	@Override

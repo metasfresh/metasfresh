@@ -6,6 +6,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.document.DocTypeId;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
@@ -14,8 +15,10 @@ import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfig;
+import de.metas.report.DocOutboundConfigCC;
 import de.metas.report.DocOutboundConfigId;
-import de.metas.report.DocOutboundConfigRepository;
+import de.metas.report.DocOutboundConfigService;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
@@ -36,7 +39,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -92,7 +94,7 @@ public class DefaultModelArchiver
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
-	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
+	private final DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
 
 	//
 	// Parameters
@@ -105,7 +107,7 @@ public class DefaultModelArchiver
 	// Status & cached values
 	private final AtomicBoolean _processed = new AtomicBoolean(false);
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private Optional<I_C_Doc_Outbound_Config> _docOutboundConfig;
+	private Optional<DocOutboundConfig> _docOutboundConfig;
 
 	@Builder
 	private DefaultModelArchiver(
@@ -174,8 +176,24 @@ public class DefaultModelArchiver
 		return result;
 	}
 
+	@Nullable
+	private DocTypeId getDocTypeId(@NonNull final PrintFormatId printFormatId)
+	{
+		final DocOutboundConfigId docOutboundConfigId = getDocOutboundConfigId().orElse(null);
+		if (docOutboundConfigId == null)
+		{
+			return null;
+		}
+
+		return docOutboundConfigService.getById(docOutboundConfigId)
+				.getCCByPrintFormatId(printFormatId)
+				.map(DocOutboundConfigCC::getOverrideDocTypeId)
+				.orElse(null);
+	}
+
 	private ArchiveResult createArchiveResultMethod(final TableRecordReference recordRef, final Integer asyncBatchId, @Nullable final PrintFormatId printFormatId)
 	{
+		final DocTypeId docTypeId = printFormatId != null ? getDocTypeId(printFormatId) : null;
 
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
@@ -183,6 +201,7 @@ public class DefaultModelArchiver
 						.documentRef(recordRef)
 						.reportProcessId(reportProcessId)
 						.printFormatIdToUse(printFormatId)
+						.overrideDocTypeId(docTypeId)
 						.printPreview(true)
 						.asyncBatchId(asyncBatchId)
 						//
@@ -257,6 +276,7 @@ public class DefaultModelArchiver
 																	  .language(report.getLanguage())
 																	  .isMainReport(report.isMainReport())
 																	  .poReference(report.getPoReference())
+																	  .overrideDocTypeId(report.getOverrideDocTypeId())
 																	  .build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
@@ -264,7 +284,8 @@ public class DefaultModelArchiver
 				I_AD_Archive.class);
 
 		// 09417: reference the config and it's settings will decide if a printing queue item shall be created
-		archive.setC_Doc_Outbound_Config_ID(getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID).orElse(-1));
+		archive.setC_Doc_Outbound_Config_ID(getDocOutboundConfigId().map(DocOutboundConfigId::getRepoId).orElse(-1));
+		archive.setOverride_DocType_ID(DocTypeId.toRepoId(report.getOverrideDocTypeId()));
 
 		// https://github.com/metasfresh/metasfresh/issues/1240
 		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
@@ -300,11 +321,6 @@ public class DefaultModelArchiver
 		Check.assume(!_processed.get(), "not already processed: {}", this);
 	}
 
-	protected final void assertProcessed()
-	{
-		Check.assume(_processed.get(), "processed: {}", this);
-	}
-
 	protected final Object getRecord()
 	{
 		return record;
@@ -316,7 +332,7 @@ public class DefaultModelArchiver
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
-	private Optional<I_C_Doc_Outbound_Config> getDocOutboundConfig()
+	private Optional<DocOutboundConfig> getDocOutboundConfig()
 	{
 		if (_docOutboundConfig == null)
 		{
@@ -325,10 +341,15 @@ public class DefaultModelArchiver
 		return _docOutboundConfig;
 	}
 
-	private Optional<I_C_Doc_Outbound_Config> retrieveDocOutboundConfig()
+	private Optional<DocOutboundConfigId> getDocOutboundConfigId()
+	{
+		return getDocOutboundConfig().map(DocOutboundConfig::getId);
+	}
+
+	private Optional<DocOutboundConfig> retrieveDocOutboundConfig()
 	{
 		final AdTableId adTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.getModelTableId(getRecord()));
-		final I_C_Doc_Outbound_Config docOutboundConfig = docOutboundConfigRepository.retrieveConfig(getCtx(), adTableId);
+		final DocOutboundConfig docOutboundConfig = docOutboundConfigService.getByTableId(getCtx(), adTableId);
 		logger.debug("Using config: {}", docOutboundConfig);
 		return Optional.ofNullable(docOutboundConfig);
 	}
@@ -350,11 +371,7 @@ public class DefaultModelArchiver
 		// Else, fallback to doc outbound config
 		else
 		{
-			getDocOutboundConfig().map(docOutboundConfig ->
-			{
-				processList.addAll(docOutboundConfigRepository.retrieveAllPrintFormatIds(DocOutboundConfigId.ofRepoId(docOutboundConfig.getC_Doc_Outbound_Config_ID())));
-				return processList;
-			});
+			getDocOutboundConfigId().ifPresent(docOutboundConfigId -> processList.addAll(docOutboundConfigService.getAllPrintFormatIds(docOutboundConfigId)));
 		}
 
 		return processList;
@@ -363,6 +380,6 @@ public class DefaultModelArchiver
 	@NonNull
 	private Optional<String> getCCPath()
 	{
-		return getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getCCPath);
+		return getDocOutboundConfig().map(DocOutboundConfig::getCcPath);
 	}
 }
