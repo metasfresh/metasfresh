@@ -17,6 +17,7 @@ import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
 import de.metas.pos.product.POSProductCategory;
+import de.metas.pos.product.POSProductCategoryId;
 import de.metas.pos.product.POSProductsSearchResult;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
@@ -62,6 +63,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class POSRestController
 {
+	// IMPORTANT: the path shall match "**/images/**" because we have an exception rule for that in our API audit 
+	// (API audit which breaks non-json endpoints) 
+	private static final String PATH_PREFIX_Images = "/images";
+
 	@NonNull private final POSService posService;
 	@NonNull private final CurrencyRepository currencyRepository;
 
@@ -162,6 +167,18 @@ public class POSRestController
 
 		final POSProductsSearchResult products = posService.getProducts(posTerminalId, date, queryParam);
 		return JsonProductsSearchResult.from(products, adLanguage);
+	}
+
+	@GetMapping(PATH_PREFIX_Images + "/productCategory")
+	public ResponseEntity<byte[]> getProductCategoryImage(
+			@RequestParam("id") @NonNull String categoryIdStr,
+			@RequestParam(name = "maxWidth", required = false, defaultValue = "0") int maxWidth,
+			@RequestParam(name = "maxHeight", required = false, defaultValue = "0") int maxHeight)
+	{
+		final POSProductCategoryId categoryId = POSProductCategoryId.ofString(categoryIdStr);
+		return posService.getProductCategoryImage(categoryId)
+				.withMaxDimension(maxWidth, maxHeight)
+				.toResponseEntity();
 	}
 
 	@GetMapping("/orders")

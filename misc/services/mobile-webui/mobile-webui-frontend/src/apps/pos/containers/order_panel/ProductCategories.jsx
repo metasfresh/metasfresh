@@ -13,6 +13,7 @@ const ProductCategories = ({ categories, disabled, onClick }) => {
           key={category.id}
           id={category.id}
           name={category.name}
+          hasImage={category.hasImage}
           selected={!!category.selected}
           disabled={disabled}
           onClick={onClick}

@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
+import { getProductCategoryImage } from '../../api/products';
 
-const ProductCategoryButton = ({ id, name, selected, disabled, onClick }) => {
+const ProductCategoryButton = ({ id, name, hasImage, selected, disabled, onClick }) => {
+  const [imageData, setImageData] = useState();
+
+  useEffect(() => {
+    if (hasImage) {
+      getProductCategoryImage({ categoryId: id, maxWidth: 150, maxHeight: 150 }).then(setImageData);
+    }
+  }, [id, hasImage]);
+
   const handleClick = () => {
     if (disabled) return;
     onClick({ categoryId: id });
@@ -14,7 +23,8 @@ const ProductCategoryButton = ({ id, name, selected, disabled, onClick }) => {
       disabled={disabled}
       onClick={handleClick}
     >
-      <div className="line1">
+      <div className="product-category-button-image">{imageData && <img src={imageData} alt="image" />}</div>
+      <div className="product-category-button-caption">
         <span>{name}</span>
       </div>
     </button>
@@ -24,6 +34,7 @@ const ProductCategoryButton = ({ id, name, selected, disabled, onClick }) => {
 ProductCategoryButton.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   name: PropTypes.string.isRequired,
+  hasImage: PropTypes.bool,
   selected: PropTypes.bool.isRequired,
   disabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,

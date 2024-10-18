@@ -5,10 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.image.AdImageId;
 import de.metas.pos.repository.model.I_C_POS_ProductCategory;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -23,6 +26,11 @@ class POSProductCategoryRepository
 	private final CCache<Integer, POSProductCategoriesMap> cache = CCache.<Integer, POSProductCategoriesMap>builder()
 			.tableName(I_C_POS_ProductCategory.Table_Name)
 			.build();
+
+	public POSProductCategory getById(@NonNull final POSProductCategoryId id)
+	{
+		return getMap().getById(id);
+	}
 
 	public ImmutableSet<POSProductCategory> getActiveByIds(final Collection<POSProductCategoryId> ids)
 	{
@@ -52,6 +60,7 @@ class POSProductCategoryRepository
 				.id(POSProductCategoryId.ofRepoId(record.getC_POS_ProductCategory_ID()))
 				.name(record.getName())
 				.description(record.getDescription())
+				.imageId(AdImageId.ofRepoIdOrNull(record.getAD_Image_ID()))
 				.build();
 	}
 
@@ -75,6 +84,16 @@ class POSProductCategoryRepository
 		public static POSProductCategoriesMap ofList(final List<POSProductCategory> list)
 		{
 			return list.isEmpty() ? EMPTY : new POSProductCategoriesMap(list);
+		}
+
+		public POSProductCategory getById(@NonNull final POSProductCategoryId id)
+		{
+			final POSProductCategory category = byIds.get(id);
+			if (category == null)
+			{
+				throw new AdempiereException("Category not found: " + id);
+			}
+			return category;
 		}
 
 		public ImmutableSet<POSProductCategory> getActiveByIds(final Collection<POSProductCategoryId> ids)

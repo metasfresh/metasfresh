@@ -1,6 +1,9 @@
 package de.metas.pos.product;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.image.AdImage;
+import de.metas.image.AdImageId;
+import de.metas.image.AdImageRepository;
 import de.metas.pos.product.POSProductsLoader.POSProductsLoaderBuilder;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -8,6 +11,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -21,6 +25,7 @@ public class POSProductsService
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final POSProductCategoryRepository categoryRepository;
 	@NonNull private final POSProductCategoryAssignmentRepository categoryAssignmentRepository;
+	@NonNull private final AdImageRepository adImageRepository;
 
 	public POSProductsSearchResult getProducts(@NonNull POSProductsSearchRequest request)
 	{
@@ -48,5 +53,17 @@ public class POSProductsService
 	public ImmutableSet<POSProductCategory> getActiveCategoriesByIds(final Collection<POSProductCategoryId> ids)
 	{
 		return categoryRepository.getActiveByIds(ids);
+	}
+
+	public AdImage getProductCategoryImage(@NonNull final POSProductCategoryId categoryId)
+	{
+		final POSProductCategory category = categoryRepository.getById(categoryId);
+		final AdImageId imageId = category.getImageId();
+		if (imageId == null)
+		{
+			throw new AdempiereException("Category " + categoryId + " has no image");
+		}
+
+		return adImageRepository.getById(imageId);
 	}
 }

@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.image.AdImage;
 import de.metas.money.Money;
 import de.metas.pos.product.POSProductCategory;
 import de.metas.pos.product.POSProductCategoryId;
@@ -91,7 +92,7 @@ public class POSService
 			@Nullable final String queryString)
 	{
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posTerminalId);
-		
+
 		return productsService.getProducts(
 				POSProductsSearchRequest.builder()
 						.priceListId(posTerminal.getPriceListId())
@@ -153,6 +154,11 @@ public class POSService
 	public Optional<Resource> getReceiptPdf(@NonNull final POSOrderExternalId externalId)
 	{
 		return ordersService.getReceiptPdf(externalId);
+	}
+
+	public AdImage getProductCategoryImage(final POSProductCategoryId categoryId)
+	{
+		return productsService.getProductCategoryImage(categoryId);
 	}
 }
 

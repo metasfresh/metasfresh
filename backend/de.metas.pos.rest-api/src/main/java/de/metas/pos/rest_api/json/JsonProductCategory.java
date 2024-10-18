@@ -21,6 +21,7 @@ public class JsonProductCategory
 	@NonNull POSProductCategoryId id;
 	@NonNull String name;
 	@Nullable String description;
+	boolean hasImage;
 
 	public static List<JsonProductCategory> fromCollection(@NonNull Collection<POSProductCategory> productCategories)
 	{
@@ -36,6 +37,7 @@ public class JsonProductCategory
 				.id(productCategory.getId())
 				.name(productCategory.getName())
 				.description(productCategory.getDescription())
+				.hasImage(productCategory.getImageId() != null)
 				.build();
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.pos.product;
 
+import de.metas.image.AdImageId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,4 +14,5 @@ public class POSProductCategory
 	@NonNull POSProductCategoryId id;
 	@NonNull String name;
 	@Nullable String description;
+	@Nullable AdImageId imageId;
 }

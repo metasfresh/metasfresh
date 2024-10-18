@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,11 @@ public class POSProductCategoryId implements RepoIdAware
 	public static POSProductCategoryId ofRepoId(final int repoId)
 	{
 		return new POSProductCategoryId(repoId);
+	}
+
+	public static POSProductCategoryId ofString(final String repoIdStr)
+	{
+		return RepoIdAwares.ofObject(repoIdStr, POSProductCategoryId.class, POSProductCategoryId::ofRepoId);
 	}
 
 	@Nullable
