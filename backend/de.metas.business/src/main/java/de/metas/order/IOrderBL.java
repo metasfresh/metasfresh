@@ -55,7 +55,9 @@ public interface IOrderBL extends ISingletonService
 	I_C_Order getById(OrderId orderId);
 
 	/**
-	 * Sets price list if there is a price list for the given location and pricing system.
+	 * Sets price list if there is a price list for the given order's location and pricing system.
+	 * <p>
+	 * ! If {@link I_C_Order#COLUMNNAME_C_BPartner_Location_Value_ID} is set, its country takes precendence over the country of {@link I_C_Order#COLUMNNAME_C_BPartner_Location_ID}.
 	 * <p>
 	 * This method does nothing if:
 	 * <ul>

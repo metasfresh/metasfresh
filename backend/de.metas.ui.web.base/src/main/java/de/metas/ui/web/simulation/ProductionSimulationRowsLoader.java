@@ -38,7 +38,6 @@ import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.organization.IOrgDAO;
-import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -155,7 +154,7 @@ public class ProductionSimulationRowsLoader
 
 		final ProductionSimulationRow.ProductionSimulationRowBuilder productionSimulationRowBuilder = ProductionSimulationRow.builder()
 				.rowId(buildRowId(candidate))
-				.product(productLookup.findById(ProductId.ofRepoId(candidate.getProductId())))
+				.product(productLookup.findById(candidate.getProductId()))
 				.attributeSetInstance(attributeSetInstanceLookup.findById(AttributeSetInstanceId.ofRepoIdOrNone(candidate.getMaterialDescriptor().getAttributeSetInstanceId())))
 				.warehouse(warehouseLookup.findById(candidate.getWarehouseId()))
 				.qty(candidate.getQuantity())
@@ -267,9 +266,9 @@ public class ProductionSimulationRowsLoader
 				.build();
 
 		return candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.builder()
-																		.productionDetailsQuery(productionDetailsQuery)
-																		.simulatedQueryQualifier(SimulatedQueryQualifier.INCLUDE_SIMULATED)
-																		.build())
+						.productionDetailsQuery(productionDetailsQuery)
+						.simulatedQueryQualifier(SimulatedQueryQualifier.INCLUDE_SIMULATED)
+						.build())
 				.orElseThrow(() -> new AdempiereException("No Demand candidate found for PP_OrderLine_Candidate=" + orderLineCandidate.getPP_OrderLine_Candidate_ID()));
 	}
 
@@ -313,10 +312,10 @@ public class ProductionSimulationRowsLoader
 				.productId(simulatedDemandCandidate.getMaterialDescriptor().getProductId())
 				.storageAttributesKey(simulatedDemandCandidate.getMaterialDescriptor().getStorageAttributesKey())
 				.timeRangeStart(DateAndSeqNo.builder()
-										.date(simulatedDemandCandidate.getDate())
-										.seqNo(simulatedDemandCandidate.getSeqNo())
-										.operator(DateAndSeqNo.Operator.EXCLUSIVE)
-										.build())
+						.date(simulatedDemandCandidate.getDate())
+						.seqNo(simulatedDemandCandidate.getSeqNo())
+						.operator(DateAndSeqNo.Operator.EXCLUSIVE)
+						.build())
 				.build();
 
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()

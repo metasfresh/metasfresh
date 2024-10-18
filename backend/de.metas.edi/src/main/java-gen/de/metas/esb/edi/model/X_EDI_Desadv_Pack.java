@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_Desadv_Pack, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -344053074L;
+	private static final long serialVersionUID = -1615598873L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack (final Properties ctx, final int EDI_Desadv_Pack_ID, @Nullable final String trxName)
@@ -57,15 +35,15 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public I_EDI_Desadv getEDI_Desadv()
+	public de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv()
 	{
-		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class);
+		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class);
 	}
 
 	@Override
-	public void setEDI_Desadv(final I_EDI_Desadv EDI_Desadv)
+	public void setEDI_Desadv(final de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
 	{
-		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class, EDI_Desadv);
+		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class, EDI_Desadv);
 	}
 
 	@Override
@@ -99,15 +77,15 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public I_EDI_Desadv_Pack getEDI_Desadv_Parent_Pack()
+	public de.metas.esb.edi.model.I_EDI_Desadv_Pack getEDI_Desadv_Parent_Pack()
 	{
-		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_Parent_Pack_ID, I_EDI_Desadv_Pack.class);
+		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_Parent_Pack_ID, de.metas.esb.edi.model.I_EDI_Desadv_Pack.class);
 	}
 
 	@Override
-	public void setEDI_Desadv_Parent_Pack(final I_EDI_Desadv_Pack EDI_Desadv_Parent_Pack)
+	public void setEDI_Desadv_Parent_Pack(final de.metas.esb.edi.model.I_EDI_Desadv_Pack EDI_Desadv_Parent_Pack)
 	{
-		set_ValueFromPO(COLUMNNAME_EDI_Desadv_Parent_Pack_ID, I_EDI_Desadv_Pack.class, EDI_Desadv_Parent_Pack);
+		set_ValueFromPO(COLUMNNAME_EDI_Desadv_Parent_Pack_ID, de.metas.esb.edi.model.I_EDI_Desadv_Pack.class, EDI_Desadv_Parent_Pack);
 	}
 
 	@Override
@@ -126,25 +104,25 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public void setGTIN_LU_PackingMaterial (final @Nullable String GTIN_LU_PackingMaterial)
+	public void setGTIN_PackingMaterial (final @Nullable java.lang.String GTIN_PackingMaterial)
 	{
-		set_Value (COLUMNNAME_GTIN_LU_PackingMaterial, GTIN_LU_PackingMaterial);
+		set_Value (COLUMNNAME_GTIN_PackingMaterial, GTIN_PackingMaterial);
 	}
 
 	@Override
-	public String getGTIN_LU_PackingMaterial()
+	public java.lang.String getGTIN_PackingMaterial() 
 	{
-		return get_ValueAsString(COLUMNNAME_GTIN_LU_PackingMaterial);
+		return get_ValueAsString(COLUMNNAME_GTIN_PackingMaterial);
 	}
 
 	@Override
-	public void setIPA_SSCC18 (final String IPA_SSCC18)
+	public void setIPA_SSCC18 (final java.lang.String IPA_SSCC18)
 	{
 		set_Value (COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
 	}
 
 	@Override
-	public String getIPA_SSCC18()
+	public java.lang.String getIPA_SSCC18() 
 	{
 		return get_ValueAsString(COLUMNNAME_IPA_SSCC18);
 	}
@@ -177,28 +155,40 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_ID (final int M_HU_PackagingCode_LU_ID)
+	public void setM_HU_PackagingCode_ID (final int M_HU_PackagingCode_ID)
 	{
-		if (M_HU_PackagingCode_LU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, null);
+		if (M_HU_PackagingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, M_HU_PackagingCode_LU_ID);
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, M_HU_PackagingCode_ID);
 	}
 
 	@Override
-	public int getM_HU_PackagingCode_LU_ID() 
+	public int getM_HU_PackagingCode_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_LU_ID);
+		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_ID);
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_Text (final @Nullable String M_HU_PackagingCode_LU_Text)
+	public void setM_HU_PackagingCode_Text (final @Nullable java.lang.String M_HU_PackagingCode_Text)
 	{
-		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
+		throw new IllegalArgumentException ("M_HU_PackagingCode_Text is virtual column");	}
 
 	@Override
-	public String getM_HU_PackagingCode_LU_Text()
+	public java.lang.String getM_HU_PackagingCode_Text() 
 	{
-		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_LU_Text);
+		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_Text);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

@@ -1,20 +1,18 @@
 package de.metas.rest_api.v2.workstation;
 
 import de.metas.Profiles;
-import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.Resource;
+import de.metas.material.planning.ResourceService;
 import de.metas.product.ResourceId;
 import de.metas.resource.UserWorkstationService;
 import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/workstation" })
@@ -31,47 +29,36 @@ import java.util.Objects;
 @Profile(Profiles.PROFILE_App)
 public class WorkstationRestController
 {
-	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	@NonNull private final ResourceService resourceService;
 	@NonNull private final UserWorkstationService userWorkstationService;
 	@NonNull private final WorkplaceService workplaceService;
 
 	@NonNull
-	private static ResourceId extractWorkstationId(final I_S_Resource workstation)
+	private Resource getWorkstationById(final ResourceId workstationId)
 	{
-		return ResourceId.ofRepoId(workstation.getS_Resource_ID());
-	}
-
-	private I_S_Resource getWorkstationById(final ResourceId workstationId)
-	{
-		final I_S_Resource workstation = resourceDAO.getById(workstationId);
+		final Resource workstation = resourceService.getById(workstationId);
 		assertWorkstation(workstation);
 		return workstation;
 	}
 
-	private static void assertWorkstation(final I_S_Resource workstation)
+	private static void assertWorkstation(final Resource workstation)
 	{
-		if (!isWorkstation(workstation))
+		if (!workstation.isWorkstation())
 		{
 			throw new AdempiereException("Not a workstation QR Code");
 		}
 	}
 
-	private static boolean isWorkstation(final I_S_Resource resource)
+	private JsonWorkstation toJson(final Resource workstation)
 	{
-		return resource.isManufacturingResource()
-				&& Objects.equals(resource.getManufacturingResourceType(), X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkStation);
-	}
-
-	private JsonWorkstation toJson(final I_S_Resource workstation)
-	{
-		final ResourceId workstationId = extractWorkstationId(workstation);
-		final WorkplaceId workplaceId = WorkplaceId.ofRepoIdOrNull(workstation.getC_Workplace_ID());
+		final ResourceId workstationId = workstation.getResourceId();
+		final WorkplaceId workplaceId = workstation.getWorkplaceId();
 		final String workplaceName = workplaceId != null ? workplaceService.getById(workplaceId).getName() : null;
 
 		return JsonWorkstation.builder()
 				.id(workstationId)
 				.name(workstation.getName())
-				.qrCode(ResourceQRCode.ofResource(workstation).toGlobalQRCodeJsonString())
+				.qrCode(workstation.toQrCode().toGlobalQRCodeJsonString())
 				.workplaceName(workplaceName)
 				.isUserAssigned(userWorkstationService.isUserAssigned(Env.getLoggedUserId(), workstationId))
 				.build();
@@ -82,7 +69,7 @@ public class WorkstationRestController
 	{
 		return JsonWorkstationSettings.builder()
 				.assignedWorkstation(userWorkstationService.getUserWorkstationId(Env.getLoggedUserId())
-						.map(resourceDAO::getById)
+						.map(resourceService::getById)
 						.map(this::toJson)
 						.orElse(null))
 				.build();
@@ -91,12 +78,12 @@ public class WorkstationRestController
 	@PostMapping("/assign")
 	public JsonWorkstation assign(@RequestBody @NonNull final JsonAssignWorkstationRequest request)
 	{
-		final I_S_Resource workstation = getWorkstationById(request.getWorkstationIdEffective());
+		final Resource workstation = getWorkstationById(request.getWorkstationIdEffective());
 
 		final UserId loggedUserId = Env.getLoggedUserId();
-		userWorkstationService.assign(loggedUserId, extractWorkstationId(workstation));
+		userWorkstationService.assign(loggedUserId, workstation.getResourceId());
 
-		WorkplaceId.optionalOfRepoId(workstation.getC_Workplace_ID())
+		Optional.ofNullable(workstation.getWorkplaceId())
 				.ifPresent(workplaceId -> workplaceService.assignWorkplace(loggedUserId, workplaceId));
 
 		return toJson(workstation);
@@ -106,7 +93,7 @@ public class WorkstationRestController
 	public JsonWorkstation getWorkstationByQRCode(@RequestBody @NonNull final JsonGetWorkstationByQRCodeRequest request)
 	{
 		final ResourceQRCode qrCode = ResourceQRCode.ofGlobalQRCodeJsonString(request.getQrCode());
-		final I_S_Resource workstation = getWorkstationById(qrCode.getResourceId());
+		final Resource workstation = getWorkstationById(qrCode.getResourceId());
 		return toJson(workstation);
 	}
 }

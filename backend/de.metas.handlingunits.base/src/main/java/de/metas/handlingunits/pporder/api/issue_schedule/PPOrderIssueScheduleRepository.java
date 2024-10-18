@@ -50,7 +50,15 @@ public class PPOrderIssueScheduleRepository
 		record.setIsAlternativeHU(request.isAlternativeIssue());
 
 		// Issued:
-		record.setQtyIssued(BigDecimal.ZERO);
+		if (request.getQtyIssued() != null)
+		{
+			record.setQtyIssued(request.getQtyIssued().toBigDecimal());
+			record.setProcessed(true);
+		}
+		else
+		{
+			record.setQtyIssued(BigDecimal.ZERO);
+		}
 		// record.setQtyReject(null);
 		// record.setRejectReason(null);
 
@@ -146,6 +154,9 @@ public class PPOrderIssueScheduleRepository
 		record.setQtyIssued(qtyIssued != null ? qtyIssued.toBigDecimal() : BigDecimal.ZERO);
 		record.setQtyReject(qtyRejected != null ? qtyRejected.toBigDecimal() : BigDecimal.ZERO);
 		record.setRejectReason(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null);
+
+		record.setQtyToIssue(issueSchedule.getQtyToIssue().toBigDecimal());
+		record.setC_UOM_ID(issueSchedule.getQtyToIssue().getUomId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 	}

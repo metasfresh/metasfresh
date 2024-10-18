@@ -52,6 +52,7 @@ import java.time.ZonedDateTime;
 	@Getter
 	@Nullable
 	private final ClearanceStatusInfo clearanceStatusInfo;
+	private final boolean deleteEmptyAndJustCreatedAggregatedTUs;
 
 	// Reference
 	private final TableRecordReference fromTableRecord;
@@ -63,7 +64,8 @@ import java.time.ZonedDateTime;
 			@NonNull final ZonedDateTime date,
 			final TableRecordReference fromTableRecord,
 			final boolean forceQtyAllocation,
-			@Nullable final ClearanceStatusInfo clearanceStatusInfo)
+			@Nullable final ClearanceStatusInfo clearanceStatusInfo,
+			final boolean deleteEmptyAndJustCreatedAggregatedTUs)
 	{
 		Check.assumeNotNull(quantity.signum() >= 0, "qty >= 0 ({})", quantity);
 
@@ -77,6 +79,8 @@ import java.time.ZonedDateTime;
 
 		this.forceQtyAllocation = forceQtyAllocation;
 		this.clearanceStatusInfo = clearanceStatusInfo;
+
+		this.deleteEmptyAndJustCreatedAggregatedTUs = deleteEmptyAndJustCreatedAggregatedTUs;
 	}
 
 	@Override
@@ -123,4 +127,9 @@ import java.time.ZonedDateTime;
 		return fromTableRecord;
 	}
 
+	@Override
+	public boolean isDeleteEmptyAndJustCreatedAggregatedTUs()
+	{
+		return deleteEmptyAndJustCreatedAggregatedTUs;
+	}
 }

@@ -16,10 +16,13 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -77,8 +80,9 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	@Override
 	public void handleEvent(@NonNull final PPOrderChangedEvent event)
 	{
-		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(event.getPpOrderId());
-		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", event.getPpOrderId());
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(event.getPpOrderId());
+		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
+		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", ppOrderId);
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
@@ -129,7 +133,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		for (final Candidate candidate : candidates)
 		{
 			final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidate.getBusinessCaseDetail());
-			if (productionDetailToUpdate.isFinishedGoodsCandidate())
+			if (productionDetailToUpdate.isFinishedGoods())
 			{
 				if (headerCandidate != null)
 				{
@@ -156,7 +160,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
-		if (!productionDetailToUpdate.isFinishedGoodsCandidate())
+		if (!productionDetailToUpdate.isFinishedGoods())
 		{
 			throw new AdempiereException("Parameter candidateToUpdate needs to have finishedGoodsCandidate=true")
 					.appendParametersToMessage()
@@ -186,7 +190,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final DocStatus ppOrderDocStatus,
 			@NonNull final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges)
 	{
-		final ImmutableMap<Integer, ChangedPPOrderLineDescriptor> ppOrderLineChangesByPPOrderLineId = Maps.uniqueIndex(ppOrderLineChanges, ChangedPPOrderLineDescriptor::getOldPPOrderLineId);
+		final ImmutableMap<PPOrderAndBOMLineId, ChangedPPOrderLineDescriptor> ppOrderLineChangesByPPOrderLineId = Maps.uniqueIndex(ppOrderLineChanges, ChangedPPOrderLineDescriptor::getOldPPOrderLineId);
 
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
@@ -197,7 +201,8 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 				continue; // this is the header's candidate; deal with it in the other method
 			}
 
-			final ChangedPPOrderLineDescriptor changeDescriptor = ppOrderLineChangesByPPOrderLineId.get(productionDetailToUpdate.getPpOrderLineId());
+			final PPOrderAndBOMLineId ppOrderBOMLineId = productionDetailToUpdate.getPpOrderAndBOMLineId();
+			final ChangedPPOrderLineDescriptor changeDescriptor = ppOrderLineChangesByPPOrderLineId.get(ppOrderBOMLineId);
 			if (changeDescriptor != null) // might be null if the line got deleted
 			{
 				final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, ppOrderDocStatus, changeDescriptor);
@@ -225,7 +230,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
 				.ppOrderDocStatus(ppOrderDocStatus)
-				.ppOrderLineId(ppOrderLineChange.getNewPPOrderLineId())
+				.ppOrderRef(PPOrderRef.withPPOrderAndBOMLineId(productionDetailToUpdate.getPpOrderRef(), ppOrderLineChange.getNewPPOrderLineId()))
 				.qty(newPlannedQty)
 				.build();
 

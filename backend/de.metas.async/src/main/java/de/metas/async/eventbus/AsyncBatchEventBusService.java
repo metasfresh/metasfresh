@@ -74,7 +74,7 @@ public class AsyncBatchEventBusService
 	{
 		final Event event = createEventFromRequest(request);
 
-		getEventBus().postEvent(event);
+		getEventBus().enqueueEvent(event);
 	}
 
 	@NonNull

@@ -60,7 +60,6 @@ import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -138,6 +137,7 @@ import org.compiere.model.I_Test;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 

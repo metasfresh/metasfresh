@@ -5,10 +5,12 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -54,6 +56,7 @@ public class CountingSubRowBucket
 {
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 
 	public static CountingSubRowBucket create(final int plantId)
 	{
@@ -129,6 +132,7 @@ public class CountingSubRowBucket
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }

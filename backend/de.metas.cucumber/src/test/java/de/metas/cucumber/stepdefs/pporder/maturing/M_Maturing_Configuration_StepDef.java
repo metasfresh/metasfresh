@@ -60,13 +60,15 @@ public class M_Maturing_Configuration_StepDef
 	@Given("metasfresh contains M_Maturing_Configurations")
 	public void createMaturingConfigurations(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createUpdateMaturingConfigurationRow);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Maturing_Configuration.COLUMNNAME_M_Maturing_Configuration_ID)
+				.forEach(this::createUpdateMaturingConfigurationRow);
 
 	}
 
 	private void createUpdateMaturingConfigurationRow(final DataTableRow tableRow)
 	{
-		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(I_M_Maturing_Configuration.COLUMNNAME_M_Maturing_Configuration_ID);
+		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final I_M_Maturing_Configuration maturingConfiguration = maturingConfigurationTable.getOptional(identifier)
 				.orElse(InterfaceWrapperHelper.newInstance(I_M_Maturing_Configuration.class));
 
@@ -79,14 +81,16 @@ public class M_Maturing_Configuration_StepDef
 	@Given("metasfresh contains M_Maturing_Configuration_Lines")
 	public void createMaturingConfigurationLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createUpdateMaturingConfigurationLineRow);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Maturing_Configuration_Line.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.forEach(this::createUpdateMaturingConfigurationLineRow);
 
 	}
 
 	private void createUpdateMaturingConfigurationLineRow(final DataTableRow tableRow)
 	{
 		final I_M_Maturing_Configuration maturingConfiguration = tableRow.getAsIdentifier(I_M_Maturing_Configuration.COLUMNNAME_M_Maturing_Configuration_ID).lookupIn(maturingConfigurationTable);
-		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(I_M_Maturing_Configuration_Line.COLUMNNAME_M_Maturing_Configuration_Line_ID);
+		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final I_M_Product fromProduct = tableRow.getAsIdentifier(I_M_Maturing_Configuration_Line.COLUMNNAME_From_Product_ID).lookupIn(productStepDefData);
 		final I_M_Product maturedProduct = tableRow.getAsIdentifier(I_M_Maturing_Configuration_Line.COLUMNNAME_Matured_Product_ID).lookupIn(productStepDefData);
 		final int maturityAge = tableRow.getAsInt(I_M_Maturing_Configuration_Line.COLUMNNAME_MaturityAge);

@@ -40,6 +40,11 @@ const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId
     componentType: COMPONENTTYPE_PickProducts,
   });
 
+  if (pickActivity?.dataStored?.isPickWithNewLU) {
+    history.goBack();
+    return;
+  }
+
   const eligibleLine = getNextEligibleLineToPick({ activity: pickActivity });
   const lineId = eligibleLine?.pickingLineId;
   // console.log('onWFActivityCompleted', { lineId, lines, linesToPick, activity });

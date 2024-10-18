@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -26,16 +25,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -64,22 +62,18 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
 	private ReceiptsScheduleUpdatedHandler receiptsScheduleUpdatedHandler;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final Collection<CandidateHandler> candidateChangeHandlers = ImmutableList.of(new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService));
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);
@@ -99,8 +93,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.SUPPLY.getCode()),
 						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.STOCK.getCode()));
 
-		final Instant updateTimestamp = NOW;
-		createAndHandleUpdate(updateTimestamp);
+		createAndHandleUpdate(NOW);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY))
 				.extracting("DateProjected", "Qty")
@@ -118,8 +111,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.SUPPLY.getCode()),
 						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.STOCK.getCode()));
 
-		final Instant updateTimestamp = AFTER_NOW;
-		createAndHandleUpdate(updateTimestamp);
+		createAndHandleUpdate(AFTER_NOW);
 
 		assertThat(DispoTestUtils.retrieveAllRecords())
 				.extracting("DateProjected", "Qty", "MD_Candidate_Type")
@@ -130,7 +122,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 
 	private void createAndHandleUpdate(final Instant updateTimestamp)
 	{
-		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor()
+		final MaterialDescriptor eventMaterialDescriptor = newMaterialDescriptor()
 				.withDate(updateTimestamp)
 				.withQuantity(new BigDecimal("11"));
 

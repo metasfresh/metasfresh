@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Picking_Job
  *  @author metasfresh (generated) 
@@ -469,4 +470,29 @@ public interface I_M_Picking_Job
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Packing Instruction (TU).
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_TU_HU_PI_ID (int M_TU_HU_PI_ID);
+
+	/**
+	 * Get Packing Instruction (TU).
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_TU_HU_PI_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI();
+
+	void setM_TU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI);
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_TU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
 }

@@ -33,6 +33,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -44,6 +45,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
@@ -67,7 +69,9 @@ public class CreateUpdateOrderCandidateCommand
 
 	public I_PP_Order_Candidate execute()
 	{
-		final ProductPlanning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final ProductPlanning productPlanning = productPlanningsRepo.getById(
+				Check.assumeNotNull(request.getProductPlanningId(), "request.getProductPlanningId; request={}", request));
+
 		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
 		// Create PP Order Candidate
 		final I_PP_Order_Candidate ppOrderCandidateRecord;
@@ -83,6 +87,7 @@ public class CreateUpdateOrderCandidateCommand
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
 
+		ppOrderCandidateRecord.setPP_Order_Candidate_Parent_ID(PPOrderCandidateId.toRepoId(request.getParentPPOrderCandidateId()));
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(request.getProductPlanningId()));
 		ppOrderCandidateRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
 		ppOrderCandidateRecord.setS_Resource_ID(request.getPlantId().getRepoId());

@@ -16,12 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.util.Properties;
-
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
@@ -34,10 +34,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * InOut Line

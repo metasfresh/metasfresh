@@ -128,6 +128,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 		return ImmutableSetMultimap.of();
 	}
 
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return false;
+	}
+
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)
 	{
 		qrCodes.put(huId, qrCode);

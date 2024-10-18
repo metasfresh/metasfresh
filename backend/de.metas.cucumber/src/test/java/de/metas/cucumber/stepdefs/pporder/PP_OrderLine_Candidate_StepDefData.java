@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 
 public class PP_OrderLine_Candidate_StepDefData extends StepDefData<I_PP_OrderLine_Candidate>
+		implements StepDefDataGetIdAware<PPOrderLineCandidateId, I_PP_OrderLine_Candidate>
 {
 	public PP_OrderLine_Candidate_StepDefData()
 	{
 		super(I_PP_OrderLine_Candidate.class);
+	}
+
+	@Override
+	public PPOrderLineCandidateId extractIdFromRecord(final I_PP_OrderLine_Candidate record)
+	{
+		return PPOrderLineCandidateId.ofRepoId(record.getPP_OrderLine_Candidate_ID());
 	}
 }

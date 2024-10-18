@@ -25,7 +25,7 @@ FROM (
          FROM (
                   SELECT (CASE
                               WHEN il.c_uom_id = 540017 -- harcoded kg
-                                  THEN iol.movementqty * (COALESCE(p.weight, 0) - COALESCE(p.netweight, 0))
+                                  THEN iol.movementqty * (case when (p.grossweight > 0) then p.grossweight - COALESCE(p.weight, 0) else COALESCE(p.weight, 0) end)
                                   ELSE 0
                           END)
                                                                             AS computedProductWeight,

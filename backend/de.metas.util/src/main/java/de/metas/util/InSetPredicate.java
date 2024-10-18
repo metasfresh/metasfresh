@@ -67,6 +67,16 @@ public final class InSetPredicate<T> implements Predicate<T>
 				: new InSetPredicate<>(Mode.ONLY, toUnmodifiableSet(Arrays.asList(onlyValues)));
 	}
 
+	public static <T> InSetPredicate<T> onlyOrAny(@Nullable final T value)
+	{
+		return value != null ? only(value) : any();
+	}
+
+	public static <T> InSetPredicate<T> onlyOrNone(@Nullable final T value)
+	{
+		return value != null ? only(value) : none();
+	}
+
 	private static <T> Set<T> toUnmodifiableSet(@NonNull final Collection<T> collection)
 	{
 		if (collection.isEmpty())

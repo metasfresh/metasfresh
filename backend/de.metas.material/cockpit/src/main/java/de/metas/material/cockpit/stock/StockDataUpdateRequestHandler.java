@@ -152,6 +152,7 @@ public class StockDataUpdateRequestHandler
 				.changeDate(TimeUtil.asInstant(dataRecord.getUpdated()))
 				.build();
 
-		postMaterialEventService.postEventAsync(event);
+		// the event is about an I_MD_Stock record. better wait until it was committed to DB
+		postMaterialEventService.enqueueEventAfterNextCommit(event); 
 	}
 }

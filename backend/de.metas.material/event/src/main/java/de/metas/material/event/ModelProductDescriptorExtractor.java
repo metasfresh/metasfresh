@@ -3,6 +3,7 @@ package de.metas.material.event;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -45,4 +46,6 @@ public interface ModelProductDescriptorExtractor
 	 *            for the given {@code asiAwareModel}'s attribute set instance.
 	 */
 	ProductDescriptor createProductDescriptor(Object asiAwareModel, AttributesKey defaultAttributesKey);
+
+	ProductDescriptor createProductDescriptor(int productId, @NonNull AttributeSetInstanceId asiId);
 }

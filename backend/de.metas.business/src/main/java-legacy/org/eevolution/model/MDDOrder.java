@@ -101,15 +101,16 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			setChargeAmt(Env.ZERO);
 
 		}
-	}	// MDDOrder
-
+	}    // MDDOrder
 
 	public MDDOrder(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 
-	/** Order Lines */
+	/**
+	 * Order Lines
+	 */
 	private MDDOrderLine[] m_lines = null;
 
 	private void addDescription(String description)
@@ -123,7 +124,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}    // addDescription
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -208,7 +209,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
 		}
-	}	// setBPartner
+	}    // setBPartner
 
 	@Override
 	public String toString()
@@ -219,14 +220,14 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	@Override
 	public String getDocumentInfo()
 	{
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
-	}	// getDocumentInfo
+	}    // getDocumentInfo
 
 	@Override
 	public File createPDF()
@@ -256,7 +257,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				.setOrderBy(orderClause)
 				.list(MDDOrderLine.class);
 		return list.toArray(new MDDOrderLine[list.size()]);
-	}	// getLines
+	}    // getLines
 
 	/**
 	 * Get Lines of Order
@@ -294,8 +295,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		m_lines = getLines(null, orderClause);
 		return m_lines;
-	}	// getLines
-
+	}    // getLines
 
 	/**
 	 * Set Processed. Propagate to Lines/Taxes
@@ -324,7 +324,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			m_lines = null; // reset cached lines
 		}
 
-	}	// setProcessed
+	}    // setProcessed
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)
@@ -353,15 +353,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Default Warehouse
 		if (getM_Warehouse_ID() <= 0)
 		{
-			final int warehouseId = Env.getContextAsInt(getCtx(), Env.CTXNAME_M_Warehouse_ID);
-			if (warehouseId > 0)
-			{
-				setM_Warehouse_ID(warehouseId);
-			}
-			else
-			{
-				throw new FillMandatoryException(COLUMNNAME_M_Warehouse_ID);
-			}
+			throw new FillMandatoryException(COLUMNNAME_M_Warehouse_ID);
 		}
 		// Reservations in Warehouse
 		if (!newRecord && is_ValueChanged(COLUMNNAME_M_Warehouse_ID))
@@ -397,7 +389,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		return true;
-	}	// beforeSave
+	}    // beforeSave
 
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
@@ -428,7 +420,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// afterSaveSync("M_Shipper_ID"); task 07653 the column is not existing
 		//
 		return true;
-	}	// afterSave
+	}    // afterSave
 
 	private void afterSaveSync(String columnName)
 	{
@@ -442,18 +434,22 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			int no = DB.executeUpdateEx(sql, get_TrxName());
 			log.debug(columnName + " Lines -> #" + no);
 		}
-	}	// afterSaveSync
+	}    // afterSaveSync
 
 	@Override
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}	// processIt
+	}    // processIt
 
-	/** Process Message */
+	/**
+	 * Process Message
+	 */
 	private String m_processMsg = null;
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	/**
@@ -466,7 +462,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}    // unlockIt
 
 	/**
 	 * Invalidate Document
@@ -478,7 +474,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		setDocAction(DOCACTION_Prepare);
 		return true;
-	}	// invalidateIt
+	}    // invalidateIt
 
 	/**************************************************************************
 	 * Prepare Document
@@ -524,7 +520,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		// Mandatory Product Attribute Set Instance
-		String mandatoryType = "='Y'";	// IN ('Y','S')
+		String mandatoryType = "='Y'";    // IN ('Y','S')
 		String sql = "SELECT COUNT(*) "
 				+ "FROM DD_OrderLine ol"
 				+ " INNER JOIN M_Product p ON (ol.M_Product_ID=p.M_Product_ID)"
@@ -552,7 +548,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
-	}	// prepareIt
+	}    // prepareIt
 
 	/**
 	 * Reserve Inventory. Counterpart: MMovement.completeIt()
@@ -612,33 +608,33 @@ public class MDDOrder extends X_DD_Order implements IDocument
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO, BigDecimal.ZERO, reserved_ordered, get_TrxName());
 				}
-				
+
 				// update line
 				line.setQtyReserved(line.getQtyReserved().add(reserved_ordered));
 				line.saveEx(get_TrxName());
 				//
 				Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
 				Weight = Weight.add(product.getWeight().multiply(line.getQtyOrdered()));
-			}	// product
-		}	// reverse inventory
+			}    // product
+		}    // reverse inventory
 
 		setVolume(Volume);
 		setWeight(Weight);
-	}	// reserveStock
+	}    // reserveStock
 
 	@Override
 	public boolean approveIt()
 	{
 		setIsApproved(true);
 		return true;
-	}	// approveIt
+	}    // approveIt
 
 	@Override
 	public boolean rejectIt()
 	{
 		setIsApproved(false);
 		return true;
-	}	// rejectIt
+	}    // rejectIt
 
 	@Override
 	public String completeIt()
@@ -704,7 +700,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		m_processMsg = info.toString();
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}    // completeIt
 
 	@Override
 	public boolean voidIt()
@@ -745,7 +741,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return true;
-	}	// voidIt
+	}    // voidIt
 
 	@Override
 	public boolean closeIt()
@@ -785,7 +781,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return true;
-	}	// closeIt
+	}    // closeIt
 
 	@Override
 	public boolean reverseCorrectIt()
@@ -805,7 +801,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		return voidIt();
-	}	// reverseCorrectionIt
+	}    // reverseCorrectionIt
 
 	@Override
 	public boolean reverseAccrualIt()
@@ -825,7 +821,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		return false;
-	}	// reverseAccrualIt
+	}    // reverseAccrualIt
 
 	@Override
 	public boolean reActivateIt()
@@ -846,7 +842,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		setDocAction(DOCACTION_Complete);
 		setProcessed(false);
 		return true;
-	}	// reActivateIt
+	}    // reActivateIt
 
 	@Override
 	public String getSummary()
@@ -864,7 +860,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			sb.append(" - ").append(getDescription());
 		}
 		return sb.toString();
-	}	// getSummary
+	}    // getSummary
 
 	@Override
 	public LocalDate getDocumentDate()
@@ -876,13 +872,13 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	public String getProcessMsg()
 	{
 		return m_processMsg;
-	}	// getProcessMsg
+	}    // getProcessMsg
 
 	@Override
 	public int getDoc_User_ID()
 	{
 		return getSalesRep_ID();
-	}	// getDoc_User_ID
+	}    // getDoc_User_ID
 
 	@Override
 	public BigDecimal getApprovalAmt()
@@ -911,4 +907,4 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				|| DOCSTATUS_Reversed.equals(docStatus);
 	}
 
-}	// MDDOrder
+}    // MDDOrder

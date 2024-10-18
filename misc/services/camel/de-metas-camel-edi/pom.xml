@@ -17,6 +17,7 @@
         <java.version>14</java.version>
         <spring-boot.version>2.6.3</spring-boot.version>
         <camel.version>3.14.1</camel.version>
+        <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
@@ -83,7 +84,7 @@
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh-common.version}</version>
-            <!-- Avoid startup failure 
+            <!-- Avoid startup failure
              org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
             -->
             <exclusions>
@@ -110,7 +111,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
@@ -366,7 +367,7 @@
                             <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
                             <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
                             <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
-                            
+
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
                             <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
@@ -412,7 +413,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

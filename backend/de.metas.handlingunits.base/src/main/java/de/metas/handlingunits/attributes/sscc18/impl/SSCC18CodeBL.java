@@ -22,12 +22,8 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * #L%
  */
 
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
@@ -36,7 +32,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 @ToString
 @Service
@@ -51,7 +53,18 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	@NonNull
 	private final NextSerialNumberProvider nextSerialNumberProvider;
+
+	/** 
+	 * When unit testing, you can use this member to control the next serial number.
+	 * We need to allow setting this into the existing instance, because if might be references as an instance-member in other services.
+	 */
+	@Nullable
+	@VisibleForTesting
+	@Setter
+	private NextSerialNumberProvider overrideNextSerialNumberProvider;
+	
 	/** for debugging */
 	private final boolean hasCustomNextSerialNumberProvider;
 
@@ -63,34 +76,25 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			final String sscc18SerialNumberStr = Services.get(IDocumentNoBuilderFactory.class)
 					.forTableName(SSCC18_SERIALNUMBER_SEQUENCENAME, ClientId.METASFRESH.getRepoId(), orgId.getRepoId())
 					.build();
+			Check.assumeNotNull(sscc18SerialNumberStr, "Count not retrieve next value from sequence {}" + SSCC18_SERIALNUMBER_SEQUENCENAME);
 			return Integer.parseInt(sscc18SerialNumberStr);
 		};
 	}
 
-	/** Then unit testing, you can use this constructor to register an instances to services where you provide the next serial number. */
-	@VisibleForTesting
-	public SSCC18CodeBL(@NonNull final NextSerialNumberProvider nextSerialNumberProvider)
-	{
-		this.hasCustomNextSerialNumberProvider = true;
-		this.nextSerialNumberProvider = nextSerialNumberProvider;
-	}
-
 	private int getExtensionDigit(@NonNull final OrgId orgId)
 	{
-		final int extensionDigit_SysConfig = sysConfigBL.getIntValue(SYSCONFIG_ExtensionDigit, 0,
-				ClientId.METASFRESH.getRepoId(),
-				orgId.getRepoId());
 
-		return extensionDigit_SysConfig;
+		return sysConfigBL.getIntValue(SYSCONFIG_ExtensionDigit, 0,
+									   ClientId.METASFRESH.getRepoId(),
+									   orgId.getRepoId());
 	}
-
+	
 	private String getManufacturerCode(@NonNull final OrgId orgId)
 	{
-		final String manufacturerCode_SysConfig = sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
-				ClientId.METASFRESH.getRepoId(),
-				orgId.getRepoId());
 
-		return manufacturerCode_SysConfig;
+		return sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
+									ClientId.METASFRESH.getRepoId(),
+									orgId.getRepoId());
 	}
 
 	/**
@@ -103,12 +107,7 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 		final int checkDigit = sscc18.getCheckDigit();
 
-		if (checkDigit == result % 10)
-		{
-			return true;
-		}
-
-		return false;
+		return checkDigit == result % 10;
 	}
 
 	private int computeCheckDigit(final SSCC18 sscc18)
@@ -121,8 +120,7 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 				+ manufacturerCode
 				+ serialNumber;
 
-		final int result = computeCheckDigit(stringSSCC18ToVerify);
-		return result;
+		return computeCheckDigit(stringSSCC18ToVerify);
 	}
 
 	@Override
@@ -157,7 +155,11 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	@Override
 	public SSCC18 generate(@NonNull final OrgId orgId)
 	{
-		return generate(orgId, nextSerialNumberProvider.provideNextSerialNumber(orgId));
+		final NextSerialNumberProvider provider = CoalesceUtil.coalesceNotNull(
+				overrideNextSerialNumberProvider, 
+				nextSerialNumberProvider);
+
+		return generate(orgId, provider.provideNextSerialNumber(orgId));
 	}
 
 	@Override

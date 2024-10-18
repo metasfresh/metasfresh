@@ -23,6 +23,7 @@
 package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
@@ -51,8 +52,15 @@ public class MinMaxDescriptor
 			@JsonProperty("min") @Nullable final BigDecimal min,
 			@JsonProperty("max") @Nullable final BigDecimal max)
 	{
-		this.min = CoalesceUtil.coalesce(min, BigDecimal.ZERO);
-		this.max = CoalesceUtil.coalesce(max, min);
+		this.min = CoalesceUtil.coalesceNotNull(min, BigDecimal.ZERO);
+		this.max = CoalesceUtil.coalesceNotNull(max, this.min);
 		Check.errorIf(this.min.compareTo(this.max) > 0, "Minimum={} maybe not be bigger than maximum={}", this.min, this.max);
 	}
+
+	@JsonIgnore
+	public boolean isZero() {return min.signum() == 0 && max.signum() == 0;}
+
+	@Nullable
+	@JsonIgnore
+	public MinMaxDescriptor toNullIfZero() {return isZero() ? null : this;}
 }

@@ -31,7 +31,7 @@ public class SwaggerDocConstants
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<C_BPartner.ExternalId>`\n";
 	public static final String PRODUCT_CATEGORY_IDENTIFIER_DOC = "Identifier of the product category in question. Can be\n"
-			+ "* a plain `<M_Product_Category_IDD>`\n"
+			+ "* a plain `<M_Product_Category_ID>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<M_Product_Category_ID.ExternalId>`";
 
 	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the Product(s) identified by the productIdentifier";

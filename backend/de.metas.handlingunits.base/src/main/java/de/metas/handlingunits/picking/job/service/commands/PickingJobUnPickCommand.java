@@ -14,6 +14,7 @@ import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
@@ -21,7 +22,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -229,28 +229,35 @@ public class PickingJobUnPickCommand
 				.build();
 	}
 
+	@NonNull
 	private PickingJob reinitializePickingTargetIfDestroyed(final PickingJob pickingJob)
 	{
-		final PickingTarget pickingTarget = pickingJob.getPickTarget().orElse(null);
-		if (pickingTarget == null)
-		{
-			return pickingJob;
-		}
+		final LUPickingTarget updatedLUPickingTarget = pickingJob
+				.getLuPickTarget()
+				.map(this::reinitializeLUPickingTarget)
+				.orElse(null);
 
+		return pickingJob
+				.withLuPickTarget(updatedLUPickingTarget);
+	}
+
+	@NonNull
+	private LUPickingTarget reinitializeLUPickingTarget(@NonNull final LUPickingTarget pickingTarget)
+	{
 		final HuId luId = pickingTarget.getLuId();
 		if (luId == null)
 		{
-			return pickingJob;
+			return pickingTarget;
 		}
 
 		final I_M_HU lu = handlingUnitsBL.getById(luId);
 		if (!handlingUnitsBL.isDestroyed(lu))
 		{
-			return pickingJob;
+			return pickingTarget;
 		}
 
 		final HuPackingInstructionsIdAndCaption luPI = handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(lu);
-		return pickingJob.withPickTarget(PickingTarget.ofPackingInstructions(luPI));
+		return LUPickingTarget.ofPackingInstructions(luPI);
 	}
 
 	//

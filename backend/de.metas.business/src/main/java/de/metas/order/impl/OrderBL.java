@@ -197,7 +197,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setPriceList(final I_C_Order order)
+	public void setPriceList(@NonNull final I_C_Order order)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		if (pricingSystemId == null)
@@ -581,22 +581,6 @@ public class OrderBL implements IOrderBL
 		if (paymentTermId > 0)
 		{
 			order.setC_PaymentTerm_ID(paymentTermId);
-		}
-
-		//
-		// Default Price List
-		final int priceListId;
-		if (isSOTrx)
-		{
-			priceListId = bp.getM_PriceList_ID();
-		}
-		else
-		{
-			priceListId = bp.getPO_PriceList_ID();
-		}
-		if (priceListId > 0)
-		{
-			order.setM_PriceList_ID(priceListId);
 		}
 
 		//

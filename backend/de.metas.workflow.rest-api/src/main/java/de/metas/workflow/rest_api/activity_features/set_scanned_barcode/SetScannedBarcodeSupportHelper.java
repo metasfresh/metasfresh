@@ -41,10 +41,12 @@ public class SetScannedBarcodeSupportHelper
 	private static UIComponent createUIComponent(
 			@Nullable final JsonQRCode currentValue,
 			@Nullable final Collection<JsonQRCode> validOptions,
-			@Nullable WFActivityAlwaysAvailableToUser alwaysAvailableToUser)
+			@Nullable final WFActivityAlwaysAvailableToUser alwaysAvailableToUser,
+			@Nullable final UIComponentType componentType,
+			@Nullable final String confirmationModalMsg)
 	{
 		return UIComponent.builder()
-				.type(UIComponentType.SCAN_BARCODE)
+				.type(componentType != null ? componentType : UIComponentType.SCAN_BARCODE)
 				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(alwaysAvailableToUser, WFActivityAlwaysAvailableToUser.DEFAULT))
 				.properties(Params.builder()
 						.valueObj("currentValue", currentValue)
@@ -52,6 +54,7 @@ public class SetScannedBarcodeSupportHelper
 								validOptions != null && !validOptions.isEmpty()
 										? ImmutableSet.copyOf(validOptions)
 										: null)
+						.valueObj("confirmationModalMsg", confirmationModalMsg)
 						.build())
 				.build();
 	}

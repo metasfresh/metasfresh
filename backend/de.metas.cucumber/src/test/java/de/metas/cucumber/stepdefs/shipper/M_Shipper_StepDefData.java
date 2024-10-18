@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.shipper;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.shipping.ShipperId;
 import org.compiere.model.I_M_Shipper;
 
 public class M_Shipper_StepDefData extends StepDefData<I_M_Shipper>
+		implements StepDefDataGetIdAware<ShipperId, I_M_Shipper>
 {
 	public M_Shipper_StepDefData()
 	{
 		super(I_M_Shipper.class);
+	}
+
+	@Override
+	public ShipperId extractIdFromRecord(final I_M_Shipper record)
+	{
+		return ShipperId.ofRepoId(record.getM_Shipper_ID());
 	}
 }

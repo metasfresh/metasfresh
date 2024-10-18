@@ -16,6 +16,9 @@ import IssueAdjustmentActivity from '../activities/manufacturing/issue_adjustmen
 import MaterialReceiptActivity from '../activities/manufacturing/receipt/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import { useApplicationInfo } from '../../reducers/applications';
+import ScanAndValidateActivity, {
+  COMPONENTTYPE_ScanAndValidateBarcode,
+} from '../activities/scan/ScanAndValidateActivity';
 
 const WFProcessScreen = () => {
   const {
@@ -144,6 +147,15 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           applicationId={applicationId}
           wfProcessId={wfProcessId}
           activityId={activityItem.activityId}
+          activityState={activityItem}
+        />
+      );
+    case COMPONENTTYPE_ScanAndValidateBarcode:
+      return (
+        <ScanAndValidateActivity
+          key={activityItem.activityId}
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
           activityState={activityItem}
         />
       );

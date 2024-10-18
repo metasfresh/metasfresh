@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.pporder.maturing;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.material.maturing.MaturingConfigId;
 import org.compiere.model.I_M_Maturing_Configuration;
 
 public class M_Maturing_Configuration_StepDefData extends StepDefData<I_M_Maturing_Configuration>
+		implements StepDefDataGetIdAware<MaturingConfigId, I_M_Maturing_Configuration>
 {
 	public M_Maturing_Configuration_StepDefData()
 	{
 		super(I_M_Maturing_Configuration.class);
+	}
+
+	@Override
+	public MaturingConfigId extractIdFromRecord(final I_M_Maturing_Configuration record)
+	{
+		return MaturingConfigId.ofRepoId(record.getM_Maturing_Configuration_ID());
 	}
 }

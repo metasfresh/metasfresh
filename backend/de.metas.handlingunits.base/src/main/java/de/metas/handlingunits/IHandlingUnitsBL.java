@@ -300,6 +300,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable BPartnerId bpartnerId);
 
+	@NonNull
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
+
+	@Nullable
+	I_M_HU_PI retrievePIDefaultForPicking();
+
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	@Builder
@@ -645,4 +651,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
 }

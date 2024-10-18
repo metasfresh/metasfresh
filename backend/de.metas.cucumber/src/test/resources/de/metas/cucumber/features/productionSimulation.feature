@@ -122,7 +122,6 @@ Feature: create production simulation
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-14T00:00:00Z | -100 | -100                   | olASI                     | true      |
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-15T08:00:00Z | 1    | -99                    | productPlanningASI        | true      |
       | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1   | -1                     | bomLineASI                | true      |
-      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-14T08:00:00Z | 1    | 0                      | bomLineASI                | true      |
       | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                     | false     |
       | c_4        | INVENTORY_UP      |                           | p_1          | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                     | false     |
 
@@ -241,7 +240,6 @@ Feature: create production simulation
       | c_3        | INVENTORY_DOWN    |                           | p_1          | 2021-04-16T00:00:00Z | -8  | 2                      | olASI                     | false     |
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI        | true      |
       | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                | true      |
-      | c_l_4      | SUPPLY            |                           | p_2          | 2021-04-14T08:00:00Z | 1   | 0                      | bomLineASI                | true      |
 
     And after not more than 60s, PP_Order_Candidate found for orderLine ol_2
       | Identifier |
@@ -353,7 +351,6 @@ Feature: create production simulation
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-24T00:00:00Z | -5  | -4                     | olASI                     | true      |
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-24T00:00:00Z | 4   | 0                      | productPlanningASI        | true      |
       | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-20T00:00:00Z | -1  | -1                     | bomLineASI                | true      |
-      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-20T00:00:00Z | 1   | 0                      | bomLineASI                | true      |
 
 
   @from:cucumber

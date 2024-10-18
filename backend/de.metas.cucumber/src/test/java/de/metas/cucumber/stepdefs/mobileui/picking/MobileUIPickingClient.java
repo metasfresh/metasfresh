@@ -1,16 +1,16 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
+import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
-import de.metas.picking.rest_api.json.JsonPickingTarget;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.util.Check;
@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class MobileUIPickingClient
 {
@@ -92,17 +92,17 @@ class MobileUIPickingClient
 		return wfProcess;
 	}
 
-	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, PickingTarget pickingTarget)
+	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, LUPickingTarget pickingTarget)
 	{
-		return pickingRestController.setTarget(wfProcessId, JsonPickingTarget.of(pickingTarget));
+		return pickingRestController.setTarget(wfProcessId, JsonLUPickingTarget.of(pickingTarget));
 	}
 
-	public Optional<PickingTarget> getPickingTarget(@NonNull final String wfProcessIdStr)
+	public Optional<LUPickingTarget> getPickingTarget(@NonNull final String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
 		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
-		return pickingJob.getPickTarget();
+		return pickingJob.getLuPickTarget();
 
 	}
 
