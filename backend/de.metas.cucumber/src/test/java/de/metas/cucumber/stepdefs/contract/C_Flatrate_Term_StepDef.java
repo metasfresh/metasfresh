@@ -93,7 +93,8 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_StartDate;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Term_StepDef
@@ -148,8 +149,8 @@ public class C_Flatrate_Term_StepDef
 			final I_C_BPartner billPartner = bpartnerTable.get(billPartnerIdentifier);
 
 			final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-																										   .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-																										   .build());
+					.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+					.build());
 			assertThat(billPartnerLocation).isNotNull(); // guard
 
 			final String conditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -180,8 +181,8 @@ public class C_Flatrate_Term_StepDef
 				contractRecord.setDropShip_BPartner_ID(dropshipPartner.getC_BPartner_ID());
 
 				final I_C_BPartner_Location dropshipLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-																											.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-																											.build());
+						.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+						.build());
 				assertThat(dropshipLocation).isNotNull(); // guard
 				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
 			}
@@ -319,6 +320,12 @@ public class C_Flatrate_Term_StepDef
 			if (endDate != null)
 			{
 				softly.assertThat(contract.getEndDate()).isEqualTo(endDate);
+			}
+
+			final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_IsSOTrx);
+			if (isSoTrx != null)
+			{
+				softly.assertThat(contract.isSOTrx()).as(I_C_Flatrate_Term.COLUMNNAME_IsSOTrx).isEqualTo(isSoTrx);
 			}
 
 			softly.assertAll();
