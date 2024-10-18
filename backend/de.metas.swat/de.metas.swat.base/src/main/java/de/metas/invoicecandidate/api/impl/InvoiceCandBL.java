@@ -250,7 +250,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			.invalidationKeysMapper(recordRef -> {
 
 				// figure out the header aggregations keys (=> cache keys) of the cache records that need to be invalidated
-				final I_C_Invoice_Candidate icRecord = recordRef.getModel(I_C_Invoice_Candidate.class);
+				final I_C_Invoice_Candidate icRecord = recordRef.getModelNonNull(I_C_Invoice_Candidate.class);
 
 				final boolean headerAggregationKeyWasChanged = InterfaceWrapperHelper.isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey);
 				final boolean needToInvalidateAnything =
@@ -993,11 +993,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// ignore "error" candidates
 		if (ic.isError())
 		{
-			final String msg = new StringBuilder()
-					.append(msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() }))
-					.append(": ")
-					.append(ic.getErrorMsg())
-					.toString();
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() })
+					+ ": "
+					+ ic.getErrorMsg();
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -1075,8 +1073,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@VisibleForTesting
 	@Override
-	public boolean isCreditMemo(final I_C_Invoice_Candidate cand)
+	public boolean isCreditMemo(@NonNull final I_C_Invoice_Candidate cand)
 	{
 		return cand.isManual() && cand.getPriceActual_Override().signum() < 0;
 	}
@@ -1126,7 +1125,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// take the precision from the bpartner price list
 			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(
-					BPartnerLocationId.ofRepoIdOrNull(
+					BPartnerLocationId.ofRepoId(
 							icRecord.getBill_BPartner_ID(),
 							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
 
@@ -1601,7 +1600,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
-					if(isAdjustmentChargeInvoice){
+					if (isAdjustmentChargeInvoice)
+					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
 					}
 					else
@@ -1682,7 +1682,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
-	private void setApprovalForInvoicing(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	private void setApprovalForInvoicingFalse(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		if (invoiceCandidates.isEmpty())
 		{
@@ -1691,7 +1691,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
-			invoiceCandidate.setApprovalForInvoicing(approved);
+			invoiceCandidate.setApprovalForInvoicing(false);
 			invoiceCandDAO.save(invoiceCandidate);
 		}
 	}
@@ -1832,13 +1832,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
 				}
 
-				setApprovalForInvoicing(toLinkAgainstIl, false);
+				setApprovalForInvoicingFalse(toLinkAgainstIl);
 			}
 		}
 		else
 		{
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-			setApprovalForInvoicing(invoiceCandidates, false);
+			setApprovalForInvoicingFalse(invoiceCandidates);
 		}
 	}
 
@@ -2241,7 +2241,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	private void udpateIsDeliveryClosedForInvoiceCandidates(
-			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose, boolean isDeliveryClosed)
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose, final boolean isDeliveryClosed)
 	{
 		while (candidatesToClose.hasNext())
 		{
@@ -2249,7 +2249,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, boolean isDeliveryClosed)
+	private void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, final boolean isDeliveryClosed)
 	{
 		candidate.setIsDeliveryClosed(isDeliveryClosed);
 
@@ -2318,11 +2318,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
 		{
-			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(ilRecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ilRecord))
 			{
 				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
-					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
+					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(candidate))
 					{
 
 						final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
@@ -2437,7 +2437,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
 		for (final I_C_Invoice_Candidate icRecord : icRecords)
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				logger.debug("Set IsInDispute=true because ic belongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
 				icRecord.setIsInDispute(true);
@@ -2579,8 +2579,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		// first fetch invoice candidates
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
 		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);

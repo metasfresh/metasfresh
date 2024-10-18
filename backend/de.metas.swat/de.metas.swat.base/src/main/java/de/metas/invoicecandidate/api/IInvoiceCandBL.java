@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -191,6 +192,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
+	@VisibleForTesting
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
