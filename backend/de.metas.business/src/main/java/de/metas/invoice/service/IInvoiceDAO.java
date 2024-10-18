@@ -206,8 +206,6 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
-	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
-
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	@Nullable

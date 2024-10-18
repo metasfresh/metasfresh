@@ -898,7 +898,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
+			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
 			invoice.setIsSOTrx(isSOTrx);
 		}
 	}

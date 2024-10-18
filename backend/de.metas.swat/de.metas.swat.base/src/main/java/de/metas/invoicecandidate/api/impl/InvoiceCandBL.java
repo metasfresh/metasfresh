@@ -612,23 +612,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
 			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
+
 			//
 			// 12904: in case of an Adjustment Invoice(price diff), get price from invoice line
-			final boolean isIlaInvoiceAnAdjInvoice = Services.get(IInvoiceBL.class)
-					.isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
+			final boolean isIlaInvoiceAnAdjInvoice=Services.get(IInvoiceBL.class)
+					         .isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
 
 			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
-					ila.getC_InvoiceLine().getPriceActual() :
-					ic.getPriceActual();
+					         ila.getC_InvoiceLine().getPriceActual():
+					         ic.getPriceActual();
 
 			//
 			// 07202: We update the net amount invoice according to price UOM.
 			// final BigDecimal priceActual = ic.getPriceActual();
 			final ProductPrice priceActual = ProductPrice.builder()
-					.money(Money.of(usedPriceActual, icCurrencyId))
-					.productId(productId)
-					.uomId(icUomId)
-					.build();
+							.money(Money.of(usedPriceActual, icCurrencyId))
+							.productId(productId)
+							.uomId(icUomId)
+							.build();
+
 
 			final Quantity qtyInvoicedInUOM = extractQtyInvoiced(ila);
 
@@ -1487,12 +1489,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void handleReversalForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final boolean isAdjustmentChargeInvoice = invoiceBL.isAdjustmentCharge(invoice);
+		final boolean isAdjustmentChargeInvoice =invoiceBL.isAdjustmentCharge(invoice);
 
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 
 		final I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -2646,7 +2649,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
 		try
 		{
 			TryAndWaitUtil.tryAndWait(
@@ -2663,9 +2666,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		finally
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
 		}
 	}
+
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
