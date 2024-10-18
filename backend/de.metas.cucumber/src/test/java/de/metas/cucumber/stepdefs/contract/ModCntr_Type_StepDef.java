@@ -61,10 +61,12 @@ public class ModCntr_Type_StepDef
 	private void upsertModCntrTypes(@NonNull final Map<String, String> tableRow)
 	{
 		final ComputingMethodType handlerType = ComputingMethodType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
+		final String columnName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Type.COLUMNNAME_ColumnName);
 
 		final I_ModCntr_Type modCntrTypeRecord = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, handlerType.getCode())
+				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ColumnName, columnName)
 				.create()
 				.firstOnlyOptional()
 				.orElseGet(() -> createModCntrType(tableRow));
@@ -80,10 +82,12 @@ public class ModCntr_Type_StepDef
 		final String value = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Value);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Name);
 		final ComputingMethodType handlerType = ComputingMethodType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
+		final String columnName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Type.COLUMNNAME_ColumnName);
 
 		modCntrTypeRecord.setValue(value);
 		modCntrTypeRecord.setName(name);
 		modCntrTypeRecord.setModularContractHandlerType(handlerType.getCode());
+		modCntrTypeRecord.setColumnName(columnName);
 
 		InterfaceWrapperHelper.saveRecord(modCntrTypeRecord);
 

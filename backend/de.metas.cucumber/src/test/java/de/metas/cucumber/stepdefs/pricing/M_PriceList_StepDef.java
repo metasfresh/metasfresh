@@ -75,6 +75,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -350,6 +351,7 @@ public class M_PriceList_StepDef
 		productPrice.setC_TaxCategory_ID(extractTaxCategoryId(row).getRepoId());
 
 		row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_UseScalePrice).ifPresent(productPrice::setUseScalePrice);
+		row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom).ifPresent(productPrice::setScalePriceQuantityFrom);
 		row.getAsOptionalEnum(I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn.class).ifPresent(invoiceableQtyBasedOn -> productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn.getCode()));
 
 		row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID)
@@ -381,6 +383,7 @@ public class M_PriceList_StepDef
 				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "` of row " + row));
 	}
 
+	@Nullable
 	private I_M_ProductPrice lookupForProductPrice(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_Product_ID);

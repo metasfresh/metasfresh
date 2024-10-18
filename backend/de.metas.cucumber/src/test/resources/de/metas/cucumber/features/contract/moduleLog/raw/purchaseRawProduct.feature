@@ -18,14 +18,6 @@ Feature: Modular contract log from purchase order for raw product
       | moduleLogPLV_PO | moduleLogPL_PO            | moduleLogPLV_PO_06032024_1 | 2021-02-01 |
       | moduleLogPLV_SO | moduleLogPL_SO            | moduleLogPLV_SO_06032024_1 | 2021-02-01 |
 
-    And load AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | Value           |
-      | list_1                    | InformativeLogs |
-
-    And update AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | IsActive |
-      | list_1                    | Y        |
-
     And load AD_Org:
       | AD_Org_ID.Identifier | Value |
       | org_1                | 001   |
@@ -167,8 +159,8 @@ Feature: Modular contract log from purchase order for raw product
       | moduleLogContract_1           | moduleLogConditions_06032024_1      | rawProduct              | po_order                       | po_orderLine                       |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_1           | moduleLogConditions_06032024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx |
+      | moduleLogContract_1           | moduleLogConditions_06032024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            | N           |
 
     And after not more than 30s, ModCntr_Specific_Prices are found:
       | ModCntr_Specific_Price_ID.Identifier | C_Flatrate_Term_ID.Identifier | ModCntr_Module_ID.Identifier | M_Product_ID.Identifier  | OPT.SeqNo | OPT.Price | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.IsScalePrice | OPT.MinValue |
@@ -391,7 +383,3 @@ Feature: Modular contract log from purchase order for raw product
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                  | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | invoiceLine_2_1             | invoice_2               | rawProduct              | salesOnRawProduct_06032024_1 | 50          | true      | -19              | 19              | 950            | PCE                   | PCE                       |
-
-    And update AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | IsActive |
-      | list_1                    | N        |
