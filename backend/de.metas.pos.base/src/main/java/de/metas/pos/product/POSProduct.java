@@ -1,5 +1,6 @@
-package de.metas.pos;
+package de.metas.pos.product;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.currency.Amount;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
@@ -26,6 +27,8 @@ public class POSProduct
 	@Nullable @With BigDecimal catchWeight;
 
 	@NonNull TaxCategoryId taxCategoryId;
+
+	@NonNull ImmutableSet<POSProductCategoryId> categoryIds;
 
 	public String getName(@NonNull final String adLanguage) {return name.translate(adLanguage);}
 

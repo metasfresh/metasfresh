@@ -3,6 +3,8 @@ export const POS_TERMINAL_LOAD_DONE = 'pos/terminal/loadDone';
 export const POS_TERMINAL_CLOSING = 'pos/terminal/closing';
 export const POS_TERMINAL_CLOSING_CANCEL = 'pos/terminal/closing/cancel';
 
+export const TOGGLE_PRODUCT_CATEGORY_FILTER = 'pos/terminal/toggleProductCategoryFilter';
+
 export const ORDERS_LIST_UPDATE = 'pos/orders/updateList';
 export const NEW_ORDER = 'pos/orders/new';
 export const UPDATE_ORDER = 'pos/orders/update';

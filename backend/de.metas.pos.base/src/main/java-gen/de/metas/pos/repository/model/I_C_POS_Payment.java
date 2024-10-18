@@ -275,7 +275,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POS_CardReader_ExternalId = "POS_CardReader_ExternalId";
 
 	/**
-	 * Set Card Reader Name.
+	 * Set Card Reader.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -284,7 +284,7 @@ public interface I_C_POS_Payment
 	void setPOS_CardReader_Name (@Nullable java.lang.String POS_CardReader_Name);
 
 	/**
-	 * Get Card Reader Name.
+	 * Get Card Reader.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -296,7 +296,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POS_CardReader_Name = "POS_CardReader_Name";
 
 	/**
-	 * Set POS Payment Method.
+	 * Set Payment Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -305,7 +305,7 @@ public interface I_C_POS_Payment
 	void setPOSPaymentMethod (java.lang.String POSPaymentMethod);
 
 	/**
-	 * Get POS Payment Method.
+	 * Get Payment Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -317,7 +317,7 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POSPaymentMethod = "POSPaymentMethod";
 
 	/**
-	 * Set Payment Processing Status.
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -326,7 +326,7 @@ public interface I_C_POS_Payment
 	void setPOSPaymentProcessingStatus (java.lang.String POSPaymentProcessingStatus);
 
 	/**
-	 * Get Payment Processing Status.
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

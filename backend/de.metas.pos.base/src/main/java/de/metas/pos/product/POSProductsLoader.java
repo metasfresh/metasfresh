@@ -1,4 +1,4 @@
-package de.metas.pos;
+package de.metas.pos.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -8,7 +8,7 @@ import de.metas.currency.Currency;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.pos.POSProduct.UomIdAndSymbol;
+import de.metas.pos.product.POSProduct.UomIdAndSymbol;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -43,24 +43,29 @@ class POSProductsLoader
 	@NonNull private final IPriceListDAO priceListDAO;
 	@NonNull private final IProductBL productBL;
 	@NonNull private final IUOMDAO uomDAO;
+	@NonNull private final POSProductCategoryAssignmentRepository categoryAssignmentRepository;
 
 	// params
 	@NonNull private final PriceListId priceListId;
 	@NonNull private final Currency currency;
 
 	private final HashMap<ProductId, I_M_Product> productsById = new HashMap<>();
+	private final HashMap<ProductId, ImmutableSet<POSProductCategoryId>> categoryIdsByProductId = new HashMap<>();
 
 	@Builder
 	private POSProductsLoader(
 			@NonNull final IPriceListDAO priceListDAO,
 			@NonNull final IProductBL productBL,
 			@NonNull final IUOMDAO uomDAO,
+			@NonNull final POSProductCategoryAssignmentRepository categoryAssignmentRepository,
 			@NonNull final PriceListId priceListId,
 			@NonNull final Currency currency)
 	{
 		this.priceListDAO = priceListDAO;
 		this.productBL = productBL;
 		this.uomDAO = uomDAO;
+		this.categoryAssignmentRepository = categoryAssignmentRepository;
+
 		this.priceListId = priceListId;
 		this.currency = currency;
 	}
@@ -102,6 +107,10 @@ class POSProductsLoader
 	private void loadProductsById(final Set<ProductId> productIds)
 	{
 		productBL.getByIdsInTrx(productIds).forEach(this::addToCache);
+
+		categoryAssignmentRepository.getProductCategoryIdsByProductIds(productIds)
+				.asMap()
+				.forEach((productId, categoryIds) -> categoryIdsByProductId.put(productId, ImmutableSet.copyOf(categoryIds)));
 	}
 
 	private void addToCache(final I_M_Product product)
@@ -112,6 +121,11 @@ class POSProductsLoader
 	private I_M_Product getProductById(final ProductId productId)
 	{
 		return productsById.computeIfAbsent(productId, productBL::getByIdInTrx);
+	}
+
+	private ImmutableSet<POSProductCategoryId> getCategoryIds(@NonNull final ProductId productId)
+	{
+		return categoryIdsByProductId.computeIfAbsent(productId, categoryAssignmentRepository::getProductCategoryIdsByProductId);
 	}
 
 	@Nullable
@@ -157,6 +171,7 @@ class POSProductsLoader
 				.uom(toUomIdAndSymbol(uomId))
 				.catchWeightUom(catchWeightUomId != null ? toUomIdAndSymbol(catchWeightUomId) : null)
 				.taxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()))
+				.categoryIds(getCategoryIds(productId))
 				.build();
 	}
 

@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { useDebounce } from '../../../hooks/useDebounce';
 import * as productsAPI from '../api/products';
 import { usePOSTerminal } from './posTerminal';
+import { TOGGLE_PRODUCT_CATEGORY_FILTER } from '../actionTypes';
+import { useDispatch } from 'react-redux';
 
 const queryDebounceMillis = 300;
 
 export const useProducts = ({ onBarcodeResult }) => {
+  const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const [isLoading, setLoading] = useState(false);
   const [queryString, setQueryStringState] = useState('');
@@ -20,6 +23,7 @@ export const useProducts = ({ onBarcodeResult }) => {
 
   const posTerminalId = posTerminal.id;
   const posTerminalProductsArray = posTerminal.products ?? [];
+  const categories = posTerminal.productCategories ?? [];
 
   useEffect(() => {
     let isMounted = true;
@@ -63,8 +67,40 @@ export const useProducts = ({ onBarcodeResult }) => {
   return {
     isLoading,
     isBarcodeMatched: !!products?.barcodeMatched,
-    list: products?.list ?? [],
+    list: applyProductFilters({ productsArray: products?.list ?? [], categories }),
     queryString,
     setQueryString,
+
+    categories,
+    toggleCategorySelected: (categoryId) => dispatch(toggleProductCategoryFilterAction({ categoryId })),
+  };
+};
+
+const applyProductFilters = ({ productsArray, categories }) => {
+  // If list is null/empty then return the array as is, nothing to filter
+  if (!productsArray || !productsArray?.length) return [];
+
+  const selectedCategoryIds = categories.filter((category) => category.selected).map((category) => category.id);
+
+  // if no categories selected then don't apply filtering
+  if (selectedCategoryIds.length === 0) return productsArray;
+
+  return productsArray.filter((product) => isProductMatchingSelectedCategoryIds({ product, selectedCategoryIds }));
+};
+
+const isProductMatchingSelectedCategoryIds = ({ product, selectedCategoryIds }) => {
+  // if no categories selected then any product shall match
+  if (!selectedCategoryIds?.length) return true;
+
+  // if the product has no categories then for sure won't match our selected categories
+  if (!product.categoryIds?.length) return false;
+
+  return selectedCategoryIds.every((selectedCategoryId) => product.categoryIds.includes(selectedCategoryId));
+};
+
+const toggleProductCategoryFilterAction = ({ categoryId }) => {
+  return {
+    type: TOGGLE_PRODUCT_CATEGORY_FILTER,
+    payload: { categoryId },
   };
 };

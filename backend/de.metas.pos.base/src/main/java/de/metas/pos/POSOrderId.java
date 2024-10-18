@@ -2,7 +2,6 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.order.OrderId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -34,9 +33,9 @@ public class POSOrderId implements RepoIdAware
 		return repoId > 0 ? new POSOrderId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final OrderId orderId)
+	public static int toRepoId(@Nullable final POSOrderId id)
 	{
-		return orderId != null ? orderId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	@Override

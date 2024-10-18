@@ -1,4 +1,4 @@
-package de.metas.pos;
+package de.metas.pos.product;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.gs1.GS1Elements;
