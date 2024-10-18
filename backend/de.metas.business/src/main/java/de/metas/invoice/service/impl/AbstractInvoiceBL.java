@@ -278,7 +278,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			if (invoice.isPaid())
 			{
-				throw new AdempiereException(MSG_InvoiceMayNotBePaid, invoice.getDocumentNo());
+				throw new AdempiereException(
+						MSG_InvoiceMayNotBePaid,
+						invoice.getDocumentNo());
 			}
 
 			//
@@ -289,7 +291,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
 			{
-				throw new AdempiereException(MSG_InvoiceMayNotHaveOpenAmtZero, invoice.getDocumentNo());
+				throw new AdempiereException(
+						MSG_InvoiceMayNotHaveOpenAmtZero,
+						invoice.getDocumentNo());
 			}
 
 		}
@@ -894,7 +898,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
+			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
 			invoice.setIsSOTrx(isSOTrx);
 		}
 	}
@@ -912,7 +916,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
 		updateDescriptionFromDocTypeTargetId(invoice, null, null);
@@ -1104,6 +1108,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	/* package */ final void sortLines(final List<I_C_InvoiceLine> lines)
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
+
 		lines.sort(cmp);
 	}
 
@@ -1186,7 +1191,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoiceLineId2inOutId.size() == lines.size(), "Every line's id has been added to map '" + invoiceLineId2inOutId + "'");
 
 		// create Comparator
-		return (line1, line2) -> {
+		final Comparator<I_C_InvoiceLine> cmp = (line1, line2) -> {
 			// InOut_ID
 			final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
 			final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
@@ -1217,17 +1222,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final int line1No = line1.getLine();
 			final int line2No = line2.getLine();
 
-			if (line1No > line2No)
-			{
-				return 1;
-			}
-			if (line1No < line2No)
-			{
-				return -1;
-			}
+			return Integer.compare(line1No, line2No);
 
-			return 0;
 		};
+		return cmp;
 	}
 
 	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
@@ -1519,7 +1517,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1913,6 +1911,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return pricingResult.getTaxCategoryId();
 	}
 
+	// Note: C_Invoice_Line_Allocations are handled in InvoiceCandBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
