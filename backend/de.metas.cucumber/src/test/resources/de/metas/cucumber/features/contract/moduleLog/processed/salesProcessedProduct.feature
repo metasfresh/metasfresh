@@ -29,6 +29,7 @@ Feature: Modular contract log from sales order for processed product
 
   @from:cucumber
   @Id:S0459_200
+  @Id:S0462_100
   @ghActions:run_on_executor4
   Scenario: Purchase modular contract for processed product with the following computing methods:
   - InformativeLogs
