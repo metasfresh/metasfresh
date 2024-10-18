@@ -18,10 +18,6 @@ Feature: Modular contract log from purchase order for raw product
       | moduleLogPLV_PO | moduleLogPL_PO            | moduleLogPLV_PO_06032024_1 | 2021-02-01 |
       | moduleLogPLV_SO | moduleLogPL_SO            | moduleLogPLV_SO_06032024_1 | 2021-02-01 |
 
-    And update AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | IsActive |
-      | list_1                    | Y        |
-
     And load AD_Org:
       | AD_Org_ID.Identifier | Value |
       | org_1                | 001   |

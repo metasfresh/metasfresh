@@ -1,4 +1,4 @@
-Feature: Modular contract log from purchase order for processed product
+Feature: Modular contract log from sales order for processed product
 
   Background:
     Given infrastructure and metasfresh are running
@@ -28,6 +28,7 @@ Feature: Modular contract log from purchase order for processed product
       | org_1                | 001   |
 
   @from:cucumber
+  @Id:S0459_200
   @ghActions:run_on_executor4
   Scenario: Purchase modular contract for processed product with the following computing methods:
   - InformativeLogs
