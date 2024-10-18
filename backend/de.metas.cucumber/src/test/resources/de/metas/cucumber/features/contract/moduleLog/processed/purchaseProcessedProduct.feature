@@ -206,9 +206,9 @@ Feature: Modular contract log from purchase order for processed product
       | interimContract_1             | moduleLogConditions_interim_06062024_1 | rawProduct              | po_order                       | po_orderLine                       |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_1           | moduleLogConditions_06062024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
-      | interimContract_1             | moduleLogConditions_06062024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 7.50            | moduleLogPricingSystem            | InterimInvoice      | Wa                 | CO            |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx |
+      | moduleLogContract_1           | moduleLogConditions_06062024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            | N           |
+      | interimContract_1             | moduleLogConditions_06062024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 7.50            | moduleLogPricingSystem            | InterimInvoice      | Wa                 | CO            | N           |
 
     And after not more than 30s, ModCntr_Specific_Prices are found:
       | ModCntr_Specific_Price_ID.Identifier | C_Flatrate_Term_ID.Identifier | ModCntr_Module_ID.Identifier   | M_Product_ID.Identifier        | OPT.SeqNo | OPT.Price | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.IsScalePrice | OPT.MinValue |
@@ -423,11 +423,11 @@ Feature: Modular contract log from purchase order for processed product
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 50             | 50               | I               | 19              | 0                   | 950               | Y             |
+      | candidate_definitive              | 0            | 50             | 50               | I               | 19              | 0                   | 950                | Y             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | defInv                  | CO            | 950           |
+      | candidate_definitive              | defInv                  | CO            | 950            |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
