@@ -88,6 +88,9 @@ public class ModCntr_Settings_StepDef
 		final Timestamp storageDate = CoalesceUtil.coalesceNotNull(DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_StorageCostStartDate),
 				FIXED_STORAGE_DATE);
 
+		final Integer freeStorageCostDays = CoalesceUtil.coalesceNotNull(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_FreeStorageCostDays),
+				0);
+
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
@@ -114,6 +117,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(soTrx.toYesNoString());
 		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
+		modCntrSettingsRecord.setFreeStorageCostDays(freeStorageCostDays);
 
 		final BigDecimal interestRate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_InterestRate);
 		if (interestRate != null)
