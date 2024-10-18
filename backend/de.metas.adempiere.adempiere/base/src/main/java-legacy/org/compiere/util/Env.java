@@ -2547,11 +2547,13 @@ public final class Env
 	 *
 	 * @return login/system date; never return null
 	 */
+	@NonNull
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
 	}
 
+	@NonNull
 	public static LocalDate getLocalDate(final Properties ctx)
 	{
 		return TimeUtil.asLocalDate(getDate(ctx));

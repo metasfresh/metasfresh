@@ -24,6 +24,7 @@ package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -176,6 +177,7 @@ public final class Check
 	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
 	 * @param params message parameters (@see {@link MessageFormat})
 	 */
+	@Contract("false, _, _ -> fail")
 	public static void assume(final boolean cond, final String errMsg, final Object... params)
 	{
 		assume(cond, defaultExClazz, errMsg, params);
@@ -189,6 +191,7 @@ public final class Check
 	/**
 	 * Like {@link #assume(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("false, _, _, _ -> fail")
 	public static void assume(final boolean cond,
 			@NonNull final Class<? extends RuntimeException> exceptionClass,
 			@NonNull final String errMsg,
@@ -261,6 +264,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("null, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final String assumptionMessage, final Object... params)
 	{
@@ -270,6 +274,7 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("null, _, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -296,6 +301,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("!null, _, _ -> fail")
 	public static void assumeNull(@Nullable final Object object, final String assumptionMessage, final Object... params)
 	{
 		assumeNull(object, defaultExClazz, assumptionMessage, params);
@@ -304,7 +310,8 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
-	public static void assumeNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	@Contract("!null, _, _, _ -> fail")
+	public static void assumeNull(@Nullable final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object == null;
 		assume(cond, exceptionClass, assumptionMessage, params);
