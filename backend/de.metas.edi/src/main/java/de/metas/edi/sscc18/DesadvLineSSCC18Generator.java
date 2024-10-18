@@ -23,6 +23,7 @@ package de.metas.edi.sscc18;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -68,6 +70,11 @@ public class DesadvLineSSCC18Generator
 	 */
 	private final boolean printExistingLabels;
 
+	/** 
+	 * Needed because we need to set the packing-GTIN according to this bpartner's packing-material 
+	 */
+	private final BPartnerId bpartnerId;
+	
 	//
 	// status
 	/**
@@ -79,11 +86,13 @@ public class DesadvLineSSCC18Generator
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
 			@NonNull final IDesadvBL desadvBL,
-			final boolean printExistingLabels)
+			final boolean printExistingLabels, 
+			@NonNull final BPartnerId bpartnerId)
 	{
 		this.sscc18CodeBL = sscc18CodeService;
 		this.desadvBL = desadvBL;
 		this.printExistingLabels = printExistingLabels;
+		this.bpartnerId = bpartnerId;
 	}
 
 	/**
@@ -122,11 +131,12 @@ public class DesadvLineSSCC18Generator
 			else
 			{
 				final I_EDI_DesadvLine desadvLine = desadvLineLabels.getEDI_DesadvLine();
-
+				final I_M_HU_PI_Item_Product tuPIItemProduct = desadvLineLabels.getTuPIItemProduct();
+				
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				final I_EDI_DesadvLine_Pack desadvLineSSCC = generateDesadvLineSSCC(desadvLine, luQtys);
+				final I_EDI_DesadvLine_Pack desadvLineSSCC = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvLineSSCC);
 			}
 		}
@@ -179,7 +189,10 @@ public class DesadvLineSSCC18Generator
 	 * <p>
 	 * The SSCC18 code will be generated.
 	 */
-	private I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private I_EDI_DesadvLine_Pack generateDesadvLineSSCC(
+			@NonNull final I_EDI_DesadvLine desadvLine, 
+			@NonNull final LUQtys luQtys,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
@@ -199,6 +212,9 @@ public class DesadvLineSSCC18Generator
 		desadvLineSSCC.setQtyTU(luQtys.getQtyTUsPerLU().intValueExact());
 		desadvLineSSCC.setQtyCUsPerLU(luQtys.getQtyCUsPerLU());
 		desadvLineSSCC.setMovementQty(luQtys.getQtyCUsPerLU());
+		
+		desadvBL.setPackRecordPackagingCodeAndGTIN(desadvLineSSCC, tuPIItemProduct, bpartnerId);
+		
 		InterfaceWrapperHelper.save(desadvLineSSCC);
 
 		return desadvLineSSCC;

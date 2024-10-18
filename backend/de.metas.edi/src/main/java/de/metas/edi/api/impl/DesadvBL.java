@@ -586,32 +586,7 @@ public class DesadvBL implements IDesadvBL
 				packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 			}
 
-			// PackagingCodes and PackagingGTINs
-			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
-			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
-			packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
-
-			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
-			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
-
-			final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
-			if (huPackingMaterials.size() == 1)
-			{
-				final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
-						.retrieveBPartnerProductAssociation(Env.getCtx(),
-															bpartnerId,
-															ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-															OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
-				if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
-				{
-					packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
-				}
-			}
-			else
-			{
-				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_DesadvLine_Pack_ID={}",
-							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
-			}
+			setPackRecordPackagingCodeAndGTIN(packRecord, tuPIItemProduct, bpartnerId);
 
 			final Quantity currentQtyTU = qtyCUsPerCurrentLU.getStockQty().divide(qtyCUsPerTUInStockUOM.toBigDecimal(), 0, RoundingMode.UP);
 			packRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
@@ -622,6 +597,42 @@ public class DesadvBL implements IDesadvBL
 
 			// prepare next iteration within this for-loop
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
+		}
+	}
+
+	@Override
+	public void setPackRecordPackagingCodeAndGTIN(
+			@NonNull final I_EDI_DesadvLine_Pack packRecord,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final OrgId orgId = OrgId.ofRepoId(packRecord.getAD_Org_ID());
+		
+		// PackagingCodes and PackagingGTINs
+		final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
+		packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+		packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
+
+		final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
+		packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+
+		final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
+		if (huPackingMaterials.size() == 1)
+		{
+			final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
+					.retrieveBPartnerProductAssociation(Env.getCtx(),
+														bpartnerId,
+														ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+														orgId);
+			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+			{
+				packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
+			}
+		}
+		else
+		{
+			logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_DesadvLine_Pack_ID={}",
+						 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
 		}
 	}
 
