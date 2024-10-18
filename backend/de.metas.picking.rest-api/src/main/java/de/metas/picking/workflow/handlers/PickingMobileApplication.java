@@ -47,6 +47,8 @@
 	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
+	import de.metas.mobile.application.MobileApplicationId;
+	import de.metas.mobile.application.MobileApplicationInfo;
 	import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
 	import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -63,8 +65,6 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
-	import de.metas.workflow.rest_api.model.MobileApplicationId;
-	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
@@ -84,7 +84,6 @@
 
 	import javax.annotation.Nullable;
 	import java.util.Collection;
-	import java.util.List;
 	import java.util.Objects;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
@@ -97,19 +96,10 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
-		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
-		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
-		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-				.id(APPLICATION_ID)
-				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresWorkplace(true)
-				.showFilterByDocumentNo(true)
-				.showFilters(true)
-				.build();
-
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -516,5 +506,4 @@
 					});
 
 		}
-
 	}
