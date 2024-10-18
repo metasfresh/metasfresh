@@ -48,7 +48,6 @@ Feature: Modular contract log from sales order for processed product
   - Protein
   - Add Value on sales
   - Storage cost
-  Can be extended after implementation of Auction & avg. sales value on purchase
     Given metasfresh contains C_BPartners:
       | Identifier     | Name                      | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value | OPT.CompanyName           |
       | bp_moduleLogPO | bp_moduleLogPO_03102024_1 | Y            | N              | moduleLogPricingSystem        | 1000002                    | bp_moduleLogPO_03102024_1 |
