@@ -89,7 +89,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	@Override
 	public I_PP_Cost_Collector getById(final PPCostCollectorId costCollectorId)
@@ -398,7 +397,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final OrderBOMLineQuantities orderBOMLineQuantities = ppOrderBOMBL.getQuantities(line);
 		if (orderBOMLineQuantities.getIssuingToleranceSpec() != null)
 		{
-			final Quantity scaleRounding = ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())).orElse(null);
+			final Quantity scaleRounding = Services.get(IPPOrderBL.class).getRoundingToScale(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())).orElse(null);
 			if (orderBOMLineQuantities.isQtyIssuedWithinTolerance(scaleRounding))
 			{
 				return;
