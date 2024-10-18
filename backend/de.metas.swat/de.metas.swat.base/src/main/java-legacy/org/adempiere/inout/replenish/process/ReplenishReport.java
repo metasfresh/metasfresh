@@ -39,11 +39,13 @@ package org.adempiere.inout.replenish.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.Msg;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
@@ -69,13 +71,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ReplenishInterface;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.Msg;
-import de.metas.order.IOrderBL;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 
 /**
  * Replenishment Report

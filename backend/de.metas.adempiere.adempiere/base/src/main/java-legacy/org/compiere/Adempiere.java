@@ -61,7 +61,6 @@ import java.util.Properties;
  *
  * @author Jorg Janke
  * @version $Id: Adempiere.java,v 1.8 2006/08/11 02:58:14 jjanke Exp $
- *
  */
 public class Adempiere
 {
@@ -85,7 +84,9 @@ public class Adempiere
 	 */
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
-	/** Main Version String */
+	/**
+	 * Main Version String
+	 */
 	private static SoftwareVersion _mainVersion = SoftwareVersion.builder()
 			.major(10)
 			.minor(0)
@@ -96,31 +97,45 @@ public class Adempiere
 
 	/** Detail Version as date Used for Client/Server */
 	private static String _dateVersion = "";
-	/** Database Version as date Compared with AD_System */
+	/**
+	 * Database Version as date Compared with AD_System
+	 */
 	private static String _databaseVersion = "";
 	private static String _implementationVersion = null;
 	private static String _implementationVendor = null;
-	/** Product Name */
+	/**
+	 * Product Name
+	 */
 	private static String _productName = "ERP";
 	private static String _subTitle = "";
 	private static String _brandCopyright = "";
 	private static String _copyright = "";
-	/** URL of Product */
+	/**
+	 * URL of Product
+	 */
 	private static String _productUrl = "";
 	private static String _onlineHelpUrl = "";
-	/** Support Email */
+	/**
+	 * Support Email
+	 */
 	private static String _supportEmail = "";
 
-	/** Product icon name (small) */
+	/**
+	 * Product icon name (small)
+	 */
 	private static String _productIconSmallName = null;
 	private static Image _productIconSmall;
 
-	/** Product logo name (small) */
+	/**
+	 * Product logo name (small)
+	 */
 	private static String _productLogoSmallName = null;
 	private static Image _productLogoSmallImage;
 	private static ImageIcon _productLogoSmallImageIcon;
 
-	/** Product logo name (large) */
+	/**
+	 * Product logo name (large)
+	 */
 	private static String _productLogoLargeName = null;
 	private static Image _productLogoLargeImage = null;
 
@@ -131,7 +146,11 @@ public class Adempiere
 
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
-	/** Logging */
+	private static Boolean _jvmDebugMode = null; // lazy
+
+	/**
+	 * Logging
+	 */
 	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
 
 	/**
@@ -303,7 +322,7 @@ public class Adempiere
 				.append("; Implementation: ").append(getImplementationVersion())
 				.append(" - ").append(getImplementationVendor());
 		return sb.toString();
-	}	// getSummary
+	}    // getSummary
 
 	/**
 	 * Set Package Info
@@ -323,7 +342,7 @@ public class Adempiere
 			_implementationVendor = "Supported by community";
 			_implementationVersion = "ERP";
 		}
-	}	// setPackageInfo
+	}    // setPackageInfo
 
 	/**
 	 * Get Jar Implementation Version
@@ -337,7 +356,7 @@ public class Adempiere
 			setPackageInfo();
 		}
 		return _implementationVersion;
-	}	// getImplementationVersion
+	}    // getImplementationVersion
 
 	/**
 	 * Get Jar Implementation Vendor
@@ -351,7 +370,7 @@ public class Adempiere
 			setPackageInfo();
 		}
 		return _implementationVendor;
-	}	// getImplementationVendor
+	}    // getImplementationVendor
 
 	/**
 	 * Get Checksum
@@ -383,7 +402,7 @@ public class Adempiere
 		retValue = StringUtils.replace(retValue, Env.NL, " ");
 		retValue = StringUtils.replace(retValue, "\n", " ");
 		return retValue;
-	}	// getSummaryAscii
+	}    // getSummaryAscii
 
 	/**
 	 * Get Java VM Info
@@ -395,8 +414,8 @@ public class Adempiere
 		return System.getProperty("java.vm.name") // e.g. Java HotSpot(TM) 64-Bit Server VM
 				+ " " + System.getProperty("java.version") // e.g. 1.7.0_21
 				+ "/" + System.getProperty("java.vm.version") // e.g. 23.21-b01
-		;
-	}	// getJavaInfo
+				;
+	}    // getJavaInfo
 
 	/**
 	 * Get Operating System Info
@@ -408,8 +427,8 @@ public class Adempiere
 		return System.getProperty("os.name") // e.g. Windows 7
 				+ " " + System.getProperty("os.version") // e.g. 6.1
 				+ " " + System.getProperty("sun.os.patch.level") // e.g. Service Pack 1
-		;
-	}	// getJavaInfo
+				;
+	}    // getJavaInfo
 
 	/**
 	 * @return URL
@@ -542,7 +561,7 @@ public class Adempiere
 	 * <li>"UniTestMode" mode is not a runmode because the system can be unit tested beeing in every run mode</li>
 	 * <li>This concept might be refined further (e.g. multiple runmodes)</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * Task 04585
 	 *
 	 * @see Ini#getRunMode()
@@ -697,7 +716,7 @@ public class Adempiere
 
 	private boolean startupEnvironment(final RunMode runMode)
 	{
-		final ADSystemInfo system = Services.get(ISystemBL.class).get();	// Initializes Base Context too
+		final ADSystemInfo system = Services.get(ISystemBL.class).get();    // Initializes Base Context too
 
 		// Initialize main cached Singletons
 		ModelValidationEngine.get();
@@ -710,7 +729,7 @@ public class Adempiere
 				if (className != null && className.length() > 0
 						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
-					SecureEngine.init(className);	// test it
+					SecureEngine.init(className);    // test it
 				}
 			}
 			SecureEngine.init(className);
@@ -746,7 +765,7 @@ public class Adempiere
 		}
 
 		return true;
-	}	// startupEnvironment
+	}    // startupEnvironment
 
 	// metas:
 	private static void startAddOns()
@@ -777,4 +796,19 @@ public class Adempiere
 	}
 
 	private static boolean unitTestMode = false;
-}	// Adempiere
+
+	public static boolean isJVMDebugMode()
+	{
+		Boolean jvmDebugMode = Adempiere._jvmDebugMode;
+		if (jvmDebugMode == null)
+		{
+			jvmDebugMode = Adempiere._jvmDebugMode = computeJVMDebugMode();
+		}
+		return jvmDebugMode;
+	}
+
+	private static boolean computeJVMDebugMode()
+	{
+		return java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains("-agentlib:jdwp");
+	}
+}    // Adempiere

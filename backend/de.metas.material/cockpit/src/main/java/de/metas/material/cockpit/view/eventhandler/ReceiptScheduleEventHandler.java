@@ -92,7 +92,7 @@ public class ReceiptScheduleEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();

@@ -165,6 +165,22 @@ public class PPOrderIssueScheduleService
 		return issueScheduleChanged;
 	}
 
+	@NonNull
+	public PPOrderIssueSchedule updateQtyToIssue(
+			@NonNull final PPOrderIssueScheduleId issueScheduleId,
+			@NonNull final Quantity qtyToIssue)
+	{
+		final PPOrderIssueSchedule issueSchedule = issueScheduleRepository.getById(issueScheduleId);
+		if (issueSchedule.getQtyToIssue().equals(qtyToIssue))
+		{
+			return issueSchedule;
+		}
+
+		final PPOrderIssueSchedule issueScheduleChanged = issueSchedule.withQtyToIssue(qtyToIssue);
+		issueScheduleRepository.saveChanges(issueScheduleChanged);
+		return issueScheduleChanged;
+	}
+
 	public void delete(@NonNull final PPOrderIssueSchedule issueSchedule)
 	{
 		if (issueSchedule.isIssued())

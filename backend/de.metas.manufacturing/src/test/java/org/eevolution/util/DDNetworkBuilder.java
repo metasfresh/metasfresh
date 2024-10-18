@@ -10,21 +10,19 @@ package org.eevolution.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.util.Check;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Shipper;
@@ -32,7 +30,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
-import de.metas.util.Check;
+import java.math.BigDecimal;
 
 public class DDNetworkBuilder
 {
@@ -84,7 +82,9 @@ public class DDNetworkBuilder
 		return getDD_NetworkDistribution();
 	}
 
-	/** Gets/Creates the distribution network */
+	/**
+	 * Gets/Creates the distribution network
+	 */
 	public I_DD_NetworkDistribution getDD_NetworkDistribution()
 	{
 		if (_ddNetwork == null)
@@ -94,7 +94,9 @@ public class DDNetworkBuilder
 		return _ddNetwork;
 	}
 
-	/** Gets/Creates the distribution network */
+	/**
+	 * Gets/Creates the distribution network
+	 */
 	public <T extends I_DD_NetworkDistribution> T getDD_NetworkDistribution(Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getDD_NetworkDistribution(), modelClass);
@@ -118,15 +120,15 @@ public class DDNetworkBuilder
 	public DDNetworkBuilder createDDNetworkLine(
 			final I_M_Warehouse warehouseFrom,
 			final I_M_Warehouse warehouseTo
-			)
+	)
 	{
 		final I_DD_NetworkDistribution ddNetwork = getDD_NetworkDistribution();
 		final I_M_Shipper shipper = getM_Shipper();
 
 		final I_DD_NetworkDistributionLine ddNetworkLine = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistributionLine.class, ddNetwork);
 		ddNetworkLine.setDD_NetworkDistribution(ddNetwork);
-		ddNetworkLine.setM_WarehouseSource(warehouseFrom);
-		ddNetworkLine.setM_Warehouse(warehouseTo);
+		ddNetworkLine.setM_WarehouseSource_ID(warehouseFrom.getM_Warehouse_ID());
+		ddNetworkLine.setM_Warehouse_ID(warehouseTo.getM_Warehouse_ID());
 		ddNetworkLine.setPercent(BigDecimal.valueOf(100));
 		ddNetworkLine.setM_Shipper(shipper);
 		ddNetworkLine.setTransfertTime(BigDecimal.ZERO);

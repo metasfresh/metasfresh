@@ -34,6 +34,12 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return extractIdFromRecord(get(identifier));
 	}
 
+	@Nullable
+	default ID getIdOfNullable(@Nullable final StepDefDataIdentifier identifier)
+	{
+		return identifier == null || identifier.isNullPlaceholder() ? null : getId(identifier);
+	}
+
 	default ID getId(@NonNull final String identifier)
 	{
 		return getId(StepDefDataIdentifier.ofString(identifier));

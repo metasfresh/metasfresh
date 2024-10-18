@@ -73,7 +73,7 @@ Feature: Product items invoice candidates: receipts
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -114,7 +114,7 @@ Feature: Product items invoice candidates: receipts
     When validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -167,7 +167,7 @@ Feature: Product items invoice candidates: receipts
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | receiptLine1              | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -222,7 +222,7 @@ Feature: Product items invoice candidates: receipts
     Then validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -277,7 +277,7 @@ Feature: Product items invoice candidates: receipts
     Then validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -330,7 +330,7 @@ Feature: Product items invoice candidates: receipts
     Then validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 
@@ -411,7 +411,7 @@ Feature: Product items invoice candidates: receipts
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier | OPT.QualityDiscountPercent |
       | shipmentLine_1            | material_receipt_1    | p_1                     | 40          | true      | ol_1                          | 0                          |
       | shipmentLine_2            | material_receipt_1    | p_1                     | 2           | true      | ol_1                          | 5                          |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
 

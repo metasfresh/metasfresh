@@ -230,7 +230,7 @@ public class PP_Order
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)
@@ -284,7 +284,7 @@ public class PP_Order
 	{
 		if (ppOrder.getSeqNo() <= 0)
 		{
-			ppOrder.setSeqNo(ppOrderDAO.getLastSeqNoPerOrderDate(ppOrder));
+			ppOrder.setSeqNo(ppOrderDAO.getNextSeqNoPerDateStartSchedule(ppOrder).toInt());
 		}
 	}
 }

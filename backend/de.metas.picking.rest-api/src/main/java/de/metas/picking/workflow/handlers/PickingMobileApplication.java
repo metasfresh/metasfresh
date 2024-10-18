@@ -30,6 +30,9 @@
 	import de.metas.document.engine.IDocument;
 	import de.metas.document.location.IDocumentLocationBL;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+	import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
 	import de.metas.handlingunits.picking.job.model.PickingJobId;
 	import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -37,21 +40,20 @@
 	import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
-	import de.metas.handlingunits.picking.job.model.PickingTarget;
+	import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
-	import de.metas.mobile.application.MobileApplicationId;
-	import de.metas.mobile.application.MobileApplicationInfo;
-	import de.metas.picking.config.MobileUIPickingUserProfile;
-	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
+	import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
+	import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
 	import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
 	import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+	import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 	import de.metas.picking.workflow.DisplayValueProvider;
 	import de.metas.picking.workflow.DisplayValueProviderService;
 	import de.metas.picking.workflow.PickingJobRestService;
@@ -61,6 +63,8 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
+	import de.metas.workflow.rest_api.model.MobileApplicationId;
+	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
@@ -93,10 +97,19 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
+		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresWorkplace(true)
+				.showFilterByDocumentNo(true)
+				.showFilters(true)
+				.build();
+
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
-		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -441,16 +454,26 @@
 
 		}
 
-		public List<PickingTarget> getAvailableTargets(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public JsonPickingJobAvailableTargets getAvailableTargets(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 		{
 			final WFProcess wfProcess = getWFProcessById(wfProcessId);
 			wfProcess.assertHasAccess(callerId);
 
 			final PickingJob pickingJob = getPickingJob(wfProcess);
-			return pickingJobRestService.getAvailableTargets(pickingJob);
+
+			return JsonPickingJobAvailableTargets.builder()
+					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob)
+									 .stream()
+									 .map(JsonLUPickingTarget::of)
+									 .collect(ImmutableList.toImmutableList()))
+					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob)
+									   .stream()
+									   .map(JsonTUPickingTarget::of)
+									   .collect(ImmutableList.toImmutableList()))
+					.build();
 		}
 
-		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final PickingTarget target, @NonNull final UserId callerId)
+		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final LUPickingTarget target, @NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
@@ -461,13 +484,35 @@
 
 		}
 
-		public WFProcess closePickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final TUPickingTarget target, @NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.closePickTarget(pickingJob);
+						return pickingJobRestService.setPickTarget(pickingJob, target);
+					});
+
+		}
+
+		public WFProcess closeLUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					wfProcessId,
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closeLUPickTarget(pickingJob);
+					});
+
+		}
+
+		public WFProcess closeTUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					wfProcessId,
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closeTUPickTarget(pickingJob);
 					});
 
 		}

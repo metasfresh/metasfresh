@@ -78,7 +78,7 @@ public class OLCandsProcessorExecutor
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
 	private final AsyncBatchId asyncBatchId;
-	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
+	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
 
 	private final OLCandSource candidatesSource;
 
@@ -211,9 +211,9 @@ public class OLCandsProcessorExecutor
 
 	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate)
 	{
-		if (candidate.getDateDoc() == null)
+		if (candidate.getDateOrdered() == null)
 		{
-			candidate.setDateDoc(defaultDateDoc);
+			candidate.setDateOrdered(defaultDateOrdered);
 		}
 
 		return candidate;
@@ -245,7 +245,7 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
 				//
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
-				|| !Objects.equals(previousCandidate.getDateDoc(), candidate.getDateDoc())
+				|| !Objects.equals(previousCandidate.getDateOrdered(), candidate.getDateOrdered())
 				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())

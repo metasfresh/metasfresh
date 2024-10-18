@@ -32,13 +32,11 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -50,6 +48,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -166,30 +166,20 @@ public class WarehouseBL implements IWarehouseBL
 		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
+	@Nullable
 	@Override
-	@NonNull
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
 	{
 		final I_C_Location location = getC_Location(warehouseId);
-		return CountryId.ofRepoId(location.getC_Country_ID());
+		return CountryId.ofRepoIdOrNull(location.getC_Country_ID());
 	}
 
 	@Override
 	@NonNull
 	public OrgId getWarehouseOrgId(@NonNull final WarehouseId warehouseId)
 	{
-		return getWarehouseClientAndOrgId(warehouseId).getOrgId();
-	}
-
-	@Override
-	@NonNull
-	public ClientAndOrgId getWarehouseClientAndOrgId(@NonNull final WarehouseId warehouseId)
-	{
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
-		return ClientAndOrgId.ofClientAndOrg(
-				ClientId.ofRepoId(warehouseRecord.getAD_Client_ID()),
-				OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID())
-		);
+		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
 	}
 
 	@Override
@@ -243,6 +233,7 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
+
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -285,5 +276,12 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return warehouseDAO.getLocatorIdsByRepoId(locatorIds);
 	}
 }

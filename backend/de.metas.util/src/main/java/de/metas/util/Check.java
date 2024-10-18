@@ -24,6 +24,7 @@ package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -94,7 +95,7 @@ public final class Check
 		return mkEx(defaultExClazz, msg);
 	}
 
-	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
+	private static RuntimeException mkEx(@NonNull final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final String msgToUse = buildExceptionMessage(exClazz, msg);
 
@@ -114,7 +115,7 @@ public final class Check
 		return mkEx(defaultExClazz, msg, cause);
 	}
 
-	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg, final Throwable cause)
+	private static RuntimeException mkEx(@NonNull final Class<? extends RuntimeException> exClazz, final String msg, final Throwable cause)
 	{
 		final String msgToUse = buildExceptionMessage(exClazz, msg);
 
@@ -131,7 +132,7 @@ public final class Check
 
 
 	@NonNull
-	private static String buildExceptionMessage(final Class<? extends RuntimeException> exClazz, final String msg)
+	private static String buildExceptionMessage(@NonNull final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
 
@@ -176,6 +177,7 @@ public final class Check
 	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
 	 * @param params message parameters (@see {@link MessageFormat})
 	 */
+	@Contract("false, _, _ -> fail")
 	public static void assume(final boolean cond, final String errMsg, final Object... params)
 	{
 		assume(cond, defaultExClazz, errMsg, params);
@@ -189,6 +191,7 @@ public final class Check
 	/**
 	 * Like {@link #assume(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("false, _, _, _ -> fail")
 	public static void assume(final boolean cond,
 			@NonNull final Class<? extends RuntimeException> exceptionClass,
 			@NonNull final String errMsg,
@@ -261,6 +264,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("null, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final String assumptionMessage, final Object... params)
 	{
@@ -270,6 +274,7 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("null, _, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -296,6 +301,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("!null, _, _ -> fail")
 	public static void assumeNull(@Nullable final Object object, final String assumptionMessage, final Object... params)
 	{
 		assumeNull(object, defaultExClazz, assumptionMessage, params);
@@ -304,7 +310,8 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
-	public static void assumeNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	@Contract("!null, _, _, _ -> fail")
+	public static void assumeNull(@Nullable final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object == null;
 		assume(cond, exceptionClass, assumptionMessage, params);
@@ -345,7 +352,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+	public static <T extends Collection<?>> T assumeNotEmpty(
 			final T collection,
 			final String assumptionMessage,
 			final Object... params)
@@ -451,7 +458,7 @@ public final class Check
 
 	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
 	{
-		assumeNotNull(valueName, "" + valueName + " is not null");
+		assumeNotNull(valueName, valueName + " is not null");
 		if (valueBD == null || valueBD.signum() <= 0)
 		{
 			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueBD);
@@ -512,6 +519,7 @@ public final class Check
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
 	 */
+	@Contract("false, _, _ -> fail")
 	public static void errorUnless(final boolean cond, final String errMsg, final Object... params)
 	{
 		errorUnless(cond, defaultExClazz, errMsg, params);
@@ -520,6 +528,7 @@ public final class Check
 	/**
 	 * Like {@link #errorUnless(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("false, _, _, _ -> fail")
 	public static void errorUnless(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
 		if (!cond)
@@ -529,6 +538,7 @@ public final class Check
 		}
 	}
 
+	@Contract("true, _, _ -> fail")
 	public static void errorIf(
 			final boolean cond,
 			final String errMsg,
@@ -543,6 +553,7 @@ public final class Check
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
 	 */
+	@Contract("true, _, _, _ -> fail")
 	public static void errorIf(
 			final boolean cond,
 			final Class<? extends RuntimeException> exceptionClass,
@@ -577,8 +588,7 @@ public final class Check
 	{
 		return () -> {
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
-			final RuntimeException ex = mkEx(exceptionClass, errMsgFormated);
-			return ex;
+			return mkEx(exceptionClass, errMsgFormated);
 		};
 	}
 
@@ -588,11 +598,13 @@ public final class Check
 		return mkEx(defaultExClazz, errMsgFormated);
 	}
 
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable final Object value)
 	{
 		return EmptyUtil.isEmpty(value);
 	}
 
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable final String str)
 	{
 		return EmptyUtil.isEmpty(str);
@@ -601,6 +613,7 @@ public final class Check
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+	@Contract("null -> true")
 	public static boolean isBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isBlank(str);
@@ -609,6 +622,7 @@ public final class Check
 	/**
 	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
 	 */
+	@Contract("null -> false")
 	public static boolean isNotBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isNotBlank(str);
@@ -664,12 +678,12 @@ public final class Check
 	 * <p>
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
 	 *
-	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
+	 * @deprecated as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
 	public static boolean equals(final Object a, final Object b)
 	{
-		if (a == b || a != null && b != null && a.equals(b))
+		if (a == b || a != null && a.equals(b))
 		{
 			return true;
 		}

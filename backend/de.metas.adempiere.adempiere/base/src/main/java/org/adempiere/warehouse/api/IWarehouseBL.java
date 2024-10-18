@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
@@ -36,6 +35,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 public interface IWarehouseBL extends ISingletonService
@@ -61,14 +62,11 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
-	@NonNull
+	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
-
-	@NonNull
-	ClientAndOrgId getWarehouseClientAndOrgId(@NonNull WarehouseId warehouseId);
 
 	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 
@@ -91,4 +89,7 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorIds);
 }
