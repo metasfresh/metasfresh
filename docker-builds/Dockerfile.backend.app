@@ -13,6 +13,7 @@ WORKDIR /opt/metasfresh
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/metasfresh_server.jar .
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/configs/* ./
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/deploy/download dist/deploy/download/
 
 # repackage version information
 COPY docker-builds/metadata/build-info.properties META-INF/
