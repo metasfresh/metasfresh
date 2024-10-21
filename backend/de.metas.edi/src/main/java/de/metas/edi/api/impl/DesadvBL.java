@@ -240,7 +240,7 @@ public class DesadvBL implements IDesadvBL
 				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
 			}
 		}
-		else 
+		else
 		{
 			newDesadvLine.setGTIN_CU(product.getGTIN());
 			newDesadvLine.setUPC_CU(product.getUPC());
@@ -356,7 +356,7 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-		
+
 		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
@@ -370,7 +370,6 @@ public class DesadvBL implements IDesadvBL
 		}
 		return desadv;
 	}
-
 
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord,
@@ -729,7 +728,7 @@ public class DesadvBL implements IDesadvBL
 										   false,
 										   clientId.getRepoId());
 	}
-	
+
 	private Optional<ITranslatableString> createSingleMsg(
 			@NonNull final List<I_EDI_Desadv> desadvsToSkip,
 			@NonNull final BigDecimal minimumSumPercentage)
@@ -886,7 +885,7 @@ public class DesadvBL implements IDesadvBL
 	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_C_Order order)
 	{
 		final String poReference = Check.assumeNotNull(order.getPOReference(),
-													   "In the DESADV-Context, POReference is mandatory; C_Order_ID={}", 
+													   "In the DESADV-Context, POReference is mandatory; C_Order_ID={}",
 													   order.getC_Order_ID());
 		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
 				.poReference(poReference)
@@ -896,7 +895,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			ediDesadvQueryBuilder.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		}
-		
+
 		if (isMatchUsingOrderId(ClientId.ofRepoId(order.getAD_Client_ID())))
 		{
 			ediDesadvQueryBuilder.orderId(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -924,12 +923,12 @@ public class DesadvBL implements IDesadvBL
 		return ediDesadvQueryBuilder
 				.build();
 	}
-	
+
 	private boolean isMatchUsingBPartnerId()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
-	
+
 	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());

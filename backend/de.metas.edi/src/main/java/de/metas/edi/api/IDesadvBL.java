@@ -113,6 +113,6 @@ public interface IDesadvBL extends ISingletonService
 	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
 
 	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
-	
+
 	boolean isMatchUsingOrderId(@NonNull ClientId clientId);
 }
