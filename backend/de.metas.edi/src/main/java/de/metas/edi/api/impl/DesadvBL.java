@@ -231,7 +231,11 @@ public class DesadvBL implements IDesadvBL
 		//
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
+<<<<<<< HEAD
 		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
+=======
+		newDesadvLine.setGTIN(materialItemProduct.getGTIN());
+>>>>>>> bb8b771cd25 (Fix wrong computation of EDI_DesadvLine.QtyDeliveredInUOM (#19181))
 		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 
@@ -460,7 +464,7 @@ public class DesadvBL implements IDesadvBL
 		final boolean inOutLineQtyIsUOMForTUS = uomDAO.isUOMForTUs(inOutLineLineQtyDelivered.getUomId());
 		if (desadvLineQtyIsUOMForTUS && !inOutLineQtyIsUOMForTUS)
 		{
-			// we need to take inOutLineStockQty and convert it to "TU-UOM" by using the itemCapacity
+			// We need to take inOutLineStockQty and convert it to "TU-UOM" by using the itemCapacity.
 			final BigDecimal cusPerTU = desadvLineRecord.getQtyItemCapacity();
 			if (cusPerTU.signum() <= 0)
 			{
@@ -473,13 +477,18 @@ public class DesadvBL implements IDesadvBL
 		}
 		else if (!desadvLineQtyIsUOMForTUS && inOutLineQtyIsUOMForTUS)
 		{
-			// we again need to take inOutLineStockQty and this time convert is to desadvLineQtyDelivered's UOM via uom-conversion
+			// We again need to take inOutLineStockQty and this time convert is to desadvLineQtyDelivered's UOM via uom-conversion.
 			augentQtyDeliveredInUOM = inOutLineStockQty;
 		}
 		else
 		{
-			// if bot are TU or both are not, then uom-conversion will work fine
-			augentQtyDeliveredInUOM = inOutLineLineQtyDelivered;
+			// If both are TU or both are not, then uom-conversion will work fine.
+			// Anyway, if the desadv's quantity is in stock-UOM, then go with the inOutLine's stock-quantity.
+			final boolean desadvUomIsStockUom = inOutLineStockQty.getUomId().equals(desadvLineQtyToAugment.getUomId());
+			
+			augentQtyDeliveredInUOM = desadvUomIsStockUom 
+					? inOutLineStockQty 
+					: inOutLineLineQtyDelivered;
 		}
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(desadvLineRecord.getM_Product_ID());
