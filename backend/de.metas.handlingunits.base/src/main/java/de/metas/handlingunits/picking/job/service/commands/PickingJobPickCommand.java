@@ -869,27 +869,12 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		// 	if (pickFromHUQRCode instanceof LMQRCode)
-		// 	{
-		// 		validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
-		// 	}
-		// }
-		//
-		// private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
-		// {
-		if (catchWeightBD == null)
-		{
-			throw new AdempiereException(CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG)
-					.appendParametersToMessage()
-					.setParameter("LMQRCode", pickFromHUQRCode);
-		}
-
 		final BigDecimal pickFromHUQRCodeWeight = pickFromHUQRCode.getWeightInKg().orElse(null);
-		if (pickFromHUQRCodeWeight != null && pickFromHUQRCodeWeight.compareTo(catchWeightBD) != 0)
+		if (pickFromHUQRCodeWeight != null && (catchWeightBD == null || pickFromHUQRCodeWeight.compareTo(catchWeightBD) != 0))
 		{
 			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 					.appendParametersToMessage()
-					.setParameter("LMQRCode", pickFromHUQRCode)
+					.setParameter("pickFromHUQRCode", pickFromHUQRCode)
 					.setParameter("catchWeightBD", catchWeightBD);
 		}
 	}
