@@ -163,7 +163,7 @@ public class Quantitys
 
 	/**
 	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
-	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
+	 * @return the sum of the given quantities; the result has the UOM of the first augent; conversion of the second augent is done as required.
 	 */
 	public Quantity add(
 			@Nullable final UOMConversionContext conversionCtx,
