@@ -3,12 +3,16 @@ package de.metas.handlingunits.qrcodes.gs1;
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
+@EqualsAndHashCode
+@ToString
 public class GS1HUQRCode implements IHUQRCode
 {
 	@NonNull private final GS1Elements elements;

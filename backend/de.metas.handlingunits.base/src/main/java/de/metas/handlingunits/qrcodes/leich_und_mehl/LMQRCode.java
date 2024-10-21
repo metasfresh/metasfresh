@@ -67,6 +67,9 @@ public class LMQRCode implements IHUQRCode
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return Optional.of(weightInKg);}
 
+	@NonNull
+	public BigDecimal getWeightInKgNotNull() {return weightInKg;}
+
 	@Override
 	public Optional<LocalDate> getBestBeforeDate() {return Optional.ofNullable(bestBeforeDate);}
 

@@ -48,6 +48,8 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -864,13 +866,48 @@ public class PickingJobPickCommand
 
 	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
 	{
-		if (pickFromHUQRCode == null)
+		if (pickFromHUQRCode instanceof LMQRCode)
+		{
+			validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
+		}
+		else if (pickFromHUQRCode instanceof GS1HUQRCode)
+		{
+			validateCatchWeightForGS1(catchWeightBD, (GS1HUQRCode)pickFromHUQRCode);
+		}
+	}
+
+	private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
+	{
+		if (catchWeightBD == null)
+		{
+			throw new AdempiereException(CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("LMQRCode", pickFromHUQRCode);
+		}
+
+		if (pickFromHUQRCode.getWeightInKgNotNull().compareTo(catchWeightBD) != 0)
+		{
+			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("pickFromHUQRCode", pickFromHUQRCode)
+					.setParameter("catchWeightBD", catchWeightBD);
+		}
+	}
+
+	private static void validateCatchWeightForGS1(final @Nullable BigDecimal catchWeightBD, @NonNull final GS1HUQRCode pickFromHUQRCode)
+	{
+		if (catchWeightBD == null)
 		{
 			return;
 		}
 
-		final BigDecimal pickFromHUQRCodeWeight = pickFromHUQRCode.getWeightInKg().orElse(null);
-		if (pickFromHUQRCodeWeight != null && (catchWeightBD == null || pickFromHUQRCodeWeight.compareTo(catchWeightBD) != 0))
+		final BigDecimal gs1Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
+		if (gs1Weight == null)
+		{
+			return;
+		}
+
+		if (gs1Weight.compareTo(catchWeightBD) != 0)
 		{
 			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 					.appendParametersToMessage()
