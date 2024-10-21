@@ -22,8 +22,6 @@
 
 package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
-import de.metas.handlingunits.attribute.weightable.Weightables;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
