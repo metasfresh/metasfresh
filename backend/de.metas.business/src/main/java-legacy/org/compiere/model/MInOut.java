@@ -122,6 +122,8 @@ public class MInOut extends X_M_InOut implements IDocument
 
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IStorageBL storageBL = Services.get(IStorageBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -1343,7 +1345,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
 		return (!(order != null
 				&& order.getC_Order_ID() > 0
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
+				&& docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& !checkCreditOnPrepayOorder));
 	}
 
@@ -1426,6 +1428,8 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		sortByProductAndASI(lines); // task 08999
 
+		final boolean isProForma = docTypeBL.isProFormaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
+
 		for (final MInOutLine line : lines)
 		{
 			final MInOutLine sLine = line;
@@ -1481,9 +1485,8 @@ public class MInOut extends X_M_InOut implements IDocument
 					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getRepoId() == getM_Warehouse_ID();
 				}
 
-				final IStorageBL storageBL = Services.get(IStorageBL.class);
-
 				log.debug("Material Transaction");
+				if(!isProForma)
 				{
 					final BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
 					final BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
@@ -1565,7 +1568,8 @@ public class MInOut extends X_M_InOut implements IDocument
 					&& isSOTrx()
 					&& product.isCreateAsset()
 					&& sLine.getMovementQty().signum() > 0
-					&& !isReversal())
+					&& !isReversal()
+					&& !isProForma)
 			{
 				log.debug("Asset");
 				info.append("@A_Asset_ID@: ");

@@ -1044,6 +1044,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isProFormaSO(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isProFormaSO(order);
+	}
+
+	@Override
 	public boolean isProFormaSO(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
