@@ -48,7 +48,6 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -467,26 +466,15 @@ public class PickingJobPickCommand
 		{
 			return (HUQRCode)pickFromHUQRCode;
 		}
-		else if (pickFromHUQRCode instanceof LMQRCode)
+		else
 		{
-			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
-			final String lotNumber = lmQRCode.getLotNumber();
-			if (lotNumber == null)
-			{
-				throw new AdempiereException(L_M_QR_CODE_ERROR_MSG);
-			}
+			final String lotNumber = pickFromHUQRCode.getLotNumber().orElseThrow(() -> new AdempiereException(L_M_QR_CODE_ERROR_MSG));
 
 			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
 					.map(huQRCodesService::getQRCodeByHuId)
 					.orElseThrow(() -> new AdempiereException(QR_CODE_EXTERNAL_LOT_ERROR_MSG)
 							.appendParametersToMessage()
 							.setParameter("LotNumber", lotNumber));
-		}
-		else
-		{
-			throw new AdempiereException(QR_CODE_NOT_SUPPORTED_ERROR_MSG)
-					.appendParametersToMessage()
-					.setParameter("QRCode", pickFromHUQRCode);
 		}
 	}
 
@@ -876,14 +864,19 @@ public class PickingJobPickCommand
 
 	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
 	{
-		if (pickFromHUQRCode instanceof LMQRCode)
+		if (pickFromHUQRCode == null)
 		{
-			validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
+			return;
 		}
-	}
 
-	private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
-	{
+		// 	if (pickFromHUQRCode instanceof LMQRCode)
+		// 	{
+		// 		validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
+		// 	}
+		// }
+		//
+		// private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
+		// {
 		if (catchWeightBD == null)
 		{
 			throw new AdempiereException(CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG)
@@ -891,7 +884,8 @@ public class PickingJobPickCommand
 					.setParameter("LMQRCode", pickFromHUQRCode);
 		}
 
-		if (pickFromHUQRCode.getWeightInKg().compareTo(catchWeightBD) != 0)
+		final BigDecimal pickFromHUQRCodeWeight = pickFromHUQRCode.getWeightInKg().orElse(null);
+		if (pickFromHUQRCodeWeight != null && pickFromHUQRCodeWeight.compareTo(catchWeightBD) != 0)
 		{
 			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 					.appendParametersToMessage()

@@ -157,13 +157,14 @@ public class MobileUI_Picking_StepDef
 		final LMQRCode itemQRCode = row.getAsOptionalString("LMQRCode").map(LMQRCode::fromGlobalQRCodeJsonString).orElse(null);
 		if (itemQRCode != null)
 		{
+			//noinspection OptionalGetWithoutIsPresent
 			requestBuilder
 					.qtyPicked(BigDecimal.ONE)
-					.catchWeight(itemQRCode.getWeightInKg())
+					.catchWeight(itemQRCode.getWeightInKg().get())
 					.setBestBeforeDate(true)
-					.bestBeforeDate(itemQRCode.getBestBeforeDate())
+					.bestBeforeDate(itemQRCode.getBestBeforeDate().get())
 					.setLotNo(true)
-					.lotNo(itemQRCode.getLotNumber());
+					.lotNo(itemQRCode.getLotNumber().get());
 		}
 		else
 		{
