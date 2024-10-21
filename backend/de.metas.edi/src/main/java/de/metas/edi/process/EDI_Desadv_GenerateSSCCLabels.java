@@ -1,10 +1,14 @@
 package de.metas.edi.process;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.IProcessDefaultParameter;
@@ -119,6 +123,7 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 				.desadvBL(desadvBL)
 				.ediDesadvPackRepository(EDIDesadvPackRepository)
 				.printExistingLabels(true)
+				.bpartnerId(extractBPartnerId(desadvLines))
 				.build();
 
 		final LinkedHashSet<EDIDesadvPackId> lineSSCCIdsToPrint = new LinkedHashSet<>();
@@ -136,6 +141,17 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 		}
 
 		return lineSSCCIdsToPrint;
+	}
+
+	private static BPartnerId extractBPartnerId(@NonNull final List<I_EDI_DesadvLine> desadvLines)
+	{
+		final I_EDI_Desadv ediDesadvRecord = desadvLines.get(0).getEDI_Desadv();
+		
+		final int bpartnerRepoId = CoalesceUtil.firstGreaterThanZero(
+				ediDesadvRecord.getDropShip_BPartner_ID(), 
+				ediDesadvRecord.getC_BPartner_ID());
+		
+		return BPartnerId.ofRepoId(bpartnerRepoId);
 	}
 
 	private List<I_EDI_DesadvLine> getSelectedLines()

@@ -23,6 +23,7 @@ package de.metas.edi.sscc18;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvBL;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -87,6 +89,11 @@ public class DesadvLineSSCC18Generator
 	 */
 	private final boolean printExistingLabels;
 
+	/** 
+	 * Needed because we need to set the packing-GTIN according to this bpartner's packing-material 
+	 */
+	private final BPartnerId bpartnerId;
+	
 	//
 	// status
 	/**
@@ -99,12 +106,14 @@ public class DesadvLineSSCC18Generator
 			@NonNull final SSCC18CodeBL sscc18CodeService,
 			@NonNull final IDesadvBL desadvBL,
 			@NonNull final EDIDesadvPackRepository ediDesadvPackRepository,
-			final boolean printExistingLabels)
+			final boolean printExistingLabels,
+			@NonNull final BPartnerId bpartnerId)
 	{
 		this.sscc18CodeBL = sscc18CodeService;
 		this.desadvBL = desadvBL;
 		this.ediDesadvPackRepository = ediDesadvPackRepository;
 		this.printExistingLabels = printExistingLabels;
+		this.bpartnerId = bpartnerId;
 	}
 
 	/**
@@ -143,11 +152,12 @@ public class DesadvLineSSCC18Generator
 			else
 			{
 				final I_EDI_DesadvLine desadvLine = desadvLineLabels.getEDI_DesadvLine();
-
+				final I_M_HU_PI_Item_Product tuPIItemProduct = desadvLineLabels.getTuPIItemProduct();
+				
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys);
+				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvPack);
 			}
 		}
@@ -200,7 +210,10 @@ public class DesadvLineSSCC18Generator
 	 * <p>
 	 * The SSCC18 code will be generated.
 	 */
-	private EDIDesadvPack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private EDIDesadvPack generateDesadvLineSSCC(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final LUQtys luQtys,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
