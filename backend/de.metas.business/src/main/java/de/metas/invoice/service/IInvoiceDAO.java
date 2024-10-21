@@ -206,8 +206,6 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
-	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
-
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	@Nullable
@@ -216,4 +214,9 @@ public interface IInvoiceDAO extends ISingletonService
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
 
 	ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull InvoiceMultiQuery multiQuery);
+	/**
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
+	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
+	 */
+	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 }
