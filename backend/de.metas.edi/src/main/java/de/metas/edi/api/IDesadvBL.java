@@ -24,15 +24,12 @@ package de.metas.edi.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
@@ -79,20 +76,6 @@ public interface IDesadvBL extends ISingletonService
 	 * Note that this method also sets the desadv(-line)s' IDs to the inOut and its lines and saves them.
 	 */
 	I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(I_M_InOut inOut);
-
-	/**
-	 * Set for the given {@code packRecord}:
-	 * <ul>
-	 *     <li>GTIN_TU_PackingMaterial</li>
-	 *     <li>M_HU_PackagingCode_TU_ID</li>
-	 *     <li>GTIN_LU_PackingMaterial</li>
-	 *     <li>M_HU_PackagingCode_LU_ID</li>
-	 * </ul>
-	 */
-	void setPackRecordPackagingCodeAndGTIN(
-			@NonNull I_EDI_DesadvLine_Pack packRecord,
-			@NonNull I_M_HU_PI_Item_Product tuPIItemProduct,
-			@NonNull BPartnerId bpartnerId);
 
 	/**
 	 * Removes the given <code>inOut</code> from its desadv (if any) and also removes its inOut lines from the desadv lines.
