@@ -127,7 +127,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
-export const parseQRCodeString = (string) => {
+export const parseQRCodeString = (string, returnFalseOnError) => {
   let remainingString = string;
 
   //
@@ -136,6 +136,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       console.log('parseQRCodeString: Cannot extract type from QRCode', { remainingString, string });
       throw trl('error.qrCode.invalid');
     }
@@ -149,6 +152,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       console.log('parseQRCodeString: Cannot extract version from QRCode', { remainingString, string });
       throw trl('error.qrCode.invalid');
     }
@@ -163,7 +169,7 @@ export const parseQRCodeString = (string) => {
   } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
     payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
-    console.trace('parseQRCodeString: Unknown QR Code type', { type, version, string });
+    console.log('parseQRCodeString: Unknown QR Code type', { type, version, string });
     throw trl('error.qrCode.invalid');
   }
   //console.log('parseQRCodeString', { payloadParsed });
