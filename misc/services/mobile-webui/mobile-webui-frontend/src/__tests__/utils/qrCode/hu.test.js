@@ -48,6 +48,22 @@ describe('huQRCodes tests', () => {
     });
   });
   describe('parseQRCode', () => {
+    it('wrong code', () => {
+      setupCounterpart();
+      expect(() => parseQRCodeString('983u2r982foijklscdskdshvd')).toThrow(/Invalid QR Code/);
+      expect(() => parseQRCodeString('zzzzzz')).toThrow(/Invalid QR Code/);
+      expect(() => parseQRCodeString('    ')).toThrow(/Invalid QR Code/);
+      expect(() => parseQRCodeString('')).toThrow(/Invalid QR Code/);
+      expect(() => parseQRCodeString(null)).toThrow(/Invalid QR Code/);
+    });
+    it('wrong code, bug do not fail', () => {
+      setupCounterpart();
+      expect(parseQRCodeString('983u2r982foijklscdskdshvd', true)).toEqual(false);
+      expect(parseQRCodeString('zzzzzzz', true)).toEqual(false);
+      expect(parseQRCodeString('     ', true)).toEqual(false);
+      expect(parseQRCodeString('', true)).toEqual(false);
+      expect(parseQRCodeString(null, true)).toEqual(false);
+    });
     it('unknown type', () => {
       setupCounterpart();
       const code =
@@ -59,6 +75,12 @@ describe('huQRCodes tests', () => {
       const code =
         'HU#UNKNOWN_VERSION#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
       expect(() => parseQRCodeString(code)).toThrow(/Invalid QR Code/);
+    });
+    it('unknown version, but do not fail', () => {
+      setupCounterpart();
+      const code =
+        'HU#UNKNOWN_VERSION#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
+      expect(parseQRCodeString(code, true)).toEqual(false);
     });
     it('standard test', () => {
       const code =
@@ -101,6 +123,20 @@ describe('huQRCodes tests', () => {
           bestBeforeDate: '2024-12-13',
           lotNo: 'lot3',
           productNo: 'productNo88',
+        });
+      });
+    });
+    describe('GS1-128', () => {
+      it('standard test', () => {
+        const code = '0197311876341811310300752015170809';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '7.52 kg',
+          weightNet: 7.52,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          GTIN: '97311876341811',
+          bestBeforeDate: '2017-08-09',
         });
       });
     });
