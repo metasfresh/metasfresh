@@ -132,3 +132,19 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 
 
 
+
+
+-- Column: C_BPartner.M_Warehouse_ID
+-- 2024-10-22T15:28:36.963Z
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2024-10-22 18:28:36.962','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=550682
+;
+
+-- Column: C_BPartner.M_WarehousePO_ID
+-- 2024-10-22T15:28:58.918Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540326,Updated=TO_TIMESTAMP('2024-10-22 18:28:58.918','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589334
+;
+
+-- 2024-10-22T15:29:00.201Z
+INSERT INTO t_alter_column values('c_bpartner','M_WarehousePO_ID','NUMERIC(10)',null,null)
+;
+
