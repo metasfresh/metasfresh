@@ -215,7 +215,19 @@ Generated on: 2023.11.22 at 01:55:45 PM EET
             <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType"/>
                 
         </jaxb:bindings>
+
+        <jaxb:bindings if-exists="true" scd="~EXP_M_InOut_DesadvLine_VType">
+                  
+            <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EXPMInOutDesadvLineVType"/>
+        
+        </jaxb:bindings>
+        
+        <jaxb:bindings if-exists="true" scd="~EXP_M_InOut_DesadvLine_Pack_VType">
             
+            <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EXPMInOutDesadvLinePackVType"/>
+        
+        </jaxb:bindings>
+        
         <jaxb:bindings if-exists="true" scd="~EDI_Exp_Desadv_Pack_ItemType">
                   
             <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType"/>
