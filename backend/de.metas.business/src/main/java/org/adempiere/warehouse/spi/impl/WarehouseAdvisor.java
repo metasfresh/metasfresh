@@ -149,8 +149,8 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	@Nullable
 	private WarehouseId findWarehouseIdForSOTrx(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bp = partnerDAO.getById(bpartnerId);
 
 		if (soTrx.isSales())
 		{
