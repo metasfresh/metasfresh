@@ -128,7 +128,7 @@ describe('huQRCodes tests', () => {
     });
     describe('GS1-128', () => {
       it('standard test', () => {
-        const code = '0197311876341811310300752015170809';
+        const code = '019731187634181131030075201527080910501';
         expect(parseQRCodeString(code)).toEqual({
           code,
           displayable: '7.52 kg',
@@ -136,7 +136,8 @@ describe('huQRCodes tests', () => {
           weightNetUOM: 'kg',
           isTUToBePickedAsWhole: true,
           GTIN: '97311876341811',
-          bestBeforeDate: '2017-08-09',
+          bestBeforeDate: '2027-08-09',
+          lotNo: '501',
         });
       });
     });
