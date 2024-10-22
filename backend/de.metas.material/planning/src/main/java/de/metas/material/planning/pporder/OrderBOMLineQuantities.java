@@ -126,22 +126,6 @@ public class OrderBOMLineQuantities
 		return toBuilder().qtyRequired(qtyRequired).build();
 	}
 
-	public OrderBOMLineQuantities close()
-	{
-		return toBuilder()
-				.qtyRequired(getQtyIssuedOrReceived())
-				.qtyRequiredBeforeClose(getQtyRequired())
-				.build();
-	}
-
-	public OrderBOMLineQuantities unclose()
-	{
-		return toBuilder()
-				.qtyRequired(getQtyRequiredBeforeClose())
-				.qtyRequiredBeforeClose(getQtyRequiredBeforeClose().toZero())
-				.build();
-	}
-
 	public Quantity getRemainingQtyToIssue()
 	{
 		return getProjectedRemainingQtyToIssue(getQtyRequired());

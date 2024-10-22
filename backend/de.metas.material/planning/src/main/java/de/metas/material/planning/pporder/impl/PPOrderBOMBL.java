@@ -667,7 +667,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void close(final I_PP_Order_BOMLine line)
 	{
-		changeQuantities(line, OrderBOMLineQuantities::close);
 		line.setProcessed(true); // just to make sure (but it should be already set when the PP_Order was completed)
 
 		orderBOMsRepo.save(line);
@@ -676,7 +675,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void unclose(final I_PP_Order_BOMLine line)
 	{
-		changeQuantities(line, OrderBOMLineQuantities::unclose);
 		orderBOMsRepo.save(line);
 	}
 
