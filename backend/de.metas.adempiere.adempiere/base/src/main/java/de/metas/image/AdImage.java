@@ -7,6 +7,10 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -18,7 +22,7 @@ import java.io.IOException;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class AdImage
 {
 	@NonNull AdImageId id;
@@ -30,6 +34,25 @@ public class AdImage
 	@Nullable byte[] data;
 
 	@NonNull ClientAndOrgId clientAndOrgId;
+
+	public ResponseEntity<byte[]> toResponseEntity()
+	{
+		return ResponseEntity.status(HttpStatus.OK)
+				.contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+				.body(data);
+	}
+
+	public AdImage withMaxDimension(final int maxWidth, final int maxHeight)
+	{
+		final byte[] dataScaled = getScaledImageData(maxWidth, maxHeight);
+		if (this.data == dataScaled)
+		{
+			return this;
+		}
+
+		return toBuilder().data(dataScaled).build();
+	}
 
 	public byte[] getScaledImageData(final int maxWidth, final int maxHeight)
 	{

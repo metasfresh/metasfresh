@@ -3,6 +3,7 @@ import {
   POS_TERMINAL_CLOSING_CANCEL,
   POS_TERMINAL_LOAD_DONE,
   POS_TERMINAL_LOAD_START,
+  TOGGLE_PRODUCT_CATEGORY_FILTER,
 } from '../actionTypes';
 
 export function posTerminalReducer(applicationState, action) {
@@ -36,6 +37,10 @@ export function posTerminalReducer(applicationState, action) {
         },
       });
     }
+    case TOGGLE_PRODUCT_CATEGORY_FILTER: {
+      const { categoryId } = action.payload;
+      return toggleProductCategoryFilter({ applicationState, categoryId });
+    }
   }
 
   return applicationState;
@@ -61,6 +66,8 @@ const updatePOSTerminalToState = ({ applicationState, props }) => {
     newProps = props;
   }
 
+  if (!newProps) return applicationState;
+
   return {
     ...applicationState,
     terminal: {
@@ -77,7 +84,10 @@ const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
   const isCashJournalClosing =
     currentTerminal.isCashJournalClosing && newTerminal?.cashJournalOpen && newTerminal.id === currentTerminal.id;
 
-  const products = newTerminal?.products ? newTerminal?.products : currentTerminal.products ?? {};
+  const products = newTerminal?.products ? newTerminal.products : currentTerminal.products ?? {};
+  const productCategories = newTerminal?.productCategories
+    ? newTerminal.productCategories
+    : currentTerminal.productCategories ?? [];
 
   const newTerminalEffective = {
     ...newTerminal,
@@ -85,6 +95,7 @@ const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
     isLoading: false,
     isLoaded: true,
     products,
+    productCategories,
   };
   delete newTerminalEffective.openOrders;
 
@@ -92,4 +103,31 @@ const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
     ...applicationState,
     terminal: newTerminalEffective,
   };
+};
+
+const toggleProductCategoryFilter = ({ applicationState, categoryId }) => {
+  return updatePOSTerminalToState({
+    applicationState,
+    props: (terminal) => {
+      if (!terminal.productCategories) return;
+
+      const productCategories = terminal.productCategories.map((category) => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            selected: !category.selected,
+          };
+        } else if (category.selected) {
+          return {
+            ...category,
+            selected: false,
+          };
+        } else {
+          return category;
+        }
+      });
+
+      return { productCategories };
+    },
+  });
 };

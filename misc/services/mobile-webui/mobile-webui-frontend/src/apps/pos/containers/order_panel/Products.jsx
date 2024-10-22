@@ -8,6 +8,7 @@ import { useCurrentOrder } from '../../actions/orders';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { useProducts } from '../../actions/products';
 import PropTypes from 'prop-types';
+import ProductCategories from './ProductCategories';
 
 const Products = ({ disabled }) => {
   const posTerminal = usePOSTerminal();
@@ -21,6 +22,10 @@ const Products = ({ disabled }) => {
   const order_uuid = !currentOrder.isLoading ? currentOrder.uuid : null;
   const isEnabled = !disabled && !!order_uuid && !currentOrder.isProcessing;
 
+  const onProductCategoryClick = ({ categoryId }) => {
+    if (!isEnabled) return;
+    products.toggleCategorySelected(categoryId);
+  };
   const onProductButtonClick = (product) => {
     if (!isEnabled) return;
     newOrderLineDispatcher.initialize(product);
@@ -44,6 +49,7 @@ const Products = ({ disabled }) => {
         onQueryStringChanged={products.setQueryString}
         isEnabled={isEnabled && !newOrderLineDispatcher.isCatchWeightRequiredButNotSet}
       />
+      <ProductCategories categories={products.categories} disabled={!isEnabled} onClick={onProductCategoryClick} />
       <div className="products">
         {products.list.map((product) => (
           <ProductButton
