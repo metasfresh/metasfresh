@@ -218,80 +218,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 		}
 
-
-
-
-		final int I_Product_ID = importRecord.getI_Product_ID();
-		int M_Product_ID = importRecord.getM_Product_ID();
-		final boolean newProduct = M_Product_ID <= 0;
-		log.debug("I_Product_ID=" + I_Product_ID + ", M_Product_ID=" + M_Product_ID);
-
-		if (!newProduct && isInsertOnly)
-		{
-			// #4994 do not update
-			return ImportRecordResult.Nothing;
-		}
-		// Product
-		if (newProduct)            // Insert new Product
-		{
-			final I_M_Product product = createMProduct(importRecord);
-			if (Check.isEmpty(product.getName()))
-			{
-				product.setName(product.getValue());
-			}
-			save(product);
-			M_Product_ID = product.getM_Product_ID();
-			importRecord.setM_Product_ID(M_Product_ID);
-			log.trace("Insert Product");
-		}
-		else
-		// Update Product
-		{
-			final String sqlt = DB.convertSqlToNative("UPDATE M_PRODUCT "
-					+ "SET (Value,Name,Description,DocumentNote,Help,"
-					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
-					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy, "
-					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
-					+ ", " + I_I_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
-					+ ")= "
-					+ "(SELECT Value,coalesce(I_Product.Name, I_Product.Value),Description,DocumentNote,Help,"
-					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
-					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy, "
-					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
-					+ ", " + I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
-					+ " FROM I_Product WHERE I_Product_ID=" + I_Product_ID + ") "
-					+ "WHERE M_Product_ID=" + M_Product_ID);
-			PreparedStatement pstmt_updateProduct = null;
-			try
-			{
-				pstmt_updateProduct = DB.prepareStatement(sqlt, trxName);
-				final int no = pstmt_updateProduct.executeUpdate();
-				log.trace("Update Product = " + no);
-			}
-			catch (final SQLException ex)
-			{
-				throw new DBException("Update Product: " + ex, ex);
-			}
-			finally
-			{
-				DB.close(pstmt_updateProduct);
-			}
-		}
-
-		//
-		// Price List
-		createUpdateProductPrice(importRecord);
-
-		final I_M_Product productRecord = load(importRecord.getM_Product_ID(), I_M_Product.class);
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, productRecord, IImportInterceptor.TIMING_AFTER_IMPORT);
-
-		// #3404 Create default product planning
-		productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
-		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+		return productImportResult;
 	}
 
 	private void createUpdateProductPrice(final I_I_Product imp)
@@ -382,40 +309,4 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 		save(pp);
 	}
-
-	private I_M_Product createMProduct(@NonNull final I_I_Product importRecord)
-	{
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setAD_Org_ID(importRecord.getAD_Org_ID());
-		//
-		product.setValue(importRecord.getValue());
-		product.setName(importRecord.getName());
-		product.setDescription(importRecord.getDescription());
-		product.setDocumentNote(importRecord.getDocumentNote());
-		product.setHelp(importRecord.getHelp());
-		product.setUPC(importRecord.getUPC());
-		product.setExternalId(importRecord.getExternalId());
-		product.setSKU(importRecord.getSKU());
-		product.setC_UOM_ID(importRecord.getC_UOM_ID());
-		product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
-		product.setPackageSize(importRecord.getPackageSize());
-		product.setManufacturer_ID(importRecord.getManufacturer_ID());
-		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
-		product.setProductType(importRecord.getProductType());
-		product.setImageURL(importRecord.getImageURL());
-		product.setDescriptionURL(importRecord.getDescriptionURL());
-		product.setIsSold(importRecord.isSold());
-		product.setIsStocked(importRecord.isStocked());
-		product.setNetWeight(importRecord.getNetWeight());
-		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
-		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
-		product.setWeight(importRecord.getWeight());
-		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
-		product.setTrademark(importRecord.getTrademark());
-		product.setPZN(importRecord.getPZN());
-		product.setIsCommissioned(importRecord.isCommissioned());
-		product.setIsPurchased(importRecord.isPurchased());
-
-		return product;
-	}    // MProduct
 }

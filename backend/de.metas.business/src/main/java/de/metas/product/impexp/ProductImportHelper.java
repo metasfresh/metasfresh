@@ -57,10 +57,8 @@ import java.math.BigDecimal;
 		final ProductsCache cache = context.getProductsCache();
 
 		final Product product;
-		final boolean insertMode;
 		if (!context.isCurrentProductIdSet())	// Insert new BPartner
 		{
-			insertMode = true;
 			final I_M_Product productRecord = createProductRecordNoSave(context.getCurrentImportRecord());
 			if (Check.isEmpty(productRecord.getName()))
 			{
@@ -72,7 +70,6 @@ import java.math.BigDecimal;
 		else
 		// Update existing product
 		{
-			insertMode = false;
 			product = context.getCurrentProduct();
 			updateExistingProductNotSave(product.getRecord(), context.getCurrentImportRecord());
 		}
@@ -84,8 +81,6 @@ import java.math.BigDecimal;
 		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), product.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		product.save();
-		context.setCurrentProductId(product.getIdOrNull());
-
 		context.setCurrentProductId(product.getIdOrNull());
 	}
 
