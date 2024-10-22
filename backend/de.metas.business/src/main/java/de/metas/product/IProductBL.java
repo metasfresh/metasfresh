@@ -211,4 +211,6 @@ public interface IProductBL extends ISingletonService
 	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 }

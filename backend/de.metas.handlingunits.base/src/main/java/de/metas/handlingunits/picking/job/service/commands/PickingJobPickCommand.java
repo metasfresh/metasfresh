@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
@@ -62,6 +63,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -78,6 +80,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -103,6 +106,7 @@ public class PickingJobPickCommand
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -146,6 +150,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey NO_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey L_M_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey QR_CODE_EXTERNAL_LOT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_PRODUCT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
 	private final static AdMessageKey QR_CODE_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_NOT_SUPPORTED_ERROR_MSG");
 	private final static AdMessageKey CANNOT_PACK_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CANNOT_PACK_ERROR_MSG");
 	private final static AdMessageKey INVALID_NUMBER_QR_CODES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.INVALID_NUMBER_QR_CODES_ERROR_MSG");
@@ -184,7 +189,6 @@ public class PickingJobPickCommand
 			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
-		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
 		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
@@ -279,6 +283,8 @@ public class PickingJobPickCommand
 		this.lotNo = lotNo;
 
 		this.isCloseTarget = isCloseTarget;
+
+		validateQRCode(pickFromHUQRCode, line.getProductId(), catchWeightBD);
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -864,19 +870,19 @@ public class PickingJobPickCommand
 		);
 	}
 
-	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
+	private void validateQRCode(@Nullable final IHUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final BigDecimal catchWeightBD)
 	{
 		if (pickFromHUQRCode instanceof LMQRCode)
 		{
-			validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
+			validateQRCodeForLMQRCode((LMQRCode)pickFromHUQRCode, catchWeightBD);
 		}
 		else if (pickFromHUQRCode instanceof GS1HUQRCode)
 		{
-			validateCatchWeightForGS1(catchWeightBD, (GS1HUQRCode)pickFromHUQRCode);
+			validateQRCodeForGS1((GS1HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
 		}
 	}
 
-	private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
+	private static void validateQRCodeForLMQRCode(@NonNull final LMQRCode pickFromHUQRCode, @Nullable final BigDecimal catchWeightBD)
 	{
 		if (catchWeightBD == null)
 		{
@@ -894,25 +900,36 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private static void validateCatchWeightForGS1(final @Nullable BigDecimal catchWeightBD, @NonNull final GS1HUQRCode pickFromHUQRCode)
+	private void validateQRCodeForGS1(@NonNull final GS1HUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final  BigDecimal catchWeightBD)
 	{
-		if (catchWeightBD == null)
+		final GTIN gtin = pickFromHUQRCode.getGTIN().orElse(null);
+		if(gtin != null)
 		{
-			return;
+			final ProductId gs1ProductId = productBL.getProductIdByGTINNotNull(gtin, ClientId.METASFRESH);
+			if(!ProductId.equals(productId, gs1ProductId))
+			{
+				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
+						.setParameter("gtin", gtin)
+						.setParameter("expected", productId)
+						.setParameter("actual", gs1ProductId);
+			}
 		}
-
-		final BigDecimal gs1Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
-		if (gs1Weight == null)
+		
+		if (catchWeightBD != null)
 		{
-			return;
-		}
+			final BigDecimal gs1Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
+			if (gs1Weight == null)
+			{
+				return;
+			}
 
-		if (gs1Weight.compareTo(catchWeightBD) != 0)
-		{
-			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
-					.appendParametersToMessage()
-					.setParameter("pickFromHUQRCode", pickFromHUQRCode)
-					.setParameter("catchWeightBD", catchWeightBD);
+			if (gs1Weight.compareTo(catchWeightBD) != 0)
+			{
+				throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("pickFromHUQRCode", pickFromHUQRCode)
+						.setParameter("catchWeightBD", catchWeightBD);
+			}
 		}
 	}
 

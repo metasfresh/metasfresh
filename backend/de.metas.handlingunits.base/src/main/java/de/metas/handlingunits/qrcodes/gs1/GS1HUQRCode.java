@@ -2,6 +2,7 @@ package de.metas.handlingunits.qrcodes.gs1;
 
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -27,6 +28,8 @@ public class GS1HUQRCode implements IHUQRCode
 		final GS1Elements elements = GS1Parser.parseElementsOrNull(string);
 		return elements != null ? new GS1HUQRCode(elements) : null;
 	}
+	
+	public Optional<GTIN> getGTIN() { return elements.getGTIN();}
 
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return elements.getWeightInKg();}
