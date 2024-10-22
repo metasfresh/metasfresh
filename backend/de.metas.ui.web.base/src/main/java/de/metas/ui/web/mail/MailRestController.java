@@ -399,9 +399,22 @@ public class MailRestController
 		@SuppressWarnings("unchecked") final List<Object> jsonList = (List<Object>)event.getValue();
 		//noinspection unchecked
 		return jsonList.stream()
-				.map(mapObj -> (Map<String, Object>)mapObj)
-				.map(JSONLookupValue::stringLookupValueFromJsonMap)
+				.map(value -> toStringLookupValue(value))
 				.collect(LookupValuesList.collect());
+	}
+
+	private static LookupValue.StringLookupValue toStringLookupValue(final Object value)
+	{
+		if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.stringLookupValueFromJsonMap(map);
+		}
+		else
+		{
+			return LookupValue.StringLookupValue.of((String)value, (String)value);
+		}
+
 	}
 
 	@EventListener
