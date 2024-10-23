@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -1430,6 +1429,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Invoice Delivery.
+	 * Partner Group value is used, if Partner value isn't set
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1439,6 +1439,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Invoice Delivery.
+	 * Partner Group value is used, if Partner value isn't set
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2715,6 +2716,26 @@ public interface I_C_BPartner
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Purchase Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_WarehousePO_ID (int M_WarehousePO_ID);
+
+	/**
+	 * Get Purchase Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_WarehousePO_ID();
+
+	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
 	 * Set NAICS/SIC.
