@@ -30,6 +30,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 public class WarehouseAdvisor implements IWarehouseAdvisor
 {
+	final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public WarehouseId evaluateWarehouse(@NonNull final OrderLineId orderLineId)
@@ -64,7 +67,6 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 	protected WarehouseId findOrderWarehouseId(@NonNull final I_C_Order order)
 	{
-		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
@@ -149,30 +151,23 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	@Nullable
 	private WarehouseId findWarehouseIdForSOTrx(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner bp = partnerDAO.getById(bpartnerId);
 
-		if (soTrx.isSales())
+		if (soTrx.isSales() && bp.isCustomer())
 		{
-			if (!bp.isCustomer())
-			{
-				return null;
-			}
 			return WarehouseId.ofRepoIdOrNull(bp.getM_Warehouse_ID());
 		}
-
-		if (!bp.isVendor())
+		else if (soTrx.isPurchase() && bp.isVendor())
 		{
-			return null;
+			return WarehouseId.ofRepoIdOrNull(bp.getM_WarehousePO_ID());
 		}
 
-		return WarehouseId.ofRepoIdOrNull(bp.getM_WarehousePO_ID());
-
+		return null;
 	}
 
 	private boolean isPickingWarehouse(final WarehouseId warehouseId)
 	{
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+
 		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
 		return warehouse.isPickingWarehouse();
 	}
