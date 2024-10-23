@@ -16,6 +16,7 @@ import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
 import { doFinally } from '../../utils';
 import YesNoDialog from './YesNoDialog';
+import Spinner from '../Spinner';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -326,6 +327,7 @@ const GetQuantityDialog = ({
 
   return (
     <div>
+      {isProcessing && <Spinner />}
       <div className="prompt-dialog get-qty-dialog">
         <article className="message is-dark">
           <div className="message-body">
