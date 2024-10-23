@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,5 +55,27 @@ public class GS1Elements
 		}
 
 		return Optional.of(element.getValueAsBigDecimal());
+	}
+
+	public Optional<LocalDate> getBestBeforeDate()
+	{
+		final GS1Element element = byApplicationIdentifier.get(GS1ApplicationIdentifier.BEST_BEFORE_DATE);
+		if (element == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(element.getValueAsLocalDate());
+	}
+
+	public Optional<String> getLotNumber()
+	{
+		final GS1Element element = byApplicationIdentifier.get(GS1ApplicationIdentifier.BATCH_OR_LOT_NUMBER);
+		if (element == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(element.getValueAsString());
 	}
 }
