@@ -89,6 +89,8 @@ export class RawLookup extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    //logWhyDidYouUpdate('why did you update?', this.props, prevProps);
+
     this.handleValueChanged();
 
     const {
@@ -120,7 +122,13 @@ export class RawLookup extends Component {
       handleInputEmptyStatus && handleInputEmptyStatus(false);
     }
 
-    if (filterWidget && lookupEmpty && defaultValue === null) {
+    if (
+      filterWidget &&
+      lookupEmpty !== prevProps.lookupEmpty &&
+      lookupEmpty &&
+      defaultValue !== prevProps.defaultValue &&
+      defaultValue === null
+    ) {
       this.inputSearch.value = '';
     }
 
