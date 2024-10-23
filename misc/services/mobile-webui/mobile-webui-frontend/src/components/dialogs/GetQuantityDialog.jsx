@@ -11,6 +11,7 @@ import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import { toastError } from '../../utils/toast';
+import Spinner from '../Spinner';
 
 const GetQuantityDialog = ({
   userInfo,
@@ -35,6 +36,7 @@ const GetQuantityDialog = ({
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
   const [tempQtyStorage, setTempQtyStorage] = useState(qtyInfos.of({ qty: 0 }));
+  const [isLoading, setIsLoading] = useState(false);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
@@ -46,7 +48,8 @@ const GetQuantityDialog = ({
       : 0;
 
   const allValid =
-    doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
+    !isLoading &&
+    (doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null)));
 
   const actualValidateQtyEntered = useCallback(
     (qty, uom) => {
@@ -70,11 +73,12 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated = Math.max(qtyToIssue - qtyAlreadyOnScale, 0);
       }
 
+      setIsLoading(true);
       onQtyChange({
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
-      });
+      }).finally(() => setIsLoading(false));
     }
   };
 
@@ -142,6 +146,7 @@ const GetQuantityDialog = ({
 
   return (
     <div>
+      {isLoading && <Spinner />}
       <div className="prompt-dialog get-qty-dialog">
         <article className="message is-dark">
           <div className="message-body">
