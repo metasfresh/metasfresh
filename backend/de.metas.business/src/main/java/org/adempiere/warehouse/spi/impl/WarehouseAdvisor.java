@@ -31,8 +31,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class WarehouseAdvisor implements IWarehouseAdvisor
 {
 	final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-	final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public WarehouseId evaluateWarehouse(@NonNull final OrderLineId orderLineId)
@@ -77,10 +77,10 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 		if (order.isDropShip() && !isSOTrx)
 		{
-			final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
+			final WarehouseId dropShipWarehouseId = orgDAO.getOrgDropshipWarehouseId(adOrgId);
 			if (dropShipWarehouseId == null)
 			{
-				final String orgName = orgsRepo.retrieveOrgName(adOrgId);
+				final String orgName = orgDAO.retrieveOrgName(adOrgId);
 				throw new AdempiereException("@NotFound@ @DropShip_Warehouse_ID@ (@AD_Org_ID@: " + orgName + ")");
 			}
 			return dropShipWarehouseId;
@@ -100,9 +100,9 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return purchaseWarehouseId;
 		}
 
-		final WarehouseId orgPOWarehouseId = orgsRepo.getOrgPOWarehouseId(adOrgId);
+		final WarehouseId orgPOWarehouseId = orgDAO.getOrgPOWarehouseId(adOrgId);
 
-		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgsRepo.getOrgWarehouseId(adOrgId);
+		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgDAO.getOrgWarehouseId(adOrgId);
 	}
 
 	@Nullable
@@ -168,7 +168,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	private boolean isPickingWarehouse(final WarehouseId warehouseId)
 	{
 
-		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		return warehouse.isPickingWarehouse();
 	}
 }
