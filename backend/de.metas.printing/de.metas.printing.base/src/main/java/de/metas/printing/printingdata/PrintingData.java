@@ -322,6 +322,7 @@ public class PrintingData
 				.collect(ImmutableList.toImmutableList());
 
 		return toBuilder()
+				.clearSegments()
 				.segments(filteredSegments)
 				.adjustSegmentPageRanges(false)
 				.build();
