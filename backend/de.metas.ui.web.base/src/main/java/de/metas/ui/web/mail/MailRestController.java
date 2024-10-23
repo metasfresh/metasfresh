@@ -6,7 +6,6 @@ import de.metas.attachments.EmailAttachment;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
-import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
@@ -59,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -244,12 +244,11 @@ public class MailRestController
 		//
 		// Create the email object
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(userSession.getClientId());
-		final EMailCustomType mailCustomType = null;
 
 		final UserId fromUserId = webuiEmail.getFrom().getIdAs(UserId::ofRepoId);
 		final UserEMailConfig userEmailConfig = userBL.getEmailConfigById(fromUserId);
 
-		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
+		final List<EMailAddress> toList = extractEMailAddresses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
 			throw new FillMandatoryException("To");
@@ -260,7 +259,7 @@ public class MailRestController
 		final boolean html = false;
 		final EMail email = mailService.createEMail(
 				tenantEmailConfig,
-				mailCustomType,
+				null, //mailCustomType,
 				userEmailConfig,
 				to,
 				subject,
@@ -294,7 +293,7 @@ public class MailRestController
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
-	private Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
+	private Stream<EMailAddress> extractEMailAddresses(final LookupValuesList users)
 	{
 
 		return users.stream()
@@ -303,7 +302,7 @@ public class MailRestController
 
 	private EMailAddress extractEMailAddress(final LookupValue userLookupValue)
 	{
-		final UserId adUserId = userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		final UserId adUserId = extractUserIdOrNull(userLookupValue);
 		if (adUserId == null)
 		{
 			// consider the email as the DisplayName
@@ -318,6 +317,19 @@ public class MailRestController
 				throw new AdempiereException("User " + adUser.getName() + " does not have email");
 			}
 			return EMailAddress.ofString(email);
+		}
+	}
+
+	@Nullable
+	private static UserId extractUserIdOrNull(final LookupValue userLookupValue)
+	{
+		try
+		{
+			return userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		}
+		catch (final Exception ex)
+		{
+			return null;
 		}
 	}
 
@@ -365,14 +377,8 @@ public class MailRestController
 		final String fieldName = event.getPath();
 		if (PATCH_FIELD_To.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonTo = (List<Object>)event.getValue();
+			newEmailBuilder.to(extractStringLookupValuesList(event));
 
-			@SuppressWarnings("unchecked") final LookupValuesList to = jsonTo.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::integerLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.to(to);
 		}
 		else if (PATCH_FIELD_Subject.equals(fieldName))
 		{
@@ -386,18 +392,17 @@ public class MailRestController
 		}
 		else if (PATCH_FIELD_Attachments.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonAttachments = (List<Object>)event.getValue();
-
-			@SuppressWarnings("unchecked") final LookupValuesList attachments = jsonAttachments.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::stringLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.attachments(attachments);
+			newEmailBuilder.attachments(extractStringLookupValuesList(event));
 		}
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+
+			if (templateId == null)
+			{
+				throw new AdempiereException("Invalid " + PATCH_FIELD_TemplateId + ": " + event.getValue());
+			}
+
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
@@ -407,6 +412,29 @@ public class MailRestController
 					.setParameter("fieldName", fieldName)
 					.setParameter("availablePaths", PATCH_FIELD_ALL);
 		}
+	}
+
+	private static LookupValuesList extractStringLookupValuesList(final JSONDocumentChangedEvent event)
+	{
+		@SuppressWarnings("unchecked") final List<Object> jsonList = (List<Object>)event.getValue();
+		//noinspection unchecked
+		return jsonList.stream()
+				.map(value -> toStringLookupValue(value))
+				.collect(LookupValuesList.collect());
+	}
+
+	private static LookupValue.StringLookupValue toStringLookupValue(final Object value)
+	{
+		if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.stringLookupValueFromJsonMap(map);
+		}
+		else
+		{
+			return LookupValue.StringLookupValue.of((String)value, (String)value);
+		}
+
 	}
 
 	@EventListener
@@ -422,7 +450,21 @@ public class MailRestController
 	public JSONLookupValuesPage getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
-		return toJson(mailRepo.getToTypeahead(emailId, query));
+		final LookupValuesPage toTypeahead = mailRepo.getToTypeahead(emailId, query);
+		if (!toTypeahead.isEmpty())
+		{
+
+			return toJson(toTypeahead);
+		}
+		else if (!Check.isEmpty(query))
+		{
+			final String email = query.trim();
+			return toJson(LookupValuesPage.ofNullable(LookupValue.StringLookupValue.of(email, email)));
+		}
+		else
+		{
+			return toJson(LookupValuesPage.EMPTY.EMPTY);
+		}
 	}
 
 	private JSONLookupValuesPage toJson(final LookupValuesPage page)
@@ -479,6 +521,11 @@ public class MailRestController
 	{
 		final Properties ctx = Env.getCtx();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
+
+		if (boilerPlate == null)
+		{
+			throw new AdempiereException("No template found for " + templateId);
+		}
 
 		//
 		// Attributes
