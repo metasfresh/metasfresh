@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.impexp.BPCreditLimitImportRequest;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
@@ -34,6 +35,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -79,6 +81,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final ProductImportHelper productImporter;
 
 	public ProductImportProcess()
@@ -141,6 +144,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	private ProductImportContext createNewContext(final boolean insertOnly)
 	{
 		final ProductsCache productsCache = ProductsCache.builder()
+				.productsRepo(productsRepo)
 				.build();
 
 		return ProductImportContext.builder()
