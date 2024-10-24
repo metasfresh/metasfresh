@@ -1,8 +1,8 @@
-import React from 'react';
-import toast from 'react-hot-toast';
 import { unboxAxiosResponse } from './index';
 import { trl } from './translations';
 import { isError } from 'lodash';
+import { Bounce, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const toastErrorFromObj = (obj) => {
   console.log('toastErrorFromObj', { obj });
@@ -32,16 +32,13 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   }
 
   console.trace('toast error: ', { message, axiosError });
-  toast.custom(
-    (t) => (
-      <div className="toastContainer" onClick={() => toast.dismiss(t.id)}>
-        <span>{message}</span>
-      </div>
-    ),
-    {
-      duration: 86400000,
-    }
-  );
+
+  toast.error(message, {
+    autoClose: 1000 * 60 * 5,
+    position: 'bottom-center',
+    transition: Bounce,
+    bodyStyle: { overflow: 'auto' },
+  });
 };
 
 export const toastNotification = ({ messageKey, plainMessage }) => {
@@ -55,16 +52,10 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
     return;
   }
 
-  toast.custom(
-    (t) => (
-      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
-        <span>{message}</span>
-      </div>
-    ),
-    {
-      duration: 86400000,
-    }
-  );
+  toast.success(message, {
+    position: 'bottom-center',
+    transition: Bounce,
+  });
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
