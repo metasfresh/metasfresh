@@ -122,6 +122,8 @@ public interface IProductDAO extends ISingletonService
 	@Nullable
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
+	void save(I_M_Product record);
+
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
