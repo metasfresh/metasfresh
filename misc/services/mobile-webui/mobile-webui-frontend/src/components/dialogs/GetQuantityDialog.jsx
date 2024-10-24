@@ -12,6 +12,7 @@ import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import { toastError } from '../../utils/toast';
 import Spinner from '../Spinner';
+import { doFinally } from '../../utils';
 
 const GetQuantityDialog = ({
   userInfo,
@@ -74,11 +75,13 @@ const GetQuantityDialog = ({
       }
 
       setIsLoading(true);
-      onQtyChange({
+      const promise = onQtyChange({
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
-      }).finally(() => setIsLoading(false));
+      });
+
+      doFinally(promise, () => setIsLoading(false));
     }
   };
 
