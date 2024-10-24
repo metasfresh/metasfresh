@@ -1,17 +1,6 @@
 package de.metas.handlingunits.model.validator;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.mmovement.api.IMovementBL;
-import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
 import de.metas.event.IEventBusFactory;
-import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
@@ -20,11 +9,20 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementUserNotificationsProducer;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.mmovement.api.IMovementBL;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
 
 @Interceptor(I_M_Movement.class)
 public class M_Movement
 {
-	public static final transient M_Movement instance = new M_Movement();
+	public static final M_Movement instance = new M_Movement();
 
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
@@ -41,8 +39,6 @@ public class M_Movement
 
 	/**
 	 * Iterate all movement lines. In case a movement line is generated from a receipt, retrieve the HUs from that receipt and assign them to movement line.
-	 *
-	 * @param movement
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assignHUsFromReceipt(final I_M_Movement movement)
@@ -73,8 +69,6 @@ public class M_Movement
 
 	/**
 	 * Iterate each movement line, collect the packing materials and generate movement lines which also move those packing materials.
-	 *
-	 * @param movement
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_PREPARE)
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
