@@ -17,7 +17,6 @@ import { parseQRCodeString } from '../../utils/qrCode/hu';
 import { doFinally } from '../../utils';
 import YesNoDialog from './YesNoDialog';
 import Spinner from '../Spinner';
-import { doFinally } from '../../utils';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
