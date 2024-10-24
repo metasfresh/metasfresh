@@ -94,7 +94,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     const isWeightable = !!resolvedBarcodeData.isWeightable;
     const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
 
-    dispatch(
+    return dispatch(
       updateManufacturingIssue({
         wfProcessId,
         activityId,

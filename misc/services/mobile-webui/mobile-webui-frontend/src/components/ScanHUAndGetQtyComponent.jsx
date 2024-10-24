@@ -190,7 +190,7 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
