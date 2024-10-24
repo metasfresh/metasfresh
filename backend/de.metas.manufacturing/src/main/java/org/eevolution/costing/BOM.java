@@ -148,11 +148,25 @@ public class BOM
 			if (bomCostPrice != null && !bomCostPrice.isZero())
 			{
 				final Percent costAllocationPerc = bomLine.getCoProductCostDistributionPercent();
+				// here we compute the percentage out of the issued product amount
 				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, precision);
 
 				bomLine.setComponentsCostPrice(coProductCostPrice, costElementId);
 
-				bomCostPriceWithoutCoProducts = bomCostPriceWithoutCoProducts.subtract(coProductCostPrice);
+				bomCostPriceWithoutCoProducts = (bomCostPriceWithoutCoProducts // 0.9334
+						.multiply(bomLine.getQtyIncludingScrap().add(this.getQty())) // *100.005 = 93.344667
+						.subtract(coProductCostPrice.multiply(bomLine.getQtyIncludingScrap())))// -7.7816 = 85.5630
+					 		.divide(this.getQty(), precision) // /75 = 1.14084
+							.subtract(coProductCostPrice); // - 0.3112 = 0.8296
+
+
+				// validation
+				// co-product amount: 0.3112 * 25 = 7.78
+				// main product amount: 0.8296 * 75 = 62.22
+				// issued amount: 7 * 100 = 70 => the amounts fit
+
+
+				//bomCostPriceWithoutCoProducts = bomCostPriceWithoutCoProducts.subtract(coProductCostPrice);
 			}
 			else
 			{

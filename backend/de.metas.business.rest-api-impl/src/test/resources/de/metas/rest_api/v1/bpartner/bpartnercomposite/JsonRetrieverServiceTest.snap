@@ -19,7 +19,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
