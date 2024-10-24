@@ -189,8 +189,26 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
-		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocSubType())
+		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+	}
+
+	@Override
+	public boolean isProFormaShipment(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
+				&& DocBaseType.ofCode(dt.getDocBaseType()).isShipment();
+	}
+
+	@Override
+	public boolean isProFormaShippingNotification(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
+				&& DocBaseType.ofCode(dt.getDocBaseType()).isShippingNotification();
 	}
 
 	@Override

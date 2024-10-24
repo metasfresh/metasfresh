@@ -29,6 +29,8 @@ import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
+import de.metas.impex.InputDataSourceId;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -43,6 +45,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Order
 {
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -101,18 +105,24 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID,
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, I_C_Order.COLUMNNAME_C_DocType_ID, I_C_Order.COLUMNNAME_C_BPartner_ID } )
 	public void setEdiEnabledForNewOrder(final I_C_Order order)
 	{
-		final boolean ediEnabledByInputDataSource;
+		order.setIsEdiEnabled(isEdiEnabled(order));
+	}
 
-		if (order.getAD_InputDataSource_ID()<=0)
+	private boolean isEdiEnabled(final I_C_Order order)
+	{
+		final boolean ediEnabledByInputDataSource;
+		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(order.getAD_InputDataSource_ID());
+		if (inputDataSourceId == null)
 		{
 			ediEnabledByInputDataSource = false;
 		}
 		else
 		{
-			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
+			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(inputDataSourceId);
 		}
 
 		final boolean ediEnabledByBPartner;
@@ -125,48 +135,6 @@ public class C_Order
 		{
 			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
 		}
-		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
-	}
-
-	/**
-	 * task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
-	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
-	public void updateEdiEnabled(final I_C_Order order)
-	{
-		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
-
-		if (orderInputDataSourceId <= 0)
-		{
-			// nothing to do
-			return;
-		}
-
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
-		if (isEdiEnabled)
-		{
-			order.setIsEdiEnabled(true);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void onPartnerChange(final I_C_Order order)
-	{
-
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
-		if (partner == null)
-		{
-			// nothing to do
-			return;
-		}
-
-		final boolean isEdiRecipient = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
-
-		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
-		// If the new bp is edi recipient, we leave it to the user to set the flag or not
-		if (!isEdiRecipient)
-		{
-			order.setIsEdiEnabled(false);
-		}
+		return !orderBL.isProFormaSO(order) && (ediEnabledByInputDataSource || ediEnabledByBPartner);
 	}
 }

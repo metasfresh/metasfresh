@@ -103,4 +103,8 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isAPCreditMemo() {return APCreditMemo.equals(this);}
 
 	public boolean isDunningDoc(){return DunningDoc.equals((this));}
+
+	public boolean isShipment(){return MaterialDelivery.equals(this);}
+
+	public boolean isShippingNotification(){return ShippingNotification.equals(this);}
 }

@@ -7,7 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
-import de.metas.document.DocBaseType;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.dimension.Dimension;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
@@ -17,6 +17,7 @@ import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
+import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,10 +28,10 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	private ShippingNotification shippingNotification;
 
 	Doc_ShippingNotification(
-			@NonNull ShippingNotificationAcctService shippingNotificationAcctService,
+			@NonNull final ShippingNotificationAcctService shippingNotificationAcctService,
 			@NonNull final AcctDocContext ctx)
 	{
-		super(ctx, DocBaseType.ShippingNotification);
+		super(ctx);
 		this.shippingNotificationAcctService = shippingNotificationAcctService;
 	}
 
@@ -46,9 +47,17 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	@Override
 	protected List<Fact> createFacts(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
-		return ImmutableList.of(fact);
+		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
+		if (X_C_DocType.DOCSUBTYPE_ProForma.equals(docBaseAndSubType.getDocSubType()))
+		{
+			return ImmutableList.of();
+		}
+		else
+		{
+			final Fact fact = new Fact(this, as, PostingType.Actual);
+			shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
+			return ImmutableList.of(fact);
+		}
 	}
 
 	private void createFactsForLine(final Fact fact, final ShippingNotificationLine line)

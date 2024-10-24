@@ -27,6 +27,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -176,7 +177,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_docStatus = extractDocStatus(p_po);
 
 		// Document Type
-		setDocBaseType(defaultDocBaseType);
+		setDocBaseAndSubType(defaultDocBaseType);
 	}   // Doc
 
 	private static DocStatus extractDocStatus(@NonNull final PO po)
@@ -203,7 +204,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Document Type
 	 */
-	private DocBaseType _docBaseType = null;
+	private DocBaseAndSubType _docBaseAndSubType = null;
 	/**
 	 * Document Status
 	 */
@@ -741,11 +742,16 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected final DocBaseType getDocBaseType()
 	{
-		if (_docBaseType == null)
+		return getDocBaseAndSubType().getDocBaseType();
+	}
+
+	protected final DocBaseAndSubType getDocBaseAndSubType()
+	{
+		if (_docBaseAndSubType == null)
 		{
-			setDocBaseType(null);
+			setDocBaseAndSubType(null);
 		}
-		return _docBaseType;
+		return _docBaseAndSubType;
 	}
 
 	/**
@@ -753,22 +759,22 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @param docBaseType optional document base type to be used.
 	 */
-	private void setDocBaseType(@Nullable final DocBaseType docBaseType)
+	private void setDocBaseAndSubType(@Nullable final DocBaseType docBaseType)
 	{
 		if (docBaseType != null)
 		{
-			_docBaseType = docBaseType;
+			_docBaseAndSubType = DocBaseAndSubType.of(docBaseType);
 		}
 
 		// No Document Type defined
 		final DocTypeId docTypeId = getC_DocType_ID();
-		if (_docBaseType == null && docTypeId != null)
+		if (_docBaseAndSubType == null && docTypeId != null)
 		{
 			final I_C_DocType docType = services.getDocTypeById(docTypeId);
-			_docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
+			_docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 			m_GL_Category_ID = GLCategoryId.ofRepoId(docType.getGL_Category_ID());
 		}
-		if (_docBaseType == null)
+		if (_docBaseAndSubType == null)
 		{
 			log.error("No DocBaseType for C_DocType_ID={}, DocumentNo={}", docTypeId, getDocumentNo());
 		}
@@ -785,7 +791,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			log.warn("No default GL_Category - {}", this);
 		}
 
-		if (_docBaseType == null)
+		if (_docBaseAndSubType == null)
 		{
 			throw new IllegalStateException("Document Type not found");
 		}
