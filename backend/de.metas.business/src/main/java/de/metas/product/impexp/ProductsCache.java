@@ -67,8 +67,7 @@ final class ProductsCache
 	final class Product
 	{
 		@Getter
-		private I_M_Product record;
-
+		private final I_M_Product record;
 
 		private Product(@NonNull final I_M_Product record)
 		{
@@ -87,9 +86,7 @@ final class ProductsCache
 
 		public void save()
 		{
-			final boolean isNew = record.getM_Product_ID() <= 0;
 			productsRepo.save(record);
-
 			productsCache.put(getIdOrNull(), this);
 		}
 	}
