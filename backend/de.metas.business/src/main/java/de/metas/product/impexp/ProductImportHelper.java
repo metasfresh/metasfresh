@@ -57,7 +57,7 @@ import java.math.BigDecimal;
 		final ProductsCache cache = context.getProductsCache();
 
 		final Product product;
-		if (!context.isCurrentProductIdSet())	// Insert new BPartner
+		if (!context.isCurrentProductIdSet())
 		{
 			final I_M_Product productRecord = createProductRecordNoSave(context.getCurrentImportRecord());
 			if (Check.isEmpty(productRecord.getName()))
@@ -101,10 +101,6 @@ import java.math.BigDecimal;
 		}
 		product.setIsSold(from.isSold());
 		product.setIsStocked(from.isStocked());
-		if (from.getUPC() != null)
-		{
-			product.setUPC(from.getUPC());
-		}
 		if (from.getUPC() != null)
 		{
 			product.setUPC(from.getUPC());
@@ -163,7 +159,7 @@ import java.math.BigDecimal;
 		{
 			product.setRawMaterialOrigin_ID(from.getRawMaterialOrigin_ID());
 		}
-		if (from.getM_CustomsTariff_ID() > 0l)
+		if (from.getM_CustomsTariff_ID() > 0)
 		{
 			product.setM_CustomsTariff_ID(from.getM_CustomsTariff_ID());
 		}

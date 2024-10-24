@@ -40,11 +40,11 @@ INSERT INTO t_alter_column values('i_product','ShelfWidth','NUMERIC',null,null)
 
 -- Column: I_Product.Name
 -- 2024-10-22T07:11:04.504Z
-UPDATE AD_Column SET FieldLength=256,Updated=TO_TIMESTAMP('2024-10-22 10:11:04.504','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=7819
+UPDATE AD_Column SET FieldLength=600,Updated=TO_TIMESTAMP('2024-10-22 10:11:04.504','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=7819
 ;
 
 -- 2024-10-22T07:11:05.967Z
-INSERT INTO t_alter_column values('i_product','Name','VARCHAR(256)',null,null)
+INSERT INTO t_alter_column values('i_product','Name','VARCHAR(600)',null,null)
 ;
 
 

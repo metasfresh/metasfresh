@@ -183,6 +183,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		// => create a new Product or update the existing one
 		ProductImportContext context = (ProductImportContext)state.getValue();
 		final ImportRecordResult productImportResult;
+
+
 		if (context == null || !context.isSameProduct(importRecord))
 		{
 			context = createNewContext(isInsertOnly);
@@ -196,18 +198,19 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			final ProductId previousProductId = context.getCurrentProductIdOrNull();
 			context.setCurrentImportRecord(importRecord);
 
+			final ProductId productId = ProductId.ofRepoIdOrNull(importRecord.getM_Product_ID());
 			if (previousProductId == null)
 			{
 				productImportResult = importOrUpdateProduct(context);
 			}
-			else if (importRecord.getM_Product_ID() <= 0 || importRecord.getM_Product_ID() == previousProductId.getRepoId())
+			else if (productId == null || ProductId.equals(productId,previousProductId))
 			{
 				importRecord.setM_Product_ID(previousProductId.getRepoId());
 				productImportResult = ImportRecordResult.Nothing;
 			}
 			else
 			{
-				throw new AdempiereException("Same Product valeu as previous line but not same Product linked");
+				throw new AdempiereException("Same Product value as previous line but not same Product linked");
 			}
 		}
 
