@@ -27,6 +27,7 @@ import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchemaElementType;
@@ -288,7 +289,7 @@ public class FinStatement extends JavaProcess
 			+ "DateAcct, Name, Description,"
 			+ "AmtAcctDr, AmtAcctCr, Balance, Qty) ");
 		sb.append("SELECT ").append(getPinstanceId().getRepoId()).append(",0,0,")
-			.append(DB.TO_DATE(p_DateAcct_From, true)).append(",")
+			.append(DB.TO_DATE(p_DateAcct_From, DisplayType.Date)).append(",")
 			.append(DB.TO_STRING(Msg.getMsg(Env.getCtx(), "BeginningBalance"))).append(",NULL,"
 			+ "COALESCE(SUM(AmtAcctDr),0), COALESCE(SUM(AmtAcctCr),0), COALESCE(SUM(AmtAcctDr-AmtAcctCr),0), COALESCE(SUM(Qty),0) "
 			+ "FROM Fact_Acct "
