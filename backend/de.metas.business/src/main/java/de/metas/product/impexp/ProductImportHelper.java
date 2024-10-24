@@ -75,9 +75,6 @@ import java.math.BigDecimal;
 		}
 
 
-		//
-		// Update after INSERT/UPDATE
-
 		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), product.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		product.save();
@@ -94,14 +91,6 @@ import java.math.BigDecimal;
 		{
 			product.setDescription(from.getDescription());
 		}
-		// if (from.getDocumentNote() != null)
-		// {
-		// 	product.setDocumentNote(from.geDocumentNote());
-		// }
-		// if (from.getHelp() != null)
-		// {
-		// 	product.setHelp(from.geHelp());
-		// }
 		if (from.getPackage_UOM_ID() > 0)
 		{
 			product.setPackage_UOM_ID(from.getPackage_UOM_ID());

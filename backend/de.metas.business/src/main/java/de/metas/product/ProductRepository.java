@@ -2,7 +2,6 @@ package de.metas.product;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import de.metas.async.model.I_C_Queue_Element;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
