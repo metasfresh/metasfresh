@@ -138,12 +138,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return new ArrayList<>(_createdInvoiceLineGroups);
 	}
 
-	private void addCreatedInvoiceLineGroup(final IQualityInvoiceLineGroup invoiceLineGroup)
+	private void addCreatedInvoiceLineGroup(@NonNull final IQualityInvoiceLineGroup invoiceLineGroup)
 	{
-		//
-		// Validate the invoice line group (before adding)
-		Check.assumeNotNull(invoiceLineGroup, "invoiceLineGroup not null");
-
 		//
 		// Validate the invoiceable line
 		final IQualityInvoiceLine invoiceableLine = invoiceLineGroup.getInvoiceableLine();
@@ -256,14 +252,24 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		}
 
 		//
-		// Additional fees
+		// Produced Total Without By Product Additional Fees
 		// e.g.
 		// Abzug für Beitrag Basic-Linie 9831.2 kg -0.06 -589.88
 		// Abzug für Beitrag Verkaufsförderung
 		boolean firstItem = true; //
-		for (final IInvoicingItem feeItem : getQualityBasedConfig().getAdditionalFeeProducts())
+		for (final IInvoicingItem feeItem : getQualityBasedConfig().getProducedTotalWithoutByProductsAdditionalFeeProducts())
 		{
-			createQualityInvoiceLineGroup_AditionalFees(feeItem, firstItem); // is called with firstItem==true only one time
+			createQualityInvoiceLineGroup_AdditionalFees(feeItem, QualityInspectionLineType.ProducedTotalWithoutByProducts, firstItem); // is called with firstItem==true only one time
+			firstItem = false;
+		}
+
+		//
+		// Raw Additional Fees
+		// e.g.
+		// Abzug ungewaschene BIO Karotten
+		for (final IInvoicingItem feeItem : getQualityBasedConfig().getRawAdditionalFeeProducts())
+		{
+			createQualityInvoiceLineGroup_AdditionalFees(feeItem, QualityInspectionLineType.Raw, firstItem); // is called with firstItem==true only one time
 			firstItem = false;
 		}
 
@@ -325,8 +331,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Returns the first {@link IQualityInvoiceLineGroup} that is supposed to be displayed
-	 *
-	 * @return
 	 */
 	private IQualityInvoiceLineGroup getFirstDisplayedGroupOrNull()
 	{
@@ -709,10 +713,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	/**
-	 * @param firstItem indicates if this is the first fee-item. If it is, then the method will prepend a details line that is about the total produced goods (without By-Products).
+	 * @param firstItem indicates if this is the first fee-item. If it is, then the method will prepend a details line that is about the total produced goods (without By-Products) or about raw goods.
 	 */
-	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_AditionalFees(
-			final IInvoicingItem feeItem,
+	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_AdditionalFees(
+			@NonNull final IInvoicingItem feeItem,
+			@NonNull final QualityInspectionLineType type,
 			final boolean firstItem)
 	{
 		//
@@ -723,10 +728,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// Detail: our reference line which we will use to calculate the fee invoiceable line
 		// (i.e. Ausbeute (Marktfähige Ware))
 		// Create the detail only if it's first line
-		final IQualityInspectionLine producedTotalWithoutByProductsLine = getQualityInspectionLinesCollection().getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		final IQualityInspectionLine qualityInspectionLine = getQualityInspectionLinesCollection().getByType(type);
 		if (firstItem)
 		{
-			final QualityInvoiceLine detail = createQualityInvoiceLine(producedTotalWithoutByProductsLine);
+			final QualityInvoiceLine detail = createQualityInvoiceLine(qualityInspectionLine);
 			detail.setDisplayed(true);
 			invoiceLineGroup.addDetailBefore(detail);
 		}
@@ -739,7 +744,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			invoiceableLine.setDisplayed(true);
 			invoiceableLine.setM_Product(feeItem.getM_Product());
-			invoiceableLine.setQty(Quantity.of(producedTotalWithoutByProductsLine.getQtyProjected(), producedTotalWithoutByProductsLine.getC_UOM()));
+			invoiceableLine.setQty(Quantity.of(qualityInspectionLine.getQtyProjected(), qualityInspectionLine.getC_UOM()));
 
 			// Pricing
 			final IEditablePricingContext pricingCtx = createPricingContext(invoiceableLine);
@@ -748,7 +753,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			pricingResult.setPriceStd(pricingResult.getPriceStd().negate());
 			pricingResult.setPriceLimit(pricingResult.getPriceLimit().negate());
 			// NOTE: we need to set the Price UOM to same UOM as Qty to avoid conversion errors like (cannot convert from Kg to Stuck)
-			pricingResult.setPriceUomId(UomId.ofRepoId(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID()));
+			pricingResult.setPriceUomId(UomId.ofRepoId(qualityInspectionLine.getC_UOM().getC_UOM_ID()));
 			invoiceableLine.setPrice(pricingResult);
 		}
 
