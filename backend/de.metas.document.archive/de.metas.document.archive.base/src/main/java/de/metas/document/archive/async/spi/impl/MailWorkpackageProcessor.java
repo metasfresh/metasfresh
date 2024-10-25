@@ -17,12 +17,10 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
-import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
-import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
@@ -67,7 +65,7 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 /**
  * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
  * The recipient's email address is taken from {@link I_C_Doc_Outbound_Log#getCurrentEMailAddress()}.
- * Where this column is empty, no mail is send.
+ * Where this column is empty, no mail is sent.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -94,7 +92,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
@@ -134,6 +132,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			else
 			{
+				//noinspection DataFlowIssue
 				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
@@ -166,12 +165,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 				processId,
 				docBaseAndSubType,
-				(EMailCustomType)null); // mailCustomType
+				null); // mailCustomType
 
 		// note that we verified this earlier
-		final EMailAddress mailTo = Check.assumeNotNull(
-				EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress()),
-				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
+		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())
+				.orElseThrow(() -> new AdempiereException("C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log=" + docOutboundLogRecord));
 
 		// Create and send email
 		final ArchiveEmailSentStatus status;
@@ -211,17 +209,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		//
 		// Create doc outbound log entry
 		{
-			final EMailAddress from = mailbox.getEmail();
-			final EMailAddress cc = null;
-			final EMailAddress bcc = null;
 
 			archiveEventManager.fireEmailSent(
 					archive,
-					(UserEMailConfig)null,
-					from,
+					null,
+					mailbox.getEmail(),
 					mailTo,
-					cc,
-					bcc,
+					null,
+					null,
 					status);
 		}
 	}
@@ -247,7 +242,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			return false;
 		}
 
-		return message.toLowerCase().indexOf("<html>") >= 0;
+		return message.toLowerCase().contains("<html>");
 	}
 
 	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)

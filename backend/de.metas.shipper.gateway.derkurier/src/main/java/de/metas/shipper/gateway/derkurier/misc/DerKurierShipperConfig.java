@@ -34,6 +34,7 @@ import java.util.Optional;
  */
 
 @Value
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DerKurierShipperConfig
 {
 	String restApiBaseUrl;

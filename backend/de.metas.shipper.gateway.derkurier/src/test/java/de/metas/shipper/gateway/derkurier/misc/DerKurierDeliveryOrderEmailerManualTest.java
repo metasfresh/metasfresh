@@ -14,11 +14,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.fail;
 
 /*
  * #%L
@@ -94,23 +93,15 @@ public class DerKurierDeliveryOrderEmailerManualTest
 				mailService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(
-				mailbox, 
-				EMailAddress.ofString("orderProcessing@derKurier.test"), 
+				mailbox,
+				EMailAddress.ofString("orderProcessing@derKurier.test"),
 				firstEntry);
 
 		// now check in your mail server if the mail is OK..
 	}
 
-	private final byte[] generateBytes()
+	private byte[] generateBytes()
 	{
-		try
-		{
-			return new String("Test-Attachment-Text-As-Bytes").getBytes("UTF-8");
-		}
-		catch (final UnsupportedEncodingException e)
-		{
-			fail("Unable to generate byte for our attachment", e);
-			return null;
-		}
+		return "Test-Attachment-Text-As-Bytes".getBytes(StandardCharsets.UTF_8);
 	}
 }

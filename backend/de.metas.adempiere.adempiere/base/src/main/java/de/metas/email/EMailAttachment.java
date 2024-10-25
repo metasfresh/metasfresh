@@ -54,30 +54,22 @@ public class EMailAttachment implements Serializable
 {
 	public static EMailAttachment of(@NonNull final File file)
 	{
-		final String filename = file.getName();
-		final byte[] content = Util.readBytes(file);
-		final URI uri = null;
-		return new EMailAttachment(filename, content, uri);
+		return of(file.getName(), file);
 	}
 
 	public static EMailAttachment of(@NonNull final String filename, @NonNull final File file)
 	{
-		final byte[] content = Util.readBytes(file);
-		final URI uri = null;
-		return new EMailAttachment(filename, content, uri);
+		return of(filename, Util.readBytes(file));
 	}
 
 	public static EMailAttachment of(@NonNull final String filename, final byte[] content)
 	{
-		final URI uri = null;
-		return new EMailAttachment(filename, content, uri);
+		return new EMailAttachment(filename, content, null);
 	}
 
 	public static EMailAttachment of(@NonNull final URI uri)
 	{
-		final String filename = null;
-		final byte[] content = null;
-		return new EMailAttachment(filename, content, uri);
+		return new EMailAttachment(null, null, uri);
 	}
 
 	public static EMailAttachment of(@NonNull final Resource resource)
@@ -88,6 +80,7 @@ public class EMailAttachment implements Serializable
 		}
 		catch (IOException e)
 		{
+			//noinspection DataFlowIssue
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}

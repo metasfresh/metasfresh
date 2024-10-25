@@ -188,7 +188,7 @@ public class PayPalCheckoutManualTest2
 					.orgId(orgId)
 					.amount(money(100))
 					.payerContactId(createPayerBPartnerContact())
-					.payerEmail(EMailAddress.ofNullableString("from@example.com"))
+					.payerEmail(EMailAddress.ofString("from@example.com"))
 					.salesOrderId(salesOrderId)
 					.dateTrx(LocalDate.now())
 					.paymentRule(PaymentRule.PayPal)

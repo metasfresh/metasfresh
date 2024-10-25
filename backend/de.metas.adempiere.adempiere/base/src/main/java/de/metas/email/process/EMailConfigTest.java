@@ -15,9 +15,8 @@ import de.metas.user.UserId;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- */
+
+@SuppressWarnings("unused")
 public class EMailConfigTest extends JavaProcess
 {
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
