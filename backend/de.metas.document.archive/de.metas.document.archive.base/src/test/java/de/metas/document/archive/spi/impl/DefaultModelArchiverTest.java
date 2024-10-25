@@ -29,6 +29,7 @@ import de.metas.document.DocTypeId;
 import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
 import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocOutboundConfigRepository;
+import de.metas.report.DocOutboundConfigService;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -62,6 +63,7 @@ class DefaultModelArchiverTest
 
 		helper = new DefaultModelArchiverTestHelper();
 		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
+		SpringContextHolder.registerJUnitBean(new DocOutboundConfigService(DocOutboundConfigRepository.instance));
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 	}
