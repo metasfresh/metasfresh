@@ -38,18 +38,9 @@ import lombok.Value;
 @Builder
 public class MailboxQuery
 {
-	@NonNull
-	ClientId clientId;
-
-	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	AdProcessId adProcessId;
-
-	@Nullable
-	DocBaseAndSubType docBaseAndSubType;
-
-	@Nullable
-	EMailCustomType customType;
+	@NonNull ClientId clientId;
+	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
+	@Nullable AdProcessId adProcessId;
+	@Nullable DocBaseAndSubType docBaseAndSubType;
+	@Nullable EMailCustomType customType;
 }

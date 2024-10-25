@@ -1,27 +1,24 @@
 package de.metas.email;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URI;
-
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
-import org.springframework.core.io.Resource;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util;
+import org.springframework.core.io.Resource;
+
+import javax.activation.DataSource;
+import javax.activation.URLDataSource;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URI;
 
 /*
  * #%L
@@ -33,12 +30,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,14 +44,13 @@ import lombok.NonNull;
 
 /**
  * EMail attachment.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @see EMail#getAttachments()
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("serial")
-@EqualsAndHashCode
-public final class EMailAttachment implements Serializable
+@Value
+public class EMailAttachment implements Serializable
 {
 	public static EMailAttachment of(@NonNull final File file)
 	{
@@ -96,12 +92,9 @@ public final class EMailAttachment implements Serializable
 		}
 	}
 
-	@JsonProperty("filename")
-	private final String filename;
-	@JsonProperty("content")
-	private final byte[] content;
-	@JsonProperty("uri")
-	private final URI uri;
+	@JsonProperty("filename") String filename;
+	@JsonProperty("content") byte[] content;
+	@JsonProperty("uri") URI uri;
 
 	@JsonCreator
 	private EMailAttachment(

@@ -1,13 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
@@ -16,11 +9,17 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -103,7 +102,9 @@ public class DerKurierDeliveryOrderEmailer
 		{
 			return;
 		}
-		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxOrNull();
+		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxId()
+				.map(mailService::getMailboxById)
+				.orElseThrow(() -> new AdempiereException("No mailbox defined: " + shipperConfig));
 
 		sendAttachmentAsEmail(deliveryOrderMailBox, emailAddress, attachmentEntry);
 	}

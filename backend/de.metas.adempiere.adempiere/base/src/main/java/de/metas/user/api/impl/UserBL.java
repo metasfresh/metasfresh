@@ -8,6 +8,9 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxType;
+import de.metas.email.mailboxes.SMTPConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
@@ -53,8 +56,6 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
-
-
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -363,9 +364,11 @@ public class UserBL implements IUserBL
 		}
 	}    // isEMailValid
 
-	@Override
+	/**
+	 * @return <code>null</code> if OK, error message if not ok
+	 */
 	@Nullable
-	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
+	private ITranslatableString checkCanSendEMail(@NonNull final UserEMailConfig userEmailConfig)
 	{
 		// Email
 		{
@@ -378,20 +381,31 @@ public class UserBL implements IUserBL
 
 		// STMP user/password (if SMTP authorization is required)
 		final ClientEMailConfig clientEmailConfig = clientDAO.getEMailConfigById(Env.getClientId());
-		if (clientEmailConfig.isSmtpAuthorization())
+		if (!clientEmailConfig.getMailbox().isPresent())
 		{
-			// SMTP user
-			final String emailUser = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getUsername(), clientEmailConfig.getUsername());
-			if (Check.isEmpty(emailUser, true))
-			{
-				return TranslatableStrings.constant("no SMTP user configured in AD_User or AD_Client");
-			}
+			return clientEmailConfig.getMailbox().getExplanation();
+		}
 
-			// SMTP password
-			final String emailPassword = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getPassword(), clientEmailConfig.getPassword());
-			if (Check.isEmpty(emailPassword, false))
+		final Mailbox mailbox = clientEmailConfig.getMailbox().get()
+				.mergeFrom(userEmailConfig);
+		if (MailboxType.SMTP.equals(mailbox.getType()))
+		{
+			final SMTPConfig smtpConfig = mailbox.getSmtpConfigNotNull();
+			if (smtpConfig.isSmtpAuthorization())
 			{
-				return TranslatableStrings.constant("SMTP authorization is required but no SMTP password set in AD_User or AD_Client");
+				// SMTP user
+				final String emailUser = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getUsername(), smtpConfig.getUsername());
+				if (Check.isBlank(emailUser))
+				{
+					return TranslatableStrings.constant("no SMTP user configured in AD_User or AD_Client");
+				}
+
+				// SMTP password
+				final String emailPassword = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getPassword(), smtpConfig.getPassword());
+				if (Check.isEmpty(emailPassword))
+				{
+					return TranslatableStrings.constant("SMTP authorization is required but no SMTP password set in AD_User or AD_Client");
+				}
 			}
 		}
 
@@ -437,7 +451,7 @@ public class UserBL implements IUserBL
 	private String getBPartnerLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
-		if(bpartnerId == null)
+		if (bpartnerId == null)
 		{
 			return null;
 		}

@@ -1,15 +1,13 @@
 package de.metas.user.api;
 
-import de.metas.util.Check;
-import org.compiere.model.I_AD_User;
-
 import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 
@@ -63,14 +61,6 @@ public interface IUserBL extends ISingletonService
 	 * @return return true if email is valid (artificial check)
 	 */
 	boolean isEMailValid(I_AD_User user);
-
-	/**
-	 * Could we send an email from this user
-	 *
-	 * @return <code>null</code> if OK, error message if not ok
-	 */
-	@Nullable
-	ITranslatableString checkCanSendEMail(UserEMailConfig userEmailConfig);
 
 	void assertCanSendEMail(@NonNull final UserId adUserId);
 

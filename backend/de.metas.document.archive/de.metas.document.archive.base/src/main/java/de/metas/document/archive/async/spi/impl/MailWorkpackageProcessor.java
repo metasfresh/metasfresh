@@ -18,6 +18,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
+import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
@@ -127,11 +128,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		catch (final Exception e)
 		{
-			if (mailService.isConnectionError(e))
+			if (EMailSentStatus.isConnectionError(e))
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
-			throw AdempiereException.wrapIfNeeded(e);
+			else
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 		}
 	}
 
@@ -165,9 +169,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				(EMailCustomType)null); // mailCustomType
 
 		// note that we verified this earlier
-		final EMailAddress mailTo = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress());
-		Check.assumeNotNull(
-				docOutboundLogRecord.getCurrentEMailAddress(),
+		final EMailAddress mailTo = Check.assumeNotNull(
+				EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress()),
 				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
 
 		// Create and send email

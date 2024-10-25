@@ -17,23 +17,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import org.adempiere.service.IClientDAO;
-import org.adempiere.service.impl.ClientDAO;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -44,8 +27,23 @@ import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.Language;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.service.impl.ClientDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  *  Client Model
@@ -407,52 +405,6 @@ public class MClient extends X_AD_Client
 		return aa != null && !aa.equals(AUTOARCHIVE_None);
 	}	//	isAutoArchive
 
-	/**************************************************************************
-	 * Test EMail
-	 *
-	 * @return OK or error
-	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
-	 */
-	@Deprecated
-	public String testEMail()
-	{
-		final ClientEMailConfig clientEmailConfig = ClientDAO.toClientEMailConfig(this);
-		if(!Check.isEmpty(clientEmailConfig.getUsername()))
-		{
-			return "No Request EMail for " + getName();
-		}
-		
-		final String subject = Adempiere.getName() + " EMail Test";
-		final EMail email = createEMail(clientEmailConfig.getEmail(), subject, "");
-		if (email == null)
-		{
-			return "Could not create EMail: " + getName();
-		}
-
-		final String message = Adempiere.getName() + " EMail Test\n " + email;
-		email.setMessageText(message);
-
-		try
-		{
-			final EMailSentStatus emailSentStatus = email.send();
-			if (emailSentStatus.isSentOK())
-			{
-				log.info("Sent Test EMail: {}", email);
-				return "OK";
-			}
-			else
-			{
-				log.warn("Could NOT send Test EMail: {}", email);
-				return emailSentStatus.getSentMsg();
-			}
-		}
-		catch (Exception ex)
-		{
-			log.error("Sending email failed", ex);
-			return ex.getLocalizedMessage();
-		}
-	}	//	testEMail
-
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
@@ -518,7 +470,7 @@ public class MClient extends X_AD_Client
 		}
 		catch (Exception ex)
 		{
-			log.error(getName() + " - " + ex.getLocalizedMessage());
+			log.error("Failed sending email: {}", email, ex);
 			return false;
 		}
 	}	//	sendEMail
@@ -759,7 +711,7 @@ public class MClient extends X_AD_Client
 			log.warn("No To user");
 			return null;
 		}
-		if (userTo.getEMail() == null || userTo.getEMail().length() == 0)
+		if (userTo.getEMail() == null || userTo.getEMail().isEmpty())
 		{
 			log.warn("No To address: " + userTo);
 			return null;

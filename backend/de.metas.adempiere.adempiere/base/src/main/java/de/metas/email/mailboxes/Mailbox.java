@@ -2,15 +2,15 @@ package de.metas.email.mailboxes;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.email.EMailAddress;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -45,7 +45,6 @@ import java.util.Objects;
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@ToString(exclude = "password")
 public class Mailbox
 {
 	private final static Logger logger = LogManager.getLogger(Mailbox.class);
@@ -53,107 +52,105 @@ public class Mailbox
 	private static final int DEFAULT_SMTP_PORT = 25;
 	private static final int DEFAULT_SMTPS_PORT = 587;
 
-	@JsonProperty("smtpHost")
-	String smtpHost;
-	@JsonProperty("smtpPort")
-	int smtpPort;
+	@NonNull MailboxType type;
+	@NonNull EMailAddress email;
+	@Nullable String userToColumnName;
+	@Nullable SMTPConfig smtpConfig;
+	@Nullable MicrosoftGraphConfig microsoftGraphConfig;
 
-	@JsonProperty("email")
-	EMailAddress email;
-
-	@JsonProperty("username")
-	String username;
-	@JsonProperty("password")
-	String password;
-	@JsonProperty("smtpAuthorization")
-	boolean smtpAuthorization;
-
-	@JsonProperty("startTLS")
-	boolean startTLS;
-
-	@JsonProperty("sendEmailsFromServer")
-	boolean sendEmailsFromServer;
-	@JsonProperty("userToColumnName")
-	String userToColumnName;
-
-	@JsonCreator
+	@Jacksonized
 	@Builder(toBuilder = true)
 	private Mailbox(
-			@JsonProperty("smtpHost") @NonNull final String smtpHost,
-			@JsonProperty("smtpPort") final int smtpPort,
-			@JsonProperty("email") final EMailAddress email,
-			@JsonProperty("username") final String username,
-			@JsonProperty("password") final String password,
-			@JsonProperty("smtpAuthorization") final boolean smtpAuthorization,
-			@JsonProperty("startTLS") final boolean startTLS,
-			@JsonProperty("sendEmailsFromServer") final boolean sendEmailsFromServer,
-			@JsonProperty("userToColumnName") final String userToColumnName)
+			@NonNull final MailboxType type,
+			@NonNull final EMailAddress email,
+			@Nullable final String userToColumnName,
+			@Nullable final SMTPConfig smtpConfig,
+			@Nullable final MicrosoftGraphConfig microsoftGraphConfig)
 	{
-		Check.assumeNotEmpty(smtpHost, "smtpHost is not empty");
-
-		this.smtpHost = smtpHost.trim();
-		this.smtpPort = smtpPort > 0 ? smtpPort : getDefaultSMTPPort(startTLS);
+		this.type = type;
 		this.email = email;
+		this.userToColumnName = StringUtils.trimBlankToNull(userToColumnName);
 
-		this.smtpAuthorization = smtpAuthorization;
-		if (smtpAuthorization)
+		switch (type)
 		{
-			Check.assumeNotEmpty(username, "username is not empty");
-			this.username = username;
-			this.password = password;
+			case SMTP:
+			{
+				this.smtpConfig = Check.assumeNotNull(smtpConfig, "smtpConfig cannot be null");
+				this.microsoftGraphConfig = null;
+				break;
+			}
+			case MICROSOFT_GRAPH:
+			{
+				this.smtpConfig = null;
+				this.microsoftGraphConfig = Check.assumeNotNull(microsoftGraphConfig, "microsoftGraphConfig cannot be null");
+				break;
+			}
+			default:
+			{
+				throw new AdempiereException("Unknown type: " + type);
+			}
 		}
-		else
-		{
-			this.username = null;
-			this.password = null;
-		}
-
-		this.startTLS = startTLS;
-
-		this.sendEmailsFromServer = sendEmailsFromServer;
-		this.userToColumnName = !Check.isEmpty(userToColumnName, true) ? userToColumnName.trim() : null;
-	}
-
-	private static int getDefaultSMTPPort(final boolean startTLS)
-	{
-		return startTLS ? DEFAULT_SMTPS_PORT : DEFAULT_SMTP_PORT;
 	}
 
 	public Mailbox mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
 	{
-		if (userEmailConfig == null
-				|| userEmailConfig.getEmail() == null
-				|| Check.isBlank(userEmailConfig.getUsername())
-				|| Check.isBlank(userEmailConfig.getPassword()))
+		if (userEmailConfig == null)
 		{
-			logger.debug("userEmailConfig can't be used because it has no SMTP-UserName, -Password or Mail-Address; userEmailConfig={}", userEmailConfig);
+			logger.debug("userEmailConfig can't be used because it has no user config");
 			return this;
 		}
 
-		return toBuilder()
-				.email(userEmailConfig.getEmail())
-				.username(userEmailConfig.getUsername())
-				.password(userEmailConfig.getPassword())
-				.build();
-	}
-
-	public Mailbox withSendEmailsFromServer(final boolean sendEmailsFromServer)
-	{
-		if (this.sendEmailsFromServer == sendEmailsFromServer)
+		final EMailAddress userEmail = userEmailConfig.getEmail();
+		if (userEmail == null)
 		{
+			logger.debug("userEmailConfig can't be used because it has no Mail-Address; userEmailConfig={}", userEmailConfig);
 			return this;
 		}
 
-		return toBuilder().sendEmailsFromServer(sendEmailsFromServer).build();
+		switch (type)
+		{
+			case SMTP:
+			{
+				final SMTPConfig smtpConfig = getSmtpConfigNotNull();
+
+				if (smtpConfig.isSmtpAuthorization()
+						&& (Check.isBlank(userEmailConfig.getUsername()) || Check.isBlank(userEmailConfig.getPassword())))
+				{
+					logger.debug("userEmailConfig can't be used because it has no SMTP-UserName or SMTP-Password; userEmailConfig={}", userEmailConfig);
+					return this;
+				}
+
+				return toBuilder()
+						.email(userEmail)
+						.smtpConfig(smtpConfig.mergeFrom(userEmailConfig))
+						.build();
+			}
+			case MICROSOFT_GRAPH:
+			{
+				final MicrosoftGraphConfig microsoftGraphConfig = getMicrosoftGraphConfigNotNull();
+				return toBuilder()
+						.microsoftGraphConfig(microsoftGraphConfig.withDefaultReplyTo(userEmail))
+						.build();
+			}
+			default:
+				throw new AdempiereException("Unknown type: " + type);
+		}
 	}
 
 	public Mailbox withUserToColumnName(final String userToColumnName)
 	{
-		if (Objects.equals(this.userToColumnName, userToColumnName))
+		final String userToColumnNameNorm = StringUtils.trimBlankToNull(userToColumnName);
+		if (Objects.equals(this.userToColumnName, userToColumnNameNorm))
 		{
 			return this;
 		}
-
-		return toBuilder().userToColumnName(userToColumnName).build();
+		else
+		{
+			return toBuilder().userToColumnName(userToColumnName).build();
+		}
 	}
+
+	public SMTPConfig getSmtpConfigNotNull() {return Check.assumeNotNull(smtpConfig, "smtpConfig cannot be null");}
+
+	public MicrosoftGraphConfig getMicrosoftGraphConfigNotNull() {return Check.assumeNotNull(microsoftGraphConfig, "microsoftGraphConfig cannot be null");}
 }

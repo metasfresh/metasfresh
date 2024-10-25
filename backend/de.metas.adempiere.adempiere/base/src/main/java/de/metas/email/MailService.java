@@ -1,38 +1,46 @@
 package de.metas.email;
 
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.mail.internet.InternetAddress;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxId;
+import de.metas.email.mailboxes.MailboxNotFoundException;
+import de.metas.email.mailboxes.MailboxQuery;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.mailboxes.MailboxType;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.sender.MailSender;
+import de.metas.email.sender.MicrosoftGraphMailSender;
+import de.metas.email.sender.SMTPMailSender;
+import de.metas.email.templates.MailTemplate;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTemplateRepository;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.test.TestMailCommand;
+import de.metas.email.test.TestMailRequest;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
+import de.metas.process.ProcessExecutor;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.email.EmailValidator;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.email.impl.EMailSendException;
-import de.metas.email.mailboxes.ClientEMailConfig;
-import de.metas.email.mailboxes.Mailbox;
-import de.metas.email.mailboxes.MailboxNotFoundException;
-import de.metas.email.mailboxes.MailboxQuery;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.email.templates.MailTemplate;
-import de.metas.email.templates.MailTemplateId;
-import de.metas.email.templates.MailTemplateRepository;
-import de.metas.email.templates.MailTextBuilder;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.process.ProcessExecutor;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.mail.internet.InternetAddress;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -59,18 +67,42 @@ import lombok.NonNull;
 @Service
 public class MailService
 {
-	private static final Logger logger = LogManager.getLogger(MailService.class);
-	private final MailboxRepository mailboxRepo;
-	private final MailTemplateRepository mailTemplatesRepo;
+	@NonNull private static final Logger logger = LogManager.getLogger(MailService.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final MailboxRepository mailboxRepo;
+	@NonNull private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	@NonNull final IUserBL userBL = Services.get(IUserBL.class);
+	@NonNull private final MailTemplateRepository mailTemplatesRepo;
+	@NonNull private final ImmutableMap<MailboxType, MailSender> mailSenders;
 
+	private static final String SYSCONFIG_DEBUG = "de.metas.email.Debug";
 	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 
 	public MailService(
 			@NonNull final MailboxRepository mailboxRepo,
-			@NonNull final MailTemplateRepository mailTemplatesRepo)
+			@NonNull final MailTemplateRepository mailTemplatesRepo,
+			@NonNull final List<MailSender> mailSenders)
 	{
 		this.mailboxRepo = mailboxRepo;
 		this.mailTemplatesRepo = mailTemplatesRepo;
+		this.mailSenders = Maps.uniqueIndex(mailSenders, MailSender::getMailboxType);
+	}
+
+	public static MailService newInstanceForUnitTesting()
+	{
+		return new MailService(
+				new MailboxRepository(),
+				new MailTemplateRepository(),
+				ImmutableList.of(
+						new SMTPMailSender(),
+						new MicrosoftGraphMailSender()
+				)
+		);
+	}
+
+	public Mailbox getMailboxById(final MailboxId mailboxId)
+	{
+		return mailboxRepo.getById(mailboxId);
 	}
 
 	public Mailbox findMailBox(
@@ -97,36 +129,24 @@ public class MailService
 				.customType(customType)
 				.build();
 
-		return mailboxRepo
-				.findMailBox(query)
-				.orElseGet(() -> createClientMailbox(tenantEmailConfig))
-				.withSendEmailsFromServer(tenantEmailConfig.isSendEmailsFromServer());
-	}
-
-	@NonNull
-	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
-	{
-		final String smtpHost = client.getSmtpHost();
-		if (Check.isEmpty(smtpHost, true))
+		final Mailbox mailbox = mailboxRepo.findMailBox(query).orElse(null);
+		if (mailbox != null)
 		{
-			final String messageString = StringUtils.formatMessage(
-					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
-							+ "AD_MailConfig search parameters: AD_Client_ID={}",
-					client);
-
-			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
+			return mailbox;
 		}
 
-		return Mailbox.builder()
-				.smtpHost(smtpHost)
-				.smtpPort(client.getSmtpPort())
-				.startTLS(client.isStartTLS())
-				.email(client.getEmail())
-				.username(client.getUsername())
-				.password(client.getPassword())
-				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendEmailsFromServer(client.isSendEmailsFromServer())
-				.build();
+		if (tenantEmailConfig.getMailbox().isPresent())
+		{
+			return tenantEmailConfig.getMailbox().get();
+		}
+
+		throw new MailboxNotFoundException(tenantEmailConfig.getMailbox().getExplanation());
+	}
+
+	public Mailbox findMailbox(@NonNull final MailboxQuery query)
+	{
+		return mailboxRepo.findMailBox(query)
+				.orElseGet(() -> clientsRepo.getEMailConfigById(query.getClientId()).getMailbox().orElseThrow());
 	}
 
 	public EMail createEMail(
@@ -141,9 +161,9 @@ public class MailService
 		final Mailbox mailbox = findMailBox(clientEmailConfig,
 				ProcessExecutor.getCurrentOrgId(),
 				ProcessExecutor.getCurrentProcessIdOrNull(),
-				(DocBaseAndSubType)null,
+				null,
 				mailCustomType)
-						.mergeFrom(userEmailConfig);
+				.mergeFrom(userEmailConfig);
 		return createEMail(mailbox, to, subject, message, html);
 	}
 
@@ -154,17 +174,26 @@ public class MailService
 			@Nullable final String message,
 			final boolean html)
 	{
-		if (mailbox.getEmail() == null
-				// || mailbox.getUsername() == null
-				// is SMTP authorization and password is null - teo_sarca [ 1723309 ]
-				|| mailbox.isSmtpAuthorization() && mailbox.getPassword() == null)
-		{
-			throw new AdempiereException("Mailbox incomplete: " + mailbox);
-		}
-
 		final EMail email = new EMail(mailbox, to, subject, message, html);
+		email.setMailSender(getMailSender(mailbox.getType()));
+		email.setDebugMode(isDebugModeEnabled());
 		email.setDebugMailToAddress(getDebugMailToAddressOrNull());
 		return email;
+	}
+
+	private MailSender getMailSender(@NonNull final MailboxType type)
+	{
+		final MailSender mailSender = mailSenders.get(type);
+		if (mailSender == null)
+		{
+			throw new AdempiereException("Unsupported type: " + type);
+		}
+		return mailSender;
+	}
+
+	private boolean isDebugModeEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_DEBUG, false);
 	}
 
 	/**
@@ -174,10 +203,10 @@ public class MailService
 	 * @return email address or null
 	 */
 	@Nullable
-	public InternetAddress getDebugMailToAddressOrNull()
+	private InternetAddress getDebugMailToAddressOrNull()
 	{
 		final Properties ctx = Env.getCtx();
-		String emailStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DebugMailTo,
+		String emailStr = sysConfigBL.getValue(SYSCONFIG_DebugMailTo,
 				null,             // defaultValue
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
@@ -197,9 +226,9 @@ public class MailService
 		{
 			email = new InternetAddress(emailStr, true);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			logger.warn("Invalid email address: {}", emailStr, e);
+			logger.warn("Invalid debug email address provided by sysconfig {}: {}. Returning null.", SYSCONFIG_DebugMailTo, emailStr, ex);
 			return null;
 		}
 
@@ -209,24 +238,7 @@ public class MailService
 	public void send(final EMail email)
 	{
 		final EMailSentStatus sentStatus = email.send();
-		if (!sentStatus.isSentOK())
-		{
-			throw new EMailSendException(sentStatus);
-		}
-	}
-
-	public boolean isConnectionError(final Exception e)
-	{
-		if (e instanceof EMailSendException)
-		{
-			return ((EMailSendException)e).isConnectionError();
-		}
-		else if (e instanceof java.net.ConnectException)
-		{
-			return true;
-		}
-
-		return false;
+		sentStatus.throwIfNotOK();
 	}
 
 	public MailTextBuilder newMailTextBuilder(@NonNull final MailTemplate mailTemplate)
@@ -247,5 +259,15 @@ public class MailService
 			throw new AdempiereException("@EmailNotValid@");
 
 		}
+	}
+	
+	public void test(@NonNull TestMailRequest request)
+	{
+		TestMailCommand.builder()
+				.mailService(this)
+				.userBL(userBL)
+				.request(request)
+				.build()
+				.execute();
 	}
 }
