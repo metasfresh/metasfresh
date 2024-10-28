@@ -80,7 +80,7 @@ public class DocBaseAndSubType
 	public boolean isProformaShipment() { return docBaseType.isShipment() && isProformaSubType(); }
 	public boolean isProformaShippingNotification() { return docBaseType.isShippingNotification() && isProformaSubType(); }
 	public boolean isPrepaySO() { return docBaseType.isSalesOrder() && docSubType.isPrepay(); }
-	public boolean isInternalVendorInvoice() { return docBaseType.isPurchaseOrder() && docSubType.isInternalVendorInvoice(); }
+	public boolean isInternalVendorInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.isInternalVendorInvoice(); }
 	public boolean isDeliveryInstruction() { return docBaseType.isShipperTransportation() && docSubType.isDeliveryInstruction(); }
 
 	// SubTypeChecks
