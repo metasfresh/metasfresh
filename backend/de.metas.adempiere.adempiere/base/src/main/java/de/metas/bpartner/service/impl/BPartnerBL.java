@@ -13,7 +13,6 @@ import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
-import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -836,10 +835,6 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public ImmutableSet<BPartnerId>  getBPartnerIdsForOrg(@NonNull final OrgId orgId)
 	{
-		final BPartnerQuery query = BPartnerQuery.builder()
-				.onlyOrgId(orgId)
-				.build();
-
-		return bpartnersRepo.retrieveBPartnerIdsBy(query);
+		return bpartnersRepo.retrieveBPartnerIdsByOrgId(orgId);
 	}
 }

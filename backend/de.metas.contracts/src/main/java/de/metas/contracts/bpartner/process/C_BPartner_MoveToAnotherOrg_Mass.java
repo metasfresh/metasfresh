@@ -45,7 +45,7 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 		IProcessDefaultParametersProvider
 {
 
-	public static final String PARAM_AD_ORG_SOURCE_ID = "AD_Org_Source_ID";
+	public static final String PARAM_AD_ORG_SOURCE_ID = "AD_Org_From_ID";
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
 	public static final String PARAM_GroupCategory_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";

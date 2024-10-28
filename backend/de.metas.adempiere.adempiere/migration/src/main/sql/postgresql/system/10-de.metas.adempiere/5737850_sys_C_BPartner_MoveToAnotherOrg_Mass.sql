@@ -215,3 +215,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=14, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542184 AND AD_Tree_ID=10
 ;
 
+-- 2024-10-28T18:56:07.276Z
+UPDATE AD_Process_Para SET SeqNo=5,Updated=TO_TIMESTAMP('2024-10-28 20:56:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542899
+;
+
