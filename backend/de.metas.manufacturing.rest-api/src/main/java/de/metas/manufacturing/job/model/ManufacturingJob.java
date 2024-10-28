@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -31,7 +32,7 @@ public class ManufacturingJob
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
 
-	@NonNull WarehouseId warehouseId;
+	@NonNull LocatorId locatorId;
 	@Nullable DeviceId currentScaleDeviceId;
 
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
@@ -45,12 +46,12 @@ public class ManufacturingJob
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
 			//
-			final @NonNull WarehouseId warehouseId,
+			final @NonNull LocatorId locatorId,
 			@Nullable final DeviceId currentScaleDeviceId,
 			//
 			@NonNull final ImmutableList<ManufacturingJobActivity> activities)
 	{
-		this.warehouseId = warehouseId;
+		this.locatorId = locatorId;
 		this.currentScaleDeviceId = currentScaleDeviceId;
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
@@ -149,5 +150,11 @@ public class ManufacturingJob
 		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
 				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
 				: this;
+	}
+	
+	@NonNull
+	public WarehouseId getWarehouseId()
+	{
+		return locatorId.getWarehouseId();
 	}
 }

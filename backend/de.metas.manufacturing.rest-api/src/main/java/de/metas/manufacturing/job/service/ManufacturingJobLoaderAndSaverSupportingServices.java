@@ -61,6 +61,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
 	public String getLocatorName(@NonNull final LocatorId locatorId) {return warehouseBL.getLocatorNameById(locatorId);}
+	
+	@NonNull
+	public LocatorId getLocatorIdByRepoId(final int locatorId) {return warehouseBL.getLocatorIdByRepoId(locatorId);}
 
 	public ITranslatableString getProductName(@NonNull final ProductId productId) {return productBL.getProductNameTrl(productId);}
 
