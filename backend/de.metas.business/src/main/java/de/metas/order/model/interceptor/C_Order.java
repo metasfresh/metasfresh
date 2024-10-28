@@ -168,7 +168,7 @@ public class C_Order
 	}, ifColumnsChanged = {
 			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID
 	})
-	public void removeFlatRateConditionsForCallOrderAndProFormaOrder(final I_C_Order order)
+	public void removeFlatRateConditionsForCallOrderAndProformaOrder(final I_C_Order order)
 	{
 		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		if (docTypeTargetId == null)
@@ -176,7 +176,7 @@ public class C_Order
 			return;
 		}
 
-		if (docTypeBL.isCallOrder(docTypeTargetId) || docTypeBL.isProFormaSO(docTypeTargetId))
+		if (docTypeBL.isCallOrder(docTypeTargetId) || docTypeBL.isProformaSO(docTypeTargetId))
 		{
 			orderDAO.retrieveOrderLines(order)
 					.forEach(line -> {

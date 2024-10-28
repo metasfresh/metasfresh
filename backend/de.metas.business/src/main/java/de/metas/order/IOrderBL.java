@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -154,7 +155,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDefaultDocTypeTargetId(I_C_Order order);
 
-	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+	void setPODocTypeTargetId(I_C_Order order, DocSubType poDocSubType);
 
 	/**
 	 * Set Target Sales Document Type.

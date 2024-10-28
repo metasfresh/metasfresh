@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.IDocumentLocationBL;
@@ -27,7 +28,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -103,7 +103,7 @@ public class ShippingNotificationFromOrderProducer
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(salesOrderRecord.getM_Warehouse_ID());
 			final ShippingNotification shippingNotification = ShippingNotification.builder()
 					.clientAndOrgId(clientAndOrgId)
-					.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, X_C_DocType.DOCSUBTYPE_ProForma, clientAndOrgId.getOrgId()))
+					.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, DocSubType.Proforma, clientAndOrgId.getOrgId()))
 					.bpartnerAndLocationId(orderBL.getShipToLocationId(salesOrderRecord).getBpartnerLocationId())
 					.contactId(orderBL.getShipToContactId(salesOrderRecord).orElse(null))
 					.salesOrderId(OrderId.ofRepoId(salesOrderRecord.getC_Order_ID()))

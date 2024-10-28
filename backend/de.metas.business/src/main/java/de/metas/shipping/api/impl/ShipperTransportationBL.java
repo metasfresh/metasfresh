@@ -4,11 +4,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -34,14 +33,13 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
-	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
@@ -95,7 +93,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
 				.build();
-		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
+		final int docTypeId = docTypeBL.getDocTypeId(query).getRepoId();
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}
@@ -103,23 +101,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public boolean isDeliveryInstruction(@NonNull final DocTypeId docTypeId)
 	{
-		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
-
-		final DocBaseType docBaseType = docBaseAndSubTypeById.getDocBaseType();
-		final String docSubType = docBaseAndSubTypeById.getDocSubType();
-
-		if (!DocBaseType.ShipperTransportation.equals(docBaseType))
-		{
-			// this is not a transportation order doc type
-			return false;
-		}
-
-		if (!X_C_DocType.DOCSUBTYPE_DeliveryInstruction.equals(docSubType))
-		{
-			return false;
-		}
-
-		return true;
+		return docTypeBL.isDeliveryInstruction(docTypeId);
 	}
 
 	@Override

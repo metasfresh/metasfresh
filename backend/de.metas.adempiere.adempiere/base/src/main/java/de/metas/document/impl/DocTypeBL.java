@@ -23,6 +23,7 @@
 package de.metas.document.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -133,15 +134,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
-		return isPrepay(docType);
-	}
-
-	@Override
-	public boolean isPrepay(final I_C_DocType dt)
-	{
-		return X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+		return getDocBaseAndSubType(docTypeId).isPrepaySO();
 	}
 
 	@Override
@@ -178,46 +171,31 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
-				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
+		return getDocBaseAndSubType(docTypeId).isInternalVendorInvoice();
 	}
 
 	@Override
-	public boolean isProFormaSO(@NonNull final DocTypeId docTypeId)
+	public boolean isProformaSO(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+		return getDocBaseAndSubType(docTypeId).isProformaSO();
 	}
 
 	@Override
-	public boolean isProFormaShipment(@NonNull final DocTypeId docTypeId)
+	public boolean isProformaShipment(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isShipment();
+		return getDocBaseAndSubType(docTypeId).isProformaShipment();
 	}
 
 	@Override
-	public boolean isProFormaShippingNotification(@NonNull final DocTypeId docTypeId)
+	public boolean isProformaShippingNotification(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_ProForma.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isShippingNotification();
+		return getDocBaseAndSubType(docTypeId).isProformaShippingNotification();
 	}
 
 	@Override
 	public boolean isInterimInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isInterimInvoice();
 	}
 
 	@Override
@@ -228,18 +206,12 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isFinalInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_FinalInvoice.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isFinalInvoice();
 	}
 
 	private boolean isFinalCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_FinalCreditMemo.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_APCreditMemo.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isFinalCreditMemo();
 	}
 
 	@Override
@@ -250,18 +222,12 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isDefinitiveInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_DefinitiveInvoice.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isDefinitiveInvoice();
 	}
 
 	private boolean isDefinitiveCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_APCreditMemo.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isDefinitiveCreditMemo();
 	}
 
 	@Override
@@ -272,18 +238,18 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isSalesFinalInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return X_C_DocType.DOCSUBTYPE_FinalInvoice.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_ARInvoice.equals(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isSalesFinalInvoice();
 	}
 
 	private boolean isSalesFinalCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return getDocBaseAndSubType(docTypeId).isSalesFinalCreditMemo();
+	}
 
-		return X_C_DocType.DOCSUBTYPE_FinalCreditMemo.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(dt.getDocBaseType());
+	@Override
+	public boolean isDeliveryInstruction(@NonNull final DocTypeId docTypeId)
+	{
+		return getDocBaseAndSubType(docTypeId).isDeliveryInstruction();
 	}
 
 	@Override
@@ -304,5 +270,11 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 		return DocBaseType.ofCode(dt.getDocBaseType());
+	}
+
+	@NonNull
+	private DocBaseAndSubType getDocBaseAndSubType(final @NonNull DocTypeId docTypeId)
+	{
+		return docTypesRepo.getDocBaseAndSubTypeById(docTypeId);
 	}
 }

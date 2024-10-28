@@ -32,22 +32,22 @@ import javax.annotation.Nullable;
 @Value
 public class DocBaseAndSubType
 {
-	public static DocBaseAndSubType of(@NonNull final String docBaseType)
-	{
-		return interner.intern(new DocBaseAndSubType(DocBaseType.ofCode(docBaseType), null));
-	}
-
 	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType)
 	{
-		return interner.intern(new DocBaseAndSubType(docBaseType, null));
+		return interner.intern(new DocBaseAndSubType(docBaseType, DocSubType.ANY));
 	}
 
 	public static DocBaseAndSubType of(@NonNull final String docBaseType, @Nullable final String docSubType)
 	{
-		return interner.intern(new DocBaseAndSubType(DocBaseType.ofCode(docBaseType), docSubType));
+		return interner.intern(new DocBaseAndSubType(DocBaseType.ofCode(docBaseType), DocSubType.ofNullableCode(docSubType)));
 	}
 
 	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType, @Nullable final String docSubType)
+	{
+		return interner.intern(new DocBaseAndSubType(docBaseType, DocSubType.ofNullableCode(docSubType)));
+	}
+
+	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType, @NonNull final DocSubType docSubType)
 	{
 		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
@@ -55,14 +55,34 @@ public class DocBaseAndSubType
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
 	@NonNull DocBaseType docBaseType;
-	@Nullable String docSubType;
+	@NonNull DocSubType docSubType;
 
 	private DocBaseAndSubType(
 			@NonNull final DocBaseType docBaseType,
-			@Nullable final String docSubType)
+			@NonNull final DocSubType docSubType)
 	{
 		this.docBaseType = docBaseType;
 		this.docSubType = docSubType;
 	}
+
+	// DocBaseAndSubTypeChecks
+	public boolean isSalesInvoice() { return docBaseType.isSalesInvoice() && docSubType.isNone(); }
+	public boolean isFinalInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.isFinalInvoice(); }
+	public boolean isFinalCreditMemo() { return docBaseType.isPurchaseCreditMemo() && docSubType.isFinalCreditMemo(); }
+	public boolean isInterimInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.IsInterimInvoice(); }
+	public boolean isDefinitiveInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.isDefinitiveInvoice(); }
+	public boolean isDefinitiveCreditMemo() { return docBaseType.isPurchaseInvoice() && docSubType.isDefinitiveCreditMemo(); }
+	public boolean isSalesFinalInvoice() { return docBaseType.isSalesInvoice() && docSubType.isFinalInvoice(); }
+	public boolean isSalesFinalCreditMemo() { return docBaseType.isSalesCreditMemo() && docSubType.isFinalCreditMemo(); }
+	public boolean isProformaSO() { return docBaseType.isSalesOrder() && isProformaSubType(); }
+	public boolean isProformaShipment() { return docBaseType.isShipment() && isProformaSubType(); }
+	public boolean isProformaShippingNotification() { return docBaseType.isShippingNotification() && isProformaSubType(); }
+	public boolean isPrepaySO() { return docBaseType.isSalesOrder() && docSubType.isPrepay(); }
+	public boolean isInternalVendorInvoice() { return docBaseType.isPurchaseOrder() && docSubType.isInternalVendorInvoice(); }
+	public boolean isDeliveryInstruction() { return docBaseType.isShipperTransportation() && docSubType.isDeliveryInstruction(); }
+
+	// SubTypeChecks
+	public boolean isProformaSubType() { return docSubType.isProforma(); }
+
 
 }

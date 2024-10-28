@@ -2,6 +2,7 @@ package de.metas.order.createFrom.po_from_so.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -38,7 +39,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.order.createFrom.po_from_so.impl.CreatePOLineFromSOLinesAggregationKeyBuilder.SYSCONFIG_GROUP_LINES_BY_PROMISED_DATE;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 /*
  * #%L
@@ -250,7 +250,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
 		{
-			orderBL.setPODocTypeTargetId(purchaseOrder, DOCSUBTYPE_Mediated);
+			orderBL.setPODocTypeTargetId(purchaseOrder, DocSubType.Mediated);
 		}
 		else
 		{

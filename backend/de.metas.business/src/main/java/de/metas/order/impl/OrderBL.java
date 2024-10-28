@@ -39,6 +39,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -411,7 +412,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
-	public void setPODocTypeTargetId(@NonNull final I_C_Order order, @NonNull final String poDocSubType)
+	public void setPODocTypeTargetId(@NonNull final I_C_Order order, @NonNull final DocSubType poDocSubType)
 	{
 		if (order.isSOTrx())
 		{
@@ -452,7 +453,7 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(soDocSubType)
+				.docSubType(DocSubType.ofNullableCode(soDocSubType))
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
@@ -1060,7 +1061,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
-		return docTypeId != null && docTypeBL.isProFormaSO(docTypeId);
+		return docTypeId != null && docTypeBL.isProformaSO(docTypeId);
 	}
 
 	@Override

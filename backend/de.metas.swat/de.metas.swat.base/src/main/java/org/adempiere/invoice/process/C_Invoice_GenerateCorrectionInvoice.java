@@ -23,6 +23,8 @@
 package org.adempiere.invoice.process;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -49,11 +51,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_DocType;
 
 import java.util.Optional;
-
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
 /**
  * For Invoices where billToCountry is set to "Enforce Correction Invoice", this Process generates a Credit Memo for the full amount followed, by a Correction Invoice.
@@ -66,8 +65,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
 
-	private static final DocBaseAndSubType SALES_INVOICE = DocBaseAndSubType.of(DOCBASETYPE_ARInvoice);
-	private static final DocBaseAndSubType CORRECTION_INVOICE = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_ARInvoice, X_C_DocType.DOCSUBTYPE_CorrectionInvoice);
+	private static final DocBaseAndSubType CORRECTION_INVOICE = DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.CorrectionInvoice);
 	private static final AdMessageKey MSG_Event_DocumentGenerated = AdMessageKey.of("Event_DocumentGenerated");
 
 	@Override
@@ -83,7 +81,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 
-		if(!(docBaseAndSubType.equals(SALES_INVOICE) || invoiceBL.isAdjustmentCharge(invoiceRecord)))
+		if(!(docBaseAndSubType.isSalesInvoice() || invoiceBL.isAdjustmentCharge(invoiceRecord)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an basic Sales Invoice or Adjustment Charge");
 		}
@@ -126,7 +124,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 
 		final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest = AdjustmentChargeCreateRequest.builder()
 				.invoiceID(InvoiceId.ofRepoId(getRecord_ID()))
-				.docBaseAndSubTYpe(CORRECTION_INVOICE)
+				.docBaseAndSubType(CORRECTION_INVOICE)
 				.build();
 
 		final I_C_Invoice correctionInvoice = invoiceBL.adjustmentCharge(adjustmentChargeCreateRequest);

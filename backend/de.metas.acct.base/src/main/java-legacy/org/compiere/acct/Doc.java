@@ -29,6 +29,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
@@ -763,7 +764,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		if (docBaseType != null)
 		{
-			_docBaseAndSubType = DocBaseAndSubType.of(docBaseType);
+			_docBaseAndSubType = DocBaseAndSubType.of(docBaseType, DocSubType.ANY);
 		}
 
 		// No Document Type defined

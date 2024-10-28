@@ -2,6 +2,7 @@ package de.metas.email.mailboxes;
 
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailAddress;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -128,12 +129,12 @@ public class MailboxRepository
 		final DocBaseAndSubType docBaseAndSubType = query.getDocBaseAndSubType();
 		if (docBaseAndSubType != null)
 		{
-			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocBaseType, docBaseAndSubType.getDocBaseType());
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_DocBaseType, docBaseAndSubType.getDocBaseType());
 
-			final String docSubType = docBaseAndSubType.getDocSubType();
-			if (!Check.isEmpty(docSubType, true))
+			final DocSubType docSubType = docBaseAndSubType.getDocSubType();
+			if (docSubType != null)
 			{
-				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
+				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMNNAME_DocSubType, docSubType, null);
 			}
 		}
 

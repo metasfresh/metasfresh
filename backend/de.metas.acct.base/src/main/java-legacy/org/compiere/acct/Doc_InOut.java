@@ -54,7 +54,6 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -213,9 +212,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// *** Sales - Shipment
-		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
+		if (docBaseType.isShipment() && isSOTrx())
 		{
-			if (X_C_DocType.DOCSUBTYPE_ProForma.equals(docBaseAndSubType.getDocSubType()))
+			if (docBaseAndSubType.isProformaSubType())
 			{
 				return ImmutableList.of();
 			}
@@ -226,25 +225,25 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 		//
 		// *** Sales - Return
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
+		else if (docBaseType.isReceipt() && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
+		else if (docBaseType.isReceipt() && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
+		else if (docBaseType.isShipment() && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
 		else
 		{
 			throw newPostingException()
-					.setDetailMessage("DocumentType unknown: " + docBaseType);
+					.setDetailMessage("DocumentType unknown: " + docBaseAndSubType);
 		}
 	}
 

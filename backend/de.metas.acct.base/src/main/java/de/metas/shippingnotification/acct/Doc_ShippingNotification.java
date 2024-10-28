@@ -8,6 +8,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.dimension.Dimension;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
@@ -17,7 +18,6 @@ import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
-import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -48,15 +48,24 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	protected List<Fact> createFacts(final AcctSchema as)
 	{
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
-		if (X_C_DocType.DOCSUBTYPE_ProForma.equals(docBaseAndSubType.getDocSubType()))
+		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
+		if (docBaseType.isShippingNotification())
 		{
-			return ImmutableList.of();
+			if(docBaseAndSubType.isProformaSubType())
+			{
+				return ImmutableList.of();
+			}
+			else
+			{
+				final Fact fact = new Fact(this, as, PostingType.Actual);
+				shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
+				return ImmutableList.of(fact);
+			}
 		}
 		else
 		{
-			final Fact fact = new Fact(this, as, PostingType.Actual);
-			shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
-			return ImmutableList.of(fact);
+			throw newPostingException()
+					.setDetailMessage("DocumentType unknown: " + docBaseAndSubType);
 		}
 	}
 

@@ -79,6 +79,7 @@ import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -1622,23 +1623,17 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_C_DocType getDocTypeFor(final I_C_Flatrate_Term term)
 	{
-		final String subType;
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
+		final DocSubType subType;
+		final TypeConditions typeConditions = TypeConditions.ofCode(term.getType_Conditions());
+		switch (typeConditions)
 		{
-			subType = de.metas.contracts.flatrate.interfaces.I_C_DocType.DocSubType_Abonnement;
-		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_HoldingFee.equals(term.getType_Conditions()))
-		{
-			subType = de.metas.contracts.flatrate.interfaces.I_C_DocType.DocSubType_Depotgebuehr;
-		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
-		{
-			subType = de.metas.contracts.flatrate.interfaces.I_C_DocType.DocSubType_Pauschalengebuehr;
-		}
-		else
-		{
-			Check.assume(false, term + " has unexpected Type_Conditions=" + term.getType_Conditions());
-			subType = null;
+			case SUBSCRIPTION -> subType = DocSubType.Subscription;
+			case HOLDING_FEE -> subType = DocSubType.HoldingFee;
+			case FLAT_FEE -> subType = DocSubType.FlatFee;
+			default -> {
+				Check.assume(false, term + " has unexpected Type_Conditions=" + term.getType_Conditions());
+				subType = DocSubType.NONE;
+			}
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()

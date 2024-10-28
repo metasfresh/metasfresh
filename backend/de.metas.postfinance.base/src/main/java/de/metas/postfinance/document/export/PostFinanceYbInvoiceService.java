@@ -458,7 +458,7 @@ public class PostFinanceYbInvoiceService
 		final String languageISO = languageDAO.retrieveByAD_Language(CoalesceUtil.firstNotBlank(adLanguageRecipient, adLanguageBiller, AD_LANGUAGE_DE)).getLanguageISO();
 		header.setLanguage(languageISO);
 
-		if(!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if(!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isSalesCreditMemo())
 		{
 			header.setPaymentInformation(getPaymentInformation(invoiceToExport));
 		}
@@ -776,7 +776,7 @@ public class PostFinanceYbInvoiceService
 		final SummaryType summaryType = YB_INVOICE_OBJECT_FACTORY.createSummaryType();
 		summaryType.setTax(taxType);
 
-		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isSalesCreditMemo())
 		{
 			summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines().negate());
 			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal().negate());

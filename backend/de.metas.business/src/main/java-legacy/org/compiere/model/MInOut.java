@@ -1428,7 +1428,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		sortByProductAndASI(lines); // task 08999
 
-		final boolean isProForma = docTypeBL.isProFormaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
+		final boolean isProForma = docTypeBL.isProformaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
 
 		for (final MInOutLine line : lines)
 		{

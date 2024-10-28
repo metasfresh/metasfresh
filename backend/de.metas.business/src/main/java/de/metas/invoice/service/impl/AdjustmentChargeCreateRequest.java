@@ -34,13 +34,7 @@ import javax.annotation.Nullable;
 @Builder
 public class AdjustmentChargeCreateRequest
 {
-	@NonNull
-	final InvoiceId invoiceID;
-
-	@NonNull
-	final DocBaseAndSubType docBaseAndSubTYpe;
-
-	@Nullable
-	final Boolean isSOTrx;
-
+	@NonNull InvoiceId invoiceID;
+	@NonNull DocBaseAndSubType docBaseAndSubType;
+	@Nullable Boolean isSOTrx;
 }

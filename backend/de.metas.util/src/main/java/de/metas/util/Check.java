@@ -24,6 +24,7 @@ package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -601,6 +602,7 @@ public final class Check
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+	@Contract("null -> true")
 	public static boolean isBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isBlank(str);

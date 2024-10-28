@@ -42,6 +42,7 @@ import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -75,7 +76,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -216,8 +216,8 @@ public class InterimInvoiceCandidateService
 		{
 			interimInvoiceDocType = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 					.adClientId(clientId.getRepoId())
-					.docBaseType(DocBaseType.APInvoice)
-					.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
+					.docBaseType(DocBaseType.PurchaseInvoice)
+					.docSubType(DocSubType.DownPayment)
 					.build());
 		}
 		return interimInvoiceDocType;

@@ -229,7 +229,7 @@ public class MOrder extends X_C_Order implements IDocument
 		setIsSOTrx(IsSOTrx);
 		if (IsSOTrx)
 		{
-			if (DocSubType == null || DocSubType.length() == 0)
+			if (DocSubType == null || DocSubType.isEmpty())
 			{
 				orderBL.setSODocTypeTargetId(this, DocSubType_OnCredit);
 			}
@@ -1357,7 +1357,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-		final boolean isProForma = docTypeBL.isProFormaSO(DocTypeId.ofRepoId(docTypeId));
+		final boolean isProForma = docTypeBL.isProformaSO(DocTypeId.ofRepoId(docTypeId));
 
 		// Always check and (un) Reserve Inventory
 		for (final MOrderLine line : lines)
