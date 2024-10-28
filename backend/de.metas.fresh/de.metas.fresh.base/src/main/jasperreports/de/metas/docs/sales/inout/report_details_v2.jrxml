@@ -286,9 +286,13 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{attributes} != null ? $F{attributes}+", " : "")
-+ ($F{lotno} != null ? ($F{lotno})+", " : "")
-+ ($F{best_before_date} != null ? ($F{best_before_date}+", ") : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{attributes} != null ? $F{attributes} : "")
++ ($F{lotno} != null ? 
+   ( ($F{attributes} != null ? ", " : "") + $F{lotno}) 
+   : "")
++ ($F{best_before_date} != null ? 
+   ( ($F{attributes} != null || $F{lotno} != null) ? ", " : "") + $F{best_before_date} 
+   : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-31" mode="Transparent" x="293" y="0" width="82" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
