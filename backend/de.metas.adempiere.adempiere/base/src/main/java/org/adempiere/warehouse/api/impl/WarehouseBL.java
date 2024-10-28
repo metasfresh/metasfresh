@@ -35,8 +35,8 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.User;
@@ -264,6 +264,7 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIdsByRepoIds(final Set<Integer> locatorRepoIds)
 	{
 		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
