@@ -2,37 +2,42 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Deta
                                                                                      IN p_AD_Language Character Varying(6))
 ;
 
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
+;
+
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
+(
+    Line              Numeric(10, 0),
+    Name              Character Varying,
+    Attributes        Text,
+    HUQty             Numeric,
+    HUName            Text,
+    qtyEntered        Numeric,
+    PriceEntered      Numeric,
+    UOMSymbol         Character Varying(10),
+    StdPrecision      Numeric(10, 0),
+    LineNetAmt        Numeric,
+    Discount          Numeric,
+    IsDiscountPrinted Character(1),
+    QtyPattern        text,
+    Description       Character Varying,
+    bp_product_no     character varying(30),
+    bp_product_name   character varying(100),
+    best_before_date  text,
+    lotno             character varying,
+    p_value           character varying(30),
+    p_description     character varying(255),
+    inout_description character varying(255),
+    iscampaignprice   character(1),
+    qtyordered        Numeric,
+    orderUOMSymbol    Character Varying(10)
+)
+;
+
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p_Record_ID   numeric,
                                                                             IN p_AD_Language Character Varying(6))
-    RETURNS
-        TABLE
-        (
-            Line              Numeric(10, 0),
-            Name              Character Varying,
-            Attributes        Text,
-            HUQty             Numeric,
-            HUName            Text,
-            qtyEntered        Numeric,
-            PriceEntered      Numeric,
-            UOMSymbol         Character Varying(10),
-            StdPrecision      Numeric(10, 0),
-            LineNetAmt        Numeric,
-            Discount          Numeric,
-            IsDiscountPrinted Character(1),
-            QtyPattern        text,
-            Description       Character Varying,
-            bp_product_no     character varying(30),
-            bp_product_name   character varying(100),
-            best_before_date  text,
-            lotno             character varying,
-            p_value           character varying(30),
-            p_description     character varying(255),
-            inout_description character varying(255),
-            iscampaignprice   character(1),
-            qtyordered        Numeric,
-            orderUOMSymbol    Character Varying(10)
-        )
+    RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
 AS
 $$
 
@@ -155,20 +160,26 @@ FROM M_InOutLine iol
          LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
          LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
     -- Attributes
-         LEFT OUTER JOIN (SELECT STRING_AGG((at.at_Name || ': ' || REPLACE(at.ai_value, 'MHD: ', '')), '<br> ' ORDER BY at.at_Value DESC) AS Attributes,
-                                 at.M_AttributeSetInstance_ID,
-                                 STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
-                                 FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
-                                                                                                                                          AS best_before_date,
-                                 STRING_AGG(ai_value, ', ')
-                                 FILTER (WHERE at.at_value LIKE 'Lot-Nummer')                                                             AS lotno
+         LEFT OUTER JOIN (
+    SELECT STRING_AGG(at.ai_value, ', '
+           ORDER BY LENGTH(at.ai_value), at.ai_value)
+           FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
+                                                        AS Attributes,
 
-                          FROM Report.fresh_Attributes at
-                                   JOIN M_InOutLine iol
-                                        ON at.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
-                          WHERE at.IsPrintedInDocument = 'Y'
-                            AND iol.M_InOut_ID = p_Record_ID
-                          GROUP BY at.M_AttributeSetInstance_ID) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+           at.M_AttributeSetInstance_ID,
+           STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
+           FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
+                                                        AS best_before_date,
+           STRING_AGG(ai_value, ', ')
+           FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
+
+    FROM Report.fresh_Attributes at
+             JOIN M_InOutLine iol
+                  ON at.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
+    WHERE at.IsPrintedInDocument = 'Y'
+      AND iol.M_InOut_ID = p_Record_ID
+    GROUP BY at.M_AttributeSetInstance_ID
+) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
