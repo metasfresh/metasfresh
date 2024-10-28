@@ -30,6 +30,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
+import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Mass;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -66,6 +67,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Mass.PARAM_AD_ORG_SOURCE_ID;
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_AD_ORG_TARGET_ID;
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_DATE_ORG_CHANGE;
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
@@ -480,6 +482,38 @@ public class C_BPartner_StepDef
 			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 			processInfoBuilder.setRecord(I_C_BPartner.Table_Name, bPartnerRecord.getC_BPartner_ID());
 			processInfoBuilder.addParameter(PARAM_AD_ORG_TARGET_ID, orgRecord.getAD_Org_ID());
+			processInfoBuilder.addParameter(PARAM_DATE_ORG_CHANGE, changeDate);
+			processInfoBuilder.addParameter(PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, false);
+
+			processInfoBuilder
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
+	}
+
+	@Given("C_BPartner_MoveToAnotherOrg_Mass is invoked with parameters:")
+	public void C_BPartner_MoveToAnotherOrg_Mass(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+
+			final String orgFromIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Org orgFromRecord = orgTable.get(orgFromIdentifier);
+
+			final String orgToIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Org orgToRecord = orgTable.get(orgToIdentifier);
+
+			final Timestamp changeDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, PARAM_DATE_ORG_CHANGE);
+
+			final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg_Mass.class);
+
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
+			processInfoBuilder.addParameter(PARAM_AD_ORG_SOURCE_ID, orgFromRecord.getAD_Org_ID());
+			processInfoBuilder.addParameter(PARAM_AD_ORG_TARGET_ID, orgToRecord.getAD_Org_ID());
 			processInfoBuilder.addParameter(PARAM_DATE_ORG_CHANGE, changeDate);
 			processInfoBuilder.addParameter(PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, false);
 
