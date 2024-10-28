@@ -1,5 +1,6 @@
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -8,6 +9,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.User;
@@ -171,6 +173,8 @@ public interface IBPartnerBL extends ISingletonService
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
+
+	ImmutableSet<BPartnerId> getBPartnerIdsForOrg(@NonNull OrgId orgId);
 
 	@Value
 	@Builder
