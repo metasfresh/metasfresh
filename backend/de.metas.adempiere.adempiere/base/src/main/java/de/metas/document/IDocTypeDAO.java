@@ -93,7 +93,7 @@ public interface IDocTypeDAO extends ISingletonService
 		@NonNull String name;
 		String printName;
 		@NonNull DocBaseType docBaseType;
-		@NonNull DocSubType docSubType;
+		@NonNull @Default DocSubType docSubType = DocSubType.NONE;
 		Boolean isSOTrx;
 		int docTypeShipmentId;
 		int docTypeInvoiceId;

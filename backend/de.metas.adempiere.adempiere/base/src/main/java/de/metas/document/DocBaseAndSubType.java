@@ -1,5 +1,6 @@
 package de.metas.document;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import lombok.NonNull;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
  */
 
 @Value
+@JsonIncludeProperties({ "docBaseType", "docSubType" })
 public class DocBaseAndSubType
 {
 	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType)
