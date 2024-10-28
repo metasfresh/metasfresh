@@ -39,6 +39,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.InvoiceDeliveryType;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -406,10 +407,10 @@ public class PostFinanceYbInvoiceService
 
 	public String getTransactionId(@NonNull final InvoiceToExport invoiceToExport)
 	{
-		final String docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
+		final DocSubType docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
 		return invoiceToExport.getId().getRepoId()
 				+ invoiceToExport.getDocBaseAndSubType().getDocBaseType().getCode()
-				+ (EmptyUtil.isBlank(docSubType) ? "" : docSubType)
+				+ (docSubType.isAnyOrNone() ? "" : docSubType.getCode())
 				+ invoiceToExport.getDocumentNumber();
 	}
 

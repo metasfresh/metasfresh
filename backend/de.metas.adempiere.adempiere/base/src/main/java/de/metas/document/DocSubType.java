@@ -15,8 +15,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public enum DocSubType implements ReferenceListAwareEnum
 {
-	ANY("DocSubType_ANY"),
-	NONE("DocSubType_NONE"),
+	ANY("ANY"),
+	NONE("NONE"),
 	OnCreditOrder(X_C_DocType.DOCSUBTYPE_OnCreditOrder),
 	POSOrder(X_C_DocType.DOCSUBTYPE_POSOrder),
 	WarehouseOrder(X_C_DocType.DOCSUBTYPE_WarehouseOrder),
@@ -101,10 +101,9 @@ public enum DocSubType implements ReferenceListAwareEnum
 		return docSubType != null ? docSubType : DocSubType.NONE;
 	}
 
-	public static boolean equals(@Nullable final DocSubType o1, @Nullable final DocSubType o2) {return Objects.equals(o1, o2);}
+	public static boolean equals(@NonNull final DocSubType o1, @NonNull final DocSubType o2) {return Objects.equals(o1, o2);}
 
 	@JsonValue
-	@Nullable
 	public String getCode()
 	{
 		return code;

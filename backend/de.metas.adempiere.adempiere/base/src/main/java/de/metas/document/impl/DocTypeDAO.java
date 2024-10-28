@@ -30,6 +30,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -115,6 +116,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	@Nullable
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery query)
 	{
 		return docTypeIdsByQuery.getOrLoad(query, this::retrieveDocTypeIdByQuery)
@@ -231,7 +233,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	private DocBaseTypeCountersMap retrieveDocBaseTypeCountersMap()
 	{
 		// load the existing info from the table C_DocBaseType_Counter in an immutable map
-		ImmutableMap.Builder<DocBaseType, DocBaseType> docBaseTypeCounters = ImmutableMap.builder();
+		final ImmutableMap.Builder<DocBaseType, DocBaseType> docBaseTypeCounters = ImmutableMap.builder();
 
 		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_DocBaseType_Counter.class);
 
@@ -284,7 +286,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setAD_Org_ID(request.getAdOrgId());
 		}
-		if (request.getPrintName() != null && request.getPrintName().length() > 0)
+		if (request.getPrintName() != null && !request.getPrintName().isEmpty())
 		{
 			dt.setPrintName(request.getPrintName()); // Defaults to Name
 		}
