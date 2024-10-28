@@ -14,7 +14,7 @@ WHERE TRUE
                              -- 'WR', -- POS Order
                              'FA', -- Frame Agreement
                              'CE', -- Cost Estimate
-                             'PF'  -- ProForma
+                             'PF'  -- Proforma
     ))
   AND o.issotrx = 'Y'
   AND o.docstatus = 'CO'
@@ -24,10 +24,6 @@ WHERE TRUE
                     AND log.ad_table_id = 260
                     AND log.record_id = ol.c_orderline_id
                     AND log.isactive = 'Y')
-;
-
-ALTER TABLE public.c_orderline_id_with_missing_shipmentschedule_v
-    OWNER TO metasfresh
 ;
 
 COMMENT ON VIEW public.c_orderline_id_with_missing_shipmentschedule_v
