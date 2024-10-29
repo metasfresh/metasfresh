@@ -348,9 +348,19 @@ public class InvoiceHeaderImplBuilder
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
+	/**
+	 * Set the header to the given {@code overrideDueDate}, if it is after a previously set value.
+	 */
 	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
 	{
-		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
+		if (_overrideDueDate == null)
+		{
+			_overrideDueDate = overrideDueDate;
+		}
+		else if (overrideDueDate != null && overrideDueDate.isAfter(_overrideDueDate))
+		{
+			_overrideDueDate = overrideDueDate;
+		}
 	}
 
 	public int getAD_Org_ID()
@@ -577,8 +587,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + value
-												 + "\n New value: " + valueNew);
+					+ "\n Current value: " + value
+					+ "\n New value: " + valueNew);
 		}
 	}
 
@@ -599,8 +609,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + id
-												 + "\n New value: " + idNew);
+					+ "\n Current value: " + id
+					+ "\n New value: " + idNew);
 		}
 	}
 
@@ -633,8 +643,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-													+ "\n Model: " + model
-													+ "\n Model new: " + modelNew);
+					+ "\n Model: " + model
+					+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -651,8 +661,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-											 + "\n Current value: " + value
-											 + "\n New value: " + valueNew);
+				+ "\n Current value: " + value
+				+ "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(@Nullable final String externalIdStr)

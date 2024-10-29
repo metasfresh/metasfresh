@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_PaymentTerm
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -915123046L;
+	private static final long serialVersionUID = -774542678L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
@@ -192,18 +192,6 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public int getGraceDays() 
 	{
 		return get_ValueAsInt(COLUMNNAME_GraceDays);
-	}
-
-	@Override
-	public void setIsAllowOverrideDueDate (final boolean IsAllowOverrideDueDate)
-	{
-		set_Value (COLUMNNAME_IsAllowOverrideDueDate, IsAllowOverrideDueDate);
-	}
-
-	@Override
-	public boolean isAllowOverrideDueDate() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowOverrideDueDate);
 	}
 
 	@Override
