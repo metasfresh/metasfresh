@@ -357,10 +357,9 @@ public class InvoiceHeaderImplBuilder
 		{
 			_overrideDueDate = overrideDueDate;
 		}
-		else
-		if (overrideDueDate != null && !_overrideDueDate.isEqual(overrideDueDate))
+		else if (overrideDueDate != null && overrideDueDate.isAfter(_overrideDueDate))
 		{
-			_overrideDueDate = overrideDueDate.isAfter(_overrideDueDate) ? overrideDueDate : _overrideDueDate;
+			_overrideDueDate = overrideDueDate;
 		}
 	}
 
