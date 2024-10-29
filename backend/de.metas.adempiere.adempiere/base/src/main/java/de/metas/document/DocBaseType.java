@@ -76,7 +76,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	public static boolean equals(@Nullable final DocBaseType o1, @Nullable final DocBaseType o2) {return Objects.equals(o1, o2);}
+	public static boolean equals(@Nullable final DocBaseType o1, @Nullable final DocBaseType o2) { return Objects.equals(o1, o2); }
 
 	@JsonValue
 	public String getCode()
@@ -93,24 +93,25 @@ public enum DocBaseType implements ReferenceListAwareEnum
 				|| ARReceipt.equals(this);
 	}
 
-	public boolean isSalesOrder() {return SalesOrder.equals(this);}
+	public boolean isSalesOrder() { return SalesOrder.equals(this); }
 
-	public boolean isPurchaseOrder() {return PurchaseOrder.equals(this);}
+	public boolean isPurchaseOrder() { return PurchaseOrder.equals(this); }
 
-	public boolean isSalesInvoice() {return SalesInvoice.equals(this);}
+	public boolean isSalesInvoice() { return SalesInvoice.equals(this); }
 
-	public boolean isPurchaseInvoice() {return PurchaseInvoice.equals(this);}
+	public boolean isPurchaseInvoice() { return PurchaseInvoice.equals(this); }
 
-	public boolean isSalesCreditMemo() {return SalesCreditMemo.equals(this);}
+	public boolean isSalesCreditMemo() { return SalesCreditMemo.equals(this); }
 
-	public boolean isPurchaseCreditMemo() {return PurchaseCreditMemo.equals(this);}
+	public boolean isPurchaseCreditMemo() { return PurchaseCreditMemo.equals(this); }
 
-	public boolean isDunningDoc(){return DunningDoc.equals((this));}
+	public boolean isDunningDoc(){ return DunningDoc.equals((this)); }
 
-	public boolean isShipment(){return Shipment.equals(this);}
+	public boolean isShipment(){ return Shipment.equals(this); }
 
-	public boolean isReceipt(){return MaterialReceipt.equals(this);}
+	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
 
-	public boolean isShippingNotification(){return ShippingNotification.equals(this);}
-	public boolean isShipperTransportation(){return ShipperTransportation.equals(this);}
+	public boolean isShippingNotification(){ return ShippingNotification.equals(this); }
+	public boolean isShipperTransportation(){ return ShipperTransportation.equals(this); }
+	public boolean isModularManufacturingOrder() { return ModularOrder.equals(this); }
 }

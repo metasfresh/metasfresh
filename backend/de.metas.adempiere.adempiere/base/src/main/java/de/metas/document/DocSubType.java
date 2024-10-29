@@ -101,7 +101,7 @@ public enum DocSubType implements ReferenceListAwareEnum
 		return docSubType != null ? docSubType : DocSubType.NONE;
 	}
 
-	public static boolean equals(@NonNull final DocSubType o1, @NonNull final DocSubType o2) {return Objects.equals(o1, o2);}
+	public static boolean equals(@NonNull final DocSubType o1, @NonNull final DocSubType o2) { return Objects.equals(o1, o2); }
 
 	@JsonValue
 	public String getCode()
@@ -109,16 +109,19 @@ public enum DocSubType implements ReferenceListAwareEnum
 		return code;
 	}
 
-	public boolean isAny() {return ANY.equals(this);}
-	public boolean isNone() {return NONE.equals(this);}
-	public boolean isAnyOrNone() {return isAny() || isNone();}
-	public boolean isProforma() {return Proforma.equals(this);}
-	public boolean isFinalInvoice() {return FinalInvoice.equals(this);}
-	public boolean isFinalCreditMemo() {return FinalCreditMemo.equals(this);}
-	public boolean IsInterimInvoice() {return DownPayment.equals(this);}
-	public boolean isDefinitiveInvoice() {return DefinitiveInvoice.equals(this);}
-	public boolean isDefinitiveCreditMemo() {return DefinitiveCreditMemo.equals(this);}
-	public boolean isPrepay() {return PrepayOrder.equals(this);}
-	public boolean isInternalVendorInvoice() {return InternalVendorInvoice.equals(this);}
-	public boolean isDeliveryInstruction() {return DeliveryInstruction.equals(this);}
+	public boolean isAny() { return ANY.equals(this); }
+	public boolean isNone() { return NONE.equals(this); }
+	public boolean isAnyOrNone() { return isAny() || isNone(); }
+	public boolean isProforma() { return Proforma.equals(this); }
+	public boolean isFinalInvoice() { return FinalInvoice.equals(this); }
+	public boolean isFinalCreditMemo() { return FinalCreditMemo.equals(this); }
+	public boolean IsInterimInvoice() { return DownPayment.equals(this); }
+	public boolean isDefinitiveInvoice() { return DefinitiveInvoice.equals(this); }
+	public boolean isDefinitiveCreditMemo() { return DefinitiveCreditMemo.equals(this); }
+	public boolean isPrepay() { return PrepayOrder.equals(this); }
+	public boolean isInternalVendorInvoice() { return InternalVendorInvoice.equals(this); }
+	public boolean isDeliveryInstruction() { return DeliveryInstruction.equals(this); }
+	public boolean isCallOrder() { return CallOrder.equals(this); }
+	public boolean isMediated() { return Mediated.equals(this); }
+	public boolean isRequisition() { return Requisition.equals(this); }
 }

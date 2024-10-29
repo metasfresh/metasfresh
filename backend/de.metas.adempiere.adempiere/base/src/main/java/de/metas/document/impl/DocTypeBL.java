@@ -146,26 +146,19 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isRequisition(final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-		return X_C_DocType.DOCSUBTYPE_Requisition.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
+		return getDocBaseAndSubType(docTypeId).isRequisition();
 	}
 
 	@Override
 	public boolean isMediated(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-		return X_C_DocType.DOCSUBTYPE_Mediated.equals(dt.getDocSubType())
-				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
+		return getDocBaseAndSubType(docTypeId).isMediated();
 	}
 
 	@Override
 	public boolean isCallOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-
-		return (X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType()) || X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
-				&& X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType());
+		return getDocBaseAndSubType(docTypeId).isCallOrder();
 	}
 
 	@Override
@@ -261,15 +254,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final DocBaseType docBaseType = getDocBaseType(docTypeId);
-		return DocBaseType.equals(docBaseType, DocBaseType.ModularOrder);
-	}
-
-	@NonNull
-	private DocBaseType getDocBaseType(final @NonNull DocTypeId docTypeId)
-	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
-		return DocBaseType.ofCode(dt.getDocBaseType());
+		return getDocBaseAndSubType(docTypeId).isModularManufacturingOrder();
 	}
 
 	@NonNull

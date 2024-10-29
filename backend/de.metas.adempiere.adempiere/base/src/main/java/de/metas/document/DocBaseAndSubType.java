@@ -76,12 +76,16 @@ public class DocBaseAndSubType
 	public boolean isDefinitiveCreditMemo() { return docBaseType.isPurchaseInvoice() && docSubType.isDefinitiveCreditMemo(); }
 	public boolean isSalesFinalInvoice() { return docBaseType.isSalesInvoice() && docSubType.isFinalInvoice(); }
 	public boolean isSalesFinalCreditMemo() { return docBaseType.isSalesCreditMemo() && docSubType.isFinalCreditMemo(); }
+	public boolean isModularManufacturingOrder() { return docBaseType.isModularManufacturingOrder() && docSubType.isNone(); }
 	public boolean isProformaSO() { return docBaseType.isSalesOrder() && isProformaSubType(); }
 	public boolean isProformaShipment() { return docBaseType.isShipment() && isProformaSubType(); }
 	public boolean isProformaShippingNotification() { return docBaseType.isShippingNotification() && isProformaSubType(); }
 	public boolean isPrepaySO() { return docBaseType.isSalesOrder() && docSubType.isPrepay(); }
 	public boolean isInternalVendorInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.isInternalVendorInvoice(); }
 	public boolean isDeliveryInstruction() { return docBaseType.isShipperTransportation() && docSubType.isDeliveryInstruction(); }
+	public boolean isCallOrder() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isCallOrder(); }
+	public boolean isMediated() { return ( docBaseType.isPurchaseOrder() ) && docSubType.isMediated(); }
+	public boolean isRequisition() { return ( docBaseType.isPurchaseOrder() ) && docSubType.isRequisition(); }
 
 	// SubTypeChecks
 	public boolean isProformaSubType() { return docSubType.isProforma(); }
