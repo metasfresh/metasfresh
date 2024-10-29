@@ -2148,6 +2148,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		candidate.setPOReference(order.getPOReference());
 	}
 
+	@NonNull
 	@Override
 	public LocalDate getToday()
 	{
