@@ -50,7 +50,7 @@ UPDATE AD_Column SET SeqNo=15,Updated=TO_TIMESTAMP('2024-10-29 14:12:00.55','YYY
 
 
 
--- Field: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Referenz
+-- Field: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T12:24:36.164Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589361,732011,0,540859,TO_TIMESTAMP('2024-10-29 14:24:35.944','YYYY-MM-DD HH24:MI:SS.US'),100,'Referenz-Nummer des Kunden',40,'de.metas.contracts','The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.','Y','Y','N','N','N','N','N','Referenz',TO_TIMESTAMP('2024-10-29 14:24:35.944','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -72,19 +72,19 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=732011
 /* DDL */ select AD_Element_Link_Create_Missing_Field(732011)
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T12:26:01.313Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,732011,0,540859,541104,626243,'F',TO_TIMESTAMP('2024-10-29 14:26:01.111','YYYY-MM-DD HH24:MI:SS.US'),100,'Referenz-Nummer des Kunden','The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.','Y','N','Y','N','N','Referenz',480,0,0,TO_TIMESTAMP('2024-10-29 14:26:01.111','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T12:26:09.753Z
 UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-29 14:26:09.753','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626243
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> advanced edit -> 10 -> advanced edit.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T13:41:38.386Z
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=626243
@@ -92,139 +92,139 @@ DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=626243
 
 
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T14:55:21.264Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,732011,0,540859,541109,626244,'F',TO_TIMESTAMP('2024-10-29 16:55:21.038','YYYY-MM-DD HH24:MI:SS.US'),100,'Referenz-Nummer des Kunden','The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.','Y','N','Y','N','N','Referenz',90,0,0,TO_TIMESTAMP('2024-10-29 16:55:21.038','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T14:55:38.011Z
 UPDATE AD_UI_Element SET SeqNo=45,Updated=TO_TIMESTAMP('2024-10-29 16:55:38.011','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626244
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T14:55:48.742Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.742','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626244
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Name
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Name
 -- Column: C_Flatrate_Term.Bill_BPartner_ID
 -- 2024-10-29T14:55:48.749Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.749','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548294
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertrag Status
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertrag Status
 -- Column: C_Flatrate_Term.ContractStatus
 -- 2024-10-29T14:55:48.755Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.755','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548999
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Planmenge pro Maßeinheit
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Planmenge pro Maßeinheit
 -- Column: C_Flatrate_Term.PlannedQtyPerUnit
 -- 2024-10-29T14:55:48.762Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.762','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548270
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Produkt
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Produkt
 -- Column: C_Flatrate_Term.M_Product_ID
 -- 2024-10-29T14:55:48.768Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.768','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548268
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Einzelpreis
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Einzelpreis
 -- Column: C_Flatrate_Term.PriceActual
 -- 2024-10-29T14:55:48.774Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.774','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548258
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsbedingungen
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsbedingungen
 -- Column: C_Flatrate_Term.C_Flatrate_Conditions_ID
 -- 2024-10-29T14:55:48.779Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.779','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548295
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> harvesting details.Erntekalender
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> harvesting details.Erntekalender
 -- Column: C_Flatrate_Term.C_Harvesting_Calendar_ID
 -- 2024-10-29T14:55:48.786Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.786','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=624019
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> harvesting details.Erntejahr
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> harvesting details.Erntejahr
 -- Column: C_Flatrate_Term.Harvesting_Year_ID
 -- 2024-10-29T14:55:48.792Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.792','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=624020
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsbeginn
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsbeginn
 -- Column: C_Flatrate_Term.StartDate
 -- 2024-10-29T14:55:48.797Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.797','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548298
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsende
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsende
 -- Column: C_Flatrate_Term.EndDate
 -- 2024-10-29T14:55:48.803Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.803','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548299
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Preissystem
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Preissystem
 -- Column: C_Flatrate_Term.M_PricingSystem_ID
 -- 2024-10-29T14:55:48.807Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.807','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548300
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Vertragsverlängerung
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Vertragsverlängerung
 -- Column: C_Flatrate_Term.C_Flatrate_Transition_ID
 -- 2024-10-29T14:55:48.812Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.812','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548301
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Kündigungsfrist
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Kündigungsfrist
 -- Column: C_Flatrate_Term.NoticeDate
 -- 2024-10-29T14:55:48.816Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.816','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548302
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Autom. verlängern
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Autom. verlängern
 -- Column: C_Flatrate_Term.IsAutoRenew
 -- 2024-10-29T14:55:48.821Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.821','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548303
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Verarbeitet
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Verarbeitet
 -- Column: C_Flatrate_Term.Processed
 -- 2024-10-29T14:55:48.826Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.826','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548304
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertrag Nr.
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertrag Nr.
 -- Column: C_Flatrate_Term.MasterDocumentNo
 -- 2024-10-29T14:55:48.831Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.831','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551392
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner seit
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner seit
 -- Column: C_Flatrate_Term.MasterStartDate
 -- 2024-10-29T14:55:48.835Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.835','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548400
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner bis
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner bis
 -- Column: C_Flatrate_Term.MasterEndDate
 -- 2024-10-29T14:55:48.840Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.84','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548401
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Belegstatus
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Belegstatus
 -- Column: C_Flatrate_Term.DocStatus
 -- 2024-10-29T14:55:48.845Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.845','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548308
 ;
 
--- UI Element: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> org.Sektion
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> org.Sektion
 -- Column: C_Flatrate_Term.AD_Org_ID
 -- 2024-10-29T14:55:48.850Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=240,Updated=TO_TIMESTAMP('2024-10-29 16:55:48.85','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548305
@@ -285,9 +285,17 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_T
 UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2024-10-29 17:34:43.88','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589361
 ;
 
--- Field: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Referenz
+-- Field: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Referenz
 -- Column: C_Flatrate_Term.POReference
 -- 2024-10-29T16:15:07.635Z
 UPDATE AD_Field SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2024-10-29 18:15:07.635','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=732011
+;
+
+
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Referenz
+-- Column: C_Flatrate_Term.POReference
+-- 2024-10-30T14:58:06.442Z
+UPDATE AD_UI_Element SET SeqNo=25,Updated=TO_TIMESTAMP('2024-10-30 16:58:06.442','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626244
 ;
 
