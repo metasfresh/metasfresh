@@ -114,7 +114,7 @@ public class AvailableForSalesUtil
 	public boolean isOrderEligibleForFeature(@NonNull final I_C_Order orderRecord)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		if (orderBL.isSalesProposalOrQuotation(orderRecord) || orderBL.isProFormaSO(orderRecord))
+		if (orderBL.isSalesProposalOrQuotation(orderRecord) || orderBL.isProformaSO(orderRecord))
 		{
 			return false;
 		}

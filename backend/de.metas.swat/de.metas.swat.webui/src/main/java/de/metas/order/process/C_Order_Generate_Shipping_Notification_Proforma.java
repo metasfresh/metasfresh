@@ -24,6 +24,7 @@ package de.metas.order.process;
 
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -34,7 +35,7 @@ import lombok.NonNull;
 
 import java.time.Instant;
 
-public class C_Order_Generate_Shipping_Notification_ProForma extends JavaProcess implements IProcessPrecondition
+public class C_Order_Generate_Shipping_Notification_Proforma extends JavaProcess implements IProcessPrecondition
 {
 	private static final String PARAM_PhysicalClearanceDate = "PhysicalClearanceDate";
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -44,29 +45,24 @@ public class C_Order_Generate_Shipping_Notification_ProForma extends JavaProcess
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
+		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-		if (context.isMoreThanOneSelected())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 
-		final OrderId salesOrderId = context.getSingleSelectedRecordId(OrderId.class);
-		if(!orderBL.isProFormaSO(salesOrderId))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No proForma order");
-		}
-		return ProcessPreconditionsResolution.accept();
+		return newProducer().checkCanCreateShippingNotification(context.getSingleSelectedRecordId(OrderId.class));
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final OrderId salesOrderId = OrderId.ofRepoId(getRecord_ID());
-		//TODO
 
+		newProducer().createShippingNotification(OrderId.ofRepoId(getRecord_ID()), p_physicalClearanceDate);;
 		return MSG_OK;
+	}
+
+	private ShippingNotificationFromOrderProducer newProducer()
+	{
+		return orderBL.newShippingNotificationProducer();
 	}
 }

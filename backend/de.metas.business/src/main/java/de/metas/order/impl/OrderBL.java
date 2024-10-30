@@ -46,9 +46,12 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.InOutService;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -67,8 +70,10 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.inout.InOutFromOrderProducer;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -82,6 +87,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
@@ -100,6 +106,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -159,6 +166,7 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
 	{
@@ -1045,14 +1053,14 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isProFormaSO(@NonNull final OrderId orderId)
+	public boolean isProformaSO(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = getById(orderId);
-		return isProFormaSO(order);
+		return isProformaSO(order);
 	}
 
 	@Override
-	public boolean isProFormaSO(@NonNull final I_C_Order order)
+	public boolean isProformaSO(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		if (!soTrx.isSales())
@@ -1062,6 +1070,13 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isProformaSO(docTypeId);
+	}
+
+	@Override
+	public boolean isCallOrder(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isCallOrder(docTypeId);
 	}
 
 	@Override
@@ -1382,4 +1397,30 @@ public class OrderBL implements IOrderBL
 		return orderDAO.getPPCostCollectorId(orderLineId);
 	}
 
+	@Override
+	public ShippingNotificationFromOrderProducer newShippingNotificationProducer()
+	{
+		return new ShippingNotificationFromOrderProducer(
+				SpringContextHolder.instance.getBean(ShippingNotificationService.class),
+				this,
+				orderLineBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
+				warehouseBL
+		);
+	}
+
+	@Override
+	public InOutFromOrderProducer newInOutFromOrderProducer()
+	{
+		return new InOutFromOrderProducer(
+				this,
+				orgDAO,
+				orderLineBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(InOutService.class),
+				InOutUserNotificationsProducer.newInstance(),
+				warehouseBL
+		);
+	}
 }

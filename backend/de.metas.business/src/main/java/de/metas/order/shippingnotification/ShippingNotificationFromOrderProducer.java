@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.shippingnotification;
 
 import com.google.common.collect.ImmutableMap;
@@ -20,6 +42,7 @@ import de.metas.product.ProductId;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
 import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -31,7 +54,6 @@ import org.compiere.model.I_C_OrderLine;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,25 +73,23 @@ public class ShippingNotificationFromOrderProducer
 		return checkCanCreateShippingNotification(ImmutableSet.of(salesOrderId));
 	}
 
-	public ProcessPreconditionsResolution checkCanCreateShippingNotification(@NonNull final Collection<OrderId> salesOrderIds)
+	public ProcessPreconditionsResolution checkCanCreateShippingNotification(@NonNull final Collection<OrderId> orderIds)
 	{
-		if (salesOrderIds.isEmpty())
+		if (orderIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
 
-		final List<I_C_Order> salesOrders = orderBL.getByIds(salesOrderIds);
-		if (salesOrders.stream().anyMatch(salesOrder -> !isCompleted(salesOrder)))
+		if(orderIds.stream().anyMatch(orderId -> !orderBL.isProformaSO(orderId)))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only proforma sales orders");
 		}
 
+		if (orderIds.stream().anyMatch(orderId -> !orderBL.getDocStatus(orderId).isCompleted()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only completed orders");
+		}
 		return ProcessPreconditionsResolution.accept();
-	}
-
-	private boolean isCompleted(final I_C_Order salesOrder)
-	{
-		return DocStatus.ofNullableCodeOrUnknown(salesOrder.getDocStatus()).isCompleted();
 	}
 
 	public void createShippingNotification(
@@ -137,12 +157,14 @@ public class ShippingNotificationFromOrderProducer
 
 	private ShippingNotificationLine toShippingNotificationLine(@NonNull final I_C_OrderLine orderLine)
 	{
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
 		return ShippingNotificationLine.builder()
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID()))
-				.qty(orderLineBL.getQtyOrdered((de.metas.interfaces.I_C_OrderLine)orderLine))
-				.shipmentScheduleId(null) //TODO nullable
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
+				.qty(orderLineBL.getQtyOrdered(orderAndLineId))
+				.shipmentScheduleId(null)
+				.salesOrderAndLineId(orderAndLineId)
+				.line(SeqNo.ofInt(orderLine.getLine()))
 				.build();
 	}
 }

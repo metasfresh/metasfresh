@@ -1428,7 +1428,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		sortByProductAndASI(lines); // task 08999
 
-		final boolean isProForma = docTypeBL.isProformaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
+		final boolean isProforma = docTypeBL.isProformaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
 
 		for (final MInOutLine line : lines)
 		{
@@ -1472,7 +1472,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			log.debug("Line={} - Qty={}", sLine.getLine(), sLine.getMovementQty());
 
 			// Stock Movement - Counterpart MOrder.reserveStock
-			if (product != null
+			if (product != null && !isProforma
 					&& Services.get(IProductBL.class).isStocked(product))
 			{
 				// same warehouse in order and receipt?
@@ -1486,7 +1486,6 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 
 				log.debug("Material Transaction");
-				if(!isProForma)
 				{
 					final BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
 					final BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
@@ -1569,7 +1568,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					&& product.isCreateAsset()
 					&& sLine.getMovementQty().signum() > 0
 					&& !isReversal()
-					&& !isProForma)
+					&& !isProforma)
 			{
 				log.debug("Asset");
 				info.append("@A_Asset_ID@: ");

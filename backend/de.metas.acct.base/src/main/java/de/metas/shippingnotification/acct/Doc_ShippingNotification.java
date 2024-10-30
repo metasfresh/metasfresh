@@ -8,7 +8,6 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
 import de.metas.document.dimension.Dimension;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
@@ -48,8 +47,7 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	protected List<Fact> createFacts(final AcctSchema as)
 	{
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
-		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
-		if (docBaseType.isShippingNotification())
+		if (docBaseAndSubType.isShippingNotificationBaseType())
 		{
 			if(docBaseAndSubType.isProformaSubType())
 			{
@@ -119,7 +117,7 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 		cr.setLocationFromBPartner(shippingNotification.getBpartnerAndLocationId(), false);  // to Loc
 	}
 
-	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull ShippingNotificationLine line)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull final ShippingNotificationLine line)
 	{
 		return getAccountProvider().getProductAccount(as.getId(), line.getProductId(), null, acctType);
 	}

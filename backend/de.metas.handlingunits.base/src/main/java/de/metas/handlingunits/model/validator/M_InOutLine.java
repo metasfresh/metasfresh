@@ -12,6 +12,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.MovementType;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -34,6 +36,8 @@ public class M_InOutLine
 	// TODO: delete AD_Message:
 	// private static final String MSG_CHANGE_MOVEMENT_QTY_NOT_SUPPORTED = "de.metas.inoutcandidate.modelvalidator.M_InOutLine_Shipment_ChangeMovementQtyNotSupported";
 
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -48,6 +52,11 @@ public class M_InOutLine
 		if (isReturnType)
 		{
 			// no nothing in case of returns
+			return;
+		}
+
+		if(orderBL.isProformaSO(OrderId.ofRepoId(inoutLine.getC_Order_ID())))
+		{
 			return;
 		}
 

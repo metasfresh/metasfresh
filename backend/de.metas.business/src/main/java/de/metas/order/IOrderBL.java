@@ -32,6 +32,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.inout.InOutFromOrderProducer;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -256,9 +258,11 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
-	boolean isProFormaSO(@NonNull OrderId orderId);
+	boolean isProformaSO(@NonNull OrderId orderId);
 
-	boolean isProFormaSO(@NonNull I_C_Order order);
+	boolean isProformaSO(@NonNull I_C_Order order);
+
+	boolean isCallOrder(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
 
@@ -342,4 +346,8 @@ public interface IOrderBL extends ISingletonService
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	ShippingNotificationFromOrderProducer newShippingNotificationProducer();
+
+	InOutFromOrderProducer newInOutFromOrderProducer();
 }

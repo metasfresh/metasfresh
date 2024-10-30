@@ -135,6 +135,6 @@ public class C_Order
 		{
 			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
 		}
-		return !orderBL.isProFormaSO(order) && (ediEnabledByInputDataSource || ediEnabledByBPartner);
+		return !orderBL.isProformaSO(order) && (ediEnabledByInputDataSource || ediEnabledByBPartner);
 	}
 }

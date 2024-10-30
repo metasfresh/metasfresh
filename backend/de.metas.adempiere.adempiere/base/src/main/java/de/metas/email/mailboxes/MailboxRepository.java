@@ -132,9 +132,13 @@ public class MailboxRepository
 			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_DocBaseType, docBaseAndSubType.getDocBaseType());
 
 			final DocSubType docSubType = docBaseAndSubType.getDocSubType();
-			if (docSubType != null)
+			if (!docSubType.isAnyOrNone())
 			{
-				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMNNAME_DocSubType, docSubType, null);
+				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_DocSubType, docSubType);
+			}
+			else if (docSubType.isNone())
+			{
+				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_DocSubType, null);
 			}
 		}
 

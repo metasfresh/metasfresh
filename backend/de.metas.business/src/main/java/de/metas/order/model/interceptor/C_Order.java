@@ -30,8 +30,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -105,7 +103,6 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -170,13 +167,7 @@ public class C_Order
 	})
 	public void removeFlatRateConditionsForCallOrderAndProformaOrder(final I_C_Order order)
 	{
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		if (docTypeTargetId == null)
-		{
-			return;
-		}
-
-		if (docTypeBL.isCallOrder(docTypeTargetId) || docTypeBL.isProformaSO(docTypeTargetId))
+		if (orderBL.isCallOrder(order) || orderBL.isProformaSO(order))
 		{
 			orderDAO.retrieveOrderLines(order)
 					.forEach(line -> {
