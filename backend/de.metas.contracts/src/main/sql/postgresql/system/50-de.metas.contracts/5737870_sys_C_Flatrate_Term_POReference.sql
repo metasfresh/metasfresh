@@ -285,3 +285,9 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_T
 UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2024-10-29 17:34:43.88','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589361
 ;
 
+-- Field: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Referenz
+-- Column: C_Flatrate_Term.POReference
+-- 2024-10-29T16:15:07.635Z
+UPDATE AD_Field SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2024-10-29 18:15:07.635','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=732011
+;
+
