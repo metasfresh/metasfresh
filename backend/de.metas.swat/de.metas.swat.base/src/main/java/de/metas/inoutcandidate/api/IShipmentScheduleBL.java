@@ -87,7 +87,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
 	 */
-	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
+	boolean isSchedAllowsConsolidate(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.

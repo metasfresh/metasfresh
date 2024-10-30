@@ -22,15 +22,15 @@ package org.adempiere.util.agg.key.impl;
  * #L%
  */
 
+import lombok.NonNull;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
+import org.adempiere.util.lang.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
-import org.adempiere.util.lang.ObjectUtils;
 
 /**
  * {@link IAggregationKeyRegistry} default implementation
@@ -55,7 +55,7 @@ public class AggregationKeyRegistry implements IAggregationKeyRegistry
 		return dependsOnColumnNames.get(registrationKey);
 	}
 
-	private final CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(final String registrationKey)
+	private final CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(@NonNull final String registrationKey)
 	{
 		CompositeAggregationKeyValueHandler compositeKeyValueHandler = _valueHandlers.get(registrationKey);
 		if (compositeKeyValueHandler == null)

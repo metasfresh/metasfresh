@@ -251,7 +251,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
+	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
 				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
