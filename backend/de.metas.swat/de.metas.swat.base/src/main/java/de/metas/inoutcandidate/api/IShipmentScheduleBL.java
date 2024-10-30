@@ -53,8 +53,6 @@ import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
-	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
-
 	/**
 	 * Please use this method to avoid unneeded work packages.
 	 *
@@ -99,7 +97,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
-	 *
+	 * <p>
 	 * Task 08255
 	 *
 	 */
@@ -107,7 +105,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Close the given Shipment Schedule.
-	 *
+	 * <p>
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
@@ -158,7 +156,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
-	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule schedule);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 

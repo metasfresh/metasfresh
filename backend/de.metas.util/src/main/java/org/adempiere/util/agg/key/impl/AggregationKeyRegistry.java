@@ -39,9 +39,9 @@ import java.util.Map;
  */
 public class AggregationKeyRegistry implements IAggregationKeyRegistry
 {
-	private static final Map<String, List<String>> dependsOnColumnNames = new HashMap<String, List<String>>();
+	private static final Map<String, List<String>> dependsOnColumnNames = new HashMap<>();
 
-	private static final Map<String, CompositeAggregationKeyValueHandler> _valueHandlers = new HashMap<String, CompositeAggregationKeyValueHandler>();
+	private static final Map<String, CompositeAggregationKeyValueHandler> _valueHandlers = new HashMap<>();
 
 	@Override
 	public void registerDependsOnColumnnames(final String registrationKey, final String... columnNames)
@@ -55,7 +55,7 @@ public class AggregationKeyRegistry implements IAggregationKeyRegistry
 		return dependsOnColumnNames.get(registrationKey);
 	}
 
-	private final CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(@NonNull final String registrationKey)
+	private CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(@NonNull final String registrationKey)
 	{
 		CompositeAggregationKeyValueHandler compositeKeyValueHandler = _valueHandlers.get(registrationKey);
 		if (compositeKeyValueHandler == null)
