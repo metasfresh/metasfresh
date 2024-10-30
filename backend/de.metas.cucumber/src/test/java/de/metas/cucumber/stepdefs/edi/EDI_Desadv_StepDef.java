@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
@@ -235,7 +236,10 @@ public class EDI_Desadv_StepDef
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
-		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
+		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
+																						 .poReference(order.getPOReference())
+																						 .ctxAware(InterfaceWrapperHelper.getContextAware(order))
+																						 .build());
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
