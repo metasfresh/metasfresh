@@ -2291,7 +2291,7 @@ public class TimeUtil
 		}
 		if (to.isBefore(from))
 		{
-			return getDaysBetween360(to,from) * -1;
+			return getDaysBetween360(to, from) * -1;
 		}
 		ZonedDateTime dayFrom = from;
 		ZonedDateTime dayTo = to;

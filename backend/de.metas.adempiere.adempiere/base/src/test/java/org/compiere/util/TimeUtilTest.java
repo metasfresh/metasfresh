@@ -478,8 +478,7 @@ public class TimeUtilTest
 		final ZonedDateTime March31_2020 = ZonedDateTime.parse("2020-03-31T00:15:00+01:00");
 
 
-		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> TimeUtil.getDaysBetween360(December5_2018, December5_2017));
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2017)).isEqualTo(-360);;
 
 		assertThat(TimeUtil.getDaysBetween360(December5_2018, June28_2024)).isEqualTo(2003);
 
