@@ -2362,7 +2362,6 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
-		newTerm.setPOReference(order.getPOReference());
 
 		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
 
