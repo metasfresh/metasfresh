@@ -161,7 +161,10 @@ public class RabbitMqListener implements MessageListener
 		container.setConsumerTagStrategy(q -> consumerTag);
 		container.setConnectionFactory(connectionFactory);
 		container.setQueueNames(queueName);
-
+		container.setPrefetchCount(1); // here, the default is 250
+		container.setConcurrentConsumers(1); // 1 is actually the default anyways
+		container.setMaxConcurrentConsumers(1);
+		
 		container.setErrorHandler(t -> {
 			if (isStopping)
 			{
