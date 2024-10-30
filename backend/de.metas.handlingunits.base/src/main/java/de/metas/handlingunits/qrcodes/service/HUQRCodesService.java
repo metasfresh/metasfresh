@@ -7,6 +7,7 @@ import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
@@ -240,18 +241,25 @@ public class HUQRCodesService
 
 	public static IHUQRCode toHUQRCode(@NonNull final String jsonString)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(jsonString);
-		if (HUQRCode.isHandled(globalQRCode))
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(jsonString).orNullIfError();
+		if (globalQRCode != null)
 		{
-			return HUQRCode.fromGlobalQRCode(globalQRCode);
+			if (HUQRCode.isHandled(globalQRCode))
+			{
+				return HUQRCode.fromGlobalQRCode(globalQRCode);
+			}
+			else if (LMQRCode.isHandled(globalQRCode))
+			{
+				return LMQRCode.fromGlobalQRCode(globalQRCode);
+			}
 		}
-		else if (LMQRCode.isHandled(globalQRCode))
+
+		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (gs1HUQRCode != null)
 		{
-			return LMQRCode.fromGlobalQRCode(globalQRCode);
+			return gs1HUQRCode;
 		}
-		else
-		{
-			throw new AdempiereException("QR code is not handled: " + globalQRCode);
-		}
+
+		throw new AdempiereException("QR code is not handled: " + jsonString);
 	}
 }
