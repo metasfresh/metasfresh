@@ -75,7 +75,6 @@ public class CallOrderSummaryService
 				.orderId(orderId)
 				.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
-				.poReference(order.getPOReference())
 				.uomId(UomId.ofRepoId(ol.getC_UOM_ID()))
 				.qtyEntered(ol.getQtyEntered())
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
