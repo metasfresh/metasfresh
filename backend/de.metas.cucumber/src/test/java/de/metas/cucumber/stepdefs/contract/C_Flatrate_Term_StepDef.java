@@ -318,6 +318,12 @@ public class C_Flatrate_Term_StepDef
 				softly.assertThat(contract.isSOTrx()).as(I_C_Flatrate_Term.COLUMNNAME_IsSOTrx).isEqualTo(isSoTrx);
 			}
 
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_POReference);
+			if (Check.isNotBlank(poReference))
+			{
+				softly.assertThat(contract.getPOReference()).isEqualTo(poReference);
+			}
+
 			softly.assertAll();
 
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
