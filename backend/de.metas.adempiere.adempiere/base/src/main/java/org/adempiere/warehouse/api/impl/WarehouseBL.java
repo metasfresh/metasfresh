@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -225,6 +226,12 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorIdByRepoId(locatorRepoId);
 	}
 
+	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoIds(final Set<Integer> locatorRepoIds)
+	{
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
+	}
+	
 	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{

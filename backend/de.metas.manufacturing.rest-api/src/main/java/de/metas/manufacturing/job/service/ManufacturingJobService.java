@@ -101,6 +101,7 @@ public class ManufacturingJobService
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+	private static final AdMessageKey MSG_LocationNotAllowed = AdMessageKey.of("ScaleDeviceInvalidLocator");
 
 	public ManufacturingJobService(
 			final @NonNull ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
@@ -442,10 +443,20 @@ public class ManufacturingJobService
 
 	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
 	{
+
+		final DeviceAccessor deviceAccessor = Optional.ofNullable(currentScaleDeviceId)
+				.flatMap(this::getDeviceAccessor)
+				.orElse(null);
+		
 		// Make sure the device really exists, to avoid future issues in mobile UI
-		if (currentScaleDeviceId != null && !getScaleDevice(currentScaleDeviceId).isPresent())
+		if (deviceAccessor == null)
 		{
 			throw new AdempiereException(MSG_ScaleDeviceNotRegistered).markAsUserValidationError();
+		}
+		
+		if (!deviceAccessor.isAvailableForLocator(job.getLocatorId()))
+		{
+			throw new AdempiereException(MSG_LocationNotAllowed).markAsUserValidationError();
 		}
 
 		if (!DeviceId.equals(job.getCurrentScaleDeviceId(), currentScaleDeviceId))
@@ -468,11 +479,17 @@ public class ManufacturingJobService
 				: Optional.empty();
 	}
 
-	private Optional<ScaleDevice> getScaleDevice(@NonNull final DeviceId currentScaleDeviceId)
+	@NonNull
+	private Optional<DeviceAccessor> getDeviceAccessor(@NonNull final DeviceId currentScaleDeviceId)
 	{
 		return deviceAccessorsHubFactory
 				.getDefaultDeviceAccessorsHub()
-				.getDeviceAccessorById(currentScaleDeviceId)
+				.getDeviceAccessorById(currentScaleDeviceId);
+	}
+	
+	private Optional<ScaleDevice> getScaleDevice(@NonNull final DeviceId currentScaleDeviceId)
+	{
+		return getDeviceAccessor(currentScaleDeviceId)
 				.map(this::toScaleDevice);
 	}
 
@@ -501,7 +518,7 @@ public class ManufacturingJobService
 		return deviceAccessorsHubFactory
 				.getDefaultDeviceAccessorsHub()
 				.getDeviceAccessors(Weightables.ATTR_WeightGross)
-				.stream(job.getWarehouseId())
+				.streamForLocator(job.getLocatorId())
 				.map(this::toScaleDevice);
 	}
 
