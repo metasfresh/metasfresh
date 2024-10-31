@@ -91,7 +91,6 @@ public class ManualCandidateService
 			candidate.pricingSystemId((contractSpecificPrice.getPricingSystemId()));
 			candidate.discount(Percent.ZERO);
 
-
 		}
 		else
 		{
@@ -105,6 +104,7 @@ public class ManualCandidateService
 							newIC.getSoTrx())
 					.setCountryId(countryId)
 					.setPriceDate(newIC.getDateOrdered())
+					.setPriceListVersionId(newIC.getPriceListVersionId())
 					.setFailIfNotCalculated();
 
 			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
