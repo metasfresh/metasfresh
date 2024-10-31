@@ -73,7 +73,7 @@ public class InvoiceBLTest
 	private I_C_DocType createSalesOrderDocType()
 	{
 		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(DocBaseType.ARInvoice, null);
+		final I_C_DocType invoiceDocType = docType(DocBaseType.SalesInvoice, null);
 		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 

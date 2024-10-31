@@ -326,11 +326,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final DocBaseType docBaseType;
 		if (invoice.isSOTrx())
 		{
-			docBaseType = DocBaseType.ARCreditMemo;
+			docBaseType = DocBaseType.SalesCreditMemo;
 		}
 		else
 		{
-			docBaseType = DocBaseType.APCreditMemo;
+			docBaseType = DocBaseType.PurchaseCreditMemo;
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
@@ -1771,7 +1771,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(@NonNull final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getById(adjustmentChargeCreateRequest.getInvoiceID());
-		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubTYpe();
+		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubType();
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()

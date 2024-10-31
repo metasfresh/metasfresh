@@ -1,10 +1,8 @@
-package de.metas.inout.event;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.inout.event;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inout.event;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
@@ -105,7 +105,7 @@ public final class InOutUserNotificationsProducer
 	 * </ul>
 	 *
 	 */
-	public final InOutUserNotificationsProducer notifyInOutProcessed(final I_M_InOut inout)
+	public InOutUserNotificationsProducer notifyInOutProcessed(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "inout not null");
 		notifyInOutsProcessed(Collections.singleton(inout));

@@ -27,6 +27,7 @@ import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
@@ -279,7 +280,7 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
-		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
+		docType.setDocSubType(DocSubType.Subscription.getCode());
 		docType.setDocBaseType(DocBaseType.CustomerContract.getCode());
 		save(docType);
 	}

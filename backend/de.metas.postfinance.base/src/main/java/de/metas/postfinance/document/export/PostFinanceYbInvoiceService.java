@@ -39,6 +39,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.InvoiceDeliveryType;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -406,10 +407,10 @@ public class PostFinanceYbInvoiceService
 
 	public String getTransactionId(@NonNull final InvoiceToExport invoiceToExport)
 	{
-		final String docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
+		final DocSubType docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
 		return invoiceToExport.getId().getRepoId()
 				+ invoiceToExport.getDocBaseAndSubType().getDocBaseType().getCode()
-				+ (EmptyUtil.isBlank(docSubType) ? "" : docSubType)
+				+ (docSubType.isAnyOrNone() ? "" : docSubType.getCode())
 				+ invoiceToExport.getDocumentNumber();
 	}
 
@@ -458,7 +459,7 @@ public class PostFinanceYbInvoiceService
 		final String languageISO = languageDAO.retrieveByAD_Language(CoalesceUtil.firstNotBlank(adLanguageRecipient, adLanguageBiller, AD_LANGUAGE_DE)).getLanguageISO();
 		header.setLanguage(languageISO);
 
-		if(!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if(!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isSalesCreditMemo())
 		{
 			header.setPaymentInformation(getPaymentInformation(invoiceToExport));
 		}
@@ -776,7 +777,7 @@ public class PostFinanceYbInvoiceService
 		final SummaryType summaryType = YB_INVOICE_OBJECT_FACTORY.createSummaryType();
 		summaryType.setTax(taxType);
 
-		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isSalesCreditMemo())
 		{
 			summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines().negate());
 			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal().negate());

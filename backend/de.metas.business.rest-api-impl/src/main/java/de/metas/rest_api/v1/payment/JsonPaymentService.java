@@ -207,7 +207,7 @@ public class JsonPaymentService
 			final String invoiceId = line.getInvoiceIdentifier();
 			final String docBaseType = line.getDocBaseType();
 			final DocBaseAndSubType docType = Check.isBlank(docBaseType) ? null : DocBaseAndSubType.of(docBaseType, line.getDocSubType());
-			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
+			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoId(orgId), docType);
 			Check.assumeNotEmpty(invoice, "Cannot find invoice for identifier: " + invoiceId);
 			allocationBuilder.addLine()
 					.skipIfAllAmountsAreZero()
@@ -255,7 +255,7 @@ public class JsonPaymentService
 	}
 
 	@NonNull
-	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
+	private Optional<InvoiceId> retrieveInvoice(@NonNull final IdentifierString invoiceIdentifier, @NonNull final OrgId orgId, @Nullable final DocBaseAndSubType docType)
 	{
 		final SingleInvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
 				.docType(docType)

@@ -43,6 +43,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -723,7 +724,7 @@ public class C_Order_StepDef
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 						.docBaseType(docBaseType)
-						.docSubType(docSubType)
+						.docSubType(DocSubType.ofNullableCode(docSubType))
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())
 						.build();

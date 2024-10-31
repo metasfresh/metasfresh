@@ -35,6 +35,7 @@ import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -46,10 +47,10 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoice.ManualInvoice;
 import de.metas.invoice.ManualInvoiceService;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
@@ -679,7 +680,7 @@ public class JsonInvoiceService
 	{
 		return docTypeService.getDocTypeId(
 				DocBaseType.ofCode(invoiceDocType.getDocBaseType()),
-				invoiceDocType.getDocSubType(),
+				DocSubType.ofNullableCode(invoiceDocType.getDocSubType()),
 				clientAndOrgId.getOrgId());
 	}
 

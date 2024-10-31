@@ -95,6 +95,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+@SuppressWarnings("unused")
 public class WarehouseDAO implements IWarehouseDAO
 {
 	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
@@ -429,8 +430,8 @@ public class WarehouseDAO implements IWarehouseDAO
 				.stream()
 				.map(record -> LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						LocatorId::getWarehouseId,
-						locatorId -> locatorId))
+                        LocatorId::getWarehouseId,
+                        locatorId -> locatorId))
 				.asMap();
 
 		return CollectionUtils.mapValues(locatorIdsByWarehouseId, ImmutableList::copyOf);

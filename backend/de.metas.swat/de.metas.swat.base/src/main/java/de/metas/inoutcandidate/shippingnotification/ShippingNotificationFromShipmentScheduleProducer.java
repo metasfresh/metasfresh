@@ -150,7 +150,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 	}
 
 	@NonNull
-	private static Optional<YearAndCalendarId> extractHarvestingYearId(final I_C_Order salesOrderRecord)
+	private static Optional<YearAndCalendarId> extractHarvestingYearId(@NonNull final I_C_Order salesOrderRecord)
 	{
 		return Optional.ofNullable(YearAndCalendarId.ofRepoIdOrNull(salesOrderRecord.getHarvesting_Year_ID(), salesOrderRecord.getC_Harvesting_Calendar_ID()));
 	}
@@ -165,5 +165,4 @@ public class ShippingNotificationFromShipmentScheduleProducer
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID()))
 				.build();
 	}
-
 }

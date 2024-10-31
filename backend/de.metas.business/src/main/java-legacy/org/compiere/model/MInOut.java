@@ -124,6 +124,8 @@ public class MInOut extends X_M_InOut implements IDocument
 
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IStorageBL storageBL = Services.get(IStorageBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -1351,7 +1353,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
 		return (!(order != null
 				&& order.getC_Order_ID() > 0
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
+				&& docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& !checkCreditOnPrepayOorder));
 	}
 
@@ -1434,6 +1436,8 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		sortByProductAndASI(lines); // task 08999
 
+		final boolean isProforma = docTypeBL.isProformaShipment(DocTypeId.ofRepoId(getC_DocType_ID()));
+
 		for (final MInOutLine line : lines)
 		{
 			final MInOutLine sLine = line;
@@ -1476,7 +1480,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			log.debug("Line={} - Qty={}", sLine.getLine(), sLine.getMovementQty());
 
 			// Stock Movement - Counterpart MOrder.reserveStock
-			if (product != null
+			if (product != null && !isProforma
 					&& Services.get(IProductBL.class).isStocked(product))
 			{
 				// same warehouse in order and receipt?
@@ -1488,8 +1492,6 @@ public class MInOut extends X_M_InOut implements IDocument
 					reservationAttributeSetInstance_ID = oLine.getM_AttributeSetInstance_ID();
 					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getRepoId() == getM_Warehouse_ID();
 				}
-
-				final IStorageBL storageBL = Services.get(IStorageBL.class);
 
 				log.debug("Material Transaction");
 				{
@@ -1573,7 +1575,8 @@ public class MInOut extends X_M_InOut implements IDocument
 					&& isSOTrx()
 					&& product.isCreateAsset()
 					&& sLine.getMovementQty().signum() > 0
-					&& !isReversal())
+					&& !isReversal()
+					&& !isProforma)
 			{
 				log.debug("Asset");
 				info.append("@A_Asset_ID@: ");

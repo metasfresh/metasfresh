@@ -105,7 +105,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		}
 
 		final String docBaseType = newDocType.getDocBaseType();
-		final String docSubType = CoalesceUtil.coalesce(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
+		final String docSubType = CoalesceUtil.coalesceNotNull(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
 		final boolean isSOTrx = newDocType.isSOTrx();
 		final boolean hasChanges = newDocType.isHasCharges();
 

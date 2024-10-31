@@ -398,7 +398,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Document Type
 		{
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(DocBaseType.MaterialDelivery)
+					.docBaseType(DocBaseType.Shipment)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
 					.build();

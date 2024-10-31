@@ -247,7 +247,7 @@ class ShippingNotificationLoaderAndSaver
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.qty(Quantitys.of(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.line(SeqNo.ofInt(record.getLine()))
 				.reversalLineId(ShippingNotificationLineId.ofRepoIdOrNull(record.getReversal_ID()))
@@ -337,7 +337,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_AttributeSetInstance_ID(fromLine.getAsiId().getRepoId());
 		record.setMovementQty(fromLine.getQty().toBigDecimal());
 		record.setC_UOM_ID(fromLine.getQty().getUomId().getRepoId());
-		record.setM_ShipmentSchedule_ID(fromLine.getShipmentScheduleId().getRepoId());
+		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(fromLine.getShipmentScheduleId()));
 		record.setC_Order_ID(fromLine.getSalesOrderAndLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(fromLine.getSalesOrderAndLineId().getOrderLineRepoId());
 	}

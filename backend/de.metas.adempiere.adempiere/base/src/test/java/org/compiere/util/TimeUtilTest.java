@@ -468,6 +468,7 @@ public class TimeUtilTest
 	public void daysBetween360()
 	{
 		final ZonedDateTime December5_2018 = ZonedDateTime.parse("2018-12-05T00:15:00+01:00");
+		final ZonedDateTime December5_2018_2 = ZonedDateTime.parse("2018-12-05T00:15:00+02:00");
 		final ZonedDateTime December5_2017 = ZonedDateTime.parse("2017-12-05T00:15:00+01:00");
 		final ZonedDateTime June28_2024 = ZonedDateTime.parse("2024-06-28T00:15:00+01:00");
 		final ZonedDateTime November5_2024 = ZonedDateTime.parse("2024-11-05T00:15:00+01:00");
@@ -480,8 +481,9 @@ public class TimeUtilTest
 		final ZonedDateTime March31_2020 = ZonedDateTime.parse("2020-03-31T00:15:00+01:00");
 
 
-		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> TimeUtil.getDaysBetween360(December5_2018, December5_2017));
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2017)).isEqualTo(-360);
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2018)).isEqualTo(0);
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2018_2)).isEqualTo(0);
 
 		assertThat(TimeUtil.getDaysBetween360(December5_2018, June28_2024)).isEqualTo(2003);
 

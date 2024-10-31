@@ -28,7 +28,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
-import de.metas.contracts.modular.invoiceCandidate.ProFormaSOInvoiceCandidateVetoer;
+import de.metas.contracts.modular.invoiceCandidate.ProformaInvoiceCandidateVetoer;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
@@ -357,7 +357,7 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IInvoiceCandBL.class)
 					.registerVetoer(new HuInOutInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
 			Services.get(IInvoiceCandBL.class)
-					.registerVetoer(new ProFormaSOInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
+					.registerVetoer(new ProformaInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
 		}
 
 		// Order - Fast Input

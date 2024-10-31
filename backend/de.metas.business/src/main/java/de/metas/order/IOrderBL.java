@@ -28,10 +28,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.inout.InOutFromOrderProducer;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -164,7 +167,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDefaultDocTypeTargetId(I_C_Order order);
 
-	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+	void setPODocTypeTargetId(I_C_Order order, DocSubType poDocSubType);
 
 	/**
 	 * Set Target Sales Document Type.
@@ -265,7 +268,11 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
-	boolean isProFormaSO(@NonNull I_C_Order order);
+	boolean isProformaSO(@NonNull OrderId orderId);
+
+	boolean isProformaSO(@NonNull I_C_Order order);
+
+	boolean isCallOrder(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
 
@@ -380,4 +387,8 @@ public interface IOrderBL extends ISingletonService
 	String getDescriptionBottomById(@NonNull OrderId orderId);
 
 	String getDescriptionById(@NonNull OrderId orderId);
+
+	ShippingNotificationFromOrderProducer newShippingNotificationProducer();
+
+	InOutFromOrderProducer newInOutFromOrderProducer();
 }

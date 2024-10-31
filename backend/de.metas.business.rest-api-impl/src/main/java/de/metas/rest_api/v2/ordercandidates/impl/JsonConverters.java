@@ -18,6 +18,7 @@ import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -183,9 +184,10 @@ public class JsonConverters
 				.map(DocBaseType::ofCode)
 				.orElse(null);
 
-		final String subType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocSubType subType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocSubType)
-				.orElse(null);
+				.map(DocSubType::ofNullableCode)
+				.orElse(DocSubType.ANY);
 
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
