@@ -34,8 +34,7 @@ UPDATE AD_Field SET Name='Verpackungscode', Description=NULL, Help=NULL WHERE AD
 /* DDL */  select update_Column_Translation_From_AD_Element(577196) 
 ;
 
-SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
-;
+
 
 -- 2024-09-17T12:20:35.555Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583256,0,'M_HU_PackagingCode_Text',TO_TIMESTAMP('2024-09-17 14:20:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','The current PackagingCode string from the current M_HU_PackagingCode_ID. 
@@ -124,11 +123,6 @@ UPDATE AD_Field SET Name='Gebinde-GTIN', Description='GTIN des verwendeten Gebin
 -- 2024-09-17T13:22:17.360Z
 /* DDL */  select update_Column_Translation_From_AD_Element(583257) 
 ;
-
-
-SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN GTIN_LU_PackingMaterial TO GTIN_PackingMaterial')
-;
-
 
 
 

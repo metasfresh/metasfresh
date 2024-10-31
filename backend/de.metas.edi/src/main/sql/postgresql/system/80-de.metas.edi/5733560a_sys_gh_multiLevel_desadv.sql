@@ -1,5 +1,12 @@
-drop view if exists M_InOut_DesadvLine_Pack_V
+
+drop view if exists M_InOut_DesadvLine_Pack_V;
+
+SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
 ;
+
+SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN GTIN_LU_PackingMaterial TO GTIN_PackingMaterial')
+;
+
 
 create or replace view M_InOut_DesadvLine_Pack_V as
 select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_ID,
