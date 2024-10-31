@@ -7,13 +7,13 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inout.InOutId;
+import de.metas.inout.impl.InOutBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.MovementType;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -36,7 +36,7 @@ public class M_InOutLine
 	// TODO: delete AD_Message:
 	// private static final String MSG_CHANGE_MOVEMENT_QTY_NOT_SUPPORTED = "de.metas.inoutcandidate.modelvalidator.M_InOutLine_Shipment_ChangeMovementQtyNotSupported";
 
-	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final InOutBL inOutBL = Services.get(InOutBL.class);
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
@@ -45,18 +45,17 @@ public class M_InOutLine
 	public void updateEffectiveValues(final I_M_InOutLine inoutLine)
 	{
 
-		final I_M_InOut inOut = inoutLine.getM_InOut();
+		final InOutId inOutId = InOutId.ofRepoId(inoutLine.getM_InOut_ID());
+		final I_M_InOut inOut = inOutBL.getById(inOutId);
 
 		final boolean isReturnType = MovementType.isMaterialReturn(inOut.getMovementType());
-
 		if (isReturnType)
 		{
 			// no nothing in case of returns
 			return;
 		}
 
-		final OrderId orderId = OrderId.ofRepoIdOrNull(inoutLine.getC_Order_ID());
-		if(orderId != null && orderBL.isProformaSO(orderId))
+		if(inOutBL.isProformaShipment(inOutId))
 		{
 			return;
 		}
