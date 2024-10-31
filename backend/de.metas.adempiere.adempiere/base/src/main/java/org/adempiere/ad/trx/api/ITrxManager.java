@@ -186,7 +186,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param r       runnable object
 	 * @see #run(String, boolean, TrxRunnable)
 	 */
-	void run(String trxName, TrxRunnable r);
+	void run(@Nullable String trxName, TrxRunnable r);
 
 	void run(String trxName, Runnable runnable);
 

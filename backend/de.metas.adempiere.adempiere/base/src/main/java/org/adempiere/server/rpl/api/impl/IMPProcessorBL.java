@@ -61,7 +61,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		final ILoggable loggable = new ILoggable()
 		{
 			@Override
-			public ILoggable addLog(@NonNull final String msg, final Object... msgParameters)
+			public ILoggable addLog(@NonNull final String msg, @Nullable final Object... msgParameters)
 			{
 				final String summary = StringUtils.formatMessage(msg, msgParameters);
 				createLog(impProcessor, summary, null/* text */, reference, null/* error */);
@@ -71,6 +71,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return Loggables.temporarySetLoggable(loggable);
 	}
 
+	@Nullable
 	@Override
 	public I_IMP_ProcessorLog createLog(
 			@NonNull final org.compiere.model.I_IMP_Processor impProcessor,
@@ -104,7 +105,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			return null;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(impProcessor); // TODO: we need to use getCtx(impProcessor, useClientOrgFromModel=true)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(impProcessor, true);
 		final I_IMP_ProcessorLog pLog = InterfaceWrapperHelper.create(ctx, I_IMP_ProcessorLog.class, ITrx.TRXNAME_None);
 		pLog.setAD_Org_ID(impProcessor.getAD_Org_ID());
 
@@ -125,6 +126,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return pLog;
 	}
 
+	@Nullable
 	@Override
 	public String getXmlMessage(@NonNull final I_IMP_ProcessorLog pLog)
 	{
@@ -253,7 +255,11 @@ public class IMPProcessorBL implements IIMPProcessorBL
 
 	@Override
 	public I_IMP_ProcessorParameter createParameter(final org.compiere.model.I_IMP_Processor impProcessor,
-			final String key, final String name, final String desc, final String help, final String value)
+			final String key, 
+			@Nullable final String name, 
+			@Nullable final String desc, 
+			@Nullable final String help, 
+			final String value)
 	{
 		I_IMP_ProcessorParameter para = Services.get(IIMPProcessorDAO.class).retrieveParameter(impProcessor, key);
 		if (para == null)
@@ -271,6 +277,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return para;
 	}
 
+	@Nullable
 	@Override
 	public AdempiereProcessor asAdempiereProcessor(final org.compiere.model.I_IMP_Processor impProcessor)
 	{
