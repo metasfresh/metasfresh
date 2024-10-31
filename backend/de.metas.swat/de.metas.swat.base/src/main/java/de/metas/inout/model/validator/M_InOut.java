@@ -12,7 +12,6 @@ import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_QualityNote;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;

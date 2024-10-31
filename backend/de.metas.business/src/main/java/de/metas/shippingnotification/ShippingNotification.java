@@ -55,6 +55,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -111,7 +112,7 @@ public class ShippingNotification
 			@NonNull final DocStatus docStatus,
 			@Nullable final String docAction,
 			final boolean processed,
-			@Nullable ShippingNotificationId reversalId,
+			@Nullable final ShippingNotificationId reversalId,
 			@Nullable final List<ShippingNotificationLine> lines)
 	{
 		this.id = id;
@@ -155,11 +156,6 @@ public class ShippingNotification
 				.bpartnerLocationId(bpartnerAndLocationId)
 				.contactId(contactId)
 				.build();
-	}
-
-	public BPartnerId getShipFromBPartnerId()
-	{
-		return shipFromBPartnerAndLocationId.getBpartnerId();
 	}
 
 	public DocumentLocation getShipFromLocation()
@@ -235,6 +231,7 @@ public class ShippingNotification
 	{
 		return lines.stream()
 				.map(ShippingNotificationLine::getShipmentScheduleId)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

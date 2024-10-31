@@ -2285,9 +2285,13 @@ public class TimeUtil
 	 */
 	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
 	{
+		if(from.isEqual(to))
+		{
+			return 0;
+		}
 		if (to.isBefore(from))
 		{
-			throw new IllegalArgumentException();
+			return getDaysBetween360(to, from) * -1;
 		}
 		ZonedDateTime dayFrom = from;
 		ZonedDateTime dayTo = to;

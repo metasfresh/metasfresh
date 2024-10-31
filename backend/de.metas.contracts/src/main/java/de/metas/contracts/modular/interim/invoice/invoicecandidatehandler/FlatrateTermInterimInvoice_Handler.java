@@ -45,6 +45,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -76,7 +77,6 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -141,8 +141,8 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		final I_C_Invoice_Candidate invoiceCandidate = createBaseIC(term);
 
 		final DocTypeId interimInvoiceDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.APInvoice)
-				.docSubType(X_C_DocType.DOCSUBTYPE_InterimInvoice)
+				.docBaseType(DocBaseType.PurchaseInvoice)
+				.docSubType(DocSubType.DownPayment)
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
 				.build());

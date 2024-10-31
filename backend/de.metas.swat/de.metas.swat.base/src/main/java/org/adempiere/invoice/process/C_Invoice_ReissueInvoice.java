@@ -51,8 +51,6 @@ import org.compiere.model.I_C_Invoice;
 
 import java.util.Optional;
 
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
-
 /**
  * For Sales Invoices where billToCountry isn't set to "Enforce Correction Invoice", this Process generates a Credit Memo for the full amount, followed by a new Sales Invoice.
  */
@@ -64,7 +62,6 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
 
-	private static final DocBaseAndSubType SALES_INVOICE = DocBaseAndSubType.of(DOCBASETYPE_ARInvoice);
 	private static final AdMessageKey MSG_Event_DocumentGenerated = AdMessageKey.of("Event_DocumentGenerated");
 
 	@Override
@@ -80,7 +77,7 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 
-		if(!docBaseAndSubType.equals(SALES_INVOICE))
+		if(!docBaseAndSubType.isSalesInvoice())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an basic Sales Invoice");
 		}

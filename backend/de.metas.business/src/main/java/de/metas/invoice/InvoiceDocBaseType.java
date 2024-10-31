@@ -34,10 +34,10 @@ import javax.annotation.Nullable;
 
 public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 {
-	VendorInvoice(DocBaseType.APInvoice, SOTrx.PURCHASE, false),//
-	VendorCreditMemo(DocBaseType.APCreditMemo, SOTrx.PURCHASE, true),//
-	CustomerInvoice(DocBaseType.ARInvoice, SOTrx.SALES, false),//
-	CustomerCreditMemo(DocBaseType.ARCreditMemo, SOTrx.SALES, true), //
+	VendorInvoice(DocBaseType.PurchaseInvoice, SOTrx.PURCHASE, false),//
+	VendorCreditMemo(DocBaseType.PurchaseCreditMemo, SOTrx.PURCHASE, true),//
+	CustomerInvoice(DocBaseType.SalesInvoice, SOTrx.SALES, false),//
+	CustomerCreditMemo(DocBaseType.SalesCreditMemo, SOTrx.SALES, true), //
 	//
 	/**
 	 * Legacy commission/salary invoice

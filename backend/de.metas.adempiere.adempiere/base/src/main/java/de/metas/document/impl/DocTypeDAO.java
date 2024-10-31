@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -29,6 +30,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -114,6 +116,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	@Nullable
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery query)
 	{
 		return docTypeIdsByQuery.getOrLoad(query, this::retrieveDocTypeIdByQuery)
@@ -176,31 +179,31 @@ public class DocTypeDAO implements IDocTypeDAO
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, query.getAdClientId());
 		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, query.getAdOrgId());
-		filters.addEqualsFilter(I_C_DocType.COLUMN_DocBaseType, query.getDocBaseType());
+		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, query.getDocBaseType());
 
-		final String docSubType = query.getDocSubType();
-		if (docSubType == DocTypeQuery.DOCSUBTYPE_NONE)
+		final DocSubType docSubType = query.getDocSubType();
+		if (docSubType.isNone())
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, null);
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
 		}
-		else if (docSubType != DocTypeQuery.DOCSUBTYPE_Any)
+		else if (!docSubType.isAny())
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, docSubType);
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
 
 		if (query.getIsSOTrx() != null)
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsSOTrx, query.getIsSOTrx());
 		}
 
 		if (query.getDefaultDocType() != null)
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMN_IsDefault, query.getDefaultDocType());
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, query.getDefaultDocType());
 		}
 
 		if (!Check.isEmpty(query.getName(), true))
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, query.getName());
 		}
 
 		queryBuilder.orderBy()
@@ -230,7 +233,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	private DocBaseTypeCountersMap retrieveDocBaseTypeCountersMap()
 	{
 		// load the existing info from the table C_DocBaseType_Counter in an immutable map
-		ImmutableMap.Builder<DocBaseType, DocBaseType> docBaseTypeCounters = ImmutableMap.builder();
+		final ImmutableMap.Builder<DocBaseType, DocBaseType> docBaseTypeCounters = ImmutableMap.builder();
 
 		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_DocBaseType_Counter.class);
 
@@ -283,13 +286,13 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setAD_Org_ID(request.getAdOrgId());
 		}
-		if (request.getPrintName() != null && request.getPrintName().length() > 0)
+		if (request.getPrintName() != null && !request.getPrintName().isEmpty())
 		{
 			dt.setPrintName(request.getPrintName()); // Defaults to Name
 		}
-		if (request.getDocSubType() != null)
+		if (!request.getDocSubType().isAnyOrNone())
 		{
-			dt.setDocSubType(request.getDocSubType());
+			dt.setDocSubType(request.getDocSubType().getCode());
 		}
 		if (request.getDocTypeShipmentId() > 0)
 		{

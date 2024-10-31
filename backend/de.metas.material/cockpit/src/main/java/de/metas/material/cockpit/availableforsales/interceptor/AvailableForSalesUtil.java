@@ -41,7 +41,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -105,8 +104,7 @@ public class AvailableForSalesUtil
 	private final AvailableForSalesService availableForSalesService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IOrderDAO ordersDAO = Services.get(IOrderDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	public AvailableForSalesUtil(@NonNull final AvailableForSalesService availableForSalesService)
 	{
@@ -116,7 +114,7 @@ public class AvailableForSalesUtil
 	public boolean isOrderEligibleForFeature(@NonNull final I_C_Order orderRecord)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		if (orderBL.isSalesProposalOrQuotation(orderRecord))
+		if (orderBL.isSalesProposalOrQuotation(orderRecord) || orderBL.isProformaSO(orderRecord))
 		{
 			return false;
 		}
@@ -142,7 +140,7 @@ public class AvailableForSalesUtil
 
 	public boolean isOrderEligibleForFeature(@NonNull final OrderId orderId)
 	{
-		final I_C_Order orderRecord = ordersDAO.getById(orderId);
+		final I_C_Order orderRecord = orderDAO.getById(orderId);
 
 		return isOrderEligibleForFeature(orderRecord);
 	}
@@ -151,7 +149,7 @@ public class AvailableForSalesUtil
 	{
 		final ImmutableList.Builder<CheckAvailableForSalesRequest> result = ImmutableList.builder();
 
-		final List<I_C_OrderLine> orderLineRecords = ordersDAO.retrieveOrderLines(orderRecord, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLineRecords = orderDAO.retrieveOrderLines(orderRecord, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLineRecord : orderLineRecords)
 		{
 			if (isOrderLineEligibleForFeature(orderLineRecord))
@@ -180,7 +178,7 @@ public class AvailableForSalesUtil
 			@NonNull final I_C_Order orderRecord,
 			@NonNull final AvailableForSalesConfig config)
 	{
-		final List<I_C_OrderLine> orderLineRecords = ordersDAO.retrieveOrderLines(orderRecord, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLineRecords = orderDAO.retrieveOrderLines(orderRecord, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLineRecord : orderLineRecords)
 		{
 			if (isOrderLineEligibleForFeature(orderLineRecord))
@@ -457,7 +455,7 @@ public class AvailableForSalesUtil
 			@NonNull final Quantities quantities,
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
-		final I_C_OrderLine salesOrderLineRecord = ordersDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLineRecord = orderDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
 
 		// We do everything in the order line's UOM right from the start in order to depend on QtyEntered as opposed to QtyOrdered.
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
@@ -482,7 +480,7 @@ public class AvailableForSalesUtil
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor(null);
 		}
 
-		ordersDAO.save(salesOrderLineRecord);
+		orderDAO.save(salesOrderLineRecord);
 	}
 
 	@NonNull

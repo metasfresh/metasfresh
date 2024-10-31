@@ -215,4 +215,6 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
+
+    boolean isProformaShipment(@NonNull InOutId inOutId);
 }

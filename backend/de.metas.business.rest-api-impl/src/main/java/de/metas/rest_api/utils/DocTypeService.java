@@ -3,6 +3,7 @@ package de.metas.rest_api.utils;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -11,12 +12,9 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 /*
  * #%L
@@ -46,6 +44,7 @@ public class DocTypeService
 	private final IOrgDAO orgsDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+	@Nullable
 	public DocTypeId getInvoiceDocTypeId(
 			@Nullable final DocBaseAndSubType docBaseAndSubType,
 			@NonNull final OrgId orgId)
@@ -56,9 +55,7 @@ public class DocTypeService
 		}
 
 		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
-		final String docSubType = firstNotEmptyTrimmed(
-				docBaseAndSubType.getDocSubType(),
-				DocTypeQuery.DOCSUBTYPE_NONE);
+		final DocSubType docSubType = docBaseAndSubType.getDocSubType();
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 		final DocTypeQuery query = DocTypeQuery
@@ -80,15 +77,15 @@ public class DocTypeService
 		}
 
 		final DocBaseType docBaseType = DocBaseType.SalesOrder;
-		final String docSubType;
+		final DocSubType docSubType;
 
 		if (OrderDocType.PrepayOrder.equals(orderDocType))
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_PrepayOrder;
+			docSubType = DocSubType.PrepayOrder;
 		}
 		else
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_StandardOrder;
+			docSubType = DocSubType.StandardOrder;
 		}
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);

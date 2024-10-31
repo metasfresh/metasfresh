@@ -771,7 +771,7 @@ public final class MPayment extends X_C_Payment
 
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-																	  .docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
+																	  .docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment)
 																	  .adClientId(getAD_Client_ID())
 																	  .adOrgId(getAD_Org_ID())
 																	  .build());
@@ -1137,7 +1137,7 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
-							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+                            isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1844,7 +1844,7 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
-							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+                            isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}

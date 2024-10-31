@@ -62,8 +62,6 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isPrepay(DocTypeId docTypeId);
 
-	boolean isPrepay(I_C_DocType dt);
-
 	boolean hasRequestType(DocTypeId docTypeId);
 
 	boolean isRequisition(DocTypeId docTypeId);
@@ -74,7 +72,11 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isInternalVendorInvoice(DocTypeId docTypeId);
 
-	boolean isProFormaSO(DocTypeId docTypeId);
+	boolean isProformaSO(DocTypeId docTypeId);
+
+    boolean isProformaShipment(@NonNull DocTypeId docTypeId);
+
+	boolean isProformaShippingNotification(@NonNull DocTypeId docTypeId);
 
 	boolean isInterimInvoice(DocTypeId docTypeId);
 
@@ -83,6 +85,8 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(@NonNull DocTypeId docTypeId);
 
 	boolean isSalesFinalInvoiceOrFinalCreditMemo(@NonNull DocTypeId docTypeId);
+
+	boolean isDeliveryInstruction(@NonNull DocTypeId docTypeId);
 
 	void save(I_C_DocType dt);
 

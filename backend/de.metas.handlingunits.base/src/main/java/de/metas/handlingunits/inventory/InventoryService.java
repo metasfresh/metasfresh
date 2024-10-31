@@ -305,7 +305,7 @@ public class InventoryService
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
-				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.docSubType(InventoryDocSubType.VirtualInventory.getDocSubType())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

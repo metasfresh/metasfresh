@@ -22,32 +22,31 @@
 
 package de.metas.contracts.modular.invoiceCandidate;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 
-public class ProFormaSOInvoiceCandidateVetoer implements ModelWithoutInvoiceCandidateVetoer
+public class ProformaInvoiceCandidateVetoer implements ModelWithoutInvoiceCandidateVetoer
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@Override
 	public OnMissingCandidate foundModelWithoutInvoiceCandidate(final Object model)
 	{
 		final I_M_InOutLine inOutLineRecord = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
 		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutRecord.getC_Order_ID());
-		if (orderId == null)
-		{
-			return OnMissingCandidate.I_DONT_CARE;
-		}
 
-		return orderBL.isProFormaSO(orderBL.getById(orderId)) ? OnMissingCandidate.I_VETO : OnMissingCandidate.I_DONT_CARE;
+		if(docTypeBL.isProformaShipment(DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID())))
+		{
+			return OnMissingCandidate.I_VETO;
+		}
+		return OnMissingCandidate.I_DONT_CARE;
 	}
 }

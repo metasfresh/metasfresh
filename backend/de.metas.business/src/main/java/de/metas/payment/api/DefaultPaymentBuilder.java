@@ -143,7 +143,7 @@ public class DefaultPaymentBuilder
 
 	private DocTypeId getDocTypeIdOrNull()
 	{
-		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment;
+		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment;
 
 		return docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(docBaseType)

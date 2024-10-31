@@ -65,7 +65,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -143,7 +143,7 @@ public class WeightHUCommandTest
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docSubType(InventoryDocSubType.SingleHUInventory.getDocSubType())
 				.name("inventory")
 				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());
