@@ -108,19 +108,6 @@
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="64323a96-75a4-4bf3-b38d-784c0d73224f"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Incoterms}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="7b29aa1c-47ac-4ddd-9798-19bbbc35e484"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -132,6 +119,15 @@
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="112" height="12" uuid="28237d4c-5868-4277-bcac-947f0d4bbbb4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Incoterms}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
