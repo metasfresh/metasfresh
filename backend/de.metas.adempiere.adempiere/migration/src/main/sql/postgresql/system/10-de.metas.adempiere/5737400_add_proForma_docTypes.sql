@@ -41,7 +41,7 @@ UPDATE AD_Ref_List_Trl SET Name='ProForma',Updated=TO_TIMESTAMP('2024-10-21 08:2
 -- Run mode: WEBUI
 
 -- 2024-10-16T16:48:06.197Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,1000013,541128,TO_TIMESTAMP('2024-10-16 18:48:06.174','YYYY-MM-DD HH24:MI:SS.US'),100,'MMS',545461,1,'D',1000001,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','Y','N','Proforma Lieferung','Proforma Lieferung',TO_TIMESTAMP('2024-10-16 18:48:06.174','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,1000013,541128,TO_TIMESTAMP('2024-10-16 18:48:06.174','YYYY-MM-DD HH24:MI:SS.US'),100,'MMS',545461,1,'D',1000001,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','Y','N','Proforma Lieferung','Proforma Lieferung',TO_TIMESTAMP('2024-10-16 18:48:06.174','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-10-16T16:48:06.247Z
@@ -77,7 +77,7 @@ UPDATE C_DocType SET DocSubType='PF',Updated=TO_TIMESTAMP('2024-10-21 08:35:26.1
 ;
 
 -- 2024-10-30T17:12:09.288Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,540136,541130,TO_TIMESTAMP('2024-10-30 18:12:09.274','YYYY-MM-DD HH24:MI:SS.US'),100,'SHN',556307,1,'de.metas.shippingnotification',0,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','Y','N','Proforma Lieferavis','Proforma Lieferavis',TO_TIMESTAMP('2024-10-30 18:12:09.274','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,540136,541130,TO_TIMESTAMP('2024-10-30 18:12:09.274','YYYY-MM-DD HH24:MI:SS.US'),100,'SHN',556307,1,'de.metas.shippingnotification',0,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','Y','N','Proforma Lieferavis','Proforma Lieferavis',TO_TIMESTAMP('2024-10-30 18:12:09.274','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-10-30T17:12:09.318Z
