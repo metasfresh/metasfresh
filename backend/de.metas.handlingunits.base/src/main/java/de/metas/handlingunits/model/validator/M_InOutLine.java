@@ -7,8 +7,8 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
-import de.metas.inout.impl.InOutBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -36,7 +36,7 @@ public class M_InOutLine
 	// TODO: delete AD_Message:
 	// private static final String MSG_CHANGE_MOVEMENT_QTY_NOT_SUPPORTED = "de.metas.inoutcandidate.modelvalidator.M_InOutLine_Shipment_ChangeMovementQtyNotSupported";
 
-	@NonNull private final InOutBL inOutBL = Services.get(InOutBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
