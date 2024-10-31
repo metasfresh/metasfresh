@@ -407,7 +407,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 
 		final Optional<AttributeId> serialNoAttributeIdOptional = serialNoBL.getSerialNoAttributeId();
-		if (!serialNoAttributeIdOptional.isPresent())
+		if (serialNoAttributeIdOptional.isEmpty())
 		{
 			return false;
 		}
@@ -463,7 +463,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isServiceRepair(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(DocBaseType.MaterialReceipt).docSubType(X_C_DocType.DOCSUBTYPE_SR)
+				.docBaseType(DocBaseType.MaterialReceipt).docSubType(DocSubType.SR)
 				.isSOTrx(true)
 				.build();
 
