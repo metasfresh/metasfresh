@@ -23,7 +23,7 @@ $$
 
 SELECT footer.*,
        COALESCE(inc_trl.name, inc.name) AS Incoterms,
-       o.incotermlocation
+       io.incotermlocation
 FROM (
          --Docnote DE
          SELECT NULL                                                                                AS textleft,
@@ -67,8 +67,7 @@ FROM (
          FROM m_inout io
          WHERE io.isActive = 'Y') footer
          INNER JOIN m_inout io ON io.m_inout_id = footer.m_inout_id
-         INNER JOIN c_order o ON io.c_order_id = o.c_order_id
-         LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
+         LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = 'de_DE'
 
 WHERE footer.m_inout_id = $1
