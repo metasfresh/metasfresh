@@ -1,5 +1,14 @@
 import GS1BarcodeParser from 'gs1-barcode-parser-mod';
-import { ATTR_bestBeforeDate, ATTR_displayable, ATTR_GTIN, ATTR_isTUToBePickedAsWhole, ATTR_lotNo, ATTR_weightNet, ATTR_weightNetUOM, toLocalDateString, } from './common';
+import {
+  ATTR_bestBeforeDate,
+  ATTR_displayable,
+  ATTR_GTIN,
+  ATTR_isTUToBePickedAsWhole,
+  ATTR_lotNo,
+  ATTR_weightNet,
+  ATTR_weightNetUOM,
+  toLocalDateString,
+} from './common';
 import { trl } from '../translations';
 
 export const parseGS1CodeString = (string) => {

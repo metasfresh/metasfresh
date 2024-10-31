@@ -20,9 +20,24 @@
  * #L%
  */
 
-import { ATTR_bestBeforeDate, ATTR_displayable, ATTR_isTUToBePickedAsWhole, ATTR_lotNo, ATTR_productId, ATTR_productNo, ATTR_weightNet, ATTR_weightNetUOM, QRCODE_SEPARATOR, toLocalDateString, } from './common';
+import {
+  ATTR_bestBeforeDate,
+  ATTR_displayable,
+  ATTR_isTUToBePickedAsWhole,
+  ATTR_lotNo,
+  ATTR_productId,
+  ATTR_productNo,
+  ATTR_weightNet,
+  ATTR_weightNetUOM,
+  QRCODE_SEPARATOR,
+  toLocalDateString,
+} from './common';
 import { trl } from '../translations';
-import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
+import {
+  HU_ATTRIBUTE_BestBeforeDate,
+  HU_ATTRIBUTE_LotNo,
+  HU_ATTRIBUTE_WeightNet,
+} from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';
 
 export const QRCODE_TYPE_HU = 'HU';
