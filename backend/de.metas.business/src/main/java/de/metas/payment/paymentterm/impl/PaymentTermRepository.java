@@ -191,13 +191,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		}
 	}
 
-	@Override
-	public boolean isAllowOverrideDueDate(@NonNull final PaymentTermId paymentTermId)
-	{
-		final PaymentTerm paymentTerm = getById(paymentTermId);
-		return paymentTerm.isAllowOverrideDueDate();
-	}
-
 	private PaymentTermMap getIndexedPaymentTerms()
 	{
 		return cache.getOrLoad(0, this::retrieveIndexedPaymentTerms);
@@ -230,7 +223,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.netDay(record.getNetDay())
 				.discountDays(record.getDiscountDays())
 				._default(record.isDefault())
-				.allowOverrideDueDate(record.isAllowOverrideDueDate())
 				.discount(Percent.of(record.getDiscount()))
 				.calculationMethod(CalculationMethod.ofCode(record.getCalculationMethod()))
 				.baseLineType(BaseLineType.ofCode(record.getBaseLineType()))

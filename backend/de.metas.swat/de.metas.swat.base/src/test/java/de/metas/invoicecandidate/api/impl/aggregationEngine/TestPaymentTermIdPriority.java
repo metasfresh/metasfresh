@@ -185,7 +185,6 @@ public class TestPaymentTermIdPriority extends AbstractAggregationEngineTestBase
 		pt.setC_PaymentTerm_ID(new Random().nextInt(1000000));
 		pt.setValue("testValue");
 		pt.setName("testName");
-		pt.setIsAllowOverrideDueDate(true);
 		pt.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
 		pt.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		saveRecord(pt);

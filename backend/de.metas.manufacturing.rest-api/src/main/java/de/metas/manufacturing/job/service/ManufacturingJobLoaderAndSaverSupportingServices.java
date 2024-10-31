@@ -81,6 +81,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	}
 
 	@NonNull
+	public LocatorId getLocatorIdByRepoId(final int locatorId) {return warehouseBL.getLocatorIdByRepoId(locatorId);}
+
+	@NonNull
 	public String getProductValue(@NonNull final ProductId productId)
 	{
 		return productBL.getProductValue(productId);

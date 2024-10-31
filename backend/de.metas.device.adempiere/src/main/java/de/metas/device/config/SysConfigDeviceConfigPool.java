@@ -19,7 +19,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 
@@ -63,6 +65,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 {
 	private static final Logger logger = LogManager.getLogger(SysConfigDeviceConfigPool.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String CFG_DEVICE_PREFIX = "de.metas.device";
 	private static final String CFG_DEVICE_NAME_PREFIX = CFG_DEVICE_PREFIX + ".Name";
@@ -70,6 +73,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	private static final String DEVICE_PARAM_DeviceClass = "DeviceClass";
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
+	private static final String DEVICE_PARAM_M_Locator_ID = "M_Locator_ID";
 	private static final String DEVICE_PARAM_BeforeAcquireValueHook = "BeforeAcquireValueHook";
 	public static final String DEVICE_PARAM_RoundingToQty = "RoundingToQty";
 	public static final String DEVICE_PARAM_RoundingToQty_UOM_ID = "RoundingToQty_UOM_ID";
@@ -177,6 +181,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.setParameterValueSupplier(this::getDeviceParamValue)
 				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
 				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
+				.setAssignedLocatorIds(getDeviceLocatorIds(deviceName))
 				.setBeforeHooksClassname(getBeforeHooksClassname(deviceName))
 				.setDeviceConfigParams(getDeviceConfigParams(deviceName))
 				.build();
@@ -280,6 +285,30 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				})
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private Set<LocatorId> getDeviceLocatorIds(final String deviceName)
+	{
+		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Locator_ID;
+		final Set<Integer> locatorIds = sysConfigBL.getValuesForPrefix(sysconfigPrefix, clientAndOrgId)
+				.values()
+				.stream()
+				.map(locatorIdStr -> {
+					try
+					{
+						return Integer.parseInt(locatorIdStr);
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed parsing {} for {}*", locatorIdStr, sysconfigPrefix, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoIds(locatorIds);
 	}
 
 	/**

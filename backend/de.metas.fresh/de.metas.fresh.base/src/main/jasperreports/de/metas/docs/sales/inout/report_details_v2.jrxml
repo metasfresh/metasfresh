@@ -281,7 +281,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="188" y="0" width="63" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01">
-					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null || $F{lotno} != null || $F{best_before_date} != null)]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -292,7 +292,13 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{attributes} != null ? $F{attributes} : "")
++ ($F{lotno} != null ? 
+   ( ($F{attributes} != null ? ", " : "") + $F{lotno}) 
+   : "")
++ ($F{best_before_date} != null ? 
+   ( ($F{attributes} != null || $F{lotno} != null) ? ", " : "") + $F{best_before_date} 
+   : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-31" mode="Transparent" x="293" y="0" width="82" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
