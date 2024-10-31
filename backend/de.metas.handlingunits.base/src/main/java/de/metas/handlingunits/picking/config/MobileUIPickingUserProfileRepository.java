@@ -84,6 +84,8 @@ public class MobileUIPickingUserProfileRepository
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
 				.fields(retrieveFields(profileRecord))
+				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
+				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
 				.build();
 	}
 
@@ -127,6 +129,8 @@ public class MobileUIPickingUserProfileRepository
 		profileRecord.setIsConsiderSalesOrderCapacity(profile.isConsiderSalesOrderCapacity());
 		profileRecord.setIsCatchWeightTUPickingEnabled(profile.isCatchWeightTUPickingEnabled());
 		profileRecord.setIsShowConfirmationPromptWhenOverPick(profile.isShowConfirmationPromptWhenOverPick());
+		profileRecord.setPickingLineGroupBy(profile.getPickingLineGroupBy() != null ? profile.getPickingLineGroupBy().getCode() : null);
+		profileRecord.setPickingLineSortBy(profile.getPickingLineSortBy() != null ? profile.getPickingLineSortBy().getCode() : null);
 		InterfaceWrapperHelper.saveRecord(profileRecord);
 
 		final HashMap<BPartnerId, I_MobileUI_UserProfile_Picking_BPartner> profileBPartnerRecords = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)

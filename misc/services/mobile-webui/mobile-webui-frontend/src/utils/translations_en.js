@@ -116,6 +116,7 @@ const translations = {
         CloseTarget: 'Close',
       },
       overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
+      reopenLU: 'Reopen LU',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

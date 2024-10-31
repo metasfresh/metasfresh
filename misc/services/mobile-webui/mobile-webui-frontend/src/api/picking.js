@@ -125,3 +125,15 @@ export const openPickingJobLine = ({ wfProcessId, lineId }) => {
     .post(`${apiBasePath}/picking/openLine`, { wfProcessId, pickingLineId: lineId })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getClosedLUs = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/closed-lu`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getHUInfoForIds = ({ huIds }) => {
+  return axios
+    .get(`${apiBasePath}/material/handlingunits/byIds?M_HU_IDs=${huIds.join(',')}`)
+    .then((response) => unboxAxiosResponse(response));
+};

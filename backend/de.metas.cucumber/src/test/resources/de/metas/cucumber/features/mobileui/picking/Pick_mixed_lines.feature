@@ -119,7 +119,7 @@ Feature: mobileUI Picking - Pick mixed lines
     And scan picking slot identified by 200.0
 
     And pick lines
-      | PickingLine.byProduct | PickFromHU    | LMQRCode                   |
+      | PickingLine.byProduct | PickFromHU    | QRCode                     |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.101#08.11.2025#500 |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.102#08.11.2025#501 |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.103#08.11.2025#502 |

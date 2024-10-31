@@ -29,6 +29,7 @@
 	import de.metas.common.util.time.SystemTime;
 	import de.metas.document.engine.IDocument;
 	import de.metas.document.location.IDocumentLocationBL;
+	import de.metas.handlingunits.HuId;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
 	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
@@ -84,6 +85,7 @@
 
 	import javax.annotation.Nullable;
 	import java.util.Collection;
+	import java.util.List;
 	import java.util.Objects;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
@@ -97,6 +99,7 @@
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
@@ -144,7 +147,9 @@
 		{
 			if (query.getFilterByQRCode() != null)
 			{
-				throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
+				throw new AdempiereException(INVALID_QR_CODE_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("QRCode", query.getFilterByQRCode());
 			}
 
 			return wfLaunchersProvider.provideLaunchers(query);
@@ -506,4 +511,11 @@
 
 		}
 
+		@NonNull
+		public List<HuId> getClosedLUs(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			final WFProcess wfProcess = getWFProcessById(wfProcessId);
+			wfProcess.assertHasAccess(callerId);
+			return pickingJobRestService.getClosedLUs(getPickingJob(wfProcess));
+		}
 	}

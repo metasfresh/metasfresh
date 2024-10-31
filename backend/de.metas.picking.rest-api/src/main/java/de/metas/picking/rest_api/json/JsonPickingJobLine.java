@@ -60,11 +60,13 @@ public class JsonPickingJobLine
 	boolean allowPickingAnyHU;
 	@NonNull JsonCompleteStatus completeStatus;
 	boolean manuallyClosed;
+	@NonNull String displayGroupKey;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
-			@NonNull final JsonOpts jsonOpts)
+			@NonNull final JsonOpts jsonOpts,
+			@NonNull final String displayGroupKey)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
@@ -110,6 +112,7 @@ public class JsonPickingJobLine
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
-				.manuallyClosed(line.isManuallyClosed());
+				.manuallyClosed(line.isManuallyClosed())
+				.displayGroupKey(displayGroupKey);
 	}
 }

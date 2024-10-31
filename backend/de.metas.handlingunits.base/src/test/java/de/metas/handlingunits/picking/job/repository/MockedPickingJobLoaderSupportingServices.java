@@ -13,11 +13,13 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -81,6 +83,18 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public String getProductNo(@NonNull final ProductId productId)
 	{
 		return "productNo-" + productId.getRepoId();
+	}
+
+	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
+	{
+		return ProductCategoryId.ofRepoId(1);
+	}
+
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return 0;
 	}
 
 	@Override

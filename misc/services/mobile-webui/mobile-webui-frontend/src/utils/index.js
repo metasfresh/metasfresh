@@ -26,6 +26,8 @@ export const toUrl = (path, queryParams) => {
   return `${path}${toUrlQueryParams(queryParams)}`;
 };
 
+export const isNullOrUndefined = (arg) => arg === null || arg === undefined;
+
 export const doFinally = (promise, func) => {
   if (!func) return;
 

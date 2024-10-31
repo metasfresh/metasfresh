@@ -46,8 +46,9 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository());
-		desadvBL = new DesadvBL(EDIDesadvPackService);
+		final HURepository huRepository = new HURepository();
+		EDIDesadvPackService = new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository());
+		desadvBL = new DesadvBL(EDIDesadvPackService, huRepository, new EDIDesadvInOutLineDAO());
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", 2, X12DE355.COLI).getC_UOM_ID());
@@ -152,7 +153,7 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
-	
+
 	@Test
 	void setQty_isCatchWeight_withPicking()
 	{
@@ -195,8 +196,7 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
-	
-	
+
 	/**
 	 * have 10PCE fitting into 1COLI and 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0COLI;
@@ -225,7 +225,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
@@ -260,7 +260,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)

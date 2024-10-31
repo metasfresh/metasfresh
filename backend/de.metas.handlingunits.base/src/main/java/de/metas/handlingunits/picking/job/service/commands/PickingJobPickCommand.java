@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
@@ -48,6 +49,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -61,6 +63,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -77,6 +80,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -102,6 +106,7 @@ public class PickingJobPickCommand
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -138,6 +143,22 @@ public class PickingJobPickCommand
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
 	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
+	private final static AdMessageKey TU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.TU_CANNOT_BE_PICKED_ERROR_MSG");
+	private final static AdMessageKey PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG");
+	private final static AdMessageKey NEGATIVE_CATCH_WEIGHT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NEGATIVE_CATCH_WEIGHT_ERROR_MSG");
+	private final static AdMessageKey QTY_REJECTED_ALTERNATIVES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QTY_REJECTED_ALTERNATIVES_ERROR_MSG");
+	private final static AdMessageKey NO_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey L_M_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_EXTERNAL_LOT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_PRODUCT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_NOT_SUPPORTED_ERROR_MSG");
+	private final static AdMessageKey CANNOT_PACK_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CANNOT_PACK_ERROR_MSG");
+	private final static AdMessageKey INVALID_NUMBER_QR_CODES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.INVALID_NUMBER_QR_CODES_ERROR_MSG");
+	private final static AdMessageKey UNKNOWN_TARGET_LU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.UNKNOWN_TARGET_LU_ERROR_MSG");
+	private final static AdMessageKey NOT_ENOUGH_TUS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
+	private final static AdMessageKey CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG");
+	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 
 	@Builder
 	private PickingJobPickCommand(
@@ -168,7 +189,6 @@ public class PickingJobPickCommand
 			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
-		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
 		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
@@ -201,7 +221,7 @@ public class PickingJobPickCommand
 		{
 			if (pickingJob.getTuPickTarget().isPresent())
 			{
-				throw new AdempiereException("Cannot pick TUs when TU pick target is set!")
+				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
 						.setParameter("PickingJobId", pickingJob.getId());
 			}
@@ -244,7 +264,9 @@ public class PickingJobPickCommand
 		}
 		else
 		{
-			throw new AdempiereException("Picking unit not supported: " + pickingUnit);
+			throw new AdempiereException(PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("PickingUnit", pickingUnit);
 		}
 
 		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
@@ -252,7 +274,7 @@ public class PickingJobPickCommand
 				: null;
 		if (this.catchWeight != null && !this.catchWeight.isPositive())
 		{
-			throw new AdempiereException("Catch Weight shall be positive");
+			throw new AdempiereException(NEGATIVE_CATCH_WEIGHT_ERROR_MSG);
 		}
 
 		this.isSetBestBeforeDate = isSetBestBeforeDate;
@@ -261,6 +283,8 @@ public class PickingJobPickCommand
 		this.lotNo = lotNo;
 
 		this.isCloseTarget = isCloseTarget;
+
+		validateQRCode(pickFromHUQRCode, line.getProductId(), catchWeightBD);
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -279,7 +303,7 @@ public class PickingJobPickCommand
 			{
 				// NOTE: because, in case of alternatives, we don't know which is the qty scheduled to pick
 				// we cannot calculate the qtyRejected
-				throw new AdempiereException("Cannot calculate QtyRejected in case of alternatives");
+				throw new AdempiereException(QTY_REJECTED_ALTERNATIVES_ERROR_MSG);
 			}
 		}
 		else
@@ -443,28 +467,22 @@ public class PickingJobPickCommand
 	@NonNull
 	private HUQRCode getPickFromHUQRCode()
 	{
-		final IHUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+		final IHUQRCode pickFromHUQRCode = Optional.ofNullable(this.pickFromHUQRCode)
+				.orElseThrow(() -> new AdempiereException(NO_QR_CODE_ERROR_MSG));
 
 		if (pickFromHUQRCode instanceof HUQRCode)
 		{
 			return (HUQRCode)pickFromHUQRCode;
 		}
-		else if (pickFromHUQRCode instanceof LMQRCode)
+		else
 		{
-			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
-			final String lotNumber = lmQRCode.getLotNumber();
-			if (lotNumber == null)
-			{
-				throw new AdempiereException("L+M QR code does not contain external lot number");
-			}
+			final String lotNumber = pickFromHUQRCode.getLotNumber().orElseThrow(() -> new AdempiereException(L_M_QR_CODE_ERROR_MSG));
 
 			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
 					.map(huQRCodesService::getQRCodeByHuId)
-					.orElseThrow(() -> new AdempiereException("No HU associated with external lot number: " + lotNumber));
-		}
-		else
-		{
-			throw new AdempiereException("HU QR code not supported: " + pickFromHUQRCode);
+					.orElseThrow(() -> new AdempiereException(QR_CODE_EXTERNAL_LOT_ERROR_MSG)
+							.appendParametersToMessage()
+							.setParameter("LotNumber", lotNumber));
 		}
 	}
 
@@ -534,7 +552,7 @@ public class PickingJobPickCommand
 
 		if (packedHUs.isEmpty())
 		{
-			throw new AdempiereException("Cannot pack to HUs from " + pickFromHU + " using " + packToInfo + ", qtyToPick=" + qtyToPickCUs);
+			throw new AdempiereException(CANNOT_PACK_ERROR_MSG, pickFromHU, packToInfo, qtyToPickCUs);
 		}
 		else if (packedHUs.getQtyTUs().isOne())
 		{
@@ -732,7 +750,7 @@ public class PickingJobPickCommand
 		final List<HUQRCode> huQRCodes = huQRCodesService.getOrCreateQRCodesByHuId(tu.getId());
 		if (huQRCodes.size() != tu.getQtyTU().toInt())
 		{
-			throw new AdempiereException("Expected " + tu.getQtyTU() + " QR Codes but got only " + huQRCodes.size());
+			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
 		}
 
 		final List<Quantity> qtyPickedPerTU = qtyPicked.spreadEqually(tu.getQtyTU().toInt());
@@ -813,13 +831,15 @@ public class PickingJobPickCommand
 			}
 			else
 			{
-				throw new AdempiereException("Unknown target LU: " + pickingTarget);
+				throw new AdempiereException(UNKNOWN_TARGET_LU_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("pickingTarget", pickingTarget);
 			}
 		}
 
 		if (result.getQtyTUs().compareTo(qtyToPickTUs) != 0)
 		{
-			throw new AdempiereException("Not enough TUs found") // TODO trl
+			throw new AdempiereException(NOT_ENOUGH_TUS_ERROR_MSG)
 					.setParameter("qtyToPickTUs", qtyToPickTUs)
 					.setParameter("actuallyPickedTUsCount", result.getQtyTUs())
 					.setParameter("result", result);
@@ -850,29 +870,66 @@ public class PickingJobPickCommand
 		);
 	}
 
-	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
+	private void validateQRCode(@Nullable final IHUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final BigDecimal catchWeightBD)
 	{
 		if (pickFromHUQRCode instanceof LMQRCode)
 		{
-			validateCatchWeightForLMQRCode(catchWeightBD, (LMQRCode)pickFromHUQRCode);
+			validateQRCodeForLMQRCode((LMQRCode)pickFromHUQRCode, catchWeightBD);
+		}
+		else if (pickFromHUQRCode instanceof GS1HUQRCode)
+		{
+			validateQRCodeForGS1((GS1HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
 		}
 	}
 
-	private static void validateCatchWeightForLMQRCode(final @Nullable BigDecimal catchWeightBD, @NonNull final LMQRCode pickFromHUQRCode)
+	private static void validateQRCodeForLMQRCode(@NonNull final LMQRCode pickFromHUQRCode, @Nullable final BigDecimal catchWeightBD)
 	{
 		if (catchWeightBD == null)
 		{
-			throw new AdempiereException("catchWeightBD must be present when picking via LMQRCode")
+			throw new AdempiereException(CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG)
 					.appendParametersToMessage()
 					.setParameter("LMQRCode", pickFromHUQRCode);
 		}
 
-		if (pickFromHUQRCode.getWeightInKg().compareTo(catchWeightBD) != 0)
+		if (pickFromHUQRCode.getWeightInKgNotNull().compareTo(catchWeightBD) != 0)
 		{
-			throw new AdempiereException("catchWeightBD must match the LMQRCode.Weight")
+			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 					.appendParametersToMessage()
-					.setParameter("LMQRCode", pickFromHUQRCode)
+					.setParameter("pickFromHUQRCode", pickFromHUQRCode)
 					.setParameter("catchWeightBD", catchWeightBD);
+		}
+	}
+
+	private void validateQRCodeForGS1(@NonNull final GS1HUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final  BigDecimal catchWeightBD)
+	{
+		final GTIN gtin = pickFromHUQRCode.getGTIN().orElse(null);
+		if(gtin != null)
+		{
+			final ProductId gs1ProductId = productBL.getProductIdByGTINNotNull(gtin, ClientId.METASFRESH);
+			if(!ProductId.equals(productId, gs1ProductId))
+			{
+				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
+						.setParameter("gtin", gtin)
+						.setParameter("expected", productId)
+						.setParameter("actual", gs1ProductId);
+			}
+		}
+		
+		if (catchWeightBD != null)
+		{
+			final BigDecimal gs1Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
+			if (gs1Weight == null)
+			{
+				return;
+			}
+
+			if (gs1Weight.compareTo(catchWeightBD) != 0)
+			{
+				throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("pickFromHUQRCode", pickFromHUQRCode)
+						.setParameter("catchWeightBD", catchWeightBD);
+			}
 		}
 	}
 
@@ -970,7 +1027,7 @@ public class PickingJobPickCommand
 	public Quantity getStorageQty(@NonNull final TU tu, @NonNull final ProductId productId)
 	{
 		final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
-		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException("No qty found for " + tu + ", " + productId));
+		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException(NO_QTY_ERROR_MSG, tu, productId));
 	}
 
 	private HUQRCode getQRCode(@NonNull final LU lu)

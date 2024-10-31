@@ -281,6 +281,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return OrderId.ofRepoId(record.getC_Order_ID());
 	}
 
+	@NonNull
 	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -288,15 +289,18 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID());
 		final HUPIItemProduct packingInfo = loadingSupportingServices.getPackingInfo(huPIItemProductId);
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID());
 
 		return PickingJobLine.builder()
 				.id(pickingJobLineId)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
 				.productName(loadingSupportingServices.getProductName(productId))
+				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
+				.salesOrderAndLineId(orderAndLineId)
+				.orderLineSeqNo(loadingSupportingServices.getSalesOrderLineSeqNo(orderAndLineId))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.catchUomId(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()))
 				.steps(pickingJobSteps.get(pickingJobLineId)

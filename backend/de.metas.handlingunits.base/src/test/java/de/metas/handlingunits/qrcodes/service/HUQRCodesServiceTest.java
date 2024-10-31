@@ -36,8 +36,10 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -60,8 +62,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class HUQRCodesServiceTest
 {
@@ -181,9 +182,9 @@ class HUQRCodesServiceTest
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("LU");
 			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
 			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_BestBeforeDate)).contains("2023-01-01");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_LotNumber)).contains("123");
-			assertThat(qrCode.getAttributeValueAsString(Weightables.ATTR_WeightNet)).contains("45.678");
+			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
+			assertThat(qrCode.getLotNumber()).contains("123");
+			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
 		}
 
 		@Test
@@ -211,9 +212,9 @@ class HUQRCodesServiceTest
 				assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
 				assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
 				assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
-				assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_BestBeforeDate)).contains("2023-01-01");
-				assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_LotNumber)).contains("123");
-				assertThat(qrCode.getAttributeValueAsString(Weightables.ATTR_WeightNet)).contains("45.678");
+				assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
+				assertThat(qrCode.getLotNumber()).contains("123");
+				assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
 			}
 		}
 
@@ -233,9 +234,9 @@ class HUQRCodesServiceTest
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
 			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
 			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_BestBeforeDate)).contains("2023-01-01");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_LotNumber)).contains("123");
-			assertThat(qrCode.getAttributeValueAsString(Weightables.ATTR_WeightNet)).contains("45.678");
+			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
+			assertThat(qrCode.getLotNumber()).contains("123");
+			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
 		}
 
 		@Test
@@ -254,9 +255,9 @@ class HUQRCodesServiceTest
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("VirtualPI");
 			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
 			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_BestBeforeDate)).contains("2023-01-01");
-			assertThat(qrCode.getAttributeValueAsString(AttributeConstants.ATTR_LotNumber)).contains("123");
-			assertThat(qrCode.getAttributeValueAsString(Weightables.ATTR_WeightNet)).contains("45.678");
+			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
+			assertThat(qrCode.getLotNumber()).contains("123");
+			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
 		}
 	}
 
@@ -286,10 +287,26 @@ class HUQRCodesServiceTest
 					.hasMessageStartingWith("No QR Code attached to HU");
 
 			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(huId).getSingleQRCode(huId);
-			
+
 			assertThat(huQRCodesService.getQRCodeByHuId(huId))
 					.isEqualTo(qrCode)
 					.isNotSameAs(qrCode);
+		}
+	}
+
+	@Nested
+	class toHUQRCode
+	{
+		@Test
+		void gs1()
+		{
+			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("0197311876341811310300752015170809");
+			assertThat(huQRCode).isInstanceOf(GS1HUQRCode.class);
+
+			final GS1HUQRCode gs1 = (GS1HUQRCode)huQRCode;
+			assertThat(gs1.getWeightInKg()).contains(new BigDecimal("7.520"));
+			assertThat(gs1.getBestBeforeDate()).contains(LocalDate.parse("2017-08-09"));
+			assertThat(gs1.getLotNumber()).isEmpty();
 		}
 	}
 }

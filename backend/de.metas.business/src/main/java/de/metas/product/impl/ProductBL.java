@@ -7,6 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -31,6 +32,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -552,4 +554,18 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIdsInTrx(productIds);
 	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByGTIN(gtin, clientId);
+	}
+
+	@Override
+	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(gtin, clientId)
+				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
+	}
+
 }

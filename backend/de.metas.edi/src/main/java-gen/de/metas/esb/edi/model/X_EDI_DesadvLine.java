@@ -419,6 +419,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
+	public void setQtyOrdered_Override (final @Nullable BigDecimal QtyOrdered_Override)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_Override, QtyOrdered_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_Override()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setUPC_CU (final @Nullable java.lang.String UPC_CU)
 	{
 		set_Value (COLUMNNAME_UPC_CU, UPC_CU);

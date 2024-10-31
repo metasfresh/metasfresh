@@ -156,9 +156,10 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
 //
 
 const normalizePickingLines = (lines) => {
-  return lines.reduce((accum, line) => {
+  return lines.reduce((accum, line, index) => {
     accum[line.pickingLineId] = {
       ...line,
+      sortingIndex: index,
       steps: normalizePickingSteps(line.steps),
     };
     return accum;

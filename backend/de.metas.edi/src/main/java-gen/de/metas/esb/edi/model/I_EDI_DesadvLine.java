@@ -705,6 +705,28 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
+	 * Set Bestellt abw..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_Override (@Nullable BigDecimal QtyOrdered_Override);
+
+	/**
+	 * Get Bestellt abw..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_Override();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered_Override = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyOrdered_Override", null);
+	String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
+
+
+	/**
 	 * Set CU-UPC.
 	 *
 	 * <br>Type: String
