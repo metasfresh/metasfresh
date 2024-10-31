@@ -23,10 +23,10 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocSubType;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.compiere.model.X_C_DocType;
 
 import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
 import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS;
@@ -36,11 +36,11 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_FINAL_INVOICE
 @RequiredArgsConstructor
 public enum ModCntrInvoiceType
 {
-	PurchaseFinal(X_C_DocType.DOCSUBTYPE_FinalInvoice, X_C_DocType.DOCSUBTYPE_FinalCreditMemo, PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS),
-	Definitive(X_C_DocType.DOCSUBTYPE_DefinitiveInvoice, X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo, DEFINITIVE_INVOICE_SPECIFIC_METHODS),
-	SalesFinal(X_C_DocType.DOCSUBTYPE_FinalInvoice, X_C_DocType.DOCSUBTYPE_FinalCreditMemo, SALES_FINAL_INVOICE_SPECIFIC_METHODS);
+	PurchaseFinal(DocSubType.FinalInvoice, DocSubType.FinalCreditMemo, PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS),
+	Definitive(DocSubType.DefinitiveInvoice, DocSubType.DefinitiveCreditMemo, DEFINITIVE_INVOICE_SPECIFIC_METHODS),
+	SalesFinal(DocSubType.FinalInvoice, DocSubType.FinalCreditMemo, SALES_FINAL_INVOICE_SPECIFIC_METHODS);
 
-	@NonNull final String positiveAmtDocSubType;
-	@NonNull final String negativAmtDocSubType;
+	@NonNull final DocSubType positiveAmtDocSubType;
+	@NonNull final DocSubType negativAmtDocSubType;
 	@NonNull final ImmutableSet<ComputingMethodType> computingMethodTypes;
 }

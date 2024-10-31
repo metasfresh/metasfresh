@@ -25,6 +25,7 @@ package de.metas.handlingunits.inout.impl;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -72,7 +73,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -310,7 +310,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(DocBaseType.MaterialDelivery)
+				.docBaseType(DocBaseType.Shipment)
 				.isSOTrx(false)
 				.build();
 
@@ -322,7 +322,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
 				.docBaseType(DocBaseType.MaterialReceipt)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
+				.docSubType(DocSubType.EmptiesReceipt)
 				.build();
 
 		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
@@ -407,7 +407,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 
 		final Optional<AttributeId> serialNoAttributeIdOptional = serialNoBL.getSerialNoAttributeId();
-		if (!serialNoAttributeIdOptional.isPresent())
+		if (serialNoAttributeIdOptional.isEmpty())
 		{
 			return false;
 		}
@@ -463,7 +463,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isServiceRepair(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(DocBaseType.MaterialReceipt).docSubType(X_C_DocType.DOCSUBTYPE_SR)
+				.docBaseType(DocBaseType.MaterialReceipt).docSubType(DocSubType.SR)
 				.isSOTrx(true)
 				.build();
 

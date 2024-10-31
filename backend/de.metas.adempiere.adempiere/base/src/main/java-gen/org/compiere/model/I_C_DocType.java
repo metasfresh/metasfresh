@@ -73,7 +73,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -83,7 +83,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false

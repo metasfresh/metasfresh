@@ -228,4 +228,6 @@ public interface IInOutBL extends ISingletonService
 
 	@Nullable
 	String getPOReference(@NonNull InOutId inOutId);
+
+    boolean isProformaShipment(@NonNull InOutId inOutId);
 }

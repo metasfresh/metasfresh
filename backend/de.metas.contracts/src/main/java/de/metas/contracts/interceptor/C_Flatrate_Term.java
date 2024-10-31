@@ -32,7 +32,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -45,6 +44,7 @@ import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -79,7 +79,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -134,16 +133,16 @@ public class C_Flatrate_Term
 	@Init
 	public void initialize(final IModelValidationEngine engine)
 	{
-		if (Ini.isSwingClient() == false) // 03429: we only need to check this on server startup
+		if (!Ini.isSwingClient()) // 03429: we only need to check this on server startup
 		{
-			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
-			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
-			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
-			ensureDocTypesExist(I_C_DocType.DocSubType_CallOrder);
+			ensureDocTypesExist(DocSubType.Subscription);
+			ensureDocTypesExist(DocSubType.HoldingFee);
+			ensureDocTypesExist(DocSubType.FlatFee);
+			ensureDocTypesExist(DocSubType.CallOrder);
 		}
 	}
 
-	private void ensureDocTypesExist(final String docSubType)
+	private void ensureDocTypesExist(@NonNull final DocSubType docSubType)
 	{
 
 		final ClientId clientId = ClientId.METASFRESH;
@@ -178,8 +177,7 @@ public class C_Flatrate_Term
 				continue;
 			}
 
-			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
-			final String name = adReferenceService.retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+			final String name = adReferenceService.retrieveListNameTrl(DocSubType.AD_REFERENCE_ID, docSubType.getCode())
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 											 .ctx(localCtx)

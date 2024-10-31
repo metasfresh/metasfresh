@@ -532,8 +532,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
 	/** Provision = PRV */
 	public static final String DOCSUBTYPE_Provision = "PRV";
-	/** ProFormaSO = PF */
-	public static final String DOCSUBTYPE_ProFormaSO = "PF";
+	/** ProForma = PF */
+	public static final String DOCSUBTYPE_ProForma = "PF";
 	/** Expense Invoice = EX */
 	public static final String DOCSUBTYPE_ExpenseInvoice = "EX";
 	/** Final Invoice = FI */

@@ -1063,7 +1063,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final JsonOLCandCreateRequest request = JsonOLCandUtil.loadJsonOLCandCreateRequest(RESOURCE_PATH + "OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
@@ -1095,7 +1095,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
 				.orgId(defaultOrgId)

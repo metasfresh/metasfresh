@@ -165,7 +165,7 @@
             <artifactId>annotations</artifactId>
             <scope>compile</scope>
         </dependency>
-        
+
     </dependencies>
 
     <build>

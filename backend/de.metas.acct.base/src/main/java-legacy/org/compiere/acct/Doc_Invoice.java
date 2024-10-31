@@ -316,26 +316,26 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** ARI, ARF
 		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.ARInvoice.equals(docBaseType)
-				|| DocBaseType.ARProFormaInvoice.equals(docBaseType))
+		if (DocBaseType.SalesInvoice.equals(docBaseType)
+				|| DocBaseType.SalesProformaInvoice.equals(docBaseType))
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DocBaseType.ARCreditMemo.equals(docBaseType))
+		else if (DocBaseType.SalesCreditMemo.equals(docBaseType))
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DocBaseType.APInvoice.equals(docBaseType)
+		else if (DocBaseType.PurchaseInvoice.equals(docBaseType)
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.APCreditMemo.equals(docBaseType))
+		else if (DocBaseType.PurchaseCreditMemo.equals(docBaseType))
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}
