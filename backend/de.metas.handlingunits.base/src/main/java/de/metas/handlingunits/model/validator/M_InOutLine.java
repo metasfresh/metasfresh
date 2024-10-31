@@ -55,7 +55,8 @@ public class M_InOutLine
 			return;
 		}
 
-		if(orderBL.isProformaSO(OrderId.ofRepoId(inoutLine.getC_Order_ID())))
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inoutLine.getC_Order_ID());
+		if(orderId != null && orderBL.isProformaSO(orderId))
 		{
 			return;
 		}

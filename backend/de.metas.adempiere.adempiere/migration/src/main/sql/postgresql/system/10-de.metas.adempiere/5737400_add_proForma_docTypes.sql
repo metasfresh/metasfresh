@@ -126,3 +126,43 @@ UPDATE AD_Field SET DisplayLogic='@DocBaseType@=''SOO'' | @DocBaseType@=''POO'' 
 -- 2024-10-30T18:50:27.841Z
 UPDATE AD_Val_Rule SET Code='(@C_DocTypeTarget_ID/-1@ NOT IN (541034,541062,541113,541112)) AND (C_Flatrate_Conditions.C_Flatrate_Conditions_ID IN ( (SELECT c.C_Flatrate_Conditions_ID FROM C_Flatrate_Conditions c INNER JOIN ModCntr_Settings mc ON @Harvesting_Year_ID/0@>0 AND mc.ModCntr_Settings_ID = c.ModCntr_Settings_ID AND mc.M_Raw_Product_ID = @M_Product_ID@ AND mc.C_Year_ID = @Harvesting_Year_ID/0@ AND mc.isSOTrx = ''@IsSOTrx@'' WHERE c.ModCntr_Settings_ID IS NOT NULL AND c.DocStatus = ''CO'' AND c.type_conditions <> ''InterimInvoice'' ) UNION ALL (SELECT C_Flatrate_Conditions_ID FROM C_Flatrate_Conditions WHERE @Harvesting_Year_ID/0@=0 AND type_conditions NOT IN (''InterimInvoice'', ''ModularContract'') AND DocStatus = ''CO'' ) ) )',Updated=TO_TIMESTAMP('2024-10-30 19:50:27.839','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540640
 ;
+
+-- 2024-10-30T21:09:58.087Z
+UPDATE C_DocType SET Name='Proforma Auftrag',Updated=TO_TIMESTAMP('2024-10-30 22:09:58.082','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541113
+;
+
+-- 2024-10-30T21:09:58.093Z
+UPDATE C_DocType_Trl trl SET Name='Proforma Auftrag' WHERE C_DocType_ID=541113 AND (IsTranslated='N' OR AD_Language='de_DE')
+;
+
+-- 2024-10-30T21:09:58.264Z
+INSERT INTO ES_FTS_Index_Queue(ES_FTS_Config_ID, EventType, AD_Table_ID, Record_ID) VALUES (540003, 'U', 217, 541113)
+;
+
+-- 2024-10-30T21:10:00.589Z
+UPDATE C_DocType SET PrintName='Proforma Auftrag',Updated=TO_TIMESTAMP('2024-10-30 22:10:00.589','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541113
+;
+
+-- 2024-10-30T21:10:00.590Z
+UPDATE C_DocType_Trl trl SET PrintName='Proforma Auftrag' WHERE C_DocType_ID=541113 AND (IsTranslated='N' OR AD_Language='de_DE')
+;
+
+-- 2024-10-30T21:10:00.623Z
+INSERT INTO ES_FTS_Index_Queue(ES_FTS_Config_ID, EventType, AD_Table_ID, Record_ID) VALUES (540003, 'U', 217, 541113)
+;
+
+-- 2024-10-30T21:10:08.704Z
+UPDATE C_DocType_Trl SET Name='Proforma Auftrag',Updated=TO_TIMESTAMP('2024-10-30 22:10:08.704','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541113
+;
+
+-- 2024-10-30T21:10:29.791Z
+UPDATE C_DocType_Trl SET Name='Proforma SO',Updated=TO_TIMESTAMP('2024-10-30 22:10:29.791','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541113
+;
+
+-- 2024-10-30T21:10:46.415Z
+UPDATE C_DocType_Trl SET PrintName='Proforma Auftrag',Updated=TO_TIMESTAMP('2024-10-30 22:10:46.415','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541113
+;
+
+-- 2024-10-30T21:10:55.182Z
+UPDATE C_DocType_Trl SET PrintName='Proforma SO',Updated=TO_TIMESTAMP('2024-10-30 22:10:55.182','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541113
+;
