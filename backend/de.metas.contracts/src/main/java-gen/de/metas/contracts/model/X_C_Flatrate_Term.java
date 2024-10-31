@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -736246692L;
+	private static final long serialVersionUID = -246498512L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -1101,6 +1101,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public int getPMM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	@Override

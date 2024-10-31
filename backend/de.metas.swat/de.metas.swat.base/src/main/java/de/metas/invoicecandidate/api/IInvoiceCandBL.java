@@ -340,6 +340,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return today date (without time!) to be used by invoicing BLs
 	 */
+	@NonNull
 	LocalDate getToday();
 
 	/**
