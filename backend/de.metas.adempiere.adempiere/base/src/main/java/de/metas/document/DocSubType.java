@@ -109,6 +109,12 @@ public enum DocSubType implements ReferenceListAwareEnum
 		return code;
 	}
 
+	@Nullable
+	public String getNullableCode()
+	{
+		return isAnyOrNone() ? null : code;
+	}
+
 	public boolean isAny() { return ANY.equals(this); }
 	public boolean isNone() { return NONE.equals(this); }
 	public boolean isAnyOrNone() { return isAny() || isNone(); }
