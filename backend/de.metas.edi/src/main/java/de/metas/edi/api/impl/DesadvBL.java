@@ -562,7 +562,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			// If both are TU or both are not, then uom-conversion will work fine.
 			// Anyway, if the desadv's quantity is in stock-UOM, then go with the inOutLine's stock-quantity.
-			final boolean desadvUomIsStockUom = inOutLineStockQty.getUomId().equals(desadvLineQtyToAugment.getUomId());
+			final boolean desadvUomIsStockUom = inOutLineStockQty.getUomId().equals(desadvLineQtyUomId);
 			
 			augentQtyDeliveredInUOM = desadvUomIsStockUom 
 					? inOutLineStockQty 
@@ -570,11 +570,8 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(desadvLineRecord.getM_Product_ID());
-
-		return Quantitys
-				.add(conversionCtx,
-					 desadvLineQtyToAugment,
-					 augentQtyDeliveredInUOM);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		return uomConversionBL.convertQuantityTo(augentQtyDeliveredInUOM, conversionCtx, desadvLineQtyUomId);
 	}
 
 	@Override
