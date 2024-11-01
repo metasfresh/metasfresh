@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -99,6 +101,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.*;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
@@ -147,6 +150,7 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -613,11 +617,18 @@ public class C_Invoice_Candidate_StepDef
 		{
 			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
 			{
-				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+				final String invoiceCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+				
+				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
+						.stream()
+						.map(invoiceCandTable::get)
+						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+						.map(InvoiceCandidateId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
 
-				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-				invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+
+				invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
 			}
 		}
 	}
@@ -637,7 +648,8 @@ public class C_Invoice_Candidate_StepDef
 			ImmutableSet<InvoiceId> invoiceIds = ImmutableSet.of();
 			try
 			{
-				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId), asyncBatchId);
 			}
 			catch (final AdempiereException adempiereException)
 			{
@@ -1114,7 +1126,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
-														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
+						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
 			}
 		}
 
@@ -1125,7 +1137,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
-														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
+						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
 		}
 
@@ -1276,8 +1288,8 @@ public class C_Invoice_Candidate_StepDef
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
-																	new ArrayList<>(),
-																	(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+				new ArrayList<>(),
+				(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		//query by id
 		final String invCandDetails = invCandidateDetailList.get(0);
