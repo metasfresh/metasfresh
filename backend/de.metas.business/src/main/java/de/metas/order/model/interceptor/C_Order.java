@@ -164,7 +164,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
-			I_C_Order.COLUMNNAME_C_DocType_ID,
+			I_C_Order.COLUMNNAME_C_DocType_ID
 	})
 	public void removeFlatRateConditionsForCallOrderAndProformaOrder(final I_C_Order order)
 	{
