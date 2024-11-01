@@ -1090,4 +1090,49 @@ public interface I_I_Invoice_Candidate
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_X12DE355 = new ModelColumn<>(I_I_Invoice_Candidate.class, "X12DE355", null);
 	String COLUMNNAME_X12DE355 = "X12DE355";
+
+	/**
+	 * Set Price List Version.
+	 * Identifies a unique instance of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
+
+	/**
+	 * Get Price List Version.
+	 * Identifies a unique instance of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PriceList_Version_ID();
+
+	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/**
+	 * Set Version Preisliste.
+	 * Bezeichnet eine einzelne Version der Preisliste
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PriceList_Version_Name (@Nullable String M_PriceList_Version_Name);
+
+	/**
+	 * Get Version Preisliste.
+	 * Bezeichnet eine einzelne Version der Preisliste
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getM_PriceList_Version_Name();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_M_PriceList_Version_Name = new ModelColumn<>(I_I_Invoice_Candidate.class, "M_PriceList_Version_Name", null);
+	String COLUMNNAME_M_PriceList_Version_Name = "M_PriceList_Version_Name";
 }
