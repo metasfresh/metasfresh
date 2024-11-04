@@ -35,7 +35,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.mail.internet.AddressException;
@@ -239,7 +238,11 @@ public final class EMail implements Serializable
 
 	public EMailSentStatus send()
 	{
-		logger.debug("Sending {}", this);
+		final ILoggable debugLoggable = getDebugLoggable();
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Sending {}", this);
+		}
 
 		//
 		// Reset status
@@ -262,11 +265,16 @@ public final class EMail implements Serializable
 
 	private EMailSentStatus setSentStatus(@NonNull final EMailSentStatus status)
 	{
+		final ILoggable debugLoggable = getDebugLoggable();
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Got sent status {}", status);
+		}
+
 		_sentStatus = status;
 		return status;
 	}
 
-	@Deprecated
 	public EMailSentStatus getLastSentStatus()
 	{
 		return _sentStatus;
@@ -298,7 +306,12 @@ public final class EMail implements Serializable
 	{
 		if (to == null)
 		{
-			markInvalid();
+			return;
+		}
+
+		// Skip address if already added
+		if (_to.contains(to))
+		{
 			return;
 		}
 
@@ -515,11 +528,6 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(file));
 	}
 
-	public void addAttachment(@NonNull final Resource resource)
-	{
-		addAttachment(EMailAttachment.of(resource));
-	}
-
 	public void addAttachment(final URI uri)
 	{
 		if (uri == null)
@@ -530,19 +538,17 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(uri));
 	}
 
-	public boolean addAttachment(final String filename, final byte[] content)
+	public void addAttachment(final String filename, final byte[] content)
 	{
-		if (content == null || content.length == 0)
+		final EMailAttachment attachment = EMailAttachment.ofNullable(filename, content);
+		if (attachment == null)
 		{
 			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
-			return false;
+			return;
 		}
-
-		final EMailAttachment attachment = EMailAttachment.of(filename, content);
 
 		addAttachment(attachment);
 
-		return true;
 	}
 
 	public void addAttachment(@NonNull final EMailAttachment emailAttachment)

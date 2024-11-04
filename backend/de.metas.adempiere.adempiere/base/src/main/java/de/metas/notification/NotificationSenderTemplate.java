@@ -4,7 +4,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
@@ -50,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -432,7 +434,6 @@ public class NotificationSenderTemplate
 	private void sendMail(final UserNotificationRequest request)
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
-		final Mailbox mailbox = findMailbox(notificationsConfig);
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
@@ -443,22 +444,27 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
-		final EMail mail = mailService.createEMail(
-				mailbox,
-				notificationsConfig.getEmail(),
-				subject,
-				content,
-				html);
-		request.getAttachments().forEach(mail::addAttachment);
-		mailService.send(mail);
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.to(notificationsConfig.getEmail())
+				.subject(subject)
+				.message(content)
+				.html(html)
+				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
+				.build());
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		return mailService.findMailbox(MailboxQuery.builder()
+		return mailService.findMailbox(mailboxQuery(notificationsConfig));
+	}
+
+	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)
+	{
+		return MailboxQuery.builder()
 				.clientId(notificationsConfig.getClientId())
 				.orgId(notificationsConfig.getOrgId())
-				.build());
+				.build();
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

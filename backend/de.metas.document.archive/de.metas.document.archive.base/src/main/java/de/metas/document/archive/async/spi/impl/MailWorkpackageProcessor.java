@@ -15,8 +15,9 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
@@ -27,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -54,10 +56,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
@@ -72,6 +77,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
 	//
 	// Services
+	private static final Logger logger = LogManager.getLogger(MailWorkpackageProcessor.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
@@ -165,34 +171,24 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// Create and send email
 		final ArchiveEmailSentStatus status;
 		{
-			final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
-
-			final EMail email = mailService.createEMail(
-					mailbox,
-					mailTo,
-					emailParams.getSubject(),
-					emailParams.getMessage(),
-					isHTMLMessage(emailParams.getMessage()));
-
-			final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
-
-			final long addedAttachments = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
-					.map(attachment -> email.addAttachment(attachment.getFilename(), attachment.getAttachmentDataSupplier().get()))
-					.filter(Boolean::booleanValue)
-					.count();
-
-			final byte[] attachment = archiveBL.getBinaryData(archive);
-			if (attachment == null && addedAttachments <= 0)
+			final ArrayList<EMailAttachment> emailAttachments = extractAttachments(docOutboundLogRecord, archive);
+			if (emailAttachments.isEmpty())
 			{
 				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
 				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
 			{
-				final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
-				email.addAttachment(pdfFileName, attachment);
+				final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
+				mailService.sendEMail(EMailRequest.builder()
+						.mailbox(mailbox)
+						.to(mailTo)
+						.subject(emailParams.getSubject())
+						.message(emailParams.getMessage())
+						.html(emailParams.isHtml())
+						.attachments(emailAttachments)
+						.build());
 
-				mailService.send(email);
 				status = ArchiveEmailSentStatus.MESSAGE_SENT;
 			}
 		}
@@ -212,6 +208,39 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 	}
 
+	private ArrayList<EMailAttachment> extractAttachments(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord, @NonNull final I_AD_Archive archive)
+	{
+		final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
+		final ArrayList<EMailAttachment> result = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
+				.map(MailWorkpackageProcessor::toEmailAttachment)
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		final byte[] archiveData = archiveBL.getBinaryData(archive);
+		if (archiveData != null && archiveData.length > 0)
+		{
+			final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
+			final EMailAttachment attachment = EMailAttachment.ofNullable(pdfFileName, archiveData);
+			if (attachment != null)
+			{
+				result.add(attachment);
+			}
+		}
+
+		return result;
+	}
+
+	private static EMailAttachment toEmailAttachment(@NonNull de.metas.attachments.EmailAttachment attachment)
+	{
+		final String filename = attachment.getFilename();
+		final EMailAttachment emailAttachment = EMailAttachment.ofNullable(filename, attachment.getAttachmentDataSupplier().get());
+		if (emailAttachment == null)
+		{
+			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
+			return null;
+		}
+		return emailAttachment;
+	}
+
 	@Nullable
 	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
@@ -223,17 +252,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
-	}
-
-	private boolean isHTMLMessage(final String message)
-	{
-		if (Check.isEmpty(message))
-		{
-			// no message => no html
-			return false;
-		}
-
-		return message.toLowerCase().contains("<html>");
 	}
 
 	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
@@ -331,5 +349,16 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		String subject;
 		String message;
+
+		private boolean isHtml()
+		{
+			if (Check.isEmpty(message))
+			{
+				// no message => no html
+				return false;
+			}
+
+			return message.toLowerCase().contains("<html>");
+		}
 	}
 }

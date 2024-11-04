@@ -22,6 +22,7 @@ import de.metas.email.test.TestMailCommand;
 import de.metas.email.test.TestMailRequest;
 import de.metas.logging.LogManager;
 import de.metas.user.api.IUserBL;
+import de.metas.util.ILoggable;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -104,23 +105,14 @@ public class MailService
 	{
 		Mailbox mailbox = mailboxRepo.findMailBox(query)
 				.orElseGet(() -> clientsRepo.getEMailConfigById(query.getClientId()).getMailboxNotNull());
-		
-		if(query.getFromUserId() != null)
+
+		if (query.getFromUserId() != null)
 		{
 			final UserEMailConfig userEMailConfig = userBL.getEmailConfigById(query.getFromUserId());
 			mailbox = mailbox.mergeFrom(userEMailConfig).orElseThrow(MailboxNotFoundException::new);
 		}
-		
-		return mailbox;
-	}
 
-	public void sendEMail(
-			@NonNull final Mailbox mailbox,
-			@NonNull final EMailAddress to,
-			@NonNull final MailText mailText)
-	{
-		final EMail email = createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
-		send(email);
+		return mailbox;
 	}
 
 	public void sendEMail(
@@ -128,11 +120,12 @@ public class MailService
 			@NonNull final EMailAddress to,
 			@NonNull final MailText mailText)
 	{
-		final Mailbox mailbox = findMailbox(mailboxQuery);
-		final EMail email = createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
-		send(email);
+		sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery)
+				.to(to)
+				.mailText(mailText)
+				.build());
 	}
-
 
 	public EMail createEMail(
 			@NonNull final Mailbox mailbox,
@@ -145,6 +138,51 @@ public class MailService
 		email.setMailSender(getMailSender(mailbox.getType()));
 		email.setDebugMode(isDebugModeEnabled());
 		email.setDebugMailToAddress(getDebugMailToAddressOrNull());
+		return email;
+	}
+
+	public EMail sendEMail(@NonNull final EMailRequest request)
+	{
+		final ILoggable debugLoggable = request.getDebugLoggable();
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Request: {}", request);
+		}
+
+		final Mailbox mailbox;
+		if (request.getMailbox() != null)
+		{
+			mailbox = request.getMailbox();
+		}
+		else if (request.getMailboxQuery() != null)
+		{
+			mailbox = findMailbox(request.getMailboxQuery());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot find mailbox from " + request);
+		}
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Mailbox: {}", mailbox);
+		}
+
+		final EMail email = createEMail(mailbox, request.getTo(), request.getSubject(), request.getMessage(), request.isHtml());
+		if (request.getDebugLoggable() != null)
+		{
+			email.setDebugMode(true);
+			email.setDebugLoggable(debugLoggable);
+		}
+
+		request.getToList().forEach(email::addTo);
+		request.getAttachments().forEach(email::addAttachment);
+
+		final EMailSentStatus sentStatus = email.send();
+		if (request.isFailIfNotSent())
+		{
+			sentStatus.throwIfNotOK((exception) -> exception.setParameter("email", email));
+		}
+
 		return email;
 	}
 

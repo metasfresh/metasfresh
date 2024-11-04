@@ -28,10 +28,8 @@ package de.metas.letters.report;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
-import de.metas.email.EMailSentStatus;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
-import de.metas.email.impl.EMailSendException;
-import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
@@ -53,6 +51,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -195,51 +194,20 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			@Override
 			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				String message = text.getTextSnippetParsed(attributes);
-				//
-				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-				final EMailAddress to = EMailAddress.ofString(st.nextToken());
-
-				final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
-						.clientId(getClientId())
-						.orgId(getOrgId())
-						.adProcessId(getProcessInfo().getAdProcessId())
-						.fromUserId(getFromUserId())
+				return mailService.sendEMail(EMailRequest.builder()
+						.mailboxQuery(MailboxQuery.builder()
+								.clientId(getClientId())
+								.orgId(getOrgId())
+								.adProcessId(getProcessInfo().getAdProcessId())
+								.fromUserId(getFromUserId())
+								.build())
+						.toList(toEMailAddresses(toEmail))
+						.subject(text.getSubject())
+						.message(text.getTextSnippetParsed(attributes))
+						.html(true)
 						.build());
-				final EMail email = mailService.createEMail(mailbox, to, text.getSubject(), message, true);
-				while (st.hasMoreTokens())
-				{
-					email.addTo(EMailAddress.ofString(st.nextToken()));
-				}
-				send(email);
-				return email;
 			}
 		});
-	}
-
-	private void send(EMail email)
-	{
-		int maxRetries = p_SMTPRetriesNo > 0 ? p_SMTPRetriesNo : 0;
-		int count = 0;
-		do
-		{
-			final EMailSentStatus emailSentStatus = email.send();
-			count++;
-			if (emailSentStatus.isSentOK())
-			{
-				return;
-			}
-			// Timeout => retry
-			if (emailSentStatus.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
-			{
-				log.warn("SMTP error: " + emailSentStatus + " [ Retry " + count + " ]");
-			}
-			else
-			{
-				throw new EMailSendException(emailSentStatus);
-			}
-		}
-		while (true);
 	}
 
 	private void createNote(MADBoilerPlate text, I_AD_User user, Exception e)
@@ -264,4 +232,16 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		note.saveEx();
 		m_count_notes++;
 	}
+
+	static List<EMailAddress> toEMailAddresses(final String string)
+	{
+		final StringTokenizer st = new StringTokenizer(string, " ,;", false);
+		final ArrayList<EMailAddress> result = new ArrayList<>();
+		while (st.hasMoreTokens())
+		{
+			result.add(EMailAddress.ofString(st.nextToken()));
+		}
+		return result;
+	}
+
 }

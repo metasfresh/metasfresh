@@ -3,12 +3,10 @@ package de.metas.ui.web.mail;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.EmailAttachment;
-import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
-import de.metas.email.EMailSentStatus;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -143,7 +141,8 @@ public class MailRestController
 		userSession.assertLoggedIn();
 
 		final UserId fromUserId = userSession.getLoggedUserId();
-		findMailbox(fromUserId); // i.e. assert can send mails / mailbox is valid 
+		mailService.findMailbox(mailboxQuery(fromUserId)); // i.e. assert can send mails / mailbox is valid
+
 
 		final IntegerLookupValue from = IntegerLookupValue.of(fromUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
@@ -218,54 +217,35 @@ public class MailRestController
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
-		final String emailId = webuiEmail.getEmailId();
-
-		final Mailbox mailbox = findMailbox(webuiEmail.getFromUserId());
-
 		final List<EMailAddress> toList = extractEMailAddresses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
 			throw new FillMandatoryException("To");
 		}
-		final EMail email = mailService.createEMail(
-				mailbox,
-				toList.get(0),
-				webuiEmail.getSubject(),
-				webuiEmail.getMessage(),
-				false);
-		toList.stream().skip(1).forEach(email::addTo);
 
-		webuiEmail.getAttachments()
-				.stream()
-				.map(webuiAttachment -> {
-					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
-					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
-				})
-				.forEach(email::addAttachment);
-
-		//
-		// Actually send the email
-		final EMailSentStatus sentStatus = email.send();
-		if (!sentStatus.isSentOK())
-		{
-			throw new AdempiereException("Failed sending the email: " + sentStatus.getSentMsg()).appendParametersToMessage()
-					.setParameter("email", email);
-		}
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(webuiEmail.getFromUserId()))
+				.toList(toList)
+				.subject(webuiEmail.getSubject())
+				.message(webuiEmail.getMessage())
+				.html(false)
+				.attachments(extractEMailAttachments(webuiEmail))
+				.build());
 
 		//
 		// Delete temporary attachments
-		mailAttachmentsRepo.deleteAttachments(emailId, webuiEmail.getAttachments());
+		mailAttachmentsRepo.deleteAttachments(webuiEmail.getEmailId(), webuiEmail.getAttachments());
 
 		// Mark the webui email as sent
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
-	private Mailbox findMailbox(@NonNull final UserId fromUserId)
+	private MailboxQuery mailboxQuery(final @NonNull UserId fromUserId)
 	{
-		return mailService.findMailbox(MailboxQuery.builder()
+		return MailboxQuery.builder()
 				.clientId(userSession.getClientId())
 				.fromUserId(fromUserId)
-				.build());
+				.build();
 	}
 
 	private Stream<EMailAddress> extractEMailAddresses(final LookupValuesList users)
@@ -286,6 +266,19 @@ public class MailRestController
 		{
 			return userBL.getEMailAddressById(adUserId).orElseThrow();
 		}
+	}
+
+	private ImmutableList<EMailAttachment> extractEMailAttachments(final WebuiEmail webuiEmail)
+	{
+		final String emailId = webuiEmail.getEmailId();
+
+		return webuiEmail.getAttachments()
+				.stream()
+				.map(webuiAttachment -> {
+					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
+					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@PatchMapping("/{emailId}")

@@ -21,6 +21,7 @@ import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -55,7 +56,7 @@ import java.io.Serializable;
 public final class EMailSentStatus implements Serializable
 {
 	private static final Logger logger = LogManager.getLogger(EMailSentStatus.class);
-	
+
 	static final EMailSentStatus NOT_SENT = new EMailSentStatus(null, false, null);
 	private static final String SENT_OK = "OK";
 
@@ -250,9 +251,21 @@ public final class EMailSentStatus implements Serializable
 
 	public void throwIfNotOK()
 	{
+		throwIfNotOK(null);
+	}
+
+	public void throwIfNotOK(@Nullable final Consumer<EMailSendException> exceptionDecorator)
+	{
 		if (!isSentOK())
 		{
-			throw new EMailSendException(this);
+			final EMailSendException exception = new EMailSendException(this);
+			if (exceptionDecorator != null)
+			{
+				exceptionDecorator.accept(exception);
+			}
+
+			throw exception;
 		}
 	}
+
 }

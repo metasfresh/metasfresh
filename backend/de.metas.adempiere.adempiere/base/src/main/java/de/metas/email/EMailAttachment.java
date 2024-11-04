@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 
 import javax.activation.DataSource;
 import javax.activation.URLDataSource;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -65,6 +66,11 @@ public class EMailAttachment implements Serializable
 	public static EMailAttachment of(@NonNull final String filename, final byte[] content)
 	{
 		return new EMailAttachment(filename, content, null);
+	}
+
+	public static EMailAttachment ofNullable(@NonNull final String filename, @Nullable final byte[] content)
+	{
+		return content != null && content.length != 0 ? of(filename, content) : null;
 	}
 
 	public static EMailAttachment of(@NonNull final URI uri)

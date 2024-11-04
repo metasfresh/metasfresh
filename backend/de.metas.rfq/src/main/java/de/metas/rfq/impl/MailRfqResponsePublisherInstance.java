@@ -3,6 +3,7 @@ package de.metas.rfq.impl;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
@@ -125,14 +126,15 @@ import java.sql.Timestamp;
 
 		//
 		// Send it
-		final EMail email = mailService.createEMail(
-				mailbox,
-				userToEmail, // to
-				subject, // subject
-				message,  // message
-				mailText.isHtml()); // html
-		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData());
-		final EMailSentStatus emailSentStatus = email.send();
+		final EMail email = mailService.sendEMail(EMailRequest.builder()
+				.mailbox(mailbox)
+				.to(userToEmail)
+				.subject(subject)
+				.message(message)
+				.html(mailText.isHtml())
+				.attachmentIfNotEmpty("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData())
+				.build());
+		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
