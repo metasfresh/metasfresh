@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EDI_DesadvLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1729503778L;
+	private static final long serialVersionUID = 137682731L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (final Properties ctx, final int EDI_DesadvLine_ID, @Nullable final String trxName)
@@ -42,7 +42,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public BigDecimal getBPartner_QtyItemCapacity()
+	public BigDecimal getBPartner_QtyItemCapacity() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BPartner_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -51,14 +51,14 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
 	{
-		if (C_UOM_BPartner_ID < 1)
+		if (C_UOM_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
 	}
 
 	@Override
-	public int getC_UOM_BPartner_ID()
+	public int getC_UOM_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
 	}
@@ -94,13 +94,24 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
+	public void setEanCom_Invoice_UOM (final @Nullable String EanCom_Invoice_UOM)
+	{
+		throw new IllegalArgumentException ("EanCom_Invoice_UOM is virtual column");	}
+
+	@Override
+	public String getEanCom_Invoice_UOM() 
+	{
+		return get_ValueAsString(COLUMNNAME_EanCom_Invoice_UOM);
+	}
+
+	@Override
 	public void setEAN_CU (final @Nullable String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
 	}
 
 	@Override
-	public String getEAN_CU()
+	public String getEAN_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_EAN_CU);
 	}
@@ -112,20 +123,9 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getEAN_TU()
+	public String getEAN_TU() 
 	{
 		return get_ValueAsString(COLUMNNAME_EAN_TU);
-	}
-
-	@Override
-	public void setEanCom_Invoice_UOM (final @Nullable String EanCom_Invoice_UOM)
-	{
-		throw new IllegalArgumentException ("EanCom_Invoice_UOM is virtual column");	}
-
-	@Override
-	public String getEanCom_Invoice_UOM()
-	{
-		return get_ValueAsString(COLUMNNAME_EanCom_Invoice_UOM);
 	}
 
 	@Override
@@ -177,21 +177,33 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public int getExternalSeqNo()
+	public int getExternalSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSeqNo);
 	}
 
 	@Override
-	public void setGTIN (final @Nullable String GTIN)
+	public void setGTIN_CU (final @Nullable String GTIN_CU)
 	{
-		set_Value (COLUMNNAME_GTIN, GTIN);
+		set_Value (COLUMNNAME_GTIN_CU, GTIN_CU);
 	}
 
 	@Override
-	public String getGTIN()
+	public String getGTIN_CU() 
 	{
-		return get_ValueAsString(COLUMNNAME_GTIN);
+		return get_ValueAsString(COLUMNNAME_GTIN_CU);
+	}
+
+	@Override
+	public void setGTIN_TU (final @Nullable String GTIN_TU)
+	{
+		set_Value (COLUMNNAME_GTIN_TU, GTIN_TU);
+	}
+
+	@Override
+	public String getGTIN_TU() 
+	{
+		return get_ValueAsString(COLUMNNAME_GTIN_TU);
 	}
 
 	/** 
@@ -210,9 +222,20 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getInvoicableQtyBasedOn()
+	public String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		throw new IllegalArgumentException ("IsDeliveryClosed is virtual column");	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override
@@ -273,7 +296,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getOrderPOReference()
+	public String getOrderPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_OrderPOReference);
 	}
@@ -298,7 +321,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getProductDescription()
+	public String getProductDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
@@ -310,7 +333,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getProductNo()
+	public String getProductNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductNo);
 	}
@@ -374,7 +397,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public BigDecimal getQtyEnteredInBPartnerUOM()
+	public BigDecimal getQtyEnteredInBPartnerUOM() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -413,7 +436,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered_Override()
+	public BigDecimal getQtyOrdered_Override() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -426,7 +449,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getUPC_CU()
+	public String getUPC_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_UPC_CU);
 	}
@@ -438,7 +461,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getUPC_TU()
+	public String getUPC_TU() 
 	{
 		return get_ValueAsString(COLUMNNAME_UPC_TU);
 	}

@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef

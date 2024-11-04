@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_Desadv_Pack, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1795597529L;
+	private static final long serialVersionUID = -1615598873L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack (final Properties ctx, final int EDI_Desadv_Pack_ID, @Nullable final String trxName)
@@ -126,15 +104,15 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public void setGTIN_LU_PackingMaterial (final @Nullable java.lang.String GTIN_LU_PackingMaterial)
+	public void setGTIN_PackingMaterial (final @Nullable java.lang.String GTIN_PackingMaterial)
 	{
-		set_Value (COLUMNNAME_GTIN_LU_PackingMaterial, GTIN_LU_PackingMaterial);
+		set_Value (COLUMNNAME_GTIN_PackingMaterial, GTIN_PackingMaterial);
 	}
 
 	@Override
-	public java.lang.String getGTIN_LU_PackingMaterial() 
+	public java.lang.String getGTIN_PackingMaterial() 
 	{
-		return get_ValueAsString(COLUMNNAME_GTIN_LU_PackingMaterial);
+		return get_ValueAsString(COLUMNNAME_GTIN_PackingMaterial);
 	}
 
 	@Override
@@ -162,18 +140,6 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public void setLine (final int Line)
-	{
-		set_Value (COLUMNNAME_Line, Line);
-	}
-
-	@Override
-	public int getLine() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Line);
-	}
-
-	@Override
 	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
@@ -189,28 +155,40 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_ID (final int M_HU_PackagingCode_LU_ID)
+	public void setM_HU_PackagingCode_ID (final int M_HU_PackagingCode_ID)
 	{
-		if (M_HU_PackagingCode_LU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, null);
+		if (M_HU_PackagingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, M_HU_PackagingCode_LU_ID);
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, M_HU_PackagingCode_ID);
 	}
 
 	@Override
-	public int getM_HU_PackagingCode_LU_ID() 
+	public int getM_HU_PackagingCode_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_LU_ID);
+		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_ID);
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_Text (final @Nullable java.lang.String M_HU_PackagingCode_LU_Text)
+	public void setM_HU_PackagingCode_Text (final @Nullable java.lang.String M_HU_PackagingCode_Text)
 	{
-		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
+		throw new IllegalArgumentException ("M_HU_PackagingCode_Text is virtual column");	}
 
 	@Override
-	public java.lang.String getM_HU_PackagingCode_LU_Text() 
+	public java.lang.String getM_HU_PackagingCode_Text() 
 	{
-		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_LU_Text);
+		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_Text);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

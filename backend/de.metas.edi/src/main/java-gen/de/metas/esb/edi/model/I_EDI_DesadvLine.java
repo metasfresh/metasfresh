@@ -1,9 +1,8 @@
 package de.metas.esb.edi.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for EDI_DesadvLine
  *  @author metasfresh (generated) 
@@ -74,6 +73,31 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set BPartner UOM.
 	 *
 	 * <br>Type: Table
@@ -138,29 +162,29 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_C_UOM_Invoice_ID = "C_UOM_Invoice_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Set EanCom_Invoice_UOM.
 	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	@Deprecated
+	void setEanCom_Invoice_UOM (@Nullable String EanCom_Invoice_UOM);
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get EanCom_Invoice_UOM.
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	int getCreatedBy();
+	@Deprecated
+	@Nullable String getEanCom_Invoice_UOM();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new ModelColumn<>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
+	String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
 
 	/**
 	 * Set CU-EAN.
@@ -203,31 +227,6 @@ public interface I_EDI_DesadvLine
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EAN_TU = new ModelColumn<>(I_EDI_DesadvLine.class, "EAN_TU", null);
 	String COLUMNNAME_EAN_TU = "EAN_TU";
-
-	/**
-	 * Set EanCom_Invoice_UOM.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setEanCom_Invoice_UOM (@Nullable String EanCom_Invoice_UOM);
-
-	/**
-	 * Get EanCom_Invoice_UOM.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable String getEanCom_Invoice_UOM();
-
-	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new ModelColumn<>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
-	String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
 
 	/**
 	 * Set DESADV.
@@ -297,25 +296,46 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
-	 * Set GTIN.
+	 * Set CU-GTIN.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN (@Nullable String GTIN);
+	void setGTIN_CU (@Nullable String GTIN_CU);
 
 	/**
-	 * Get GTIN.
+	 * Get CU-GTIN.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGTIN();
+	@Nullable String getGTIN_CU();
 
-	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN", null);
-	String COLUMNNAME_GTIN = "GTIN";
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN_CU = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN_CU", null);
+	String COLUMNNAME_GTIN_CU = "GTIN_CU";
+
+	/**
+	 * Set TU-GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGTIN_TU (@Nullable String GTIN_TU);
+
+	/**
+	 * Get TU-GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getGTIN_TU();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN_TU = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN_TU", null);
+	String COLUMNNAME_GTIN_TU = "GTIN_TU";
 
 	/**
 	 * Set Invoicable Quantity per.
@@ -362,8 +382,32 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Spätere Nachlieferung.
-	 * Falls "ja", wird das Feld "Abweichungscode" in der DESADV-Datei auf "BP" (back order to follow) gesetzt, d.h. es wird signalisiert, das später noch eine Nachliefrung erfolgen wird.
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_EDI_DesadvLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
+	 * Set Subsequent Delivery.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -372,8 +416,7 @@ public interface I_EDI_DesadvLine
 	void setIsSubsequentDeliveryPlanned (boolean IsSubsequentDeliveryPlanned);
 
 	/**
-	 * Get Spätere Nachlieferung.
-	 * Falls "ja", wird das Feld "Abweichungscode" in der DESADV-Datei auf "BP" (back order to follow) gesetzt, d.h. es wird signalisiert, das später noch eine Nachliefrung erfolgen wird.
+	 * Get Subsequent Delivery.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -491,8 +534,8 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -501,8 +544,8 @@ public interface I_EDI_DesadvLine
 	void setProductDescription (@Nullable String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -686,7 +729,7 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Bestellt abw..
+	 * Set Quantity Ordered override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -695,7 +738,7 @@ public interface I_EDI_DesadvLine
 	void setQtyOrdered_Override (@Nullable BigDecimal QtyOrdered_Override);
 
 	/**
-	 * Get Bestellt abw..
+	 * Get Quantity Ordered override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -705,7 +748,6 @@ public interface I_EDI_DesadvLine
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered_Override = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyOrdered_Override", null);
 	String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
-
 
 	/**
 	 * Set CU-UPC.

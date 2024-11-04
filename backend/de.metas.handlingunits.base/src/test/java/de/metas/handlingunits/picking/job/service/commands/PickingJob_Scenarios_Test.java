@@ -36,8 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test

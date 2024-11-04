@@ -24,6 +24,7 @@ package de.metas.common.util;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -39,12 +40,14 @@ public class CoalesceUtil
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
 	 */
+	@Contract("null, _ -> param2")
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2)
 	{
 		return value1 == null ? value2 : value1;
 	}
 
+	@Contract("null, _ -> param2")
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
@@ -86,12 +89,14 @@ public class CoalesceUtil
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
+	@Contract("null, null, _ -> param3")
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
 
+	@Contract("null, null, _ -> param3")
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
@@ -106,11 +111,12 @@ public class CoalesceUtil
 	/**
 	 * @return first not null value from list
 	 */
+	@Contract("null -> null")
 	@SafeVarargs
 	@Nullable
 	public <T> T coalesce(@Nullable final T... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return null;
 		}
@@ -126,7 +132,7 @@ public class CoalesceUtil
 
 	@SafeVarargs
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T... values)
+	public <T> T coalesceNotNull(@NonNull final T... values)
 	{
 		final T result = coalesce(values);
 		if (result == null)
@@ -168,7 +174,7 @@ public class CoalesceUtil
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return null;
 		}
@@ -193,7 +199,7 @@ public class CoalesceUtil
 	 */
 	public int firstGreaterThanZero(final int... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return 0;
 		}
@@ -210,7 +216,7 @@ public class CoalesceUtil
 	@SafeVarargs
 	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (suppliers == null)
 		{
 			return 0;
 		}
@@ -237,14 +243,14 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
-		if(values == null || values.length == 0)
+		if(values == null)
 		{
 			return null;
 		}
 
 		for (final String value : values)
 		{
-			if (value != null && EmptyUtil.isNotBlank(value))
+			if (EmptyUtil.isNotBlank(value))
 			{
 				return value.trim();
 			}
@@ -257,7 +263,7 @@ public class CoalesceUtil
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
-		if(valueSuppliers == null || valueSuppliers.length == 0)
+		if(valueSuppliers == null)
 		{
 			return null;
 		}
@@ -270,7 +276,7 @@ public class CoalesceUtil
 			}
 
 			final String value = valueSupplier.get();
-			if (value != null && EmptyUtil.isNotBlank(value))
+			if (EmptyUtil.isNotBlank(value))
 			{
 				return value.trim();
 			}
@@ -303,7 +309,7 @@ public class CoalesceUtil
 	@NonNull
 	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return BigDecimal.ZERO;
 		}

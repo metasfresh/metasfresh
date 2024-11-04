@@ -71,7 +71,6 @@ public class Picking_Terminal_StepDef
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
-
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable)
@@ -109,8 +108,8 @@ public class Picking_Terminal_StepDef
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.inventoryService(inventoryService)
 				.request(ProcessPickingCandidatesRequest.builder()
-						.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
-						.build())
+								 .pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
+								 .build())
 				.build();
 
 		processPickingCandidatesCommand.execute();
@@ -156,10 +155,10 @@ public class Picking_Terminal_StepDef
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_M_HU hu = huTable.get(huIdentifier);
-			assertThat(hu).isNotNull();
+			assertThat(hu).as("Missing M_HU for " + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER + "=%s", huIdentifier).isNotNull();
 
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-			assertThat(shipmentSchedule).isNotNull();
+			assertThat(shipmentSchedule).as("Missing M_ShipmentSchedule for " + COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER + "=%s", shipmentScheduleIdentifier).isNotNull();
 
 			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
 

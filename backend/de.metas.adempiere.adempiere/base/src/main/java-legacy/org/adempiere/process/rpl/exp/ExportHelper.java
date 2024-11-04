@@ -111,7 +111,7 @@ import java.util.TimeZone;
  * @author Antonio Cañaveral, e-Evolution
  * <ul>
  * <li>[ 2195016 ] Implementation delete records messages
- * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332">http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332</a>
  * </ul>
  * @author victor.perez@e-evolution.com, e-Evolution
  * <ul>
@@ -131,25 +131,20 @@ public class ExportHelper
 	/**
 	 * Logger
 	 */
-	private static Logger log = LogManager.getLogger(ExportHelper.class);
+	private static final Logger log = LogManager.getLogger(ExportHelper.class);
 
 	/**
 	 * XML Document
 	 */
 	private Document outDocument = null;
 
-	/** Custom Date Format */
-	// private SimpleDateFormat m_customDateFormat = null;
-
-	/**
-	 * Client
-	 */
-	private int m_AD_Client_ID = -1;
+	/** Client */
+	private final int m_AD_Client_ID;
 
 	/**
 	 * Replication Strategy
 	 */
-	private I_AD_ReplicationStrategy m_rplStrategy = null;
+	private final I_AD_ReplicationStrategy m_rplStrategy;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
 	{
@@ -240,7 +235,7 @@ public class ExportHelper
 		log.debug("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 
 		log.debug("po.get_TrxName() = " + po.get_TrxName());
-		if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+		if (Check.isBlank(po.get_TrxName()))
 		{
 			po.set_TrxName("exportRecord");
 		}
@@ -308,7 +303,7 @@ public class ExportHelper
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(exportFormat.getAD_Table_ID());
 
 		// metas: begin: build where clause
-		final StringBuffer whereClause = new StringBuffer("1=1");
+		final StringBuilder whereClause = new StringBuilder("1=1");
 		if (!Check.isEmpty(exportFormat.getWhereClause(), true))
 		{
 			whereClause.append(" AND (").append(exportFormat.getWhereClause()).append(")");
@@ -330,7 +325,7 @@ public class ExportHelper
 			log.debug("Client = " + client.toString());
 			log.trace("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 			log.trace("po.get_TrxName() = " + po.get_TrxName());
-			if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+			if (Check.isBlank(po.get_TrxName()))
 			{
 				po.set_TrxName("exportRecord");
 			}
@@ -492,9 +487,9 @@ public class ExportHelper
 
 			final String linkColumnName = getLinkColumnName(masterPO, tableEmbedded); // metas
 			final Object linkId = masterPO.get_Value(linkColumnName); // metas
-			final StringBuffer whereClause = new StringBuffer(linkColumnName + "=?"); // metas: use linkColumnName
+			final StringBuilder whereClause = new StringBuilder(linkColumnName + "=?"); // metas: use linkColumnName
 
-			if (embeddedFormat.getWhereClause() != null && !"".equals(embeddedFormat.getWhereClause()))
+			if (Check.isNotBlank(embeddedFormat.getWhereClause()))
 			{
 				whereClause.append(" AND ").append(embeddedFormat.getWhereClause());
 			}
@@ -601,7 +596,7 @@ public class ExportHelper
 				throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 			}
 
-			log.debug("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
+			log.debug("Embedded: Table={}, KeyColumName={}", embeddedTableName, embeddedKeyColumnName);
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
 			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
@@ -652,15 +647,12 @@ public class ExportHelper
 
 	/**
 	 * Utility method which is responsible to create new XML Document
-	 *
-	 * @return Document
-	 * @throws ParserConfigurationException
 	 */
 	Document createNewDocument()
 	{
-		Document result = null;
+		final Document result;
 		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder documentBuilder;
+		final DocumentBuilder documentBuilder;
 		try
 		{
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -719,14 +711,14 @@ public class ExportHelper
 		if (replTable != null && replTable.getEXP_Format_ID() > 0)
 		{
 			exportFormat = MEXPFormat.get(po.getCtx(), replTable.getEXP_Format_ID(), po.get_TrxName());
-			log.debug("ExportFormat(replication table): ", exportFormat);
+			log.debug("ExportFormat(replication table): {}", exportFormat);
 			return exportFormat;
 		}
 
 		if (exportFormat == null)
 		{
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), m_AD_Client_ID, po.get_Table_ID(), version, po.get_TrxName());
-			log.debug("ExportFormat(client): ", exportFormat);
+			log.debug("ExportFormat(client): {}", exportFormat);
 		}
 
 		// Fall back to System Client
@@ -734,7 +726,7 @@ public class ExportHelper
 		{
 			final int adClientId = 0; // System
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), adClientId, po.get_Table_ID(), version, po.get_TrxName());
-			log.debug("ExportFormat(system): ", exportFormat);
+			log.debug("ExportFormat(system): {}", exportFormat);
 		}
 
 		if (exportFormat == null || exportFormat.getEXP_Format_ID() <= 0)
@@ -781,7 +773,7 @@ public class ExportHelper
 		}
 		else if (DisplayType.isDate(displayType))
 		{
-			valueString = encodeDate((Timestamp)value, formatLine, displayType);
+			valueString = encodeDate((Timestamp)value, displayType);
 		}
 		else if (DisplayType.isYesNo(displayType))
 		{
@@ -793,7 +785,7 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.debug("Encoded column '{}' from '{}' to '{}'", new Object[] { column.getColumnName(), value, valueString });
+		log.debug("Encoded column '{}' from '{}' to '{}'", column.getColumnName(), value, valueString);
 		return valueString;
 	}
 
@@ -801,7 +793,6 @@ public class ExportHelper
 	@VisibleForTesting
 	static String encodeDate(
 			final Timestamp date,
-			@NonNull final I_EXP_FormatLine formatLine,
 			final int displayType)
 	{
 		final ZoneId timeZoneId = Services.get(IOrgDAO.class).getTimeZone(Env.getOrgId());
