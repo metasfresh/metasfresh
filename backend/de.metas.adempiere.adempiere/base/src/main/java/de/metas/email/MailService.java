@@ -114,21 +114,23 @@ public class MailService
 		return mailbox;
 	}
 
-	public EMail createEMail(
+	public void sendEMail(
 			@NonNull final Mailbox mailbox,
 			@NonNull final EMailAddress to,
 			@NonNull final MailText mailText)
 	{
-		return createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+		final EMail email = createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+		send(email);
 	}
 
-	public EMail createEMail(
+	public void sendEMail(
 			@NonNull final MailboxQuery mailboxQuery,
 			@NonNull final EMailAddress to,
 			@NonNull final MailText mailText)
 	{
 		final Mailbox mailbox = findMailbox(mailboxQuery);
-		return createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+		final EMail email = createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+		send(email);
 	}
 
 

@@ -12,9 +12,7 @@ import de.metas.currency.Amount;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.email.EMail;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailText;
@@ -249,21 +247,15 @@ public class PayPal
 			@NonNull final URL payerApproveUrl,
 			@NonNull final MailTemplateId mailTemplateId)
 	{
-		final MailText mailText = createPayerApprovalRequestEmailText(reservation, payerApproveUrl, mailTemplateId);
-		final Mailbox mailbox = findMailbox(reservation);
-		final EMail email = mailService.createEMail(mailbox, reservation.getPayerEmail(), mailText);
-
-		trxManager.runAfterCommit(() -> mailService.send(email));
-	}
-
-	private Mailbox findMailbox(@NonNull final PaymentReservation reservation)
-	{
-		return mailService.findMailbox(MailboxQuery.builder()
+		final MailboxQuery mailboxQuery = MailboxQuery.builder()
 				.clientId(reservation.getClientId())
 				.orgId(reservation.getOrgId())
-				.build());
+				.build();
+		final MailText mailText = createPayerApprovalRequestEmailText(reservation, payerApproveUrl, mailTemplateId);
+
+		trxManager.runAfterCommit(() -> mailService.sendEMail(mailboxQuery, reservation.getPayerEmail(), mailText));
 	}
-	
+
 	private MailText createPayerApprovalRequestEmailText(
 			@NonNull final PaymentReservation reservation,
 			@NonNull final URL payerApproveUrl,

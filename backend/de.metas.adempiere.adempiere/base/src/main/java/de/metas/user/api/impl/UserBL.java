@@ -174,15 +174,12 @@ public class UserBL implements IUserBL
 		
 		final MailText mailText = createResetPasswordByEMailText(user);
 
-		final MailService mailService = mailService();
 		final MailboxQuery mailboxQuery = MailboxQuery.builder()
 				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
 				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
 				.build();
 
-		final EMail email = mailService.createEMail(mailboxQuery, emailTo, mailText);
-
-		mailService.send(email);
+		mailService().sendEMail(mailboxQuery, emailTo, mailText);
 	}
 
 	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)
