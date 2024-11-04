@@ -17,6 +17,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailText;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
@@ -248,20 +249,9 @@ public class PayPal
 			@NonNull final URL payerApproveUrl,
 			@NonNull final MailTemplateId mailTemplateId)
 	{
-		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
-		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
-		mailTextBuilder.customVariable(MAIL_VAR_ApproveURL, payerApproveUrl.toExternalForm());
-		mailTextBuilder.customVariable(MAIL_VAR_Amount, moneyService.toTranslatableString(reservation.getAmount()));
-
-		final I_C_Order salesOrder = ordersRepo.getById(reservation.getSalesOrderId());
-		mailTextBuilder.customVariable(MAIL_VAR_SalesOrderDocumentNo, salesOrder.getDocumentNo());
-
+		final MailText mailText = createPayerApprovalRequestEmailText(reservation, payerApproveUrl, mailTemplateId);
 		final Mailbox mailbox = findMailbox(reservation);
-		final EMail email = mailService.createEMail(mailbox,
-				reservation.getPayerEmail(),
-				mailTextBuilder.getMailHeader(),
-				mailTextBuilder.getFullMailText(),
-				mailTextBuilder.isHtml());
+		final EMail email = mailService.createEMail(mailbox, reservation.getPayerEmail(), mailText);
 
 		trxManager.runAfterCommit(() -> mailService.send(email));
 	}
@@ -272,6 +262,22 @@ public class PayPal
 				.clientId(reservation.getClientId())
 				.orgId(reservation.getOrgId())
 				.build());
+	}
+	
+	private MailText createPayerApprovalRequestEmailText(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final URL payerApproveUrl,
+			@NonNull final MailTemplateId mailTemplateId)
+	{
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
+		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
+		mailTextBuilder.customVariable(MAIL_VAR_ApproveURL, payerApproveUrl.toExternalForm());
+		mailTextBuilder.customVariable(MAIL_VAR_Amount, moneyService.toTranslatableString(reservation.getAmount()));
+
+		final I_C_Order salesOrder = ordersRepo.getById(reservation.getSalesOrderId());
+		mailTextBuilder.customVariable(MAIL_VAR_SalesOrderDocumentNo, salesOrder.getDocumentNo());
+		
+		return mailTextBuilder.build();
 	}
 
 	public void authorizePayPalReservation(@NonNull final PaymentReservationId reservationId)

@@ -495,29 +495,6 @@ public final class EMail implements Serializable
 		}
 	}
 
-	/**
-	 * Set HTML Message
-	 *
-	 * @param subject subject repeated in message as H2
-	 * @param message message
-	 */
-	public void setMessageHTML(final String subject, final String message)
-	{
-		_subject = subject;
-		_messageHTML = "<HTML>\n"
-				+ "<HEAD>\n"
-				+ "<TITLE>\n"
-				+ subject + "\n"
-				+ "</TITLE>\n"
-				+ "</HEAD>\n"
-				+ "<BODY>\n"
-				+ "<H2>" + subject + "</H2>" + "\n"
-				+ message
-				+ "\n"
-				+ "</BODY>\n"
-				+ "</HTML>\n";
-	}
-
 	public String getMessageHTML()
 	{
 		return _messageHTML;

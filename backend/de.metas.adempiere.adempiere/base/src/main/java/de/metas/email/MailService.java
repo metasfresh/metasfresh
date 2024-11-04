@@ -16,6 +16,7 @@ import de.metas.email.sender.SMTPMailSender;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.email.templates.MailText;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.email.test.TestMailCommand;
 import de.metas.email.test.TestMailRequest;
@@ -112,6 +113,24 @@ public class MailService
 		
 		return mailbox;
 	}
+
+	public EMail createEMail(
+			@NonNull final Mailbox mailbox,
+			@NonNull final EMailAddress to,
+			@NonNull final MailText mailText)
+	{
+		return createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+	}
+
+	public EMail createEMail(
+			@NonNull final MailboxQuery mailboxQuery,
+			@NonNull final EMailAddress to,
+			@NonNull final MailText mailText)
+	{
+		final Mailbox mailbox = findMailbox(mailboxQuery);
+		return createEMail(mailbox, to, mailText.getMailHeader(), mailText.getFullMailText(), mailText.isHtml());
+	}
+
 
 	public EMail createEMail(
 			@NonNull final Mailbox mailbox,

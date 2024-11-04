@@ -8,6 +8,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailText;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.report.PrintFormatId;
 import de.metas.rfq.IRfqDAO;
@@ -111,11 +112,11 @@ import java.sql.Timestamp;
 		}
 
 		//
-		final MailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
+		final MailText mailText = createMailTextBuilder(rfqResponse, rfqReportType).build();
 
 		//
-		final String subject = mailTextBuilder.getMailHeader();
-		final String message = mailTextBuilder.getFullMailText();
+		final String subject = mailText.getMailHeader();
+		final String message = mailText.getFullMailText();
 		final PrintFormatId printFormatId = getPrintFormatId(rfqResponse, rfqReportType);
 		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse, printFormatId);
 		final ArchiveResult pdfArchive = archiver.archive();
@@ -129,7 +130,7 @@ import java.sql.Timestamp;
 				userToEmail, // to
 				subject, // subject
 				message,  // message
-				mailTextBuilder.isHtml()); // html
+				mailText.isHtml()); // html
 		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData());
 		final EMailSentStatus emailSentStatus = email.send();
 

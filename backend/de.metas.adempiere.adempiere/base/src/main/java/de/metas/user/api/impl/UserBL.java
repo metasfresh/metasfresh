@@ -7,11 +7,11 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.ClientMailTemplates;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailText;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -68,6 +68,7 @@ public class UserBL implements IUserBL
 	 */
 	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
+	private static final AdMessageKey MSG_NoEMailFoundForLoginName = AdMessageKey.of("NoEMailFoundForLoginName");
 	private static final AdMessageKey MSG_INCORRECT_PASSWORD = AdMessageKey.of("org.compiere.util.Login.IncorrectPassword");
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
 
@@ -168,10 +169,24 @@ public class UserBL implements IUserBL
 		final EMailAddress emailTo = EMailAddress.ofNullableString(user.getEMail());
 		if (emailTo == null)
 		{
-			logger.debug("AD_User.Email={} is empty", user.getEMail());
-			throw new AdempiereException("@NoEMailFoundForLoginName@");
+			throw new AdempiereException(MSG_NoEMailFoundForLoginName);
 		}
+		
+		final MailText mailText = createResetPasswordByEMailText(user);
 
+		final MailService mailService = mailService();
+		final MailboxQuery mailboxQuery = MailboxQuery.builder()
+				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
+				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
+				.build();
+
+		final EMail email = mailService.createEMail(mailboxQuery, emailTo, mailText);
+
+		mailService.send(email);
+	}
+
+	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)
+	{
 		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
 		final ClientMailTemplates clientTemplates = clientDAO.getClientMailTemplatesById(adClientId);
 		final MailTemplateId mailTemplateId = clientTemplates.getPasswordResetMailTemplateId().orElse(null);
@@ -197,32 +212,7 @@ public class UserBL implements IUserBL
 			mailTextBuilder.bpartner(bpartnerId);
 		}
 
-		final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
-				.clientId(adClientId)
-				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
-				.build());
-
-		final String subject = mailTextBuilder.getMailHeader();
-		final EMail email = mailService.createEMail(
-				mailbox,
-				emailTo, // to
-				subject,
-				null, // message=null, we will set it later
-				true // html
-		);
-
-		final String message = mailTextBuilder.getFullMailText();
-		if (mailTextBuilder.isHtml())
-		{
-			email.setMessageHTML(subject, message);
-		}
-		else
-		{
-			email.setSubject(subject);
-			email.setMessageText(message);
-		}
-
-		mailService.send(email);
+		return mailTextBuilder.build();
 	}
 
 	/**
