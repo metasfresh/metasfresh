@@ -195,7 +195,6 @@ public class MailService
 	{
 		TestMailCommand.builder()
 				.mailService(this)
-				.userBL(userBL)
 				.request(request)
 				.build()
 				.execute();
