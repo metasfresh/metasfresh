@@ -34,6 +34,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1400,7 +1401,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
+				.atStartOfDay(coalesceNotNull(timezone, de.metas.common.util.time.SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}

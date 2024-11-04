@@ -224,6 +224,32 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isItemType(@Nullable final ProductId productId)
+	{
+		if (productId == null)
+		{
+			logger.debug("isItemType - productId=null; -> return false");
+			return false;
+		}
+
+		// NOTE: we rely on table cache config
+		final I_M_Product product = getById(productId);
+		return isItemType(product);
+	}
+
+	private boolean isItemType(@NonNull final I_M_Product product)
+	{
+		final ProductType productType = ProductType.ofCode(product.getProductType());
+		final boolean isItemProduct = productType.isItem();
+
+		logger.debug("isItemProduct - M_Product_ID={} has type={}; -> return {}",
+					 product.getM_Product_ID(),
+					 productType,
+					 isItemProduct);
+		return isItemProduct;
+	}
+
+	@Override
 	public boolean isDiverse(@NonNull final ProductId productId)
 	{
 		return productsRepo

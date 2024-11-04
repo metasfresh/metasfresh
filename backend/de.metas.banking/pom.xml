@@ -16,6 +16,7 @@
 	<modules>
 		<module>de.metas.banking.base</module>
 		<module>de.metas.banking.swingui</module>
-	</modules>
+        <module>de.metas.banking.camt53</module>
+    </modules>
 
 </project>

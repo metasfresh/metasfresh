@@ -648,6 +648,12 @@ public class C_Invoice_StepDef
 		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocumentNo);
+		if (Check.isNotBlank(documentNo))
+		{
+			invoice.setDocumentNo(documentNo);
+		}
+
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);

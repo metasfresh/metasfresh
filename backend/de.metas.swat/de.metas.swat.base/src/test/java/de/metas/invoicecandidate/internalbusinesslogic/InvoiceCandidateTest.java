@@ -1,15 +1,5 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.*;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -21,6 +11,25 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.DELIVERY_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.HUNDRET;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.IC_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINE;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINETY;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.PRODUCT_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -90,7 +99,7 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
 				.soTrx(SOTrx.PURCHASE)
 				.id(InvoiceCandidateId.ofRepoId(10))
-				.product(new InvoiceCandidateProduct(PRODUCT_ID, true/* stocked */))
+				.product(new InvoiceCandidateProduct(PRODUCT_ID, true /* itemType*/))
 				.uomId(IC_UOM_ID)
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
@@ -147,7 +156,7 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
 				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(10))
-				.product(new InvoiceCandidateProduct(PRODUCT_ID, true/* stocked */))
+				.product(new InvoiceCandidateProduct(PRODUCT_ID,  true/*itemType*/))
 				.uomId(IC_UOM_ID)
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
@@ -281,9 +290,9 @@ class InvoiceCandidateTest
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("60"); // ordered qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("20"); // delivered nominal qty
 		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
-		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("29"); // ordered qty in stock UOM
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("19"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 

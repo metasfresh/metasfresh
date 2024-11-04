@@ -32,6 +32,7 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -121,6 +122,7 @@ public class M_InOutLine_HandlerTest
 
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
 		packagingProduct.setC_UOM_ID(packagingProductUom.getC_UOM_ID());
+		packagingProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(packagingProduct);
 
 		final I_C_UOM packagingUom = newInstance(I_C_UOM.class);
