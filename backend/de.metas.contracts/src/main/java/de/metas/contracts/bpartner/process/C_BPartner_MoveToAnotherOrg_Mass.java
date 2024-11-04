@@ -23,10 +23,13 @@
 package de.metas.contracts.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import lombok.NonNull;
@@ -37,10 +40,12 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_CompensationGroup_Schema_Category;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Iterator;
 
-public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess
+public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
+		IProcessDefaultParametersProvider
 {
 
 	public static final String PARAM_AD_ORG_SOURCE_ID = "AD_Org_From_ID";
@@ -58,10 +63,10 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess
 	protected GroupCategoryId p_groupCategoryId;
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
 	protected Instant p_startDate;
-	@Param(parameterName = PARAM_WhereClause, mandatory = true)
-	protected String p_WhereClause;
 	@Param(parameterName = PARAM_IsCloseInvoiceCandidate, mandatory = true)
 	private boolean isCloseInvoiceCandidate;
+	@Param(parameterName = PARAM_WhereClause, mandatory = true)
+	protected String p_WhereClause;
 
 	@Override
 	protected String doIt() throws Exception
@@ -85,6 +90,18 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess
 		}
 
 		return MSG_OK;
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_DATE_ORG_CHANGE.equals(parameter.getColumnName()))
+		{
+			return SystemTime.asLocalDate().plusDays(1);
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	private Iterator<I_C_BPartner> retrievePartnersToMove(@NonNull final String whereClause)
