@@ -219,3 +219,44 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=15, Updated=now(), UpdatedBy=1
 UPDATE AD_Process_Para SET SeqNo=5,Updated=TO_TIMESTAMP('2024-10-28 20:56:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542899
 ;
 
+
+
+
+-- 2024-10-30T17:00:45.454Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542899
+;
+
+-- 2024-10-30T17:00:45.463Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542899
+;
+
+-- 2024-10-30T17:00:54.044Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542897
+;
+
+-- 2024-10-30T17:00:54.047Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542897
+;
+
+-- 2024-10-30T17:01:10.367Z
+UPDATE AD_Process_Para SET SeqNo=40,Updated=TO_TIMESTAMP('2024-10-30 19:01:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542898
+;
+
+-- 2024-10-30T17:02:10.780Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,630,0,585431,542902,36,'WhereClause',TO_TIMESTAMP('2024-10-30 19:02:10','YYYY-MM-DD HH24:MI:SS'),100,'Fully qualified SQL WHERE clause','D',0,'The Where Clause indicates the SQL WHERE clause to use for record selection. The WHERE clause is added to the query. Fully qualified means "tablename.columnname".','Y','N','Y','N','Y','N','Sql WHERE',50,TO_TIMESTAMP('2024-10-30 19:02:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-10-30T17:02:10.782Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542902 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2024-10-30T17:02:24.402Z
+UPDATE AD_Process_Para SET FieldLength=999999,Updated=TO_TIMESTAMP('2024-10-30 19:02:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542902
+;
+
+
+
+-- 2024-11-04T18:57:44.081Z
+UPDATE AD_Process_Para SET DefaultValue='CURRENT_DATE + INTERVAL ''1 day''',Updated=TO_TIMESTAMP('2024-11-04 20:57:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542896
+;
+
