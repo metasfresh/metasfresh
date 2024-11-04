@@ -74,7 +74,7 @@ SELECT iol.line,
        -- in case there is no C_BPartner_Product, fallback to the default ones
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                                    AS bp_product_no,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                                          AS bp_product_name,
-       TO_CHAR(att.best_before_date :: date, 'MM.YYYY')                                                AS best_before_date,
+       TO_CHAR(att.best_before_date :: date, 'dd.MM.YYYY')                                                AS best_before_date,
        att.lotno,
        p.value                                                                                         AS p_value,
        p.description                                                                                   AS p_description,

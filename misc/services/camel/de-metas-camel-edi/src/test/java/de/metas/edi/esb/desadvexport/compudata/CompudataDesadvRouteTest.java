@@ -53,9 +53,6 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 	@EndpointInject("mock:fileOutputEndpoint")
 	private MockEndpoint fileOutputEndpoint;
 
-	@EndpointInject("mock:ep.rabbitmq.to.mf")
-	private MockEndpoint feedbackOutputEndpoint;
-
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{

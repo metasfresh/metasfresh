@@ -475,6 +475,24 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@Nullable
 	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{

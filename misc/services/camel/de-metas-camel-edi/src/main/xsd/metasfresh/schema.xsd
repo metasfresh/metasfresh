@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" jaxb:version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" jaxb:version="2.0">
     <xsd:attribute name="AD_Client_Value" type="xsd:string">
         <xsd:annotation>
             <xsd:appinfo>
@@ -1014,4 +1013,27 @@
         <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
     <xsd:element name="EXP_M_InOut_DesadvLine_Pack_V" type="EXP_M_InOut_DesadvLine_Pack_VType"/>
+    <xsd:complexType name="EDI_ReplicationTrx_UpdateType">
+        <xsd:sequence>
+            <xsd:element name="Name" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="IsReplicationTrxFinished" type="YES-NO"/>
+            <xsd:element minOccurs="0" name="IsError" type="YES-NO"/>
+            <xsd:element minOccurs="0" name="ErrorMsg" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute ref="AD_Client_Value"/>
+        <xsd:attribute ref="ReplicationEvent"/>
+        <xsd:attribute ref="ReplicationMode"/>
+        <xsd:attribute ref="ReplicationType"/>
+        <xsd:attribute fixed="*" name="Version" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="VersionAttr"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute ref="SequenceNo"/>
+        <xsd:attribute ref="TrxName"/>
+        <xsd:attribute ref="AD_Session_ID"/>
+    </xsd:complexType>
+    <xsd:element name="EDI_ReplicationTrx_Update" type="EDI_ReplicationTrx_UpdateType"/>
 </xsd:schema>

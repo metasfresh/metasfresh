@@ -45,7 +45,10 @@ public enum PathSegmentsEnum
 	CUSTOMER("customer"),
 	GROUP("group"),
 	TRANSACTIONS("transactions"),
-	PAYMENT_METHOD("payment-method");
+	PAYMENT_METHOD("payment-method"),
+
+	CUSTOMER_GROUP("customer-group"),
+	CUSTOMER_ADDRESS("customer-address");
 
 	private final String value;
 }

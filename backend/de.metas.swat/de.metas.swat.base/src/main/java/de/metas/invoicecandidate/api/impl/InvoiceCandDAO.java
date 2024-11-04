@@ -72,6 +72,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -96,7 +97,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1065,13 +1065,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				}
 
 				@Override
-				public void fixedSet(final ImmutableSet<InvoiceCandidateId> ids)
+				public void fixedSet(final @NonNull ImmutableSet<InvoiceCandidateId> ids)
 				{
 					queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ids);
 				}
 
 				@Override
-				public void selectionId(final PInstanceId selectionId)
+				public void selectionId(final @NonNull PInstanceId selectionId)
 				{
 					queryBuilder.addInSubQueryFilter(
 							I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID,
@@ -1216,10 +1216,40 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
+		if(invoiceCandidateIdsSelection.isEmpty())
+		{
+			return false;
+		}
+		
+		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
+		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
+
+		// apply the invoiceCandidateIdsSelection to our queryBuilder
+		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
+		{
+			@Override
+			public void empty()
+			{
+				queryBuilder.filter(ConstantQueryFilter.of(false));
+			}
+
+			@Override
+			public void fixedSet(@NonNull final ImmutableSet<InvoiceCandidateId> ids)
+			{
+				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, ids);
+			}
+
+			@Override
+			public void selectionId(@NonNull final PInstanceId selectionId)
+			{
+				queryBuilder.setOnlySelection(selectionId);
+			}
+		});
+
+		return queryBuilder
 				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();
@@ -1709,7 +1739,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Only filter invoice candidates of the organizations this role has access to
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 
-		final StringBuilder defaultFilter = new StringBuilder("");
+		final StringBuilder defaultFilter = new StringBuilder();
 
 		final String orgIDsAsString = userRolePermissions.getAD_Org_IDs_AsString();
 
@@ -1741,7 +1771,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final PInstanceId adPInstanceId)
 	{
 		final String sql = "SELECT * FROM C_Invoice_Candidate_SelectionIncompleteGroups WHERE AD_PInstance_ID=?";
-		final List<Object> sqlParams = Arrays.asList(adPInstanceId);
+		final List<Object> sqlParams = ImmutableList.of(adPInstanceId);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

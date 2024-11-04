@@ -770,11 +770,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
-#      - name: run api health checks
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./apiHealthChecks.sh
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./apiHealthChecks.sh
       - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
