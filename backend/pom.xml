@@ -200,8 +200,6 @@
 
         <module>de-metas-salesorder</module>
         <!-- <module>extensionsupport</module> -->
-
-        <module>de-metas-salesorder</module>
     </modules>
 
     <dependencyManagement>
@@ -695,7 +693,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <!-- If there is a maven java-legacy sources directory, this profile will
                 activate and add the directory as another sources directory -->

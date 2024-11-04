@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for EDI_DesadvLine
  *  @author metasfresh (generated) 
@@ -94,50 +94,50 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setEanCom_Invoice_UOM (final @Nullable String EanCom_Invoice_UOM)
+	public void setEanCom_Invoice_UOM (final @Nullable java.lang.String EanCom_Invoice_UOM)
 	{
 		throw new IllegalArgumentException ("EanCom_Invoice_UOM is virtual column");	}
 
 	@Override
-	public String getEanCom_Invoice_UOM() 
+	public java.lang.String getEanCom_Invoice_UOM() 
 	{
 		return get_ValueAsString(COLUMNNAME_EanCom_Invoice_UOM);
 	}
 
 	@Override
-	public void setEAN_CU (final @Nullable String EAN_CU)
+	public void setEAN_CU (final @Nullable java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
 	}
 
 	@Override
-	public String getEAN_CU() 
+	public java.lang.String getEAN_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_EAN_CU);
 	}
 
 	@Override
-	public void setEAN_TU (final @Nullable String EAN_TU)
+	public void setEAN_TU (final @Nullable java.lang.String EAN_TU)
 	{
 		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
 	}
 
 	@Override
-	public String getEAN_TU() 
+	public java.lang.String getEAN_TU() 
 	{
 		return get_ValueAsString(COLUMNNAME_EAN_TU);
 	}
 
 	@Override
-	public I_EDI_Desadv getEDI_Desadv()
+	public de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv()
 	{
-		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class);
+		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class);
 	}
 
 	@Override
-	public void setEDI_Desadv(final I_EDI_Desadv EDI_Desadv)
+	public void setEDI_Desadv(final de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
 	{
-		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class, EDI_Desadv);
+		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class, EDI_Desadv);
 	}
 
 	@Override
@@ -201,7 +201,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public String getGTIN_TU() 
+	public java.lang.String getGTIN_TU() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_TU);
 	}
@@ -216,13 +216,13 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/** CatchWeight = CatchWeight */
 	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
 	@Override
-	public void setInvoicableQtyBasedOn (final String InvoicableQtyBasedOn)
+	public void setInvoicableQtyBasedOn (final java.lang.String InvoicableQtyBasedOn)
 	{
 		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
 	}
 
 	@Override
-	public String getInvoicableQtyBasedOn() 
+	public java.lang.String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
@@ -290,13 +290,13 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setOrderPOReference (final @Nullable String OrderPOReference)
+	public void setOrderPOReference (final @Nullable java.lang.String OrderPOReference)
 	{
 		set_Value (COLUMNNAME_OrderPOReference, OrderPOReference);
 	}
 
 	@Override
-	public String getOrderPOReference() 
+	public java.lang.String getOrderPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_OrderPOReference);
 	}
@@ -315,25 +315,25 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setProductDescription (final @Nullable String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
 
 	@Override
-	public String getProductDescription() 
+	public java.lang.String getProductDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
 	@Override
-	public void setProductNo (final @Nullable String ProductNo)
+	public void setProductNo (final @Nullable java.lang.String ProductNo)
 	{
 		set_Value (COLUMNNAME_ProductNo, ProductNo);
 	}
 
 	@Override
-	public String getProductNo() 
+	public java.lang.String getProductNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductNo);
 	}
@@ -443,25 +443,25 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setUPC_CU (final @Nullable String UPC_CU)
+	public void setUPC_CU (final @Nullable java.lang.String UPC_CU)
 	{
 		set_Value (COLUMNNAME_UPC_CU, UPC_CU);
 	}
 
 	@Override
-	public String getUPC_CU() 
+	public java.lang.String getUPC_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_UPC_CU);
 	}
 
 	@Override
-	public void setUPC_TU (final @Nullable String UPC_TU)
+	public void setUPC_TU (final @Nullable java.lang.String UPC_TU)
 	{
 		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
 	}
 
 	@Override
-	public String getUPC_TU() 
+	public java.lang.String getUPC_TU() 
 	{
 		return get_ValueAsString(COLUMNNAME_UPC_TU);
 	}

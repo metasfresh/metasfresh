@@ -84,7 +84,7 @@
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh-common.version}</version>
-            <!-- Avoid startup failure 
+            <!-- Avoid startup failure
              org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
             -->
             <exclusions>
@@ -413,7 +413,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

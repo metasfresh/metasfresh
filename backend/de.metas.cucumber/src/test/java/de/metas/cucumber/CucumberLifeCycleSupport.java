@@ -45,6 +45,9 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  */
 public class CucumberLifeCycleSupport
 {
+	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
+	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
+
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()

@@ -60,6 +60,12 @@
             <artifactId>de.metas.payment.esr</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.document</groupId>
+            <artifactId>de.metas.document.refid</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        
     </dependencies>
 
     <build>

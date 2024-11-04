@@ -130,25 +130,12 @@ public class M_Product
 		{
 			throw new AdempiereException(uomConversionsExistsMessage.get()).markAsUserValidationError();
 		}
-	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Weight })
-	public void updateOrderWeight(@NonNull final I_M_Product product)
-	{
-		final List<OrderId> orderIdsToBeUpdated = orderBL.getUnprocessedIdsBy(ProductId.ofRepoId(product.getM_Product_ID()));
-
-		Iterators.partition(orderIdsToBeUpdated.iterator(), 100)
-				.forEachRemaining(this::setWeightFromLines);
-	}
-
-	private void setWeightFromLines(@NonNull final List<OrderId> orderIds)
-	{
-		orderBL.getByIds(orderIds)
-				.forEach(order -> {
-					orderBL.setWeightFromLines(order);
-
-					saveRecord(order);
-				});
+		final Optional<AdMessageKey> productUsedMessage = isProductUsed(productId);
+		if (productUsedMessage.isPresent())
+		{
+			throw new AdempiereException(productUsedMessage.get()).markAsUserValidationError();
+		}
 	}
 
 	private Optional<AdMessageKey> checkExistingUOMConversions(@NonNull final ProductId productId)
@@ -172,5 +159,24 @@ public class M_Product
 		}
 
 		return Optional.empty();
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Weight })
+	public void updateOrderWeight(@NonNull final I_M_Product product)
+	{
+		final List<OrderId> orderIdsToBeUpdated = orderBL.getUnprocessedIdsBy(ProductId.ofRepoId(product.getM_Product_ID()));
+
+		Iterators.partition(orderIdsToBeUpdated.iterator(), 100)
+				.forEachRemaining(this::setWeightFromLines);
+	}
+
+	private void setWeightFromLines(@NonNull final List<OrderId> orderIds)
+	{
+		orderBL.getByIds(orderIds)
+				.forEach(order -> {
+					orderBL.setWeightFromLines(order);
+
+					saveRecord(order);
+				});
 	}
 }

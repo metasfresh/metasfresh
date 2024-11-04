@@ -202,13 +202,11 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
-	@NonNull
-	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
-
 	/**
-	 *
-	 * @param productId
 	 * @return true if product is used in orders, invoices, shipments,..
 	 */
 	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

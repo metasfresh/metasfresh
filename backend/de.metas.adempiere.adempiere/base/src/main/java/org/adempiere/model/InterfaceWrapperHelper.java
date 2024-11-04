@@ -379,7 +379,7 @@ public class InterfaceWrapperHelper
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
-	
+
 	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
