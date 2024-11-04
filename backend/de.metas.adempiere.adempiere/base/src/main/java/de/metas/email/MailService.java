@@ -3,8 +3,6 @@ package de.metas.email;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxId;
 import de.metas.email.mailboxes.MailboxNotFoundException;
@@ -22,17 +20,13 @@ import de.metas.email.templates.MailTextBuilder;
 import de.metas.email.test.TestMailCommand;
 import de.metas.email.test.TestMailRequest;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.process.ProcessExecutor;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.email.EmailValidator;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -71,7 +65,7 @@ public class MailService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final MailboxRepository mailboxRepo;
 	@NonNull private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	@NonNull final IUserBL userBL = Services.get(IUserBL.class);
+	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final MailTemplateRepository mailTemplatesRepo;
 	@NonNull private final ImmutableMap<MailboxType, MailSender> mailSenders;
 
@@ -105,66 +99,18 @@ public class MailService
 		return mailboxRepo.getById(mailboxId);
 	}
 
-	public Mailbox findMailBox(
-			@NonNull final ClientEMailConfig tenantEmailConfig,
-			@NonNull final OrgId orgId)
-	{
-		final AdProcessId adProcessId = null;
-		final DocBaseAndSubType docBaseAndSubType = null;
-		final EMailCustomType customType = null;
-		return findMailBox(tenantEmailConfig, orgId, adProcessId, docBaseAndSubType, customType);
-	}
-
-	public Mailbox findMailBox(
-			@NonNull final ClientEMailConfig tenantEmailConfig,
-			@NonNull final OrgId orgId,
-			@Nullable final AdProcessId adProcessId,
-			@Nullable final DocBaseAndSubType docBaseAndSubType,
-			@Nullable final EMailCustomType customType)
-	{
-		final MailboxQuery query = MailboxQuery.builder()
-				.clientId(tenantEmailConfig.getClientId())
-				.orgId(orgId)
-				.adProcessId(adProcessId)
-				.customType(customType)
-				.build();
-
-		final Mailbox mailbox = mailboxRepo.findMailBox(query).orElse(null);
-		if (mailbox != null)
-		{
-			return mailbox;
-		}
-
-		if (tenantEmailConfig.getMailbox().isPresent())
-		{
-			return tenantEmailConfig.getMailbox().get();
-		}
-
-		throw new MailboxNotFoundException(tenantEmailConfig.getMailbox().getExplanation());
-	}
-
 	public Mailbox findMailbox(@NonNull final MailboxQuery query)
 	{
-		return mailboxRepo.findMailBox(query)
-				.orElseGet(() -> clientsRepo.getEMailConfigById(query.getClientId()).getMailbox().orElseThrow());
-	}
-
-	public EMail createEMail(
-			@NonNull final ClientEMailConfig clientEmailConfig,
-			@Nullable final EMailCustomType mailCustomType,
-			@Nullable final UserEMailConfig userEmailConfig,
-			@Nullable final EMailAddress to,
-			@Nullable final String subject,
-			@Nullable final String message,
-			final boolean html)
-	{
-		final Mailbox mailbox = findMailBox(clientEmailConfig,
-				ProcessExecutor.getCurrentOrgId(),
-				ProcessExecutor.getCurrentProcessIdOrNull(),
-				null,
-				mailCustomType)
-				.mergeFrom(userEmailConfig);
-		return createEMail(mailbox, to, subject, message, html);
+		Mailbox mailbox = mailboxRepo.findMailBox(query)
+				.orElseGet(() -> clientsRepo.getEMailConfigById(query.getClientId()).getMailboxNotNull());
+		
+		if(query.getFromUserId() != null)
+		{
+			final UserEMailConfig userEMailConfig = userBL.getEmailConfigById(query.getFromUserId());
+			mailbox = mailbox.mergeFrom(userEMailConfig).orElseThrow(MailboxNotFoundException::new);
+		}
+		
+		return mailbox;
 	}
 
 	public EMail createEMail(
@@ -206,33 +152,26 @@ public class MailService
 	private InternetAddress getDebugMailToAddressOrNull()
 	{
 		final Properties ctx = Env.getCtx();
-		String emailStr = sysConfigBL.getValue(SYSCONFIG_DebugMailTo,
-				null,             // defaultValue
-				Env.getAD_Client_ID(ctx),
-				Env.getAD_Org_ID(ctx));
-		if (Check.isEmpty(emailStr, true))
+		String emailStr = StringUtils.trimBlankToNull(
+				sysConfigBL.getValue(SYSCONFIG_DebugMailTo,
+						null,             // defaultValue
+						Env.getAD_Client_ID(ctx),
+						Env.getAD_Org_ID(ctx))
+		);
+		if (emailStr == null || emailStr.equals("-"))
 		{
 			return null;
 		}
 
-		emailStr = emailStr.trim();
-		if (emailStr.equals("-"))
-		{
-			return null;
-		}
-
-		final InternetAddress email;
 		try
 		{
-			email = new InternetAddress(emailStr, true);
+			return new InternetAddress(emailStr, true);
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Invalid debug email address provided by sysconfig {}: {}. Returning null.", SYSCONFIG_DebugMailTo, emailStr, ex);
 			return null;
 		}
-
-		return email;
 	}
 
 	public void send(final EMail email)
@@ -252,15 +191,6 @@ public class MailService
 		return newMailTextBuilder(mailTemplate);
 	}
 
-	public void validateEmail(@Nullable final String email)
-	{
-		if (!Check.isEmpty(email, true) && !EmailValidator.validate(email))
-		{
-			throw new AdempiereException("@EmailNotValid@");
-
-		}
-	}
-	
 	public void test(@NonNull TestMailRequest request)
 	{
 		TestMailCommand.builder()

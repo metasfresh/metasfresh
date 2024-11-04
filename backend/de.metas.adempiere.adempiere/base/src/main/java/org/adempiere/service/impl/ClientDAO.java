@@ -7,6 +7,7 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxType;
 import de.metas.email.mailboxes.SMTPConfig;
+import de.metas.email.templates.ClientMailTemplates;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.util.Services;
@@ -31,6 +32,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class ClientDAO implements IClientDAO
 {
 	private final CCache<ClientId, ClientEMailConfig> emailConfigCache = CCache.<ClientId, ClientEMailConfig>builder()
+			.tableName(I_AD_Client.Table_Name)
+			.build();
+	private final CCache<ClientId, ClientMailTemplates> emailTemplatesCache = CCache.<ClientId, ClientMailTemplates>builder()
 			.tableName(I_AD_Client.Table_Name)
 			.build();
 
@@ -112,7 +116,6 @@ public class ClientDAO implements IClientDAO
 		return ClientEMailConfig.builder()
 				.clientId(ClientId.ofRepoId(client.getAD_Client_ID()))
 				.mailbox(extractMailbox(client))
-				.passwordResetMailTemplateId(MailTemplateId.optionalOfRepoId(client.getPasswordReset_MailText_ID()))
 				.build();
 	}
 
@@ -142,6 +145,25 @@ public class ClientDAO implements IClientDAO
 				.username(client.getRequestUser())
 				.password(client.getRequestUserPW())
 				.startTLS(client.isStartTLS())
+				.build();
+	}
+
+	@Override
+	public ClientMailTemplates getClientMailTemplatesById(final ClientId clientId)
+	{
+		return emailTemplatesCache.getOrLoad(clientId, this::retrieveClientMailTemplatesById);
+	}
+
+	private ClientMailTemplates retrieveClientMailTemplatesById(final ClientId clientId)
+	{
+		final I_AD_Client record = getById(clientId);
+		return toClientMailTemplates(record);
+	}
+
+	private static ClientMailTemplates toClientMailTemplates(@NonNull final I_AD_Client record)
+	{
+		return ClientMailTemplates.builder()
+				.passwordResetMailTemplateId(MailTemplateId.optionalOfRepoId(record.getPasswordReset_MailText_ID()))
 				.build();
 	}
 

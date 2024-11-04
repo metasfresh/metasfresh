@@ -3,6 +3,7 @@ package de.metas.email.mailboxes;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.email.EMailAddress;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -92,19 +93,19 @@ public class Mailbox
 		}
 	}
 
-	public Mailbox mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
+	public ExplainedOptional<Mailbox> mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
 	{
 		if (userEmailConfig == null)
 		{
 			logger.debug("userEmailConfig can't be used because it has no user config");
-			return this;
+			return ExplainedOptional.of(this);
 		}
 
 		final EMailAddress userEmail = userEmailConfig.getEmail();
 		if (userEmail == null)
 		{
-			logger.debug("userEmailConfig can't be used because it has no Mail-Address; userEmailConfig={}", userEmailConfig);
-			return this;
+			logger.debug("userEmailConfig can't be used because it has no Mail-Address: {}", userEmailConfig);
+			return ExplainedOptional.emptyBecause("userEmailConfig can't be used because it has no Mail-Address: " + userEmailConfig);
 		}
 
 		switch (type)
@@ -116,21 +117,24 @@ public class Mailbox
 				if (smtpConfig.isSmtpAuthorization()
 						&& (Check.isBlank(userEmailConfig.getUsername()) || Check.isBlank(userEmailConfig.getPassword())))
 				{
-					logger.debug("userEmailConfig can't be used because it has no SMTP-UserName or SMTP-Password; userEmailConfig={}", userEmailConfig);
-					return this;
+					return ExplainedOptional.emptyBecause("userEmailConfig can't be used because it has no SMTP-UserName or SMTP-Password: " + userEmailConfig);
 				}
 
-				return toBuilder()
-						.email(userEmail)
-						.smtpConfig(smtpConfig.mergeFrom(userEmailConfig))
-						.build();
+				return ExplainedOptional.of(
+						toBuilder()
+								.email(userEmail)
+								.smtpConfig(smtpConfig.mergeFrom(userEmailConfig))
+								.build()
+				);
 			}
 			case MICROSOFT_GRAPH:
 			{
 				final MicrosoftGraphConfig microsoftGraphConfig = getMicrosoftGraphConfigNotNull();
-				return toBuilder()
-						.microsoftGraphConfig(microsoftGraphConfig.withDefaultReplyTo(userEmail))
-						.build();
+				return ExplainedOptional.of(
+						toBuilder()
+								.microsoftGraphConfig(microsoftGraphConfig.withDefaultReplyTo(userEmail))
+								.build()
+				);
 			}
 			default:
 				throw new AdempiereException("Unknown type: " + type);

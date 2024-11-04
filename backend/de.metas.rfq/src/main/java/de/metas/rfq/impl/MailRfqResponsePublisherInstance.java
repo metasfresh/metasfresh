@@ -1,14 +1,12 @@
 package de.metas.rfq.impl;
 
-import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
-import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
-import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.report.PrintFormatId;
@@ -25,8 +23,7 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
@@ -64,8 +61,7 @@ import java.sql.Timestamp;
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	private final MailService mailService = Adempiere.getBean(MailService.class);
+	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 
 	public enum RfQReportType
 	{
@@ -124,15 +120,12 @@ import java.sql.Timestamp;
 		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse, printFormatId);
 		final ArchiveResult pdfArchive = archiver.archive();
 
-		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
+		final Mailbox mailbox = mailService.findMailbox(MailboxQuery.ofClientId(ClientId.ofRepoId(rfqResponse.getAD_Client_ID())));
 
 		//
 		// Send it
 		final EMail email = mailService.createEMail(
-				tenantEmailConfig, //
-				(EMailCustomType)null, // mailCustomType
-				(UserEMailConfig)null, // from
+				mailbox,
 				userToEmail, // to
 				subject, // subject
 				message,  // message
@@ -147,11 +140,11 @@ import java.sql.Timestamp;
 			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
 					pdfArchive.getArchiveRecord(), // archive
-					(UserEMailConfig)null, // user
+					null, // user
 					from, // from
 					to, // to
-					(EMailAddress)null, // cc
-					(EMailAddress)null, // bcc
+					null, // cc
+					null, // bcc
 					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
 			);
 		}

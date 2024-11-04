@@ -1,13 +1,5 @@
 package de.metas.payment.paypal;
 
-import java.net.URL;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_C_Order;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.paypal.orders.AmountWithBreakdown;
@@ -16,15 +8,14 @@ import com.paypal.orders.Order;
 import com.paypal.orders.OrderRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 import com.paypal.payments.Capture;
-
 import de.metas.currency.Amount;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.money.MoneyService;
@@ -45,6 +36,12 @@ import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
+import org.springframework.stereotype.Service;
+
+import java.net.URL;
 
 /*
  * #%L
@@ -56,12 +53,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,7 +79,6 @@ public class PayPal
 	private final MailService mailService;
 	private final MoneyService moneyService;
 	//
-	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
@@ -272,9 +268,10 @@ public class PayPal
 
 	private Mailbox findMailbox(@NonNull final PaymentReservation reservation)
 	{
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(reservation.getClientId());
-
-		return mailService.findMailBox(tenantEmailConfig, reservation.getOrgId());
+		return mailService.findMailbox(MailboxQuery.builder()
+				.clientId(reservation.getClientId())
+				.orgId(reservation.getOrgId())
+				.build());
 	}
 
 	public void authorizePayPalReservation(@NonNull final PaymentReservationId reservationId)

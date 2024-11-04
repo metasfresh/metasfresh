@@ -19,8 +19,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
@@ -46,7 +46,6 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
@@ -74,7 +73,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	//
 	// Services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final transient IClientDAO clientsDAO = Services.get(IClientDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
@@ -153,19 +151,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final AdProcessId processId = pInstance != null
-				? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID())
-				: ProcessExecutor.getCurrentProcessIdOrNull();
-
-		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = clientsDAO.getEMailConfigById(adClientId);
-		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
-		final Mailbox mailbox = mailService.findMailBox(
-				tenantEmailConfig,
-				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
-				processId,
-				docBaseAndSubType,
-				null); // mailCustomType
+		final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
+				.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+				.adProcessId(pInstance != null ? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID()) : ProcessExecutor.getCurrentProcessIdOrNull())
+				.docBaseAndSubType(extractDocBaseAndSubType(docOutboundLogRecord))
+				.build());
 
 		// note that we verified this earlier
 		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())

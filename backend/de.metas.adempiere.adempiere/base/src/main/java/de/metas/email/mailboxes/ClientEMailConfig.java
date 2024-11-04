@@ -1,13 +1,10 @@
 package de.metas.email.mailboxes;
 
-import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.ExplainedOptional;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-
-import java.util.Optional;
 
 /*
  * #%L
@@ -33,10 +30,13 @@ import java.util.Optional;
 
 @Value
 @Builder
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ClientEMailConfig
 {
 	@NonNull ClientId clientId;
 	@NonNull ExplainedOptional<Mailbox> mailbox;
-	@NonNull Optional<MailTemplateId> passwordResetMailTemplateId;
+
+	public Mailbox getMailboxNotNull()
+	{
+		return mailbox.orElseThrow(MailboxNotFoundException::new);
+	}
 }

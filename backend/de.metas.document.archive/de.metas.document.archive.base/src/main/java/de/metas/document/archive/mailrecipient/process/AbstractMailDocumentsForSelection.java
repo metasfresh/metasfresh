@@ -21,7 +21,6 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.MutableInt;
 
 import java.util.Iterator;

@@ -753,7 +753,7 @@ public class WFActivity
 			final EMailAddress to = getNode().getEmailTo();
 
 			final MClient client = MClient.get(Env.getCtx(), context.getClientId().getRepoId());
-			client.sendEMail(to, subject.toString(), message.toString(), null);
+			client.sendEMail(to, subject.toString(), message.toString(), null, false);
 		}
 	}
 
@@ -1398,7 +1398,7 @@ public class WFActivity
 			{
 				if (!m_emails.contains(email))
 				{
-					client.sendEMail(null, user, subject, message, pdf, isHtml);
+					client.sendEMail(user, subject, message, pdf, isHtml);
 					m_emails.add(email);
 				}
 			}

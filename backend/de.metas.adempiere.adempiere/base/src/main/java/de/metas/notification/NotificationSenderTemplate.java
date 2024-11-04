@@ -2,14 +2,12 @@ package de.metas.notification;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
-import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -19,7 +17,6 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
-import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -36,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +87,6 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
 
@@ -460,13 +455,10 @@ public class NotificationSenderTemplate
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
-		return mailService.findMailBox(
-				tenantEmailConfig,
-				notificationsConfig.getOrgId(),
-				(AdProcessId)null,  // AD_Process_ID
-				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null);  // customType
+		return mailService.findMailbox(MailboxQuery.builder()
+				.clientId(notificationsConfig.getClientId())
+				.orgId(notificationsConfig.getOrgId())
+				.build());
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

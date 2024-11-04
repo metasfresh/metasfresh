@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -82,9 +83,9 @@ public class WebuiMailRepository
 
 	public WebuiEmail createNewEmail(
 			@NonNull final UserId ownerUserId,
-			final LookupValue from,
-			final LookupValuesList toList,
-			final DocumentPath contextDocumentPath)
+			@NonNull final LookupValue from,
+			@NonNull final LookupValuesList toList,
+			@Nullable final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
 
@@ -116,7 +117,7 @@ public class WebuiMailRepository
 		return getEmailEntry(emailId).getEmail();
 	}
 
-	public WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+	WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
 	{
 		return getEmailEntry(emailId).compute(emailModifier);
 	}

@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -542,18 +541,6 @@ public final class EMail implements Serializable
 	public void addAttachment(@NonNull final Resource resource)
 	{
 		addAttachment(EMailAttachment.of(resource));
-	}
-
-	public void addAttachments(final Collection<File> files)
-	{
-		if (files == null || files.isEmpty())
-		{
-			return;
-		}
-		for (final File file : files)
-		{
-			addAttachment(file);
-		}
 	}
 
 	public void addAttachment(final URI uri)
