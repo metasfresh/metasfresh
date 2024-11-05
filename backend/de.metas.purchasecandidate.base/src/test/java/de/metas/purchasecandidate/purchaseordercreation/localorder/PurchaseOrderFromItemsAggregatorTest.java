@@ -120,7 +120,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentEntryService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
-		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(MailService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 
 		dimension = createDimension();
