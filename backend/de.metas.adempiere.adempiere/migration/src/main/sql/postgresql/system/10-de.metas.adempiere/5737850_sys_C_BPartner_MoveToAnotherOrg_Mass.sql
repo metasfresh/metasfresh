@@ -255,3 +255,31 @@ UPDATE AD_Process_Para SET FieldLength=999999,Updated=TO_TIMESTAMP('2024-10-30 1
 ;
 
 
+
+
+
+
+-- 2024-11-05T15:42:03.418Z
+UPDATE AD_Process SET Name='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585431
+;
+
+-- 2024-11-05T15:42:03.433Z
+UPDATE AD_Menu SET Description='', IsActive='Y', Name='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=542184
+;
+
+-- 2024-11-05T15:42:09.418Z
+UPDATE AD_Process_Trl SET Name='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585431
+;
+
+-- 2024-11-05T15:42:11.455Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-11-05 17:42:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585431
+;
+
+-- 2024-11-05T15:42:16.409Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585431
+;
+
+-- 2024-11-05T15:42:29.881Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Organisation Change - Selection via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585431
+;
+
