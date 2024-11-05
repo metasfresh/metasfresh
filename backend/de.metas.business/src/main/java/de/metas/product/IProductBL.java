@@ -217,12 +217,10 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
+	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
-
-	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
-
-	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 }

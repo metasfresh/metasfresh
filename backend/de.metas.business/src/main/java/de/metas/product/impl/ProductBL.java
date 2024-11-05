@@ -595,26 +595,19 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(gtin, clientId)
+				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
+	}
+
+	@Override
 	public Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull final String queryString,
 			@NonNull final ClientId clientId,
 			@NonNull QueryLimit limit)
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
-	}
-
-
-	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
-	{
-		return productsRepo.getProductIdByGTIN(gtin, clientId);
-	}
-
-	@Override
-	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
-	{
-		return getProductIdByGTIN(gtin, clientId)
-				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
 	}
 
 }

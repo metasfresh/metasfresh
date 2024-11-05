@@ -26,7 +26,7 @@ public class SumUpEventsDispatcher
 
 	@NonNull private static final BooleanThreadLocal forceSendChangeEventsThreadLocal = new BooleanThreadLocal(false);
 
-	private static final Topic EVENTS_TOPIC = Topic.remoteAndAsync("de.metas.payment.sumup.events");
+	private static final Topic EVENTS_TOPIC = Topic.distributedAndAsync("de.metas.payment.sumup.events");
 
 	public SumUpEventsDispatcher(
 			@NonNull final IEventBusFactory eventBusFactory,
@@ -90,7 +90,7 @@ public class SumUpEventsDispatcher
 
 		// NOTE: we don't have to fireLocalListeners 
 		// because we assume we will also get back this event and then we will handle it
-		events.forEach(eventBus::postObject);
+		events.forEach(eventBus::enqueueObject);
 	}
 
 	public void fireNewTransaction(@NonNull final SumUpTransaction trx)

@@ -167,7 +167,7 @@ public class PickingJobTestHelper
 						pickingJobSlotService,
 						bpartnerBL,
 						huQRCodeService,
-						profileRepository
+						profileRepository,
 						workplaceService
 				),
 				pickingConfigRepo,
@@ -179,8 +179,9 @@ public class PickingJobTestHelper
 				),
 				inventoryService,
 				huReservationService,
-				profileRepository,
-				workplaceService);
+				workplaceService,
+				profileRepository
+		);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)

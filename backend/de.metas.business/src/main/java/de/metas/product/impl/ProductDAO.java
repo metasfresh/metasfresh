@@ -630,19 +630,6 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
-	{
-		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
-				.create()
-				.firstIdOnly(ProductId::ofRepoIdOrNull);
-
-		return Optional.ofNullable(productId);
-	}
-
-	@Override
 	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
