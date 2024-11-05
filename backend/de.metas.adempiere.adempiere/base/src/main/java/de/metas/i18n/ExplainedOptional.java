@@ -6,7 +6,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -86,13 +85,18 @@ public final class ExplainedOptional<T>
 
 	public T orElseThrow()
 	{
+		return orElseThrow(AdempiereException::new);
+	}
+
+	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)
+	{
 		if (value != null)
 		{
 			return value;
 		}
 		else
 		{
-			throw new AdempiereException(explanation);
+			throw exceptionFactory.apply(explanation);
 		}
 	}
 

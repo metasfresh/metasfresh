@@ -1,14 +1,13 @@
 package de.metas.document;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,17 +47,32 @@ public class DocBaseAndSubType
 		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
+	@Nullable
+	public static DocBaseAndSubType ofNullable(
+			@Nullable final String docBaseType,
+			@Nullable final String docSubType)
+	{
+		final String docBaseTypeNorm = StringUtils.trimBlankToNull(docBaseType);
+		return docBaseTypeNorm != null ? of(docBaseTypeNorm, docSubType) : null;
+	}
+
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
-	String docBaseType;
-	String docSubType;
+	@NonNull String docBaseType;
+	@Nullable String docSubType;
 
 	private DocBaseAndSubType(
 			@NonNull final String docBaseType,
 			@Nullable final String docSubType)
 	{
-		this.docBaseType = assumeNotEmpty(docBaseType, "Param docBaseType may not be empty");
-		this.docSubType = docSubType;
+		final String docBaseTypeNorm = StringUtils.trimBlankToNull(docBaseType);
+		if (docBaseTypeNorm == null)
+		{
+			throw new AdempiereException("docBaseType may not be null");
+		}
+
+		this.docBaseType = docBaseTypeNorm;
+		this.docSubType = StringUtils.trimBlankToNull(docSubType);
 	}
 
 }
