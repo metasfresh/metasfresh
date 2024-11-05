@@ -9,7 +9,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-10-03T17:08:18.154Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556371,TO_TIMESTAMP('2024-10-03 20:08:18','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_Config',1,'Y','N','Y','Y','SUMUP_Config','N',1000000,TO_TIMESTAMP('2024-10-03 20:08:18','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556371,TO_TIMESTAMP('2024-10-03 20:08:18','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_Config',1,'Y','N','Y','Y','SUMUP_Config',1000000,TO_TIMESTAMP('2024-10-03 20:08:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-10-03T17:08:18.166Z
@@ -730,7 +730,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-10-03T17:21:57.309Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556372,TO_TIMESTAMP('2024-10-03 20:21:57','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_CardReader',1,'Y','N','Y','Y','SUMUP_CardReader','N',1000000,TO_TIMESTAMP('2024-10-03 20:21:57','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556372,TO_TIMESTAMP('2024-10-03 20:21:57','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_CardReader',1,'Y','N','Y','Y','SUMUP_CardReader',1000000,TO_TIMESTAMP('2024-10-03 20:21:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-10-03T17:21:57.319Z

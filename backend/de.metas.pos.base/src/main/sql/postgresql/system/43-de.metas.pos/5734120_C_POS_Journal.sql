@@ -9,7 +9,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-21T20:55:24.706Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556369,TO_TIMESTAMP('2024-09-21 23:55:24','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Journal',1,'Y','N','Y','Y','C_POS_Journal','N',1000000,TO_TIMESTAMP('2024-09-21 23:55:24','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556369,TO_TIMESTAMP('2024-09-21 23:55:24','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Journal',1,'Y','N','Y','Y','C_POS_Journal',1000000,TO_TIMESTAMP('2024-09-21 23:55:24','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-09-21T20:55:24.717Z
@@ -319,7 +319,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-21T21:03:58.893Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556370,TO_TIMESTAMP('2024-09-22 00:03:58','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_JournalLine',1,'Y','N','Y','Y','C_POS_JournalLine','N',1000000,TO_TIMESTAMP('2024-09-22 00:03:58','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556370,TO_TIMESTAMP('2024-09-22 00:03:58','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_JournalLine',1,'Y','N','Y','Y','C_POS_JournalLine',1000000,TO_TIMESTAMP('2024-09-22 00:03:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-09-21T21:03:58.898Z
