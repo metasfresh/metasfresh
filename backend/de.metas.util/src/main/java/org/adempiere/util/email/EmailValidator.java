@@ -3,9 +3,8 @@
  */
 package org.adempiere.util.email;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 
 public class EmailValidator
 {
@@ -13,9 +12,7 @@ public class EmailValidator
 	/**
 	 * Validate email using apache commons validator
 	 *
-	 * @param email
-	 *            email addresse for validation
-	 * @return
+	 * @param email email addresse for validation
 	 */
 	public static boolean validate(final String email)
 	{
@@ -23,11 +20,8 @@ public class EmailValidator
 	}
 
 	/**
-	 *
-	 * @param email
 	 * @param clazz optional, may be {@code null}. If a class is given and the given {@code email} is not valid,
-	 *            then this method instantiates and throws an exception with message {@code "@EmailNotValid@"}.
-	 * @return
+	 *              then this method instantiates and throws an exception with message {@code "@EmailNotValid@"}.
 	 */
 	public static boolean validate(final String email, final Class<? extends RuntimeException> clazz)
 	{
@@ -37,8 +31,7 @@ public class EmailValidator
 			// initiate and throw our exception
 			try
 			{
-				RuntimeException ex = clazz.getConstructor(String.class).newInstance("@EmailNotValid@");
-				throw ex;
+				throw clazz.getConstructor(String.class).newInstance("@EmailNotValid@");
 			}
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
 			{
@@ -50,7 +43,6 @@ public class EmailValidator
 
 	public static boolean isValid(@Nullable final String email)
 	{
-		final boolean emailValid = org.apache.commons.validator.routines.EmailValidator.getInstance().isValid(email);
-		return emailValid;
+		return org.apache.commons.validator.routines.EmailValidator.getInstance().isValid(email);
 	}
 }

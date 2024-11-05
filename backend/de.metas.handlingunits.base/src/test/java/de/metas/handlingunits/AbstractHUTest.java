@@ -9,8 +9,6 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -22,18 +20,8 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.test.ErrorMessage;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
@@ -160,7 +148,7 @@ public abstract class AbstractHUTest
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(MailService.newInstanceForUnitTesting());
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 

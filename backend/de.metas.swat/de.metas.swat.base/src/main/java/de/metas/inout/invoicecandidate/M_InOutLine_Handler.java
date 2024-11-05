@@ -542,8 +542,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.map(InvoiceCandidateId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
-
 			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
 			return;
 		}

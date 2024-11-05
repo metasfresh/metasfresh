@@ -29,7 +29,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.email.EMail;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -309,15 +308,6 @@ public class MAsset extends X_A_Asset
 		return DB.getSQLValue(get_TrxName(),
 			sql, getA_Asset_ID());
 	}	//	getDeliveries
-	
-	/**************************************************************************
-	 * 	Get Product Version No
-	 *	@return VersionNo
-	 */
-	public String getProductVersionNo()
-	{
-		return getProduct().getVersionNo();
-	}	//	getProductVersionNo
 
 	/**
 	 * 	Get Product R_MailText_ID
@@ -690,18 +680,4 @@ public class MAsset extends X_A_Asset
 		return true;
 
 	}	//	afterSave
-	
-	/*************************************************************************
-	 * 	Confirm Asset EMail Delivery
-	 *	@param email email sent
-	 * @param emailSentStatus 
-	 * 	@param AD_User_ID recipient
-	 * 	@return asset delivery
-	 */
-	public MAssetDelivery confirmDelivery (EMail email, int AD_User_ID)
-	{
-		setVersionNo(getProductVersionNo());
-		MAssetDelivery ad = new MAssetDelivery (this, email, AD_User_ID);
-		return ad;
-	}	//	confirmDelivery
 }	//	MAsset

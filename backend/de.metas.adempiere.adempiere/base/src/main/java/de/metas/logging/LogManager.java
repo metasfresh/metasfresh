@@ -1,12 +1,8 @@
 package de.metas.logging;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.sql.DriverManager;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Ini;
@@ -14,10 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.PrintWriter;
+import java.sql.DriverManager;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * Log Management.
@@ -48,8 +47,9 @@ public final class LogManager
 
 	/**
 	 * See {@link ILoggerCustomizer#dumpConfig()}.
+	 * <p>
 	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/288
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/288">task</a>
 	 */
 	public static String dumpCustomizerConfig()
 	{
@@ -84,11 +84,15 @@ public final class LogManager
 	}
 
 	private static final AtomicBoolean s_initialized = new AtomicBoolean(false);
-	/** Current Log Level */
+	/**
+	 * Current Log Level
+	 */
 	private static Level s_currentLevel = null;
 
-	/** Logger */
-	private static Logger log = LoggerFactory.getLogger(LogManager.class);
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LoggerFactory.getLogger(LogManager.class);
 
 	public static boolean isFileLoggingEnabled()
 	{
@@ -213,27 +217,34 @@ public final class LogManager
 		return setLoggerLevel(getLogger(loggerName), level);
 	}
 
-	public static String getLoggerLevelName(final Logger logger)
+	@Nullable
+	public static String getLoggerLevelName(@Nullable final Logger logger)
+	{
+		final Level level = getLoggerLevel(logger);
+		return level == null ? null : level.toString();
+	}
+
+	@Nullable
+	public static Level getLoggerLevel(@Nullable final Logger logger)
 	{
 		if (logger == null)
 		{
 			return null;
 		}
-		if (logger instanceof ch.qos.logback.classic.Logger)
+		else if (logger instanceof ch.qos.logback.classic.Logger)
 		{
-			final Level level = ((ch.qos.logback.classic.Logger)logger).getEffectiveLevel();
-			return level == null ? null : level.toString();
+			return ((ch.qos.logback.classic.Logger)logger).getEffectiveLevel();
 		}
-
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
 
 	/**
 	 * Set JDBC Debug
-	 *
-	 * @param enable
 	 */
 	private static void setJDBCDebug(final boolean enable)
 	{
@@ -245,7 +256,7 @@ public final class LogManager
 		{
 			DriverManager.setLogWriter(null);
 		}
-	}	// setJDBCDebug
+	}    // setJDBCDebug
 
 	/**
 	 * @return current log level or <code>null</code> if not initialized
@@ -275,7 +286,7 @@ public final class LogManager
 		}
 
 		return level.toInt() >= currentLevel.toInt();
-	}	// isLevel
+	}    // isLevel
 
 	/**
 	 * Is Logging Level FINEST logged
@@ -285,7 +296,7 @@ public final class LogManager
 	public static boolean isLevelFinest()
 	{
 		return isLevel(Level.TRACE);
-	}	// isLevelFinest
+	}    // isLevelFinest
 
 	/**
 	 * Is Logging Level FINER logged
@@ -295,7 +306,7 @@ public final class LogManager
 	public static boolean isLevelFiner()
 	{
 		return isLevelFinest();
-	}	// isLevelFiner
+	}    // isLevelFiner
 
 	/**
 	 * Is Logging Level FINE logged
@@ -314,7 +325,7 @@ public final class LogManager
 	{
 		// final LogManager mgr = LogManager.getLogManager();
 		// mgr.reset();
-	}	// shutdown
+	}    // shutdown
 
 	public static File getActiveLogFile()
 	{
@@ -370,7 +381,7 @@ public final class LogManager
 		issueAppender.skipIssueReportingForLoggerName(loggerName);
 	}
 
-	private static final List<ch.qos.logback.classic.Level> LOGBACK_LEVELS = ImmutableList.<ch.qos.logback.classic.Level> builder()
+	private static final List<ch.qos.logback.classic.Level> LOGBACK_LEVELS = ImmutableList.<ch.qos.logback.classic.Level>builder()
 			.add(ch.qos.logback.classic.Level.OFF)
 			.add(ch.qos.logback.classic.Level.ERROR)
 			.add(ch.qos.logback.classic.Level.WARN)
@@ -468,7 +479,6 @@ public final class LogManager
 	}
 
 	/**
-	 * @param loggerName
 	 * @see #dumpAllLevelsUpToRoot(Logger)
 	 */
 	public static void dumpAllLevelsUpToRoot(final String loggerName)
@@ -496,10 +506,8 @@ public final class LogManager
 
 	/**
 	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
-	 *
+	 * <p>
 	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
-	 *
-	 * @param logger
 	 */
 	public static void dumpAllLevelsUpToRoot(final Logger logger)
 	{
