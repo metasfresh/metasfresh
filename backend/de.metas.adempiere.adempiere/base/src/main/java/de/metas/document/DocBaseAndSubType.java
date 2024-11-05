@@ -3,6 +3,7 @@ package de.metas.document;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -54,6 +55,15 @@ public class DocBaseAndSubType
 		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
+	@Nullable
+	public static DocBaseAndSubType ofNullable(
+			@Nullable final String docBaseType,
+			@Nullable final String docSubType)
+	{
+		final String docBaseTypeNorm = StringUtils.trimBlankToNull(docBaseType);
+		return docBaseTypeNorm != null ? of(docBaseTypeNorm, docSubType) : null;
+	}
+
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
 	@NonNull DocBaseType docBaseType;
@@ -65,7 +75,7 @@ public class DocBaseAndSubType
 	{
 		this.docBaseType = docBaseType;
 		this.docSubType = docSubType;
-	}
+		}
 
 	// DocBaseAndSubTypeChecks
 	public boolean isSalesInvoice() { return docBaseType.isSalesInvoice() && docSubType.isNone(); }
@@ -93,5 +103,7 @@ public class DocBaseAndSubType
 	// SubTypeOnlyChecks
 	public boolean isProformaSubType() { return docSubType.isProforma(); }
 
+
+	}
 
 }
