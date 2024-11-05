@@ -35,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Repository;
 
@@ -65,31 +64,6 @@ public class MembershipContractRepository
 
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
-									 I_M_Product.COLUMNNAME_M_Product_ID,
-									 membershipProductQuery)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
-				.create();
-	}
-
-	// TODO : not sure if needed
-	public IQuery<I_C_Flatrate_Term> queryMembershipRunningSubscription(
-			@NonNull final OrgId sourceOrgId,
-
-			@NonNull final OrgId targetOrgId,
-			@NonNull final Instant orgChangeDate)
-	{
-		final IQuery<I_M_Product> membershipProductQuery = queryMembershipProducts(targetOrgId);
-
-		final IQuery<I_C_BPartner> bpartnerFromOrgQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, sourceOrgId)
-				.create();
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
-									 I_C_BPartner.COLUMNNAME_C_BPartner_ID,
-									 bpartnerFromOrgQuery)
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
 									 I_M_Product.COLUMNNAME_M_Product_ID,
 									 membershipProductQuery)
