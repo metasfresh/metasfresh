@@ -148,7 +148,7 @@ FROM (SELECT i.AD_Org_ID,
 
 
       WHERE TRUE
-        AND i.DocStatus IN ('CO', 'CL', 'RE')
+        AND i.DocStatus IN ('CO', 'CL')
         AND (p_C_BPartner_ID IS NULL OR i.C_BPartner_ID = p_C_BPartner_ID)
          --
      ) AS oi
