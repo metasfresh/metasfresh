@@ -8,11 +8,8 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       },
       "name" : "name",
       "orgId" : 1,
-      "amount" : {
-        "value" : 10,
-        "currencyCode" : "CHF",
-        "zero" : false
-      },
+      "amount" : "10 CHF",
+      "recipientType" : "COMPANY",
       "accountNo" : "accountNo",
       "routingNo" : "routingNo",
       "IBAN" : "iban",
@@ -22,8 +19,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "city" : "city",
       "postalCode" : "postal",
       "recipientCountryId" : 5,
-      "recipientBankCountryId" : 4,
-      "recipientType" : "COMPANY"
+      "recipientBankCountryId" : 4
     }
   ]
 ]

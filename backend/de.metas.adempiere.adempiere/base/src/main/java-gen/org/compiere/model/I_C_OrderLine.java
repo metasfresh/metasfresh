@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -117,27 +116,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
 
 	/**
-	 * Set BPartner Qty Item Capacity.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBPartner_QtyItemCapacity (@Nullable BigDecimal BPartner_QtyItemCapacity);
-
-	/**
-	 * Get BPartner Qty Item Capacity.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getBPartner_QtyItemCapacity();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_BPartner_QtyItemCapacity = new ModelColumn<>(I_C_OrderLine.class, "BPartner_QtyItemCapacity", null);
-	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
-
-	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -157,6 +135,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_C_OrderLine.class, "BPartnerAddress", null);
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+
+	/**
+	 * Set BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartner_QtyItemCapacity (@Nullable BigDecimal BPartner_QtyItemCapacity);
+
+	/**
+	 * Get BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBPartner_QtyItemCapacity();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_BPartner_QtyItemCapacity = new ModelColumn<>(I_C_OrderLine.class, "BPartner_QtyItemCapacity", null);
+	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
 
 	/**
 	 * Set Activity.
@@ -293,8 +292,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -303,8 +301,7 @@ public interface I_C_OrderLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -313,33 +310,6 @@ public interface I_C_OrderLine
 	int getC_Charge_ID();
 
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
-
-	/**
-	 * Set Template Lines.
-	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
-
-	/**
-	 * Get Template Lines.
-	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_CompensationGroup_Schema_TemplateLine_ID();
-
-	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine();
-
-	void setC_CompensationGroup_Schema_TemplateLine(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine);
-
-	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine> COLUMN_C_CompensationGroup_Schema_TemplateLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_Schema_TemplateLine_ID", de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
-	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
 
 	/**
 	 * Set Compensations.
@@ -367,6 +337,33 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_SchemaLine> COLUMN_C_CompensationGroup_SchemaLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_SchemaLine_ID", de.metas.order.model.I_C_CompensationGroup_SchemaLine.class);
 	String COLUMNNAME_C_CompensationGroup_SchemaLine_ID = "C_CompensationGroup_SchemaLine_ID";
+
+	/**
+	 * Set Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
+
+	/**
+	 * Get Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_TemplateLine_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine();
+
+	void setC_CompensationGroup_Schema_TemplateLine(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine);
+
+	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine> COLUMN_C_CompensationGroup_Schema_TemplateLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_Schema_TemplateLine_ID", de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
 
 	/**
 	 * Set Currency.
@@ -506,7 +503,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Zahlungsbedingung.
+	 * Set Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
@@ -516,7 +513,7 @@ public interface I_C_OrderLine
 	void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID);
 
 	/**
-	 * Get Zahlungsbedingung.
+	 * Get Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
@@ -604,26 +601,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Set Tax.
-	 * Tax identifier
+	 * Get Created.
+	 * Date this record was created
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Tax_ID (int C_Tax_ID);
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Created = new ModelColumn<>(I_C_OrderLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Tax.
-	 * Tax identifier
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Tax_ID();
+	int getCreatedBy();
 
-	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Tax Category.
@@ -646,6 +646,28 @@ public interface I_C_OrderLine
 	int getC_TaxCategory_ID();
 
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set BPartner UOM.
@@ -690,32 +712,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Created = new ModelColumn<>(I_C_OrderLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Lieferdatum.
+	 * Set Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -725,7 +722,7 @@ public interface I_C_OrderLine
 	void setDateDelivered (@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
-	 * Get Lieferdatum.
+	 * Get Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -851,7 +848,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Discount = "Discount";
 
 	/**
-	 * Set Preislimit erzwingen.
+	 * Set Enforce price limit.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -861,7 +858,7 @@ public interface I_C_OrderLine
 	void setEnforcePriceLimit (boolean EnforcePriceLimit);
 
 	/**
-	 * Get Preislimit erzwingen.
+	 * Get Enforce price limit.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -941,7 +938,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
-	 * Set Frachtbetrag.
+	 * Set Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -951,7 +948,7 @@ public interface I_C_OrderLine
 	void setFreightAmt (BigDecimal FreightAmt);
 
 	/**
-	 * Get Frachtbetrag.
+	 * Get Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -964,8 +961,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
-	 * Set Häufigkeitsart.
-	 * Häufigkeitsart für Ereignisse
+	 * Set Frequency Type.
+	 * Frequency of event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -974,8 +971,8 @@ public interface I_C_OrderLine
 	void setFrequencyType (java.lang.String FrequencyType);
 
 	/**
-	 * Get Häufigkeitsart.
-	 * Häufigkeitsart für Ereignisse
+	 * Get Frequency Type.
+	 * Frequency of event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -985,6 +982,31 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_FrequencyType = new ModelColumn<>(I_C_OrderLine.class, "FrequencyType", null);
 	String COLUMNNAME_FrequencyType = "FrequencyType";
+
+	/**
+	 * Set Total Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setgk196_TotalWeight (@Nullable BigDecimal gk196_TotalWeight);
+
+	/**
+	 * Get Total Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getgk196_TotalWeight();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_gk196_TotalWeight = new ModelColumn<>(I_C_OrderLine.class, "gk196_TotalWeight", null);
+	String COLUMNNAME_gk196_TotalWeight = "gk196_TotalWeight";
 
 	/**
 	 * Set Compensation Amount Type.
@@ -1141,7 +1163,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1151,7 +1173,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1270,8 +1292,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
 
 	/**
-	 * Set Manuelle Zahlungsbedingung.
-	 * Die Zahlungsbedingung wurde vom Nutzer ausgewählt und soll nicht durch das System überschrieben werden
+	 * Set Manual payment term.
+	 * The current payment term was set by a user and shall not be overwritten by the system.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1280,8 +1302,8 @@ public interface I_C_OrderLine
 	void setIsManualPaymentTerm (boolean IsManualPaymentTerm);
 
 	/**
-	 * Get Manuelle Zahlungsbedingung.
-	 * Die Zahlungsbedingung wurde vom Nutzer ausgewählt und soll nicht durch das System überschrieben werden
+	 * Get Manual payment term.
+	 * The current payment term was set by a user and shall not be overwritten by the system.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1312,6 +1334,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_OrderLine.class, "IsManualPrice", null);
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInPriceUOM (boolean IsManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualQtyInPriceUOM = new ModelColumn<>(I_C_OrderLine.class, "IsManualQtyInPriceUOM", null);
+	String COLUMNNAME_IsManualQtyInPriceUOM = "IsManualQtyInPriceUOM";
 
 	/**
 	 * Set Packaging Material .
@@ -1490,6 +1533,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
+
+	/**
+	 * Get Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_DiscountSchemaBreak_ID();
+
+	@Nullable org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak();
+
+	void setM_DiscountSchemaBreak(@Nullable org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
+	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
 	 * Set Discount Schema.
 	 * Schema to calculate the trade discount percentage
 	 *
@@ -1517,35 +1587,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
-	 * Set Discount Schema Break.
-	 * Rabattschema Stufe
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
-
-	/**
-	 * Get Discount Schema Break.
-	 * Rabattschema Stufe
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_DiscountSchemaBreak_ID();
-
-	@Nullable org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak();
-
-	void setM_DiscountSchemaBreak(@Nullable org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak);
-
-	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
-	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
-
-	/**
-	 * Set Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Set Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1554,8 +1597,8 @@ public interface I_C_OrderLine
 	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/**
-	 * Get Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Get Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1566,7 +1609,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
 	/**
-	 * Set Produktnotiz.
+	 * Set Product note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1575,7 +1618,7 @@ public interface I_C_OrderLine
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
 	/**
-	 * Get Produktnotiz.
+	 * Get Product note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1728,6 +1771,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_NoPriceConditionsColor_ID = "NoPriceConditionsColor_ID";
 
 	/**
+	 * Set Gesamtauftragsrabbat.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderDiscount (@Nullable BigDecimal OrderDiscount);
+
+	/**
+	 * Get Gesamtauftragsrabbat.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOrderDiscount();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_OrderDiscount = new ModelColumn<>(I_C_OrderLine.class, "OrderDiscount", null);
+	String COLUMNNAME_OrderDiscount = "OrderDiscount";
+
+	/**
 	 * Set Minimum Order Qty.
 	 * Minimum order quantity in UOM
 	 *
@@ -1749,27 +1813,6 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
 	String COLUMNNAME_Order_Min = "Order_Min";
-
-	/**
-	 * Set Gesamtauftragsrabbat.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrderDiscount (@Nullable BigDecimal OrderDiscount);
-
-	/**
-	 * Get Gesamtauftragsrabbat.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getOrderDiscount();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_OrderDiscount = new ModelColumn<>(I_C_OrderLine.class, "OrderDiscount", null);
-	String COLUMNNAME_OrderDiscount = "OrderDiscount";
 
 	/**
 	 * Set Payment Discount %.
@@ -1881,26 +1924,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
-	 * Set Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_ID();
-
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
-
-	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -1966,7 +1989,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Set Mindestpreis.
+	 * Set Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -1976,7 +1999,7 @@ public interface I_C_OrderLine
 	void setPriceLimit (BigDecimal PriceLimit);
 
 	/**
-	 * Get Mindestpreis.
+	 * Get Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -2010,8 +2033,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceLimitNote = "PriceLimitNote";
 
 	/**
-	 * Set Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Set List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -2020,8 +2043,8 @@ public interface I_C_OrderLine
 	void setPriceList (BigDecimal PriceList);
 
 	/**
-	 * Get Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Get List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -2077,6 +2100,26 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceStd = "PriceStd";
 
 	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -2098,8 +2141,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2108,8 +2151,8 @@ public interface I_C_OrderLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2121,8 +2164,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Rohertragspreis.
-	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	 * Set Gross Profit Price.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2131,8 +2173,7 @@ public interface I_C_OrderLine
 	void setProfitPriceActual (@Nullable BigDecimal ProfitPriceActual);
 
 	/**
-	 * Get Rohertragspreis.
-	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	 * Get Gross Profit Price.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2207,7 +2248,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_QtyEnteredInBPartnerUOM = "QtyEnteredInBPartnerUOM";
 
 	/**
-	 * Set Bestellte Menge in Preiseinheit.
+	 * Set Quantity in price unit.
 	 * Bestellte Menge in Preiseinheit
 	 *
 	 * <br>Type: Quantity
@@ -2217,7 +2258,7 @@ public interface I_C_OrderLine
 	void setQtyEnteredInPriceUOM (@Nullable BigDecimal QtyEnteredInPriceUOM);
 
 	/**
-	 * Get Bestellte Menge in Preiseinheit.
+	 * Get Quantity in price unit.
 	 * Bestellte Menge in Preiseinheit
 	 *
 	 * <br>Type: Quantity
@@ -2322,7 +2363,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set QtyOrderedOverUnder.
+	 * Set Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2331,7 +2372,7 @@ public interface I_C_OrderLine
 	void setQtyOrderedOverUnder (@Nullable BigDecimal QtyOrderedOverUnder);
 
 	/**
-	 * Get QtyOrderedOverUnder.
+	 * Get Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2367,7 +2408,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Referenced Order Line.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
+	 * Reference to corresponding Sales/Purchase Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2377,7 +2418,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Referenced Order Line.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
+	 * Reference to corresponding Sales/Purchase Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2464,7 +2505,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_RRStartDate = "RRStartDate";
 
 	/**
-	 * Set Laufzeit.
+	 * Set Maximum Runs.
 	 * Number of recurring runs
 	 *
 	 * <br>Type: Integer
@@ -2474,7 +2515,7 @@ public interface I_C_OrderLine
 	void setRunsMax (int RunsMax);
 
 	/**
-	 * Get Laufzeit.
+	 * Get Maximum Runs.
 	 * Number of recurring runs
 	 *
 	 * <br>Type: Integer
@@ -2485,29 +2526,6 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_RunsMax = new ModelColumn<>(I_C_OrderLine.class, "RunsMax", null);
 	String COLUMNNAME_RunsMax = "RunsMax";
-
-	/**
-	 * Set Ressourcenzuordnung.
-	 * Resource Assignment
-	 *
-	 * <br>Type: Assignment
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
-
-	/**
-	 * Get Ressourcenzuordnung.
-	 * Resource Assignment
-	 *
-	 * <br>Type: Assignment
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_ResourceAssignment_ID();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_S_ResourceAssignment_ID = new ModelColumn<>(I_C_OrderLine.class, "S_ResourceAssignment_ID", null);
-	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
 	/**
 	 * Set Best Before Policy.
@@ -2529,6 +2547,29 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new ModelColumn<>(I_C_OrderLine.class, "ShipmentAllocation_BestBefore_Policy", null);
 	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
+
+	/**
+	 * Set Resource Assignment.
+	 * Resource Assignment
+	 *
+	 * <br>Type: Assignment
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
+
+	/**
+	 * Get Resource Assignment.
+	 * Resource Assignment
+	 *
+	 * <br>Type: Assignment
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_ResourceAssignment_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_S_ResourceAssignment_ID = new ModelColumn<>(I_C_OrderLine.class, "S_ResourceAssignment_ID", null);
+	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
 	/**
 	 * Set Positions-Steuer.

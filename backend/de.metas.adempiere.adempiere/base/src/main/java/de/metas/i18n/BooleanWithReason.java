@@ -3,11 +3,13 @@ package de.metas.i18n;
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -69,7 +71,12 @@ public final class BooleanWithReason
 		}
 	}
 
-	private static ITranslatableString toTrl(@Nullable final String reasonStr)
+	public static BooleanWithReason falseBecause(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return falseBecause(TranslatableStrings.adMessage(adMessage, msgParameters));
+	}
+
+	 private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))
 		{
@@ -85,7 +92,7 @@ public final class BooleanWithReason
 	public static final BooleanWithReason FALSE = new BooleanWithReason(false, TranslatableStrings.empty());
 
 	private final boolean value;
-	private final ITranslatableString reason;
+	@NonNull @Getter private final ITranslatableString reason;
 
 	private BooleanWithReason(
 			final boolean value,
@@ -124,11 +131,6 @@ public final class BooleanWithReason
 		return !value;
 	}
 
-	public ITranslatableString getReason()
-	{
-		return reason;
-	}
-
 	public String getReasonAsString()
 	{
 		return reason.getDefaultValue();
@@ -140,6 +142,13 @@ public final class BooleanWithReason
 		{
 			throw new AdempiereException(reason);
 		}
+	}
+
+	public BooleanWithReason and(@NonNull final Supplier<BooleanWithReason> otherSupplier)
+	{
+		return isFalse()
+				? this
+				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
 	}
 
 }

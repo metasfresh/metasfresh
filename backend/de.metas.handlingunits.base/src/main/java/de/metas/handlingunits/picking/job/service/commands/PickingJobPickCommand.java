@@ -484,6 +484,12 @@ public class PickingJobPickCommand
 							.appendParametersToMessage()
 							.setParameter("LotNumber", lotNumber));
 		}
+		else
+		{
+			throw new AdempiereException(QR_CODE_NOT_SUPPORTED_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("QRCode", pickFromHUQRCode);
+		}
 	}
 
 	private ShipmentScheduleId getShipmentScheduleId()

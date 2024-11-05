@@ -33,6 +33,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,6 +61,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
+	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
@@ -78,12 +80,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PickingJobSlotService pickingSlotService,
 			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
 		this.huQRCodeService = huQRCodeService;
 		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
+		this.workplaceService = workplaceService;
 	}
 
 	@Override

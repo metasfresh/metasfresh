@@ -185,5 +185,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN = "LocalFilePurchaseOrderFileNamePattern";
 
 	public static final String PARAM_TAX_CATEGORY_MAPPINGS = "TaxCategoryMappings";
+	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
+	
+	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
 }
 
