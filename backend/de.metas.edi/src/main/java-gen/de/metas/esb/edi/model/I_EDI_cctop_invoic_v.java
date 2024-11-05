@@ -1,5 +1,8 @@
 package de.metas.esb.edi.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_cctop_invoic_v
  *  @author metasfresh (generated) 
@@ -252,6 +255,29 @@ public interface I_EDI_cctop_invoic_v
     /** Column name CreditMemoReasonText */
     public static final String COLUMNNAME_CreditMemoReasonText = "CreditMemoReasonText";
 
+	/**
+	 * Set Accounting Date.
+	 * Accounting Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateAcct (@Nullable java.sql.Timestamp DateAcct);
+
+	/**
+	 * Get Accounting Date.
+	 * Accounting Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateAcct();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateAcct = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "DateAcct", null);
+	String COLUMNNAME_DateAcct = "DateAcct";
+	
 	/**
 	 * Set Date.
 	 * Date printed on Invoice
