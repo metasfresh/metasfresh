@@ -28,6 +28,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -59,6 +60,7 @@ import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 public class RabbitMqListener implements MessageListener
 {
+	@Nullable
 	private CachingConnectionFactory connectionFactory;
 
 	private final String host;
@@ -161,7 +163,10 @@ public class RabbitMqListener implements MessageListener
 		container.setConsumerTagStrategy(q -> consumerTag);
 		container.setConnectionFactory(connectionFactory);
 		container.setQueueNames(queueName);
-
+		container.setPrefetchCount(1); // here, the default is 250
+		container.setConcurrentConsumers(1); // 1 is actually the default anyways
+		container.setMaxConcurrentConsumers(1);
+		
 		container.setErrorHandler(t -> {
 			if (isStopping)
 			{
