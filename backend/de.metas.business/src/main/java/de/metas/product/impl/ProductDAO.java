@@ -770,4 +770,10 @@ public class ProductDAO implements IProductDAO
 
 		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
 	}
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
 }

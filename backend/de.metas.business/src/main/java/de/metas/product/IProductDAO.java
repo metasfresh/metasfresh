@@ -127,6 +127,8 @@ public interface IProductDAO extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
 
+	void save(I_M_Product record);
+
 	@Value
 	class ProductQuery
 	{
