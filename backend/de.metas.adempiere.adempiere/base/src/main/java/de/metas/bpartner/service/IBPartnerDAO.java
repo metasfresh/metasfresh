@@ -328,8 +328,6 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
-	ImmutableSet<BPartnerId> retrieveBPartnerIdsByOrgId(@NonNull OrgId orgId);
-
 	@Value
 	@Builder
 	class BPartnerLocationQuery

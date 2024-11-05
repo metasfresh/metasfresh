@@ -1937,13 +1937,4 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}
-
-	@Override
-	public ImmutableSet<BPartnerId> retrieveBPartnerIdsByOrgId(@NonNull final OrgId orgId)
-	{
-		return createQueryBuilder(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
-				.create()
-				.listIds(BPartnerId::ofRepoId);
-	}
 }

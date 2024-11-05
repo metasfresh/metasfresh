@@ -1,7 +1,6 @@
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -830,11 +829,5 @@ public class BPartnerBL implements IBPartnerBL
 																				  .type(type)
 																				  .bpartnerId(bPartnerId)
 																				  .build()));
-	}
-
-	@Override
-	public ImmutableSet<BPartnerId>  getBPartnerIdsForOrg(@NonNull final OrgId orgId)
-	{
-		return bpartnersRepo.retrieveBPartnerIdsByOrgId(orgId);
 	}
 }
