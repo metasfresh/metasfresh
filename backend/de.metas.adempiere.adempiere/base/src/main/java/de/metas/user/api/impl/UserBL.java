@@ -6,6 +6,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -69,11 +70,6 @@ public class UserBL implements IUserBL
 	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	/**
-	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
-	 */
-	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
 	private static final AdMessageKey MSG_NoEMailFoundForLoginName = AdMessageKey.of("NoEMailFoundForLoginName");
 	private static final AdMessageKey MSG_INCORRECT_PASSWORD = AdMessageKey.of("org.compiere.util.Login.IncorrectPassword");
@@ -181,15 +177,20 @@ public class UserBL implements IUserBL
 		{
 			throw new AdempiereException(MSG_NoEMailFoundForLoginName);
 		}
-		
+
 		final MailText mailText = createResetPasswordByEMailText(user);
 
 		final MailboxQuery mailboxQuery = MailboxQuery.builder()
 				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
-				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
+				.customType(EMailCustomType.OrgCompiereUtilLogin)
 				.build();
 
-		mailService().sendEMail(mailboxQuery, emailTo, mailText);
+		mailService().sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery)
+				.to(emailTo)
+				.mailText(mailText)
+				.forceRealEmailRecipients(true)
+				.build());
 	}
 
 	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)
@@ -491,6 +492,7 @@ public class UserBL implements IUserBL
 	{
 		return userDAO.retrieveUserIdsByExternalId(externalId, orgId);
 	}
+
 	@Override
 	public String getUserFullNameById(@NonNull final UserId userId) {return userDAO.retrieveUserFullName(userId);}
 }

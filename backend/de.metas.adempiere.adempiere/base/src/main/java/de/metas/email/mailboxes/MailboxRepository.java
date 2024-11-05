@@ -3,7 +3,8 @@ package de.metas.email.mailboxes;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
@@ -166,7 +167,8 @@ public class MailboxRepository
 				.userToColumnName(StringUtils.trimBlankToNull(record.getColumnUserTo()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
-				.docBaseAndSubType(DocBaseAndSubType.ofNullable(record.getDocBaseType(), record.getDocSubType()))
+				.docBaseType(DocBaseType.ofNullableCode(record.getDocBaseType()))
+				.docSubType(StringUtils.trimBlankToOptional(record.getDocSubType()).map(DocSubType::ofCode).orElse(DocSubType.ANY))
 				.adProcessId(AdProcessId.ofRepoIdOrNull(record.getAD_Process_ID()))
 				.emailCustomType(EMailCustomType.ofNullableCode(record.getCustomType()))
 				.build();

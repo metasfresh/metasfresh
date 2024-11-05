@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.sun.mail.smtp.SMTPMessage;
 import de.metas.common.util.EmptyUtil;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.sender.MailSender;
@@ -38,9 +37,6 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
@@ -237,7 +233,7 @@ public final class EMail implements Serializable
 
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress) {this._debugMailToAddress = debugMailToAddress;}
 
-	public InternetAddress getDebugMailToAddress() {return _debugMailToAddress;}
+	public InternetAddress getDebugMailToAddress() {return _forceRealEmailRecipients ? null : _debugMailToAddress;}
 
 	public void setDebugLoggable(final ILoggable loggable) {this._debugLoggable = loggable;}
 
@@ -285,32 +281,6 @@ public final class EMail implements Serializable
 	public EMailSentStatus getLastSentStatus()
 	{
 		return _sentStatus;
-	}
-	/**
-	 * Sets recipients.
-	 * <b>
-	 * <b>NOTE: If {@link #getDebugMailToAddress()} returns a valid mail address, it will send to that instead!</b>
-	 */
-	private void setRecipients(
-			final SMTPMessage message,
-			final Message.RecipientType type,
-			final List<? extends Address> addresses) throws MessagingException
-	{
-		if (addresses == null || addresses.isEmpty())
-		{
-			return;
-		}
-
-		final InternetAddress debugMailTo = getDebugMailToAddress();
-		if (!_forceRealEmailRecipients && debugMailTo != null)
-		{
-			overrideRecipients(message, type, addresses, debugMailTo);
-		}
-		else
-		{
-			final Address[] addressesArr = addresses.toArray(new Address[0]);
-			message.setRecipients(Message.RecipientType.TO, addressesArr);
-		}
 	}
 
 	public Mailbox getMailbox()
@@ -649,7 +619,7 @@ public final class EMail implements Serializable
 		if (!isValidAddress(from))
 		{
 			final String errmsg = "No From address";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -662,7 +632,7 @@ public final class EMail implements Serializable
 		if (toList.isEmpty())
 		{
 			final String errmsg = "No To addresses";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -676,7 +646,7 @@ public final class EMail implements Serializable
 				if (!isValidAddress(to))
 				{
 					final String errmsg = "To address is invalid (" + to + ")";
-					if (notValidReasonCollector.length() > 0)
+					if (!notValidReasonCollector.isEmpty())
 					{
 						notValidReasonCollector.append("; ");
 					}
@@ -691,7 +661,7 @@ public final class EMail implements Serializable
 		if (Check.isEmpty(subject, true))
 		{
 			final String errmsg = "Subject is empty";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -746,24 +716,6 @@ public final class EMail implements Serializable
 	public void forceRealEmailRecipients()
 	{
 		_forceRealEmailRecipients = true;
-	}
-
-	private void overrideRecipients(
-			final SMTPMessage message,
-			final RecipientType type,
-			final List<? extends Address> addresses,
-			final InternetAddress debugMailTo
-	) throws MessagingException
-	{
-		if (Message.RecipientType.TO.equals(type))
-		{
-			message.setRecipient(Message.RecipientType.TO, debugMailTo);
-		}
-
-		for (final Address address : addresses)
-		{
-			message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
-		}
 	}
 
 	@Override

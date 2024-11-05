@@ -29,6 +29,7 @@ public class EMailRequest
 
 	boolean failIfNotSent;
 	@Nullable ILoggable debugLoggable;
+	boolean forceRealEmailRecipients;
 
 	@Builder
 	private EMailRequest(
@@ -40,7 +41,8 @@ public class EMailRequest
 			final boolean html,
 			@NonNull @Singular final ImmutableList<EMailAttachment> attachments,
 			@Nullable final Boolean failIfNotSent,
-			@Nullable final ILoggable debugLoggable)
+			@Nullable final ILoggable debugLoggable, 
+			final boolean forceRealEmailRecipients)
 	{
 		if (CoalesceUtil.countNotNulls(mailboxQuery, mailbox) != 1)
 		{
@@ -56,6 +58,7 @@ public class EMailRequest
 		this.attachments = attachments;
 		this.failIfNotSent = failIfNotSent != null ? failIfNotSent : true;
 		this.debugLoggable = debugLoggable;
+		this.forceRealEmailRecipients = forceRealEmailRecipients;
 	}
 
 	@SuppressWarnings("unused")

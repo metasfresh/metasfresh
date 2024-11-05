@@ -1,8 +1,10 @@
 package de.metas.rfq.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailAttachment;
 import de.metas.email.EMailRequest;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
@@ -31,6 +33,7 @@ import org.compiere.model.I_AD_User;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -133,7 +136,7 @@ import java.util.List;
 				.subject(subject)
 				.message(message)
 				.html(mailText.isHtml())
-				.attachmentIfNotEmpty("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData())
+				.attachments(toEMailAttachments(pdfArchive, rfqResponse.getC_RfQResponse_ID()))
 				.build());
 		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
 
@@ -147,13 +150,13 @@ import java.util.List;
 			{
 				archiveEventManager.fireEmailSent(
 						archiveResult.getArchiveRecord(), // archive
-					null, // user
-					from, // from
-					to, // to
-					null, // cc
-					null, // bcc
-					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
-			);
+						null, // user
+						from, // from
+						to, // to
+						null, // cc
+						null, // bcc
+						ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
+				);
 			}
 		}
 
@@ -259,5 +262,18 @@ import java.util.List;
 		mailTextBuilder.bpartnerContact(rfqResponse.getAD_User());
 		mailTextBuilder.record(rfqResponse);
 		return mailTextBuilder;
+	}
+
+	private ImmutableList<EMailAttachment> toEMailAttachments(final List<ArchiveResult> archiveResults, final int rfqResponseId)
+	{
+		return archiveResults.stream()
+				.map(archiveResult -> toEMailAttachmentOrNull(archiveResult, rfqResponseId))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static EMailAttachment toEMailAttachmentOrNull(final ArchiveResult archiveResult, final int rfqResponseId)
+	{
+		return EMailAttachment.ofNullable("RfQ_" + rfqResponseId + "_" + archiveResult.getName().orElse("") + ".pdf", archiveResult.getData());
 	}
 }
