@@ -159,9 +159,9 @@ public class MLookupFactory
 	}
 
 	public MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName,
-							  final ReferenceId AD_Reference_Value_ID,
-							  final boolean IsParent,
-							  final AdValRuleId AD_Val_Rule_ID)
+					   final ReferenceId AD_Reference_Value_ID,
+					   final boolean IsParent,
+					   final AdValRuleId AD_Val_Rule_ID)
 
 			throws AdempiereException
 	{
@@ -240,12 +240,12 @@ public class MLookupFactory
 	 * @return lookup info structure
 	 */
 	MLookupInfo getLookupInfo(final int WindowNo,
-											final int AD_Reference_ID,
-											final String ctxTableName,
-											final String ctxColumnName,
-											final ReferenceId AD_Reference_Value_ID,
-											final boolean IsParent,
-											final String ValidationCode)
+							  final int AD_Reference_ID,
+							  final String ctxTableName,
+							  final String ctxColumnName,
+							  final ReferenceId AD_Reference_Value_ID,
+							  final boolean IsParent,
+							  final String ValidationCode)
 	{
 		final AdValRuleId adValRuleId = null;
 		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
@@ -387,13 +387,13 @@ public class MLookupFactory
 				.securityDisabled(true)
 				.build();
 
-		return new MLookupInfo(
-				sqlQuery,
-				AD_REFERENCE_WINDOW_ID,   // zoomSO_Window_ID
-				AD_REFERENCE_WINDOW_ID,   // zoomPO_Window_ID
-				null, // zoomAD_Window_ID_Override
-				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID.getRepoId()) // Zoom Query
-		);
+		return MLookupInfo.builder()
+				.sqlQuery(sqlQuery)
+				.zoomSO_Window_ID(AD_REFERENCE_WINDOW_ID)
+				.zoomPO_Window_ID(AD_REFERENCE_WINDOW_ID)
+				.zoomAD_Window_ID_Override(null)
+				.zoomQuery(MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID.getRepoId()))
+				.build();
 	}    // getLookup_List
 
 	/**
@@ -661,18 +661,24 @@ public class MLookupFactory
 
 		//
 		// Create MLookupInfo
-		final MLookupInfo lookupInfo = new MLookupInfo(
-				sqlQuery,
-				zoomSO_Window_ID,
-				zoomPO_Window_ID,
-				zoomAD_Window_ID_Override,
-				zoomQuery);
+		final MLookupInfo lookupInfo = MLookupInfo.builder()
+				.sqlQuery(sqlQuery)
+				.zoomSO_Window_ID(zoomSO_Window_ID)
+				.zoomPO_Window_ID(zoomPO_Window_ID)
+				.zoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
+				.zoomQuery(zoomQuery)
+				.displayColumns(displayColumns)
+				.whereClauseDynamicSqlPart(sqlWhereClauseDynamic)
+				.autoComplete(tableRefInfo.isAutoComplete())
+				.translated(isTranslated)
+				.tooltipType(tableRefInfo.getTooltipType())
+				.build();
 		lookupInfo.setWindowNo(windowNo);
-		lookupInfo.setDisplayColumns(displayColumns);
-		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
-		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
-		lookupInfo.setTranslated(isTranslated);
-		lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
+		// lookupInfo.setDisplayColumns(displayColumns);
+		// lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
+		// lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
+		//lookupInfo.setTranslated(isTranslated);
+		//lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
 
 		return lookupInfo;
 	}
@@ -848,8 +854,8 @@ public class MLookupFactory
 	 * it will call corresponding getLookup_*Embed methods
 	 */
 	public String getLookupEmbed(final LanguageInfo languageInfo, final String BaseColumn, final String BaseTable,
-										final int AD_Reference_ID,
-										@Nullable final ReferenceId AD_Reference_Value_ID)
+								 final int AD_Reference_ID,
+								 @Nullable final ReferenceId AD_Reference_Value_ID)
 	{
 		if (DisplayType.List == AD_Reference_ID)
 		{
