@@ -283,3 +283,31 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Sektionswechsel - Auswahl via 
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Organisation Change - Selection via SQL',Updated=TO_TIMESTAMP('2024-11-05 17:42:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585431
 ;
 
+-- 2024-11-06T09:42:56.462Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Sektionswechsel - Auswahl via SQL', PrintName='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-06 11:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583351 AND AD_Language='de_CH'
+;
+
+-- 2024-11-06T09:42:56.506Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583351,'de_CH') 
+;
+
+-- 2024-11-06T09:43:00.822Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Sektionswechsel - Auswahl via SQL', PrintName='Sektionswechsel - Auswahl via SQL',Updated=TO_TIMESTAMP('2024-11-06 11:43:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583351 AND AD_Language='de_DE'
+;
+
+-- 2024-11-06T09:43:00.825Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583351,'de_DE') 
+;
+
+-- 2024-11-06T09:43:00.829Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583351,'de_DE') 
+;
+
+-- 2024-11-06T09:43:12.088Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Organisation Change - Selection via SQL', PrintName='Organisation Change - Selection via SQL',Updated=TO_TIMESTAMP('2024-11-06 11:43:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583351 AND AD_Language='en_US'
+;
+
+-- 2024-11-06T09:43:12.090Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583351,'en_US') 
+;
+
