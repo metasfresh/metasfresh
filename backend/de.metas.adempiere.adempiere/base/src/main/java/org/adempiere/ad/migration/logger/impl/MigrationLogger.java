@@ -66,6 +66,7 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
+import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -186,7 +187,9 @@ public class MigrationLogger implements IMigrationLogger
 				I_AD_Task_Access.Table_Name.toUpperCase(),
 				I_AD_Document_Action_Access.Table_Name.toUpperCase(),
 				I_AD_Table_Access.Table_Name.toUpperCase(),
-				I_AD_Column_Access.Table_Name.toUpperCase()));
+				I_AD_Column_Access.Table_Name.toUpperCase(),
+				I_Mobile_Application_Access.Table_Name.toUpperCase()
+		));
 	}
 
 	@Override

@@ -879,7 +879,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+		logger.debug("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
 		return null;
 	}
 

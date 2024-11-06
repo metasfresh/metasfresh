@@ -129,6 +129,16 @@
             <artifactId>de.metas.distribution.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -141,12 +141,12 @@ public class HU
 		Quantity newWeightNet;
 		if (getChildHUs().isEmpty())
 		{
-			newWeightNet = weightNet.isPresent() ? weightNet.get() : null;
+			newWeightNet = weightNet.orElse(null);
 		}
 		else
 		{
 			// we will sum it up from our childrens' weights
-			newWeightNet = weightNet.isPresent() ? weightNet.get().toZero() : null;
+			newWeightNet = weightNet.map(Quantity::toZero).orElse(null);
 		}
 
 		for (final HU child : getChildHUs())
@@ -171,9 +171,16 @@ public class HU
 	/**
 	 * Iterates all child-HUs' storage quantities for the given productId and returns the median (or something close).
 	 * Goal: return a reasonably common quantity, and ignore possible outliers.
+	 * <p>
+	 * If this HU has no children, then return this HU's quantity!
 	 */
 	public Quantity extractMedianCUQtyPerChildHU(@NonNull final ProductId productId)
 	{
+		if (getChildHUs().isEmpty())
+		{
+			return getProductQtysInStockUOM().get(productId);
+		}
+
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()
 				.map(hu -> hu.getProductQtysInStockUOM().get(productId).toBigDecimal())

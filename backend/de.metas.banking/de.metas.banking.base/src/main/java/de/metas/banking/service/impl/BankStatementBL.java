@@ -251,11 +251,14 @@ public class BankStatementBL implements IBankStatementBL
 		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
-		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
-		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+
+		if (bankStatementLine.isUpdateAmountsFromInvoice())
+		{
+			bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+			bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
+			bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+		}
 	}
 
 	@Override

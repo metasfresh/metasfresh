@@ -124,6 +124,7 @@ UPDATE AD_Field SET Name='CU-GTIN', Description=NULL, Help=NULL WHERE AD_Column_
 /* DDL */  select update_Column_Translation_From_AD_Element(583259) 
 ;
 
+
 -- 2024-09-18T11:49:10.022Z
 INSERT INTO t_alter_column values('edi_desadv_pack_item','TU_GTIN','VARCHAR(50)',null,null)
 ;

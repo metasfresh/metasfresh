@@ -62,7 +62,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.apache.poi.ss.formula.functions.T;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -94,7 +93,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class InterfaceWrapperHelper
 {
-	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
+	private static final Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
 	private static final CompositeInterfaceWrapperHelper helpers = new CompositeInterfaceWrapperHelper()
 			.addFactory(new POInterfaceWrapperHelper())
@@ -219,7 +218,7 @@ public class InterfaceWrapperHelper
 	 * Both interfaces extend the "original" <code>org.compiere.model.I_C_OrderLine</code> interface, so they have the generic properties like <code>QtyOrdered</code>, <code>M_Product_ID</code> etc. <b>plus</b> the project specific ones.<br>
 	 * The magic is once again done by this method, which returns an instance of the required <code>I_C_OrderLine</code> interface for the underlying <code>GridTab</code> or <code>PO</code>,
 	 * with only the properties that are declared by that interface.<br>
-	 * Also note that the interface passed to {@link InterfaceWrapperHelper#create(Object, Class)} does not necessarily have to implement a "generic" interface from <code>org.compiere.model</code>.<br>
+	 * Also note that the interface passed to this method does not necessarily have to implement a "generic" interface from <code>org.compiere.model</code>.<br>
 	 * Instead, we can also use some interface like <code>IProductAware</code> that just declares product related properties.
 	 * </li>
 	 * </ul>
@@ -307,7 +306,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
+	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Object, Class)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
 	 * <p>
 	 * Notes:
@@ -380,7 +379,7 @@ public class InterfaceWrapperHelper
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
-	
+
 	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
@@ -484,8 +483,6 @@ public class InterfaceWrapperHelper
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
 	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
-	 *
-	 * @param model
 	 */
 	public static void markStaled(final Object model)
 	{
@@ -518,8 +515,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
-	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */
@@ -1012,7 +1007,7 @@ public class InterfaceWrapperHelper
 		return keyColumnName;
 	}
 
-	public static final String getModelKeyColumnName(final Object model)
+	public static String getModelKeyColumnName(final Object model)
 	{
 		final String tableName = getModelTableName(model);
 		return getKeyColumnName(tableName);
@@ -1021,7 +1016,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get Table_ID of wrapped model. If model is null, an exception will be thrown
 	 *
-	 * @param model
 	 * @return Table_ID
 	 * @throws AdempiereException if model is null or model is not supported
 	 */
@@ -1036,7 +1030,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get TableName of wrapped model. If model is null or is not supported, an exception will be thrown.
 	 *
-	 * @param model
 	 * @return table name
 	 * @throws AdempiereException if model is null or model is not supported
 	 */
@@ -1113,8 +1106,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks if given columnName's value is <code>null</code>
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return <code>true</code> if columnName's value is <code>null</code>
 	 */
 	public static boolean isNull(final Object model, final String columnName)
@@ -1125,8 +1116,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks if given columnName's value is <code>null</code> or (only in case it is a string!) empty.
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return <code>true</code> if columnName's value is <code>null</code> or an empty string.
 	 */
 	public static boolean isNullOrEmpty(final Object model, final String columnName)
@@ -1228,7 +1217,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static <T> T getValueOrNull(final Object model, final String columnName)
+	public static <T> T getValueOrNull(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1236,7 +1225,7 @@ public class InterfaceWrapperHelper
 		return value;
 	}
 
-	public static <T> Optional<T> getValue(final Object model, final String columnName)
+	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1245,7 +1234,7 @@ public class InterfaceWrapperHelper
 	}
 
 	@NonNull
-	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	public static <T> Optional<T> getValueOptional(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1269,7 +1258,7 @@ public class InterfaceWrapperHelper
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated
-	public static <T> T getValueOverrideOrValue(final Object model, final String columnName)
+	public static <T> T getValueOverrideOrValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = true;
@@ -1277,7 +1266,7 @@ public class InterfaceWrapperHelper
 		return value;
 	}
 
-	private static <T> T getValue(final Object model,
+	private static <T> T getValue(@NonNull final Object model,
 								  final String columnName,
 								  final boolean throwExIfColumnNotFound,
 								  final boolean useOverrideColumnIfAvailable)
@@ -1285,7 +1274,7 @@ public class InterfaceWrapperHelper
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
+	public static <ModelType> ModelType getModelValue(@NonNull final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
 		if (POWrapper.isHandled(model))
 		{
@@ -1776,10 +1765,8 @@ public class InterfaceWrapperHelper
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
 	 * <p>
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
-	 *
-	 * @param model
 	 */
-	public static final void disableReadOnlyColumnCheck(final Object model)
+	public static void disableReadOnlyColumnCheck(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
 		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
@@ -1793,7 +1780,7 @@ public class InterfaceWrapperHelper
 	}
 
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
-	public static final Object checkZeroIdValue(final String columnName, final Object value)
+	public static Object checkZeroIdValue(final String columnName, final Object value)
 	{
 		return POWrapper.checkZeroIdValue(columnName, value);
 	}

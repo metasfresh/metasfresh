@@ -58,6 +58,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -129,7 +130,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -370,7 +371,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
-				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
+				final Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
@@ -524,6 +525,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// NOTE: not static because we share the services
 	private class DefaultInvoiceLineGeneratorRunnable implements TrxRunnable2
 	{
+		@Getter
 		private final List<I_C_InvoiceLine> createdLines;
 		private final I_C_Invoice invoice;
 		private final List<I_C_Invoice_Candidate> errorCandidates;
@@ -822,7 +824,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public boolean doCatch(final Throwable e) throws Throwable
+		public boolean doCatch(final Throwable e)
 		{
 			if (errorException[0] == null)
 			{
@@ -844,11 +846,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				errorCandidates.clear();
 				errorException[0] = null;
 			}
-		}
-
-		public List<I_C_InvoiceLine> getCreatedLines()
-		{
-			return createdLines;
 		}
 	}
 
@@ -1025,7 +1022,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
-				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
 				candsOfUserId.add(ic);
 			}
 
@@ -1194,7 +1191,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

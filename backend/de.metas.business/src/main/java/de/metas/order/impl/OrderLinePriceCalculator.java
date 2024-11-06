@@ -188,7 +188,7 @@ final class OrderLinePriceCalculator
 			}
 			else
 			{
-				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
+				orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 			}
 		}
 

@@ -83,7 +83,7 @@ public class PaymentRequestProcessor implements Processor
 
 		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
 
-		final String bPartnerIdentifier = context.getMetasfreshId().getIdentifier();
+		final String bPartnerIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
 		return Optional.of(JsonOrderPaymentCreateRequest.builder()
 								   .orgCode(context.getOrgCode())

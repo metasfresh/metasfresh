@@ -54,6 +54,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,6 +65,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_SupplierApproval_Norm;
@@ -603,9 +607,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -721,4 +725,55 @@ public class ProductDAO implements IProductDAO
 			throw new AdempiereException("Unknown valueType: " + valueType);
 		}
 	}
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.setLimit(limit)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
+
+		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+	}
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
 }

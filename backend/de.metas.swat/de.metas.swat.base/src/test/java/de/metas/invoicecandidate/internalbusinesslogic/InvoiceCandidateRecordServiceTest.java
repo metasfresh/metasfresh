@@ -12,7 +12,6 @@ import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
@@ -20,6 +19,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -321,6 +321,7 @@ class InvoiceCandidateRecordServiceTest
 	private I_M_Product createProductRecord(@NonNull final I_C_UOM uom)
 	{
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		saveRecord(productRecord);

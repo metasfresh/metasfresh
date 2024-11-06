@@ -229,6 +229,8 @@ public class AttachmentEntryRepository
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
 	{
+		tableAttachmentListenerService.fireBeforeRecordLinked(attachmentEntry);
+
 		final Set<TableRecordReference> attachmentReferences = new HashSet<>(attachmentEntry.getLinkedRecords());
 
 		// delete superflous

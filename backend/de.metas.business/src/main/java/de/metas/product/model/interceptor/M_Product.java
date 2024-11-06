@@ -5,6 +5,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
@@ -26,8 +27,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -57,12 +58,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class M_Product
 {
+
+	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
+
+	private static final AdMessageKey MSG_PRODUCT_ALREADY_USED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.MSG_PRODUCT_ALREADY_USED");
+
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
-	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+
 
 	@Init
 	public void registerCallouts()
@@ -115,11 +123,42 @@ public class M_Product
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
 	public void setUOM_ID(@NonNull final I_M_Product product)
 	{
-		final AdMessageKey errorMessage = checkExistingUOMConversions(product);
-		if (errorMessage != null)
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final Optional<AdMessageKey> uomConversionsExistsMessage = checkExistingUOMConversions(productId);
+		if (uomConversionsExistsMessage.isPresent())
 		{
-			throw new AdempiereException(errorMessage).markAsUserValidationError();
+			throw new AdempiereException(uomConversionsExistsMessage.get()).markAsUserValidationError();
 		}
+
+		final Optional<AdMessageKey> productUsedMessage = isProductUsed(productId);
+		if (productUsedMessage.isPresent())
+		{
+			throw new AdempiereException(productUsedMessage.get()).markAsUserValidationError();
+		}
+	}
+
+	private Optional<AdMessageKey> checkExistingUOMConversions(@NonNull final ProductId productId)
+	{
+		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversions(productId);
+
+		if (conversionsMap.isHasRatesForNonStockingUOMs())
+		{
+			return Optional.of(MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED);
+		}
+
+		return Optional.empty();
+	}
+
+
+	private Optional<AdMessageKey> isProductUsed(@NonNull final ProductId productId)
+	{
+		if (productDAO.isProductUsed(productId))
+		{
+			return Optional.of(MSG_PRODUCT_ALREADY_USED);
+		}
+
+		return Optional.empty();
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Weight })
@@ -139,19 +178,5 @@ public class M_Product
 
 					saveRecord(order);
 				});
-	}
-
-	@Nullable
-	private AdMessageKey checkExistingUOMConversions(@NonNull final I_M_Product product)
-	{
-		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-
-		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversions(productId);
-		if (conversionsMap.isHasRatesForNonStockingUOMs())
-		{
-			return MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED;
-		}
-
-		return null;
 	}
 }

@@ -360,8 +360,17 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updateLineNetAmtFromQtyEntered(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final Quantity qtyInPriceUOM = convertQtyEnteredToPriceUOM(orderLine);
+		final Quantity qtyInPriceUOM = orderLine.isManualQtyInPriceUOM()
+				? getQtyEnteredInPriceUOM(orderLine)
+				: convertQtyEnteredToPriceUOM(orderLine);
+		
 		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
+	}
+
+	private Quantity getQtyEnteredInPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_UOM priceUOM = uomDAO.getById(UomId.ofRepoId(orderLine.getPrice_UOM_ID()));
+		return Quantity.of(orderLine.getQtyEnteredInPriceUOM(), priceUOM);
 	}
 
 	@Override

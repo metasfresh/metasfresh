@@ -7,13 +7,11 @@ import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,22 +36,16 @@ public class PickingJobSlotService implements PickingSlotConnectedComponent
 		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotId);
 	}
 
-	public void allocate(
+	@NonNull
+	public BooleanWithReason allocate(
 			@NonNull final PickingSlotIdAndCaption pickingSlot,
 			@NonNull final BPartnerLocationId deliveryBPLocationId)
 	{
-		final BooleanWithReason allocated = pickingSlotBL.allocatePickingSlotIfPossible(
+		return pickingSlotBL.allocatePickingSlotIfPossible(
 				PickingSlotAllocateRequest.builder()
 						.pickingSlotId(pickingSlot.getPickingSlotId())
 						.bpartnerAndLocationId(deliveryBPLocationId)
 						.build());
-		if (allocated.isFalse())
-		{
-			throw new AdempiereException(TranslatableStrings.builder()
-					.append("Failed allocating picking slot ").append(pickingSlot.getCaption()).append(" because ")
-					.append(allocated.getReason())
-					.build());
-		}
 	}
 
 	public void release(

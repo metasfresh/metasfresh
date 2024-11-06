@@ -243,7 +243,9 @@ public class AD_Column
 		{
 			if (!columnName.endsWith("_ID")
 					&& !columnName.equals("CreatedBy")
-					&& !columnName.equals("UpdatedBy"))
+					&& !columnName.equals("UpdatedBy")
+					&& !columnName.equals("AD_Language")
+					&& !columnName.equals("EntityType"))
 			{
 				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
 			}

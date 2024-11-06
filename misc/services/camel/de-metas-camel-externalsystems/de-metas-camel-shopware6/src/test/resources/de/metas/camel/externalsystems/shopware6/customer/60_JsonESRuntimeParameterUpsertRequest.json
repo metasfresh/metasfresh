@@ -1,0 +1,9 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 1,
+      "request": "getCustomers",
+      "name": "UpdatedAfter"
+    }
+  ]
+}

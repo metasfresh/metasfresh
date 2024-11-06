@@ -33,6 +33,7 @@ import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -105,7 +106,6 @@ public class ExcelImpCOLCandTypeBuilder
 
 	public ExcelImpCOLCandTypeBuilder setFromRow(final Excel_OLCand_Row row)
 	{
-		olcand.setLine(toBigIntegerOrNull(row.getLineNo()));
 		olcand.setPOReference(row.getPOReference());
 
 		//
@@ -181,6 +181,14 @@ public class ExcelImpCOLCandTypeBuilder
 		{
 			olcand.setCCurrencyID(currencyLookup(currencyISOCode));
 		}
+
+		return this;
+	}
+
+	@NonNull
+	public ExcelImpCOLCandTypeBuilder setLineNo(@NonNull final Integer lineNo)
+	{
+		olcand.setLine(BigInteger.valueOf(lineNo));
 
 		return this;
 	}

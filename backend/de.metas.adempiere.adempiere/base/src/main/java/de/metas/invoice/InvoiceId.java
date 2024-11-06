@@ -56,7 +56,6 @@ public class InvoiceId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-
 	int repoId;
 
 	private InvoiceId(final int repoId)
