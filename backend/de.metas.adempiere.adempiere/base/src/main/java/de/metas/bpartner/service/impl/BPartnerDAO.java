@@ -110,6 +110,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1936,5 +1937,11 @@ public class BPartnerDAO implements IBPartnerDAO
 				.setLimit(limit)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+	}
+
+	@Override
+	public Iterator<I_C_BPartner> retrievePartnersByQuery(@NonNull final IQuery<I_C_BPartner> query)
+	{
+		return query.iterate(I_C_BPartner.class);
 	}
 }

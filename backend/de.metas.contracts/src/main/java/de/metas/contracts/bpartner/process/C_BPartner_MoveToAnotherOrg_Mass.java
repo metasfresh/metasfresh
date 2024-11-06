@@ -23,6 +23,7 @@
 package de.metas.contracts.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
@@ -32,6 +33,7 @@ import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
@@ -47,8 +49,6 @@ import java.util.Iterator;
 public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 		IProcessDefaultParametersProvider
 {
-
-	public static final String PARAM_AD_ORG_SOURCE_ID = "AD_Org_From_ID";
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
 	public static final String PARAM_GroupCategory_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
@@ -56,6 +56,7 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	public static final String PARAM_WhereClause = "WhereClause";
 
 	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
+	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	protected OrgId p_orgTargetId;
@@ -106,9 +107,9 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 
 	private Iterator<I_C_BPartner> retrievePartnersToMove(@NonNull final String whereClause)
 	{
-		return new TypedSqlQuery<>(getCtx(), I_C_BPartner.class, whereClause, ITrx.TRXNAME_None)
-				.setOption(IQuery.OPTION_IteratorBufferSize, 1)
-				.iterate();
+		final IQuery<I_C_BPartner> query = new TypedSqlQuery<>(getCtx(), I_C_BPartner.class, whereClause, ITrx.TRXNAME_None)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1);
 
+		return bpartnerDAO.retrievePartnersByQuery(query);
 	}
 }
