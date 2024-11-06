@@ -49,6 +49,7 @@ import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
@@ -250,9 +251,9 @@ public class MLookupFactory
 		final AdValRuleId adValRuleId = null;
 		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
 		Check.assumeNotNull(info, "lookupInfo not null for TableName={}, ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ctxTableName, ctxColumnName, AD_Reference_ID, AD_Reference_Value_ID);
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
-		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
-		return info;
+		return info.toBuilder()
+				.validationRule(SQLValidationRule.ofNullableSqlWhereClause(ValidationCode))
+				.build();
 	}
 
 	public MLookupInfo getLookupInfo(
@@ -311,40 +312,18 @@ public class MLookupFactory
 			return null;
 		}
 
-		info.setWindowNo(WindowNo);
-		info.setDisplayType(AD_Reference_ID);
-		info.setParent(IsParent);
+		final boolean isCreatedUpdatedBy = AD_Reference_ID == DisplayType.Table && ("CreatedBy".equals(ctxColumnName) || "UpdatedBy".equals(ctxColumnName));
 
 		final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
-		info.setValidationRule(validationRuleFactory.create(info.getTableName().getAsString(), AD_Val_Rule_ID, ctxTableName, ctxColumnName));
-		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
-		// Direct Query - NO Validation/Security
-		info.setSqlQueryDirect(createQueryDirect(info.getSqlQuery(), true), createQueryDirect(info.getSqlQuery(), false));
-		return info;
+		return info.toBuilder()
+				.windowNo(WindowNo)
+				.isParent(IsParent)
+				.displayType(isCreatedUpdatedBy ? DisplayType.Search : AD_Reference_ID)
+				.isCreatedUpdatedBy(isCreatedUpdatedBy)
+				.validationRule(validationRuleFactory.create(info.getTableName().getAsString(), AD_Val_Rule_ID, ctxTableName, ctxColumnName))
+				.build();
 	}    // createLookupInfo
-
-	/**
-	 * Creates Direct access SQL Query. Similar with regular query but without validation rules, no security and no ORDER BY.
-	 *
-	 * @return SELECT Key, Value, DisplayName, IsActive FROM TableName WHERE KeyColumn=?
-	 */
-	private static String createQueryDirect(final MLookupInfo.SqlQuery lookupInfoSqlQuery, final boolean useBaseLanguage)
-	{
-		final ColumnNameFQ keyColumnFQ = lookupInfoSqlQuery.getKeyColumn();
-		final String whereClauseSqlPart = lookupInfoSqlQuery.getSqlWhereClauseStatic();
-		final String selectSqlPart = useBaseLanguage ? lookupInfoSqlQuery.getSelectSqlPart_BaseLang() : lookupInfoSqlQuery.getSelectSqlPart_Trl();
-
-		final StringBuilder sqlWhereClause = new StringBuilder();
-		if (!Check.isBlank(whereClauseSqlPart))
-		{
-			sqlWhereClause.append("(").append(whereClauseSqlPart).append(")");
-			sqlWhereClause.append(" AND ");
-		}
-		sqlWhereClause.append("(").append(keyColumnFQ).append("=?").append(")");
-
-		return selectSqlPart + " WHERE " + sqlWhereClause;
-	}
 
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
@@ -659,28 +638,19 @@ public class MLookupFactory
 			zoomPO_Window_ID = null;
 		}
 
-		//
-		// Create MLookupInfo
-		final MLookupInfo lookupInfo = MLookupInfo.builder()
+		return MLookupInfo.builder()
 				.sqlQuery(sqlQuery)
 				.zoomSO_Window_ID(zoomSO_Window_ID)
 				.zoomPO_Window_ID(zoomPO_Window_ID)
 				.zoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 				.zoomQuery(zoomQuery)
+				.windowNo(windowNo)
 				.displayColumns(displayColumns)
 				.whereClauseDynamicSqlPart(sqlWhereClauseDynamic)
 				.autoComplete(tableRefInfo.isAutoComplete())
 				.translated(isTranslated)
 				.tooltipType(tableRefInfo.getTooltipType())
 				.build();
-		lookupInfo.setWindowNo(windowNo);
-		// lookupInfo.setDisplayColumns(displayColumns);
-		// lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
-		// lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
-		//lookupInfo.setTranslated(isTranslated);
-		//lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
-
-		return lookupInfo;
 	}
 
 	private static String joinDisplayColumnSqls(final List<String> displayColumnSqlList, final ColumnNameFQ keyColumnFQ)

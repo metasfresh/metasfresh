@@ -24,17 +24,15 @@ package org.compiere.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -43,30 +41,17 @@ import org.adempiere.ad.service.impl.LookupDisplayColumn;
 import org.adempiere.ad.table.api.ColumnNameFQ;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
-import org.adempiere.ad.validationRule.impl.NullValidationRule;
+import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Info Class for Lookup SQL (ValueObject)
- *
- * @author Jorg Janke
- * @version $Id: MLookupInfo.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
- */
-public final class MLookupInfo implements Serializable, Cloneable
+public final class MLookupInfo
 {
-	private static final Logger logger = LogManager.getLogger(MLookupInfo.class);
-
-	static final long serialVersionUID = -7958664359250070233L;
-
 	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
 
 	@Getter @NonNull private final MLookupInfo.SqlQuery sqlQuery;
@@ -75,96 +60,73 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/**
 	 * Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?)
 	 */
-	private TranslatableParameterizedString sqlQueryDirect = TranslatableParameterizedString.EMPTY;
-	private final EffectiveValidationRuleSupplier effectiveValidationRuleSupplier;
+	private final TranslatableParameterizedString sqlQueryDirect;
+	private final String whereClauseDynamicSqlPart;
+	private final IValidationRule validationRule;
+	private final IValidationRule effectiveValidationRule;
 
 	private final ConcurrentHashMap<RoleId, TranslatableParameterizedString> _adRoleId2sqlQuery;
 
 	//
 	// Legacy/Swing only fields
 	@Deprecated @Getter(AccessLevel.PUBLIC) @NonNull private final ImmutableList<LookupDisplayColumn> displayColumns;
-	@Deprecated @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private int displayType;
-	@Deprecated @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private boolean isCreatedUpdatedBy = false;
-	@Deprecated @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private int windowNo;
-	@Deprecated @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private boolean isParent = false;
-	@Deprecated @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private final boolean autoComplete;
-	@Deprecated @Getter(AccessLevel.PUBLIC) @Setter(AccessLevel.PACKAGE) private final boolean translated;
+	@Deprecated @Getter(AccessLevel.PACKAGE) private final int displayType;
+	@Deprecated @Getter(AccessLevel.PACKAGE) private final boolean isCreatedUpdatedBy;
+	@Deprecated @Getter(AccessLevel.PACKAGE) private final int windowNo;
+	@Deprecated @Getter(AccessLevel.PACKAGE) private final boolean isParent;
+	@Deprecated @Getter(AccessLevel.PACKAGE) private final boolean autoComplete;
+	@Deprecated @Getter(AccessLevel.PUBLIC) private final boolean translated;
 	@Deprecated @Getter(AccessLevel.PACKAGE) private final AdWindowId zoomSO_Window_ID;
 	@Deprecated @Getter(AccessLevel.PACKAGE) private final AdWindowId zoomPO_Window_ID;
 	@Deprecated @Getter(AccessLevel.PACKAGE) private final MQuery zoomQuery;
-	@Deprecated @Getter(AccessLevel.PUBLIC) @Setter(AccessLevel.PACKAGE) private String infoFactoryClass = null;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private MLookupInfo(
 			@NonNull final MLookupInfo.SqlQuery sqlQuery,
 			final AdWindowId zoomSO_Window_ID,
 			final AdWindowId zoomPO_Window_ID,
 			final AdWindowId zoomAD_Window_ID_Override,
 			final MQuery zoomQuery,
+			int windowNo,
+			final boolean isParent,
 			@Nullable ImmutableList<LookupDisplayColumn> displayColumns,
+			int displayType,
+			boolean isCreatedUpdatedBy,
 			@Nullable final String whereClauseDynamicSqlPart,
+			@Nullable final IValidationRule validationRule,
 			final boolean autoComplete,
 			final boolean translated,
 			@Nullable final TooltipType tooltipType)
 	{
 		this.sqlQuery = sqlQuery;
-		this.effectiveValidationRuleSupplier = new EffectiveValidationRuleSupplier();
-		this.effectiveValidationRuleSupplier.setWhereClauseDynamicSqlPart(whereClauseDynamicSqlPart);
+		this.sqlQueryDirect = sqlQuery.getSelectById();
+		this.validationRule = validationRule;
+		this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
+		this.effectiveValidationRule = CompositeValidationRule.compose(validationRule, SQLValidationRule.ofNullableSqlWhereClause(whereClauseDynamicSqlPart));
 		this._adRoleId2sqlQuery = new ConcurrentHashMap<>();
 		this.zoomSO_Window_ID = zoomSO_Window_ID;
 		this.zoomPO_Window_ID = zoomPO_Window_ID;
 		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
 		this.zoomQuery = zoomQuery;
+		this.windowNo = windowNo;
+		this.isParent = isParent;
 		this.displayColumns = displayColumns != null ? displayColumns : ImmutableList.of();
+		this.displayType = displayType;
+		this.isCreatedUpdatedBy = isCreatedUpdatedBy;
 		this.autoComplete = autoComplete;
 		this.translated = translated;
 		this.tooltipType = tooltipType;
 	}   // MLookupInfo
 
-	private MLookupInfo(final MLookupInfo original, final int windowNo)
-	{
-		this.sqlQuery = original.sqlQuery;
-		this.zoomAD_Window_ID_Override = original.zoomAD_Window_ID_Override;
-		this.tooltipType = original.tooltipType;
-		this.sqlQueryDirect = original.sqlQueryDirect;
-		this.effectiveValidationRuleSupplier = original.effectiveValidationRuleSupplier.copy();
-		this._adRoleId2sqlQuery = new ConcurrentHashMap<>(original._adRoleId2sqlQuery);
-
-		//
-		// Legacy/Swing only fields
-		this.displayColumns = original.displayColumns;
-		this.displayType = original.displayType;
-		this.isCreatedUpdatedBy = original.isCreatedUpdatedBy;
-		this.windowNo = windowNo;
-		this.isParent = original.isParent;
-		this.autoComplete = original.autoComplete;
-		this.translated = original.translated;
-		this.zoomSO_Window_ID = original.zoomSO_Window_ID;
-		this.zoomPO_Window_ID = original.zoomPO_Window_ID;
-		this.zoomQuery = original.zoomQuery;
-		this.infoFactoryClass = original.infoFactoryClass;
-
-	}
-
-	/**
-	 * String representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
 		return "MLookupInfo[" + getSqlQuery().getKeyColumn() + "-Direct=" + sqlQueryDirect + "]";
 	}
 
-	/**
-	 * Clone
-	 *
-	 * @return deep copy
-	 */
 	public MLookupInfo cloneIt(final int windowNo)
 	{
-		return new MLookupInfo(this, windowNo);
+		return toBuilder().windowNo(windowNo).build();
 	}
 
 	/**
@@ -208,98 +170,15 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return sqlQueryDirect.translate();
 	}
 
-	void setSqlQueryDirect(final String sqlQueryDirect_BaseLang, final String sqlQueryDirect_Trl)
-	{
-		this.sqlQueryDirect = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQueryDirect_BaseLang, sqlQueryDirect_Trl);
-	}
-
 	/**
 	 * @return effective validation rule
 	 */
 	public IValidationRule getValidationRule()
 	{
-		return effectiveValidationRuleSupplier.get();
-	}
-
-	/* package */void setValidationRule(@Nullable final IValidationRule validationRule)
-	{
-		this.effectiveValidationRuleSupplier.setValidationRule(validationRule);
+		return effectiveValidationRule;
 	}
 
 	public TableName getTableName() {return getSqlQuery().getTableName();}
-
-	//
-	//
-	//
-	//
-	//
-
-	private static class EffectiveValidationRuleSupplier
-	{
-		private IValidationRule result = null;
-
-		// params:
-		/**
-		 * SQL WHERE part (without WHERE keyword); this SQL includes context variables references
-		 */
-		private String whereClauseDynamicSqlPart = null;
-
-		private IValidationRule validationRule = NullValidationRule.instance;
-
-		private EffectiveValidationRuleSupplier()
-		{
-		}
-
-		private EffectiveValidationRuleSupplier(final EffectiveValidationRuleSupplier original)
-		{
-			this.result = original.result;
-			this.whereClauseDynamicSqlPart = original.whereClauseDynamicSqlPart;
-			this.validationRule = original.validationRule;
-		}
-
-		public EffectiveValidationRuleSupplier copy()
-		{
-			return new EffectiveValidationRuleSupplier(this);
-		}
-
-		public IValidationRule get()
-		{
-			IValidationRule result = this.result;
-			if (result == null)
-			{
-				result = this.result = compute();
-			}
-			return result;
-		}
-
-		private IValidationRule compute()
-		{
-			final IValidationRule whereClauseDynamicValidationRule;
-			if (whereClauseDynamicSqlPart != null && !Check.isBlank(whereClauseDynamicSqlPart))
-			{
-				final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
-				whereClauseDynamicValidationRule = validationRuleFactory.createSQLValidationRule(whereClauseDynamicSqlPart);
-			}
-			else
-			{
-				whereClauseDynamicValidationRule = NullValidationRule.instance;
-			}
-
-			return CompositeValidationRule.compose(validationRule, whereClauseDynamicValidationRule);
-		}
-
-		void setWhereClauseDynamicSqlPart(final String whereClauseDynamicSqlPart)
-		{
-			this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
-			this.result = null; // reset
-		}
-
-		void setValidationRule(@Nullable final IValidationRule validationRule)
-		{
-			this.validationRule = validationRule == null ? NullValidationRule.instance : validationRule;
-			this.result = null; // reset
-		}
-	}
 
 	//
 	//
@@ -389,7 +268,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 					.sqlFrom_BaseLang(sqlFrom_BaseLang)
 					.sqlFrom_Trl(sqlFrom_Trl)
 					.build();
-			this.sqlWhereClauseStatic = sqlWhereClauseStatic;
+			this.sqlWhereClauseStatic = StringUtils.trimBlankToNull(sqlWhereClauseStatic);
 			this.sqlOrderBy = sqlOrderBy;
 			this.showInactiveValues = showInactiveValues;
 			this.securityDisabled = securityDisabled;
@@ -406,6 +285,26 @@ public final class MLookupInfo implements Serializable, Cloneable
 			}
 			sqlQueryFinal_BaseLang.append(" ORDER BY ").append(sqlOrderBy);
 			sqlQueryFinal_Trl.append(" ORDER BY ").append(sqlOrderBy);
+
+			return TranslatableParameterizedString.of(
+					CTXNAME_AD_Language,
+					sqlQueryFinal_BaseLang.toString(),
+					sqlQueryFinal_Trl.toString());
+		}
+
+		private TranslatableParameterizedString getSelectById()
+		{
+			final StringBuilder sqlQueryFinal_BaseLang = new StringBuilder(getSelectSqlPart_BaseLang());
+			final StringBuilder sqlQueryFinal_Trl = new StringBuilder(getSelectSqlPart_Trl());
+
+			sqlQueryFinal_BaseLang.append(" WHERE (").append(keyColumn).append("=?").append(")");
+			sqlQueryFinal_Trl.append(" WHERE (").append(keyColumn).append("=?").append(")");
+
+			if (sqlWhereClauseStatic != null)
+			{
+				sqlQueryFinal_BaseLang.append(" AND (").append(sqlWhereClauseStatic).append(")");
+				sqlQueryFinal_Trl.append(" AND (").append(sqlWhereClauseStatic).append(")");
+			}
 
 			return TranslatableParameterizedString.of(
 					CTXNAME_AD_Language,
