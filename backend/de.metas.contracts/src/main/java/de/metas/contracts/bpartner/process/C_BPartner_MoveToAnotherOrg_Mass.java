@@ -65,7 +65,7 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
 	protected Instant p_startDate;
 	@Param(parameterName = PARAM_IsCloseInvoiceCandidate, mandatory = true)
-	private boolean isCloseInvoiceCandidate;
+	protected boolean isCloseInvoiceCandidate;
 	@Param(parameterName = PARAM_WhereClause, mandatory = true)
 	protected String p_WhereClause;
 
