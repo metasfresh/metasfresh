@@ -1043,12 +1043,6 @@ public final class MLookup extends Lookup implements Serializable
 		}
 	}
 
-	@Override
-	public String getInfoFactoryClass()
-	{
-		return "";
-	}
-
 	static ArrayKey createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final Object parentValidationKey)
 	{
 		final List<Object> keys = new ArrayList<>();
