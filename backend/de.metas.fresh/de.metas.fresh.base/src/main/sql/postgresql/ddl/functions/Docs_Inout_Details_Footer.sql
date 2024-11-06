@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN M_InOut_ID  numeric,
-                                                                                     IN AD_Language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID  numeric,
+                                                                                     IN p_Language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN M_InOut_ID  numeric,
-                                                                                        IN AD_Language Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID  numeric,
+                                                                                        IN p_Language Character Varying(6))
 
     RETURNS TABLE
             (
@@ -40,7 +40,7 @@ FROM (
          FROM m_inout io
                   LEFT JOIN c_doctype dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = 'de_DE'
+                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
          WHERE io.isActive = 'Y'
          UNION
          ---------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ FROM (
          FROM m_inout io
                   LEFT JOIN c_doctype_trl dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = 'de_DE'
+                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
          WHERE io.isActive = 'Y'
          UNION
          ---------------------------------------------------------------------------------------------
@@ -75,11 +75,11 @@ FROM (
                 io.incotermlocation
          FROM m_inout io
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = 'de_DE'
+                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
          WHERE io.isActive = 'Y') footer
 
-WHERE footer.m_inout_id = $1
-  AND footer.language = $2
+WHERE footer.m_inout_id = p_InOut_ID
+  AND footer.language = p_Language
 ORDER BY pozition
 
 $$
