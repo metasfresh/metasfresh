@@ -5,16 +5,18 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Fo
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID  numeric,
                                                                                         IN p_Language Character Varying(6))
 
-RETURNS TABLE
-(
-textleft text,
-textcenter text,
-language character varying,
-m_inout_id numeric(10,0),
-tag text,
-pozition integer
+    RETURNS TABLE
+            (
+                textleft         text,
+                textcenter       text,
+                language         character varying,
+                m_inout_id       numeric(10, 0),
+                tag              text,
+                pozition         integer,
+                Incoterms        character varying,
+                incotermlocation character varying
 
-)
+            )
 
 AS
 $$

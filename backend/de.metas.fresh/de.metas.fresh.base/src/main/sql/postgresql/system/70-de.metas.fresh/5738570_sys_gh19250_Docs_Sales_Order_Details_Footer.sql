@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN p_Order_ID numeric,
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN p_Order_ID numeric,
                                                                                             IN p_Language Character Varying(6))
 ;
 
@@ -6,33 +6,43 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                                                                                               IN p_Language Character Varying(6))
     RETURNS TABLE
             (
-                paymentrule    character varying(60),
-                paymentterm    character varying(60),
-                discount1      numeric,
-                discount2      numeric,
-                discount_date1 text,
-                discount_date2 text,
-                cursymbol      character varying(10),
-                documentnote   text
+                paymentrule       character varying(60),
+                paymentterm       character varying(60),
+                discount1         numeric,
+                discount2         numeric,
+                discount_date1    text,
+                discount_date2    text,
+                cursymbol         character varying(10),
+                documentnote      text,
+                descriptionbottom text,
+                subject           character varying,
+                textsnippet       character varying,
+                Incoterms         character varying,
+                incotermlocation  character varying
             )
 AS
 $$
-SELECT COALESCE(reft.name, ref.name)                                                                            AS paymentrule,
-       COALESCE(ptt.name, pt.name)                                                                              as paymentterm,
+SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
+       COALESCE(ptt.name, pt.name)                            AS paymentterm,
        (CASE
             WHEN pt.DiscountDays > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount / 100))
-            ELSE null END)                                                                                      AS discount1,
+        END)                                                  AS discount1,
        (CASE
             WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
-            ELSE null END)                                                                                      AS discount2,
-       to_char((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')                                                    AS discount_date1,
-       to_char((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY')                                                   AS discount_date2,
+        END)                                                  AS discount2,
+       TO_CHAR((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
+       TO_CHAR((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
        c.cursymbol,
-       COALESCE(nullif(dtt.documentnote, ''),
-                nullif(dt.documentnote, ''))                                                                    as documentnote
+       COALESCE(NULLIF(dtt.documentnote, ''),
+                NULLIF(dt.documentnote, ''))                  AS documentnote,
+       o.descriptionbottom,
+       otb.subject,
+       otb.textsnippet,
+       COALESCE(inc_trl.name, inc.name)                       AS Incoterms,
+       o.incotermlocation
 FROM C_Order o
 
-         LEFT OUTER JOIN C_PaymentTerm pt on o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
+         LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt
                          ON o.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language AND ptt.isActive = 'Y'
 
@@ -56,4 +66,5 @@ WHERE o.C_Order_ID = p_Order_ID
   AND o.isActive = 'Y'
 
 $$
-    LANGUAGE sql STABLE;
+    LANGUAGE sql STABLE
+;
