@@ -78,7 +78,6 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -146,6 +145,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
+import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFound;
+import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
@@ -1183,14 +1184,14 @@ public class C_Invoice_Candidate_StepDef
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 			if (invoiceCandidates.isEmpty())
 			{
-				return ProviderResult.resultWasNotFound("No C_Invoice_Candidates (yet) for C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+				return resultWasNotFound("No C_Invoice_Candidates (yet) for C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", orderLine.getC_OrderLine_ID(), orderLineIdentifier);
 			}
 			final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates.stream().map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())).collect(ImmutableList.toImmutableList());
 			if (invoiceCandDAO.hasInvalidInvoiceCandidates(invoiceCandidateIds))
 			{
-				return ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID={0} is not (yet) updated; C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", invoiceCandidateIds, orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+				return resultWasNotFound("C_Invoice_Candidate_ID={0} is not (yet) updated; C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", invoiceCandidateIds, orderLine.getC_OrderLine_ID(), orderLineIdentifier);
 			}
-			return ProviderResult.resultWasFound(invoiceCandidates);
+			return resultWasFound(invoiceCandidates);
 		};
 		final List<I_C_Invoice_Candidate> invoiceCandidates = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, provider);
 
@@ -1240,14 +1241,9 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
-			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-							+ "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-							+ "**query result:**\n{}\n"
-							+ "**all candidates:**\n{}",
-					row, candidatesQuery,
-					candidatesQuery.list(),
-					Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(candidatesQuery), logContext);
+
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+					() -> retrieveInvoiceCandidate(candidatesQuery));
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -1387,9 +1383,9 @@ public class C_Invoice_Candidate_StepDef
 		final I_C_Invoice_Candidate invoiceCandidate = candidateIQuery.firstOnlyOrNull(I_C_Invoice_Candidate.class);
 		if (invoiceCandidate == null)
 		{
-			return ProviderResult.resultWasNotFound("No invoice candidate found for query " + candidateIQuery);
+			return resultWasNotFound("No invoice candidate found for query " + candidateIQuery);
 		}
-		return ProviderResult.resultWasFound(invoiceCandidate);
+		return resultWasFound(invoiceCandidate);
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidateQuery(final @NonNull Map<String, String> row)
@@ -1517,20 +1513,28 @@ public class C_Invoice_Candidate_StepDef
 		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		final IQuery<I_C_Invoice_Candidate> invCandQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
-				.create()
-				.firstOnlyOptional(I_C_Invoice_Candidate.class);
-
-		if (!invoiceCandidate.isPresent())
+				.create();
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invCandQuery.list(I_C_Invoice_Candidate.class);
+		if (invoiceCandidates.isEmpty())
 		{
 			return false;
 		}
+		else if (invoiceCandidates.size() == 1)
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidates.get(0));
 
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
-
-		return true;
+			return true;
+		}
+		else
+		{
+			throw new AdempiereException("Got more than one invoice candidate")
+					.appendParametersToMessage()
+					.setParameter("query", invCandQuery)
+					.setParameter("candidates found", invoiceCandidates);
+		}
 	}
 
 	private ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
@@ -1538,9 +1542,9 @@ public class C_Invoice_Candidate_StepDef
 		InterfaceWrapperHelper.refresh(invoiceCandidate);
 		if (invoiceCandidate.isProcessed())
 		{
-			return ProviderResult.resultWasFound(invoiceCandidate);
+			return resultWasFound(invoiceCandidate);
 		}
-		return ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
+		return resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
 	}
 
 	@NonNull
@@ -1616,10 +1620,10 @@ public class C_Invoice_Candidate_StepDef
 		if (!errors.isEmpty())
 		{
 			final String errorMessages = String.join(" && \n", errors);
-			return ProviderResult.resultWasNotFound(errorMessages);
+			return resultWasNotFound(errorMessages);
 		}
 
-		return ProviderResult.resultWasFound(invoiceCandidateRecord);
+		return resultWasFound(invoiceCandidateRecord);
 	}
 
 	private boolean isInvoiceCandidateProcessed(

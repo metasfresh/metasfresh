@@ -22,19 +22,17 @@ package de.metas.payment.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
-
-
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
 import de.metas.payment.esr.api.impl.ESRBPBankAccountDAO;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Using this name for lack of better inspiration to differentiate from the {@link ESRRegularLineParser}.<br>

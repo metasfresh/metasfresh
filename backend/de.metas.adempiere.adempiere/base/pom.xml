@@ -193,7 +193,7 @@
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
         </dependency>
-        <!-- itext is required by org.adempiere.pdf.Document.java-->
+        <!-- itextpdf is required by org.adempiere.pdf.Document.java-->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>

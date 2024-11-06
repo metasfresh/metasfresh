@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1677687518L;
+	private static final long serialVersionUID = 137682731L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (final Properties ctx, final int EDI_DesadvLine_ID, @Nullable final String trxName)
@@ -183,19 +183,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setGTIN_CU (final @Nullable java.lang.String GTIN_CU)
+	public void setGTIN_CU (final @Nullable String GTIN_CU)
 	{
 		set_Value (COLUMNNAME_GTIN_CU, GTIN_CU);
 	}
 
 	@Override
-	public java.lang.String getGTIN_CU() 
+	public String getGTIN_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_CU);
 	}
 
 	@Override
-	public void setGTIN_TU (final @Nullable java.lang.String GTIN_TU)
+	public void setGTIN_TU (final @Nullable String GTIN_TU)
 	{
 		set_Value (COLUMNNAME_GTIN_TU, GTIN_TU);
 	}
@@ -225,6 +225,17 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.lang.String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		throw new IllegalArgumentException ("IsDeliveryClosed is virtual column");	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override

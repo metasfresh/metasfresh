@@ -356,7 +356,7 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-
+		
 		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
@@ -371,8 +371,9 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
+
 	private void addInOutLine(
-			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final I_M_InOutLine inOutLineRecord, 
 			@NonNull final BPartnerId recipientBPartnerId,
 			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
@@ -697,12 +698,6 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
-	{
-		return desadvDAO.retrieveAllInOutLines(desadvLine);
-	}
-
-	@Override
 	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(schedule.getC_OrderLine_ID());
@@ -717,6 +712,12 @@ public class DesadvBL implements IDesadvBL
 		final BigDecimal qtyOrdered_Override = getQtyOrdered_Override(schedule);
 		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
 		desadvDAO.save(desadvLineRecord);
+	}
+	
+	@Override
+	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
+	{
+		return desadvDAO.retrieveAllInOutLines(desadvLine);
 	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
@@ -733,7 +734,7 @@ public class DesadvBL implements IDesadvBL
 										   false,
 										   clientId.getRepoId());
 	}
-
+	
 	private Optional<ITranslatableString> createSingleMsg(
 			@NonNull final List<I_EDI_Desadv> desadvsToSkip,
 			@NonNull final BigDecimal minimumSumPercentage)
@@ -933,7 +934,7 @@ public class DesadvBL implements IDesadvBL
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
-
+	
 	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());

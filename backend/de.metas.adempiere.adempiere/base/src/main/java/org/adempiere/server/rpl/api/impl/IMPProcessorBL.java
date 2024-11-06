@@ -289,6 +289,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return new IMPProcessorAdempiereProcessorAdapter(impProcessor);
 	}
 
+	@Nullable
 	@Override
 	public org.compiere.model.I_IMP_Processor getIMP_Processor(final AdempiereProcessor adempiereProcessor)
 	{

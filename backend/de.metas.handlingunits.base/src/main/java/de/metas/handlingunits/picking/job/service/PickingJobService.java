@@ -99,7 +99,7 @@ public class PickingJobService
 {
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
-
+	
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -118,7 +118,7 @@ public class PickingJobService
 	@NonNull private final PickingJobSlotService pickingJobSlotService;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
-
+	
 	public static PickingJobService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
@@ -217,7 +217,7 @@ public class PickingJobService
 		return prepareToComplete(pickingJob).execute();
 	}
 
-	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(final PickingJob pickingJob)
+	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
 				.pickingJobService(this)

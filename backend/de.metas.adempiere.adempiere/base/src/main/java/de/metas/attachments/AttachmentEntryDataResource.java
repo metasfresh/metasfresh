@@ -1,17 +1,14 @@
 package de.metas.attachments;
 
+import com.google.common.base.MoreObjects;
+import lombok.Builder;
+import lombok.NonNull;
+import org.springframework.core.io.AbstractResource;
+
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import org.springframework.core.io.AbstractResource;
-
-import com.google.common.base.MoreObjects;
-
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L

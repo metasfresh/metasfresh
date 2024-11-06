@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.edi
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%

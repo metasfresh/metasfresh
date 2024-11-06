@@ -35,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 
 import java.util.List;

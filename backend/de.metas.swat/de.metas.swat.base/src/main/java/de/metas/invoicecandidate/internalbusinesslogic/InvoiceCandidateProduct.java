@@ -2,7 +2,6 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;

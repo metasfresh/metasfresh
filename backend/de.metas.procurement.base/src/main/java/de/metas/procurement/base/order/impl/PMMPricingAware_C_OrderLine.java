@@ -1,20 +1,8 @@
 package de.metas.procurement.base.order.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -26,14 +14,23 @@ import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.lang3.NotImplementedException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /*
  * #%L

@@ -28,7 +28,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        m_inout_id,
        lotnumber,
        gtin_tu_packingmaterial,
-       gtin_lu_packingmaterial,
+       gtin_packingmaterial as gtin_lu_packingmaterial,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_ID) as M_HU_PackagingCode_LU_Text,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_TU_ID) as M_HU_PackagingCode_TU_Text
 from EDI_Desadv_Pack pack

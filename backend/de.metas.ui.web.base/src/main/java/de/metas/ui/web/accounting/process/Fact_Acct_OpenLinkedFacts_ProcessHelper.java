@@ -1,19 +1,17 @@
 package de.metas.ui.web.accounting.process;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_Fact_Acct;
-
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_Fact_Acct_Transactions_View;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 {

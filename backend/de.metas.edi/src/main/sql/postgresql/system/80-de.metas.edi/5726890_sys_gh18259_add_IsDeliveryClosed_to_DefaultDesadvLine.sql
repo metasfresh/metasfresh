@@ -1,4 +1,3 @@
-
 -- Column: EDI_DesadvLine.IsDeliveryClosed
 -- Column SQL (old): null
 -- Column: EDI_DesadvLine.IsDeliveryClosed

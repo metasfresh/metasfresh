@@ -37,7 +37,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
@@ -45,7 +45,7 @@ public class InfrastructureSupport
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
-
+	
 	/**
 	 * Can be set when running/developing cucumber-tests locally.
 	 * If set, then cucumber runs against your local DB, and not an ephemeral DB-image.
@@ -198,6 +198,15 @@ public class InfrastructureSupport
 							.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 							.build());
 			logger.info("Applied migration scripts (took {})", stopwatch);
+
+			// apply our local migration scripts to get our DB up to date
+			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
+			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
+					.workspaceDir(workspaceDir)
+					.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
+					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+					.build();
+			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
 		}
 		else
 		{

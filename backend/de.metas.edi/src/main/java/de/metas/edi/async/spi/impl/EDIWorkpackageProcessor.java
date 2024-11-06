@@ -39,16 +39,6 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 
 import java.util.ArrayList;
@@ -74,7 +64,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-
 		final List<Exception> feedback = new ArrayList<Exception>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);

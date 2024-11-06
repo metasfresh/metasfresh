@@ -196,7 +196,6 @@ class DesadvBLTest
 		softly.assertAll();
 	}
 
-
 	/**
 	 * have 10PCE fitting into 1COLI and 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0COLI;

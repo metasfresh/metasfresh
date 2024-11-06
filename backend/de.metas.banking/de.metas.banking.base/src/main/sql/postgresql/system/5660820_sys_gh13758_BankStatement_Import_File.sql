@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-10-17T13:52:58.724Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556036,TO_TIMESTAMP('2022-10-17 16:52:58','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Import_Camt53_File',1,'Y','N','Y','Y','C_Import_Camt53_File','N',1000000,TO_TIMESTAMP('2022-10-17 16:52:58','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556036,TO_TIMESTAMP('2022-10-17 16:52:58','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Import_Camt53_File',1,'Y','N','Y','Y','C_Import_Camt53_File',1000000,TO_TIMESTAMP('2022-10-17 16:52:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-10-17T13:52:58.751Z

@@ -461,7 +461,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			Loggables.withLogger(logger, Level.DEBUG)
 					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
-												 iciol.getC_InvoiceCandidate_InOutLine_ID(), ic.getC_Invoice_Candidate_ID()));
+												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
 
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}

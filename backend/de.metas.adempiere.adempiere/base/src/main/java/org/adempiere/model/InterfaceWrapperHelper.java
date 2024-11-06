@@ -63,7 +63,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.apache.poi.ss.formula.functions.T;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -849,7 +848,6 @@ public class InterfaceWrapperHelper
 	 * InterfaceWrapperHelper throws it.
 	 */
 	/* package */
-
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
