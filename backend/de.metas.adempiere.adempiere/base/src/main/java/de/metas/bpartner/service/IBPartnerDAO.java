@@ -50,6 +50,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -57,6 +58,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -178,7 +180,6 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
 
 	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
-
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
@@ -346,6 +347,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
+	Iterator<I_C_BPartner> retrievePartnersByQuery(@NonNull IQuery<I_C_BPartner> query);
 
 	@Value
 	@Builder
