@@ -18,7 +18,7 @@ import java.util.Set;
  * @author tsa
  */
 @Value
-		/* package */ class SQLValidationRule implements IValidationRule
+public class SQLValidationRule implements IValidationRule
 {
 	String name;
 	@NonNull IStringExpression prefilterWhereClause;
