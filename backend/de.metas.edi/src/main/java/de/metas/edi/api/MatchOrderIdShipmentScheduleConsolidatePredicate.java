@@ -25,9 +25,15 @@ package de.metas.edi.api;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllowConsolidatePredicate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderQuery;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -40,9 +46,31 @@ public class MatchOrderIdShipmentScheduleConsolidatePredicate implements IShipme
 	@NonNull
 	private final IDesadvBL desadvBL;
 
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	/**
+	 * Don't enforce different shipments if the given [@code sched}'s {@code C_Order} has no DESADV.
+	 * Also see {@link de.metas.edi.model.validator.C_Order#addToDesadv(de.metas.edi.model.I_C_Order)}.
+	 */
 	@Override
 	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
 	{
+		final int orderID = sched.getC_Order_ID();
+		if (orderID <= 0)
+		{
+			return true; // if there is no order, there won't be a DESADV.
+		}
+
+		final I_C_Order orderRecord = orderDAO
+				.retrieveByOrderCriteria(OrderQuery.builder().orderId(orderID).build())
+				.orElseThrow(() -> new AdempiereException("Unable to retrieve C_Order for C_Order_ID=" + orderID));
+
+		final int desadvID = InterfaceWrapperHelper.create(orderRecord, de.metas.edi.model.I_C_Order.class).getEDI_Desadv_ID();
+		if (desadvID <= 0)
+		{
+			return true; // if the order doesn't have a desadv, we shouldn't bother
+		}
+
 		final boolean isMatchUsingOrderId = desadvBL.isMatchUsingOrderId(ClientId.ofRepoId(sched.getAD_Client_ID()));
 		if (isMatchUsingOrderId)
 		{
