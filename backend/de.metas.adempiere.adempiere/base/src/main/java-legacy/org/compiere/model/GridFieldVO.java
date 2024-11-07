@@ -356,10 +356,10 @@ public class GridFieldVO implements Serializable
 				{
 					vo.Included_Tab_ID = rs.getInt(i);
 				}
-				else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
-				{
-					vo.InfoFactoryClass = rs.getString(i);
-				}
+				// else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
+				// {
+				// 	vo.InfoFactoryClass = rs.getString(i);
+				// }
 				else if (columnName.equalsIgnoreCase("IsAutocomplete"))
 				{
 					vo.autocomplete = "Y".equals(rs.getString(i));
@@ -856,8 +856,6 @@ public class GridFieldVO implements Serializable
 
 	public boolean IsCalculated = false; // metas
 
-	public String InfoFactoryClass = null;
-
 	private String fieldEntityType = null;
 
 	private boolean useDocSequence = false;
@@ -968,7 +966,6 @@ public class GridFieldVO implements Serializable
 							IsParent,
 							AD_Val_Rule_ID); // metas: 03271
 				}
-				lookupInfo.setInfoFactoryClass(this.InfoFactoryClass);
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{
