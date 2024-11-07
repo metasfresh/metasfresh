@@ -59,7 +59,9 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -73,6 +75,9 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -141,7 +146,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
-import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -575,7 +579,11 @@ public class HUTestHelper
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService,
-				Mockito.mock(PPOrderSourceHUService.class));
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+				)));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(

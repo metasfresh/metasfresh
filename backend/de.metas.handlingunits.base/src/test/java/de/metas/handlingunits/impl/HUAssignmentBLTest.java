@@ -13,9 +13,13 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -34,7 +38,6 @@ import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +77,11 @@ public class HUAssignmentBLTest
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService,
-				Mockito.mock(PPOrderSourceHUService.class));
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+										   )));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(

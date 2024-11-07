@@ -27,7 +27,12 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -36,7 +41,6 @@ import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDa
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
@@ -53,7 +57,11 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService,
-				Mockito.mock(PPOrderSourceHUService.class));
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+										   )));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(
