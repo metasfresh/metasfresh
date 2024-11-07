@@ -13,6 +13,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -25,6 +26,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,8 @@ public class DistributionRestService
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
 				.orgDAO(Services.get(IOrgDAO.class))
+				.orderBL(Services.get(IOrderBL.class))
+				.ppOrderBL(Services.get(IPPOrderBL.class))
 				.build();
 	}
 
