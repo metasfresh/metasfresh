@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN p_Order_ID numeric,
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN p_Order_ID numeric,
                                                                                                IN p_Language Character Varying(6))
 ;
 
@@ -19,15 +19,30 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
             )
 AS
 $$
-SELECT
-	COALESCE(reft.name, ref.name) AS paymentrule,
-	COALESCE(ptt.name, pt.name) as paymentterm,
-	(CASE WHEN pt.DiscountDays > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount / 100)) ELSE null END) AS discount1,
-	(CASE WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100)) ELSE null END) AS discount2,
-	to_char((o.DateOrdered - DiscountDays),'dd.MM.YYYY') AS discount_date1,
-	to_char((o.DateOrdered - DiscountDays2),'dd.MM.YYYY') AS discount_date2,
-	c.cursymbol
-	
+SELECT COALESCE(reft.name, ref.name)                                          AS paymentrule,
+       REPLACE(REPLACE(REPLACE(COALESCE(ptt.name, pt.name),
+                               '$datum_netto',
+                               TO_CHAR(o.dateordered + pt.netdays, 'DD.MM.YYYY')),
+                       '$datum_skonto_1',
+                       TO_CHAR(o.dateordered::date + pt.discountdays, 'DD.MM.YYYY')),
+               '$datum_skonto_2',
+               TO_CHAR(o.dateordered::date + pt.discountdays2, 'DD.MM.YYYY')) AS paymentterm,
+       (CASE
+            WHEN pt.DiscountDays > 0
+                THEN (o.grandtotal + (o.grandtotal * pt.discount / 100))
+        END)                                                                  AS discount1,
+       (CASE
+            WHEN pt.DiscountDays2 > 0
+                THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
+        END)                                                                  AS discount2,
+       TO_CHAR((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')                  AS discount_date1,
+       TO_CHAR((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY')                 AS discount_date2,
+       c.cursymbol,
+       COALESCE(inc_trl.name, inc.name)                                       AS Incoterms,
+       o.incotermlocation,
+       o.descriptionbottom
+
+
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
@@ -45,4 +60,5 @@ WHERE o.C_Order_ID = p_Order_ID
   AND o.isActive = 'Y'
 
 $$
-LANGUAGE sql STABLE;
+    LANGUAGE sql STABLE
+;

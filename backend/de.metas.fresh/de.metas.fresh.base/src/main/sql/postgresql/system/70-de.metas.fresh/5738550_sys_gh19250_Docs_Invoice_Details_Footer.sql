@@ -65,4 +65,5 @@ WHERE i.C_Invoice_ID = p_Invoice_ID
   AND i.isActive = 'Y'
 
 $$
-LANGUAGE sql STABLE;
+    LANGUAGE sql STABLE
+;
