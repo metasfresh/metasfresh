@@ -18,6 +18,7 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
 import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -130,6 +131,16 @@ public class DDOrderService
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
 		documentBL.processEx(ddOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+	}
+
+	public void print(@NonNull final DDOrderId ddOrderId)
+	{
+		DefaultModelArchiver.builder()
+				.record(getById(ddOrderId))
+				.isDirectEnqueue(true)
+				.isDirectProcessQueueItem(true)
+				.build()
+				.archive();
 	}
 
 	public void closeLine(final I_DD_OrderLine ddOrderLine)

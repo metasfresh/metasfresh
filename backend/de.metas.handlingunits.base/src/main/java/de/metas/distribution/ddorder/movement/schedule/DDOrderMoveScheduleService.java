@@ -7,12 +7,13 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateCommand;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
-import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanLine;
+import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,15 +33,18 @@ public class DDOrderMoveScheduleService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final HUReservationService huReservationService;
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 
 	public DDOrderMoveScheduleService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 		this.huReservationService = huReservationService;
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 	}
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
@@ -176,6 +180,7 @@ public class DDOrderMoveScheduleService
 	public DDOrderMoveSchedule dropTo(@NonNull final DDOrderDropToRequest request)
 	{
 		return DDOrderDropToCommand.builder()
+				.ppOrderSourceHUService(ppOrderSourceHUService)
 				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
 				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
 				.request(request)

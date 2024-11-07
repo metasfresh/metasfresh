@@ -36,9 +36,15 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -103,7 +109,14 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
-				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository(), huReservationService));
+				new DDOrderMoveScheduleService(ddOrderLowLevelDAO,
+											   new DDOrderMoveScheduleRepository(),
+											   huReservationService,
+											   new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+																		  new PPOrderIssueScheduleService(
+																				  new PPOrderIssueScheduleRepository(),
+																				  new HUQtyService(InventoryService.newInstanceForUnitTesting())
+																		  ))));
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 
