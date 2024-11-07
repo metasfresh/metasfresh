@@ -337,20 +337,13 @@ public class MProduct extends X_M_Product
 		// Product category changed, then update the accounts
 		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 		{
-			update_Accounting();
+			update_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
+					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 		}
 		
 		return true;
 	}	// afterSave
-
-	private void update_Accounting()
-	{
-		final String sql = DB.convertSqlToNative("select updateM_Product_Acct("
-				 + getM_Product_ID()
-				+ ")");
-
-		DB.executeUpdateEx(sql, get_TrxName());
-	}
 
 	@Override
 	protected boolean beforeDelete()
