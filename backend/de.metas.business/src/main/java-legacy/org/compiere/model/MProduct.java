@@ -334,6 +334,7 @@ public class MProduct extends X_M_Product
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
+
 		// Product category changed, then update the accounts
 		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 		{

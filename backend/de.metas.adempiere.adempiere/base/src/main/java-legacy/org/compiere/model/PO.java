@@ -4453,7 +4453,7 @@ public abstract class PO
 
 		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
 
-		// Create SQL Statement - INSERT
+		// Create SQL Statement - UPDATE
 		final StringBuilder sb = new StringBuilder("UPDATE ")
 				.append(acctTable)
 				.append(" SET ")
