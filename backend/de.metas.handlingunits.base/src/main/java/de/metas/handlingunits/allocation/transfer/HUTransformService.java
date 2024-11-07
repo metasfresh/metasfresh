@@ -1688,25 +1688,26 @@ public class HUTransformService
 
 	public void cusToExistingCU(@NonNull final List<I_M_HU> sourceCuHUs, @NonNull final I_M_HU targetCU)
 	{
-		final ProductId targetHUProductId = getSingleProductStorage(targetCU).getProductId();
-
-		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU, targetHUProductId));
+		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU));
 	}
 
-	public void cuToExistingCU(
-			@NonNull final I_M_HU sourceCuHU,
-			@NonNull final I_M_HU targetHU,
-			@NonNull final ProductId targetHUProductId)
+	private void cuToExistingCU(@NonNull final I_M_HU sourceCuHU, @NonNull final I_M_HU targetHU)
 	{
-		trxManager.runInThreadInheritedTrx(() -> cuToExistingCU_InTrx(sourceCuHU, targetHU, targetHUProductId));
+		trxManager.runInThreadInheritedTrx(() -> cuToExistingCU_InTrx(sourceCuHU, targetHU));
 	}
 
 	private void cuToExistingCU_InTrx(
 			@NonNull final I_M_HU sourceCuHU,
-			@NonNull final I_M_HU targetHU,
-			@NonNull final ProductId targetHUProductId)
+			@NonNull final I_M_HU targetHU)
 	{
 		final IMutableHUContext huContextWithOrgId = huContextFactory.createMutableHUContext(InterfaceWrapperHelper.getContextAware(targetHU));
+		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory()
+				.getStorage(targetHU)
+				.getProductStorages();
+		if (productStorages.size() > 1)
+		{
+			throw new AdempiereException("CUs with more than one product are not supported!");
+		}
 
 		final IAllocationSource source = HUListAllocationSourceDestination
 				.of(sourceCuHU, AllocationStrategyType.UNIFORM)
@@ -1714,6 +1715,9 @@ public class HUTransformService
 		final IAllocationDestination destination = HUListAllocationSourceDestination.of(targetHU, AllocationStrategyType.UNIFORM);
 
 		final IHUProductStorage sourceProductStorage = getSingleProductStorage(sourceCuHU);
+		final ProductId targetHUProductId = productStorages.isEmpty()
+				? sourceProductStorage.getProductId()
+				: productStorages.get(0).getProductId();
 
 		Check.assume(sourceProductStorage.getProductId().equals(targetHUProductId), "Source and Target HU productId must match!");
 
