@@ -21,11 +21,13 @@
  */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -332,10 +334,40 @@ public class MProduct extends X_M_Product
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
+		// Product category changed, then update the accounts
+		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+		{
+			update_Accounting();
+		}
 		
 		return true;
 	}	// afterSave
-	
+
+	private void update_Accounting()
+	{
+		final String sql = DB.convertSqlToNative("UPDATE M_Product_Acct pa "
+				//
+				+ "SET (P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
+				+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
+				+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
+				+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
+				+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct)="
+				//
+				+ " (SELECT P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
+				+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
+				+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
+				+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
+				+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct"
+				+ " FROM M_Product_Category_Acct pca"
+				+ " WHERE pca.M_Product_Category_ID=" + getM_Product_Category_ID()
+				+ " AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID"
+				+ "), Updated=now(), UpdatedBy=0 "
+				//
+				+ "WHERE pa.M_Product_ID=" + getM_Product_ID()
+				+ " AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=pa.M_Product_ID AND p.M_Product_Category_ID=" + getM_Product_Category_ID() + ")");
+
+		DB.executeUpdateEx(sql, get_TrxName());
+	}
 
 	@Override
 	protected boolean beforeDelete()
