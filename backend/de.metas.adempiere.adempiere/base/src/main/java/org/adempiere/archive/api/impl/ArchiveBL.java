@@ -150,6 +150,9 @@ public class ArchiveBL implements IArchiveBL
 		//FRESH-349: Set ad_pinstance
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
 
+		archive.setIsDirectEnqueue(request.isDirectEnqueue());
+		archive.setIsDirectProcessQueueItem(request.isDirectProcessQueueItem());
+
 		if (request.isSave())
 		{
 			InterfaceWrapperHelper.save(archive);

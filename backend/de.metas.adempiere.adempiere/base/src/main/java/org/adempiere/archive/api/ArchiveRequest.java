@@ -82,4 +82,7 @@ public class ArchiveRequest
 
 	@Nullable
 	Language language;
+
+	boolean isDirectEnqueue;
+	boolean isDirectProcessQueueItem;
 }

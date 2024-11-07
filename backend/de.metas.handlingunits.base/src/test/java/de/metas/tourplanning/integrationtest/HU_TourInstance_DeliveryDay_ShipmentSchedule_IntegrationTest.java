@@ -28,6 +28,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
@@ -35,6 +36,7 @@ import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDa
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
@@ -50,7 +52,8 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
-				huReservationService);
+				huReservationService,
+				Mockito.mock(PPOrderSourceHUService.class));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(

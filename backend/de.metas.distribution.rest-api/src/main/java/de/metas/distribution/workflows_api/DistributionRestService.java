@@ -13,6 +13,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -24,6 +25,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -90,6 +92,7 @@ public class DistributionRestService
 				.map(DistributionRestService::toDDOrderReference);
 	}
 
+	@NonNull
 	private static DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
 	{
 		return DDOrderReference.builder()
@@ -98,6 +101,8 @@ public class DistributionRestService
 				.datePromised(InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID()))
 				.fromWarehouseId(WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.toWarehouseId(WarehouseId.ofRepoId(ddOrder.getM_Warehouse_To_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
+				.ppOrderId(PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID()))
 				.build();
 	}
 
@@ -189,6 +194,7 @@ public class DistributionRestService
 
 		final DDOrderId ddOrderId = job.getDdOrderId();
 		ddOrderService.close(ddOrderId);
+		ddOrderService.print(ddOrderId);
 
 		return getJobById(ddOrderId);
 	}
