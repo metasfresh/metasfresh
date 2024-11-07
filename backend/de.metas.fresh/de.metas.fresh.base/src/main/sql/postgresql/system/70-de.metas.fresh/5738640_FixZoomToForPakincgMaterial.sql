@@ -3,7 +3,7 @@
 -- Field: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> Eigene-Kd. Nr.
 -- Column: C_BPartner.CustomerNoAtVendor
 -- 2024-11-07T09:48:17.700Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,560221,733463,0,224,0,TO_TIMESTAMP('2024-11-07 11:48:17.468','YYYY-MM-DD HH24:MI:SS.US'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N','Eigene-Kd. Nr. ',0,200,0,1,1,TO_TIMESTAMP('2024-11-07 11:48:17.468','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,560221,733463,0,224,0,TO_TIMESTAMP('2024-11-07 11:48:17.468','YYYY-MM-DD HH24:MI:SS.US'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Eigene-Kd. Nr. ',0,200,0,1,1,TO_TIMESTAMP('2024-11-07 11:48:17.468','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-11-07T09:48:17.713Z
