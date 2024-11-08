@@ -2,6 +2,7 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -75,6 +76,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 	private final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 
+	private static final String encoding = "UTF-8";
+
 	public SEPACustomerDirectDebitMarshaler_Pain_008_003_02()
 	{
 		try
@@ -105,7 +108,16 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 	private void marshal(@NonNull final Document xmlDocument, @NonNull final OutputStream out)
 	{
-		final Writer xmlWriter = new OutputStreamWriter(out);
+		// We force UTF-8 encoding.
+		final Writer xmlWriter;
+		try
+		{
+			xmlWriter = new OutputStreamWriter(out, encoding);
+		}
+		catch (final UnsupportedEncodingException e)
+		{
+			throw new AdempiereException("Could not use encoding " + encoding + ": " + e.getLocalizedMessage());
+		}
 
 		try
 		{
