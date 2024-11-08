@@ -155,6 +155,7 @@ public class InvoiceCandidateRepository
 		icRecord.setDiscount_Override(discountOverride);
 		icRecord.setProcessed(ic.isProcessed());
 		icRecord.setIsActive(ic.isActive());
+		icRecord.setIsTaxIncluded(ic.isTaxIncluded());
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
@@ -357,6 +358,7 @@ public class InvoiceCandidateRepository
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
 		candidate.isActive(icRecord.isActive());
 		candidate.processed(icRecord.isProcessed());
+		candidate.taxIncluded(icRecord.isTaxIncluded());
 		return candidate.build();
 	}
 
