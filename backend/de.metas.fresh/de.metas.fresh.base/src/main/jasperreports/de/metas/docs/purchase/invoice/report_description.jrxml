@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="bed26190-0a93-4012-8083-15ce9416a0bf">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -15,67 +17,86 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Description ( $P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
 	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
 	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
 		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
 	</field>
 	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="reference"/>
 		<property name="com.jaspersoft.studio.field.label" value="reference"/>
 	</field>
 	<field name="dateinvoiced" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dateinvoiced"/>
 		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
 	</field>
 	<field name="vataxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vataxid"/>
 		<property name="com.jaspersoft.studio.field.label" value="vataxid"/>
 	</field>
 	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_value"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
 	</field>
 	<field name="eori" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="eori"/>
 		<property name="com.jaspersoft.studio.field.label" value="eori"/>
 	</field>
 	<field name="cont_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
 	</field>
 	<field name="cont_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_phone"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
 	</field>
 	<field name="cont_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_fax"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
 	</field>
 	<field name="cont_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_email"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_email"/>
 	</field>
 	<field name="sr_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_name"/>
 	</field>
 	<field name="sr_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_phone"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_phone"/>
 	</field>
 	<field name="sr_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_fax"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_fax"/>
 	</field>
 	<field name="sr_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_email"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_email"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="order_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="order_docno"/>
 		<property name="com.jaspersoft.studio.field.label" value="order_docno"/>
 	</field>
 	<field name="inout_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="inout_docno"/>
 		<property name="com.jaspersoft.studio.field.label" value="inout_docno"/>
 	</field>
 	<field name="io_movementdate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="io_movementdate"/>
 		<property name="com.jaspersoft.studio.field.label" value="io_movementdate"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="216" splitType="Stretch">
+		<band height="220" splitType="Stretch">
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-11" x="37" y="145" width="92" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>

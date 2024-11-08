@@ -96,7 +96,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="289" splitType="Stretch">
+		<band height="271" splitType="Stretch">
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-10" x="138" y="139" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
