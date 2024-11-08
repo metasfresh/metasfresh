@@ -4457,7 +4457,7 @@ public abstract class PO
 		final StringBuilder sb = new StringBuilder("UPDATE ")
 				.append(acctTable)
 				.append(" SET ")
-				.append("Updated,UpdatedBy ");
+				.append("( Updated, UpdatedBy ");
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
 			sb.append("\n, ").append(acctColumnName);
@@ -4485,7 +4485,13 @@ public abstract class PO
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(")");
+
+		sb.append("\n AND EXISTS (SELECT 1 FROM ").append(acctTable)
+				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
+				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
+
+		sb.append("\n WHERE ")
+				.append(get_TableName()).append("_ID=").append(get_ID());
 		//
 		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
 		return no > 0;
