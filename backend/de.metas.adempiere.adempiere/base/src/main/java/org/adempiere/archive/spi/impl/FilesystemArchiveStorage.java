@@ -10,12 +10,12 @@ package org.adempiere.archive.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,9 +47,8 @@ import java.util.Properties;
 
 /**
  * File system archive storage
- * 
+ *
  * @author tsa
- * 
  */
 public class FilesystemArchiveStorage extends AbstractArchiveStorage
 {
@@ -66,7 +65,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	{
 		super();
 	}
-	
+
 	@Override
 	public void init(@NonNull final ClientId adClientId)
 	{
@@ -75,11 +74,11 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 		this.archivePathRoot = getArchivePath(client);
 		logger.info("init: Archive Path: {}, Config={}", archivePathRoot, client);
 	}
-	
+
 	private void checkContext()
 	{
 		Check.assume(!Ini.isSwingClient() || Services.get(IDeveloperModeBL.class).isEnabled(), "Server mode required");
-		
+
 		if (Check.isEmpty(archivePathRoot, true))
 		{
 			throw new IllegalArgumentException("FilesystemArchiveStorage is not configured. No root path defined.");
@@ -123,11 +122,11 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	}
 
 	@Override
-	public I_AD_Archive newArchive(final Properties ctx, final String trxName)
+	public I_AD_Archive newArchive(final Properties ctx)
 	{
 		checkContext();
-		
-		final I_AD_Archive archive = super.newArchive(ctx, trxName);
+
+		final I_AD_Archive archive = super.newArchive(ctx);
 		archive.setIsFileSystem(true);
 		return archive;
 	}
@@ -139,7 +138,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	public byte[] getBinaryData(final I_AD_Archive archive)
 	{
 		checkContext();
-		
+
 		byte[] data = archive.getBinaryData();
 		if (data == null)
 		{
@@ -180,7 +179,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	public void setBinaryData(final I_AD_Archive archive, final byte[] inflatedData)
 	{
 		checkContext();
-		
+
 		if (inflatedData == null || inflatedData.length == 0)
 		{
 			throw new IllegalArgumentException("InflatedData is NULL");
@@ -245,7 +244,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 
 	/**
 	 * Returns the archive path (snippet), containing client, org and archive id. The process, table and record id are only included when they are not null.
-	 * 
+	 *
 	 * @return String
 	 */
 	private String getArchivePathSnippet(final I_AD_Archive archive)

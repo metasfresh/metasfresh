@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveRequest;
@@ -76,24 +77,16 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
 	{
-		if (request.isForce() || isToArchive(request))
-		{
-			return archive0(request);
-		}
-		else
+		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
+		final Properties ctxToUse = createContext(request);
+
+		if (!request.isForce() && !isToArchive(ctxToUse, request.isReport()))
 		{
 			return ArchiveResult.EMPTY;
 		}
 
-	}
-
-	private ArchiveResult archive0(@NonNull final ArchiveRequest request)
-	{
-		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
-		final Properties ctxToUse = createContext(request);
-
 		final IArchiveStorage storage = archiveStorageFactory.getArchiveStorage(ctxToUse);
-		final I_AD_Archive archive = storage.newArchive(ctxToUse, request.getTrxName());
+		final I_AD_Archive archive = storage.newArchive(ctxToUse);
 		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
 		// FRESH-218: extract and set the language to the archive
@@ -200,7 +193,7 @@ public class ArchiveBL implements IArchiveBL
 			return initialLanguage;
 		}
 
-		final Object record = recordRef.getModel(PlainContextAware.newWithTrxName(ctx, request.getTrxName()), Object.class);
+		final Object record = recordRef.getModel(PlainContextAware.newWithTrxName(ctx, ITrx.TRXNAME_ThreadInherited), Object.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		return bpartnerBL.getLanguageForModel(record).map(Language::getAD_Language).orElse(initialLanguage);
 	}
@@ -215,7 +208,7 @@ public class ArchiveBL implements IArchiveBL
 		}
 
 		final IClientOrgAware record = recordRef.getModel(
-				PlainContextAware.newWithTrxName(request.getCtx(), request.getTrxName()),
+				PlainContextAware.newWithTrxName(request.getCtx(), ITrx.TRXNAME_ThreadInherited),
 				IClientOrgAware.class);
 		if (record == null)
 		{
@@ -231,10 +224,9 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	private boolean isToArchive(
-			@NonNull final ArchiveRequest request)
+	private static boolean isToArchive(@NonNull final Properties ctx, boolean isReport)
 	{
-		final String autoArchive = getAutoArchiveType(request.getCtx());
+		final String autoArchive = getAutoArchiveType(ctx);
 
 		// Nothing to Archive
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
@@ -244,7 +236,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive External only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
 		{
-			if (request.isReport())
+			if (isReport)
 			{
 				return false;
 			}
@@ -252,7 +244,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (request.isReport())
+			if (isReport)
 			{
 				return false;
 			}
@@ -357,7 +349,7 @@ public class ArchiveBL implements IArchiveBL
 
 	@Override
 	@Nullable
-	public DocTypeId getOverrideDocTypeId(final ArchiveId archiveId)
+	public DocTypeId getOverrideDocTypeId(final @NonNull ArchiveId archiveId)
 	{
 		final I_AD_Archive archive = getRecordById(archiveId);
 		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());

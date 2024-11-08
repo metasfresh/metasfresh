@@ -30,7 +30,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
@@ -266,7 +265,6 @@ public class DefaultModelArchiver
 																	  .force(true)
 																	  .save(true)
 																	  .asyncBatchId(report.getAsyncBatchId())
-																	  .trxName(ITrx.TRXNAME_ThreadInherited)
 																	  .documentNo(documentNo)
 																	  .recordRef(report.getDocumentRef())
 																	  .processId(report.getReportProcessId())

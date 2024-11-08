@@ -222,7 +222,6 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
 				.flavor(DocumentReportFlavor.PRINT)
 				.data(new ByteArrayResource(data))
-				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.archiveName(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat())
 				.recordRef(printPackageRef)
 				.build());

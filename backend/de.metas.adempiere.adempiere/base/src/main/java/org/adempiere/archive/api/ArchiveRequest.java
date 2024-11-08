@@ -43,9 +43,7 @@ import java.util.Properties;
 @Builder
 public class ArchiveRequest
 {
-	@Nullable
-	DocumentReportFlavor flavor;
-
+	@Nullable DocumentReportFlavor flavor;
 	Resource data;
 
 	/**
@@ -58,40 +56,27 @@ public class ArchiveRequest
 	 */
 	boolean save;
 
-	@Nullable
-	Integer asyncBatchId;
+	@Nullable Integer asyncBatchId;
 
 	@NonNull
 	@Builder.Default
 	Properties ctx = Env.getCtx();
 
-	String trxName;
-
 	// ported from ArchiveInfo
 	boolean isReport;
-	@Nullable
-	TableRecordReference recordRef;
-	@Nullable
-	AdProcessId processId;
-	@Nullable
-	PInstanceId pinstanceId;
-	@Nullable
-	String archiveName;
-	@Nullable
-	BPartnerId bpartnerId;
-	@Nullable
-	DocTypeId overrideDocTypeId;
-	@Nullable
-	String documentNo;
+	@Nullable TableRecordReference recordRef;
+	@Nullable AdProcessId processId;
+	@Nullable PInstanceId pinstanceId;
+	@Nullable String archiveName;
+	@Nullable BPartnerId bpartnerId;
+	@Nullable DocTypeId overrideDocTypeId;
+	@Nullable String documentNo;
 
-	@Builder.Default
-	boolean isMainReport = true;
+	@Builder.Default boolean isMainReport = true;
 
-	@Nullable
-	Language language;
+	@Nullable Language language;
 
-	@Nullable
-	String poReference;
+	@Nullable String poReference;
 	
 	//
 	// Printing:

@@ -48,9 +48,9 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 	private static final Logger logger = LogManager.getLogger(DBArchiveStorage.class);
 
 	@Override
-	public I_AD_Archive newArchive(final Properties ctx, final String trxName)
+	public I_AD_Archive newArchive(final Properties ctx)
 	{
-		final I_AD_Archive archive = super.newArchive(ctx, trxName);
+		final I_AD_Archive archive = super.newArchive(ctx);
 		archive.setIsFileSystem(false);
 		return archive;
 	}

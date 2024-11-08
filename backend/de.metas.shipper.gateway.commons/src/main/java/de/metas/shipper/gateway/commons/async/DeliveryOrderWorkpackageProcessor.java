@@ -5,7 +5,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.printing.model.I_AD_Archive;
 import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
@@ -16,12 +15,12 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 
@@ -159,7 +158,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 		final Properties ctx = Env.getCtx();
 		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(ctx);
-		final I_AD_Archive archive = InterfaceWrapperHelper.create(archiveStorage.newArchive(ctx, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
+		final I_AD_Archive archive = archiveStorage.newArchive();
 
 		final ITableRecordReference deliveryOrderRef = deliveryOrderRepo.toTableRecordReference(deliveryOrder);
 		archive.setAD_Table_ID(deliveryOrderRef.getAD_Table_ID());

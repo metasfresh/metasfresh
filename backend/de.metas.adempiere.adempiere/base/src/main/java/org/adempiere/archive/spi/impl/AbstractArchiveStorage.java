@@ -22,19 +22,16 @@ package org.adempiere.archive.spi.impl;
  * #L%
  */
 
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-
 import lombok.NonNull;
-import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Archive;
 
-import de.metas.util.Services;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Abstract implementation of {@link IArchiveStorage}. At this level there is no reference to a particular storage support.
@@ -51,9 +48,9 @@ public abstract class AbstractArchiveStorage implements IArchiveStorage
 	}
 
 	@Override
-	public I_AD_Archive newArchive(final Properties ctx, final String trxName)
+	public I_AD_Archive newArchive(final Properties ctx)
 	{
-		return InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, trxName);
+		return InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override

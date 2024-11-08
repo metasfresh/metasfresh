@@ -25,13 +25,11 @@ package de.metas.printing.adapter;
 import de.metas.printing.IMassPrintingService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -50,8 +48,6 @@ public final class MassPrintingService implements IMassPrintingService
 			@NonNull final ArchiveInfo archiveInfo)
 	{
 		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
-				.ctx(Env.getCtx())
-				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.data(reportData)
 				.force(true) // archive it even if AutoArchive says no
 				.save(true)

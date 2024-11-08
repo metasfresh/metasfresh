@@ -595,10 +595,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final byte[] imagePDFBytes = org.adempiere.pdf.Document.toPDFBytes(image);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
 
 		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
-		final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
+		final I_AD_Archive archive = archiveStorage.newArchive();
 
 		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
 		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
