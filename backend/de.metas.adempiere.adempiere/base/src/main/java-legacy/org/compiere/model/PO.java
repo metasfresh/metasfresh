@@ -4488,7 +4488,7 @@ public abstract class PO
 
 		sb.append("\n AND EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
-				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
+				.append(get_TableName()).append("_ID=").append(get_ID()).append("))");
 
 		sb.append("\n WHERE ")
 				.append(get_TableName()).append("_ID=").append(get_ID());
