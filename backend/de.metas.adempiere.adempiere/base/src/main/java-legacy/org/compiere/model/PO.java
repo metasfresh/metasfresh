@@ -4437,6 +4437,67 @@ public abstract class PO
 		return no > 0;
 	}	// insert_Accounting
 
+
+
+	public final boolean update_Accounting(
+			@NonNull final String acctTable,
+			@NonNull final String acctBaseTable,
+			@Nullable final String whereClause)
+	{
+		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
+		if(acctInfo == null)
+		{
+			log.warn("No accounting info found for {}. Skipping", acctTable);
+			return false;
+		}
+
+		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
+
+		// Create SQL Statement - UPDATE
+		final StringBuilder sb = new StringBuilder("UPDATE ")
+				.append(acctTable)
+				.append(" SET ")
+				.append("( Updated, UpdatedBy ");
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			sb.append("\n, ").append(acctColumnName);
+		}
+		// .. SELECT
+		sb.append("\n) = (SELECT ")
+				.append(" now(),")
+				.append(getUpdatedBy());
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			{
+				sb.append("\n, p.").append(acctColumnName);
+			}
+			else
+			{
+				sb.append("\n, NULL /* missing ").append(acctBaseTable).append(".").append(acctColumnName).append(" */");
+			}
+		}
+		// .. FROM
+		sb.append("\n FROM ").append(acctBaseTable)
+				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
+
+		if (whereClause != null && whereClause.length() > 0)
+		{
+			sb.append(" AND ").append(whereClause);
+		}
+
+		sb.append("\n AND EXISTS (SELECT 1 FROM ").append(acctTable)
+				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
+				.append(get_TableName()).append("_ID=").append(get_ID()).append("))");
+
+		sb.append("\n WHERE ")
+				.append(get_TableName()).append("_ID=").append(get_ID());
+		//
+		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
+		return no > 0;
+	}	// update_Accounting
+
+
 	/**
 	 * Delete Accounting records.
 	 * NOP - done by database constraints

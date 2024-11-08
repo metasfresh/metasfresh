@@ -6,23 +6,24 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_orde
                                                                                               ad_language character varying)
     RETURNS TABLE
             (
-                description  character varying,
-                documentno   character varying,
-                reference    text,
-                dateordered  timestamp WITHOUT TIME ZONE,
-                datepromised timestamp WITH TIME ZONE,
-                deliverto    character varying,
-                bp_value     character varying,
-                eori         character varying,
-                cont_name    text,
-                cont_phone   character varying,
-                cont_fax     character varying,
-                cont_email   character varying,
-                sr_name      text,
-                sr_phone     character varying,
-                sr_fax       character varying,
-                sr_email     character varying,
-                printname    character varying
+                description        character varying,
+                documentno         character varying,
+                reference          text,
+                dateordered        timestamp WITHOUT TIME ZONE,
+                datepromised       timestamp WITH TIME ZONE,
+                deliverto          character varying,
+                bp_value           character varying,
+                eori               character varying,
+                customernoatvendor character varying,
+                cont_name          text,
+                cont_phone         character varying,
+                cont_fax           character varying,
+                cont_email         character varying,
+                sr_name            text,
+                sr_phone           character varying,
+                sr_fax             character varying,
+                sr_email           character varying,
+                printname          character varying
             )
     STABLE
     LANGUAGE sql
@@ -36,6 +37,7 @@ SELECT o.description                         AS description,
        o.DeliveryToAddress                   AS deliverto,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
+       bp.customernoatvendor                 AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
@@ -44,11 +46,11 @@ SELECT o.description                         AS description,
        cont.fax                              AS cont_fax,
        cont.email                            AS cont_email,
        TRIM(
-                           COALESCE(srgr.name, '') ||
-                           COALESCE(' ' || srep.title, '') ||
-                           COALESCE(' ' || srep.firstName, '') ||
-                           COALESCE(' ' || srep.lastName, '')
-           )                                 AS sr_name,
+               COALESCE(srgr.name, '') ||
+               COALESCE(' ' || srep.title, '') ||
+               COALESCE(' ' || srep.firstName, '') ||
+               COALESCE(' ' || srep.lastName, '')
+       )                                     AS sr_name,
        srep.phone                            AS sr_phone,
        srep.fax                              AS sr_fax,
        srep.email                            AS sr_email,
@@ -66,7 +68,3 @@ WHERE o.c_order_id = $1
   AND o.isActive = 'Y'
 $$
 ;
-
-ALTER FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_order_description(numeric, varchar) OWNER TO metasfresh
-;
-
