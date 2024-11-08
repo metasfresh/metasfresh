@@ -108,7 +108,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="200" splitType="Stretch">
+		<band height="220" splitType="Stretch">
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-11" x="37" y="151" width="163" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
@@ -216,7 +216,7 @@
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="37" y="190" width="250" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="37" y="190" width="266" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>

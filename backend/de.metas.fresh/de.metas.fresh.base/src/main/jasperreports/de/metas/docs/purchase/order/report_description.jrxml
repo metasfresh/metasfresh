@@ -113,7 +113,7 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="283" y="139" width="97" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="310" y="139" width="114" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,7 +228,7 @@
 				<textFieldExpression><![CDATA[$F{datepromised}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="283" y="151" width="97" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
+				<reportElement key="textField-5" x="310" y="151" width="114" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
 					<printWhenExpression><![CDATA[new Boolean($F{sr_name} != null && !$F{sr_name}.equals(""))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -256,7 +256,7 @@
 				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="283" y="127" width="97" height="13" uuid="4a8fba7c-9d63-484e-8acb-abd0894837b3">
+				<reportElement key="textField-5" x="310" y="127" width="114" height="13" uuid="4a8fba7c-9d63-484e-8acb-abd0894837b3">
 					<printWhenExpression><![CDATA[new Boolean($F{reference} != null && !$F{reference}.equals( "" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -309,7 +309,7 @@
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="307" y="165" width="117" height="13" uuid="fd169616-7d9c-4dff-a4ee-8bf42f92ec98"/>
+				<reportElement key="textField-5" x="310" y="165" width="114" height="13" uuid="fd169616-7d9c-4dff-a4ee-8bf42f92ec98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
