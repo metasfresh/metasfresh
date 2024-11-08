@@ -4464,7 +4464,7 @@ public abstract class PO
 		}
 		// .. SELECT
 		sb.append("\n) = (SELECT ")
-				.append(",now(),")
+				.append(" now(),")
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
