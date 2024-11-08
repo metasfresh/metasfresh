@@ -26,6 +26,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLowLevelInterceptors;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -62,6 +63,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final DDOrderLowLevelService ddOrderLowLevelService;
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 	private final ProductBOMService productBOMService;
+	private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
 	public LiberoValidator()
 	{
@@ -71,7 +73,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			 SpringContextHolder.instance.getBean(IPPOrderBOMBL.class),
 			 SpringContextHolder.instance.getBean(DDOrderLowLevelService.class),
 			 SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class),
-			 SpringContextHolder.instance.getBean(ProductBOMService.class));
+			 SpringContextHolder.instance.getBean(ProductBOMService.class),
+			 SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class));
 	}
 
 	public LiberoValidator(
@@ -81,7 +84,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
 			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
 			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
-			@NonNull final ProductBOMService productBOMService)
+			@NonNull final ProductBOMService productBOMService,
+			@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
@@ -90,6 +94,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		this.ddOrderLowLevelService = ddOrderLowLevelService;
 		this.bomVersionsDAO = bomVersionsDAO;
 		this.productBOMService = productBOMService;
+		this.ddOrderCandidateRepository = ddOrderCandidateRepository;
 	}
 
 	@Override
@@ -110,7 +115,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				bomVersionsDAO));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector());
 

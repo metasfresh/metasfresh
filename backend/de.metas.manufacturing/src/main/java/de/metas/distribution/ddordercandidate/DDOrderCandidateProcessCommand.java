@@ -64,6 +64,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /**
  * Process {@link DDOrderCandidate}s and creates DD Order(s).
@@ -418,6 +419,7 @@ class DDOrderCandidateProcessCommand
 			final ImmutableSet<OrderId> orderIds = lineAggregates.keySet()
 					.stream()
 					.map(LineAggregationKey::getSalesOrderId)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 
 			return orderIds.size() == 1 ? orderIds.iterator().next() : null;
