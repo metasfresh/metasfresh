@@ -22,68 +22,15 @@ package de.metas.document.archive.esb.api;
  * #L%
  */
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
+@Data
+@Builder
+@Jacksonized
 public class ArchiveGetDataRequest
 {
 	private int sessionId;
-
-	private int adArchiveId;
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + adArchiveId;
-		result = prime * result + sessionId;
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj == null)
-		{
-			return false;
-		}
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
-		final ArchiveGetDataRequest other = (ArchiveGetDataRequest)obj;
-		if (adArchiveId != other.adArchiveId)
-		{
-			return false;
-		}
-		if (sessionId != other.sessionId)
-		{
-			return false;
-		}
-		return true;
-	}
-
-	public int getAdArchiveId()
-	{
-		return adArchiveId;
-	}
-
-	public void setAdArchiveId(final int adArchiveId)
-	{
-		this.adArchiveId = adArchiveId;
-	}
-
-	public int getSessionId()
-	{
-		return sessionId;
-	}
-
-	public void setSessionId(final int sessionId)
-	{
-		this.sessionId = sessionId;
-	}
-
+	private final int adArchiveId;
 }

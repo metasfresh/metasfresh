@@ -130,8 +130,7 @@ public class RemoteArchiveStorageTests
 
 	private byte[] createTestData()
 	{
-		final byte[] data = ("test-data-" + UUID.randomUUID()).getBytes();
-		return data;
+		return ("test-data-" + UUID.randomUUID()).getBytes();
 	}
 
 	/**

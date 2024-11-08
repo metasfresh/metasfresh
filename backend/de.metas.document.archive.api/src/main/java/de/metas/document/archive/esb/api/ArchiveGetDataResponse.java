@@ -10,81 +10,27 @@ package de.metas.document.archive.esb.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.Arrays;
-
+@Value
+@Builder
+@Jacksonized
 public class ArchiveGetDataResponse
 {
-	private int adArchiveId;
-	private byte[] data;
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + adArchiveId;
-		result = prime * result + Arrays.hashCode(data);
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj == null)
-		{
-			return false;
-		}
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
-		final ArchiveGetDataResponse other = (ArchiveGetDataResponse)obj;
-		if (adArchiveId != other.adArchiveId)
-		{
-			return false;
-		}
-		if (!Arrays.equals(data, other.data))
-		{
-			return false;
-		}
-		return true;
-	}
-
-	public int getAdArchiveId()
-	{
-		return adArchiveId;
-	}
-
-	public void setAdArchiveId(final int adArchiveId)
-	{
-		this.adArchiveId = adArchiveId;
-	}
-
-	public byte[] getData()
-	{
-		return data;
-	}
-
-	public void setData(final byte[] data)
-	{
-		this.data = data;
-	}
-
+	int adArchiveId;
+	byte[] data;
 }

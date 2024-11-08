@@ -134,7 +134,7 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 		}
 	}
 
-	private AccessMode getAccessMode()
+	private static AccessMode getAccessMode()
 	{
 		if (Ini.isSwingClient())
 		{

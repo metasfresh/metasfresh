@@ -22,30 +22,28 @@ package org.adempiere.archive.spi.impl;
  * #L%
  */
 
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.adempiere.service.ClientId;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
+import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 /**
  * File system archive storage
@@ -55,9 +53,6 @@ import org.compiere.util.Util;
  */
 public class FilesystemArchiveStorage extends AbstractArchiveStorage
 {
-	// the encoding that we use when converting the path info to and from byte[]
-	private static final String UTF_8 = "UTF-8";
-
 	private static final Logger logger = LogManager.getLogger(FilesystemArchiveStorage.class);
 
 	/**
@@ -81,7 +76,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 		logger.info("init: Archive Path: {}, Config={}", archivePathRoot, client);
 	}
 	
-	private final void checkContext()
+	private void checkContext()
 	{
 		Check.assume(!Ini.isSwingClient() || Services.get(IDeveloperModeBL.class).isEnabled(), "Server mode required");
 		
@@ -91,7 +86,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 		}
 	}
 
-	private static final String getArchivePath(final I_AD_Client config)
+	private static String getArchivePath(final I_AD_Client config)
 	{
 		String archivePathRoot;
 		if (File.separatorChar == '\\')
@@ -146,55 +141,40 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 		checkContext();
 		
 		byte[] data = archive.getBinaryData();
-		// m_deflated = null;
-		// m_inflated = null;
 		if (data == null)
 		{
 			return null;
 		}
 
-		try
+		// 04692: metas-ts removed xml processing because totally don't need it, and it's prone to "content-is-not-allowed-in-prolog" errors
+		String filePath = new String(data, StandardCharsets.UTF_8);
+		if (Check.isEmpty(filePath, true))
 		{
-			// 04692: metas-ts removed xml processing because totally don't need it and it's prone to "content-is-not-allowed-in-prolog" errors
-			String filePath = new String(data, UTF_8);
-			if (Check.isEmpty(filePath, true))
-			{
-				throw new AdempiereException("No File Path was found in attached XML message for " + archive);
-			}
-
-			filePath = filePath.replaceFirst(ARCHIVE_FOLDER_PLACEHOLDER, archivePathRoot.replaceAll("\\\\", "\\\\\\\\"));
-			// just to be shure...
-			String replaceSeparator = File.separator;
-			if (!replaceSeparator.equals("/"))
-			{
-				replaceSeparator = "\\\\";
-			}
-			filePath = filePath.replaceAll("/", replaceSeparator);
-			filePath = filePath.replaceAll("\\\\", replaceSeparator);
-			logger.debug("FilePath: " + filePath);
-
-			final File file = new File(filePath);
-			if (!file.exists())
-			{
-				throw new AdempiereException("File not found: " + file.getAbsolutePath());
-			}
-
-			final byte[] dataEntry = Util.readBytes(file);
-			return dataEntry;
+			throw new AdempiereException("No File Path was found in attached XML message for " + archive);
 		}
-		catch (IOException ioe)
+
+		filePath = filePath.replaceFirst(ARCHIVE_FOLDER_PLACEHOLDER, archivePathRoot.replaceAll("\\\\", "\\\\\\\\"));
+		// just to be sure...
+		String replaceSeparator = File.separator;
+		if (!replaceSeparator.equals("/"))
 		{
-			// I/O error
-			// logger.error(ioe.getLocalizedMessage(), ioe);
-			throw new AdempiereException(ioe.getLocalizedMessage(), ioe);
+			replaceSeparator = "\\\\";
 		}
-		// return null;
+		filePath = filePath.replaceAll("/", replaceSeparator);
+		filePath = filePath.replaceAll("\\\\", replaceSeparator);
+		logger.debug("FilePath: {}", filePath);
+
+		final File file = new File(filePath);
+		if (!file.exists())
+		{
+			throw new AdempiereException("File not found: " + file.getAbsolutePath());
+		}
+
+		return Util.readBytes(file);
 	}
 
 	/**
 	 * Save to file system. If the MArchive is not saved yet (id==0) it will first save the MArchive object because it uses the id as filename.
-	 * 
-	 * @param inflatedData
 	 */
 	@Override
 	public void setBinaryData(final I_AD_Archive archive, final byte[] inflatedData)
@@ -223,7 +203,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 			{
 				if (!destFolder.mkdirs())
 				{
-					logger.warn("Unable to create folder: " + destFolder.getPath());
+					logger.warn("Unable to create folder: {}", destFolder.getPath());
 				}
 			}
 			// write to pdf
@@ -236,9 +216,9 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 			out.write(inflatedData);
 			out.flush();
 
-			// 04692: metas-ts removed xml processing because totally don't need it and it's prone to "content-is-not-allowed-in-prolog" errors
+			// 04692: metas-ts removed xml processing because totally don't need it, and it's prone to "content-is-not-allowed-in-prolog" errors
 			final String archiveInfo = ARCHIVE_FOLDER_PLACEHOLDER + getArchivePathSnippet(archive) + filenamePart;
-			archive.setBinaryData(archiveInfo.getBytes(UTF_8));
+			archive.setBinaryData(archiveInfo.getBytes(StandardCharsets.UTF_8));
 			archive.setIsFileSystem(true);
 		}
 		catch (Exception e)
@@ -255,10 +235,9 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 				{
 					out.close();
 				}
-				catch (Exception e)
+				catch (Exception ignored)
 				{
 				}
-				out = null;
 			}
 		}
 
