@@ -4116,7 +4116,7 @@ public abstract class PO
 		sb.append("\n WHERE ")
 				.append(get_TableName()).append("_ID=").append(get_ID());
 		//
-		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// update_Accounting
 
