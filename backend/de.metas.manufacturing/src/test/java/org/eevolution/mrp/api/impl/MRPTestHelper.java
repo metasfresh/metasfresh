@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -289,7 +290,8 @@ public class MRPTestHelper
 				new PPOrderBOMBL(),
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
 				new ProductBOMVersionsDAO(),
-				new ProductBOMService(new ProductBOMVersionsDAO()));
+				new ProductBOMService(new ProductBOMVersionsDAO()),
+				new DDOrderCandidateRepository());
 	}
 
 	public Timestamp getToday()

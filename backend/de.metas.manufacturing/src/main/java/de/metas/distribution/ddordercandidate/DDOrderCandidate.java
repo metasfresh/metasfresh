@@ -157,7 +157,7 @@ public class DDOrderCandidate
 				.isSimulated(data.isSimulated())
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(data.getCustomerId()))
-				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(data.getSalesOrderId(), data.getSalesOrderLineId()))
+				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(data.getOrderIdAsRepoId(), data.getOrderLineIdAsRepoId()))
 				.forwardPPOrderRef(data.getForwardPPOrderRef())
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
