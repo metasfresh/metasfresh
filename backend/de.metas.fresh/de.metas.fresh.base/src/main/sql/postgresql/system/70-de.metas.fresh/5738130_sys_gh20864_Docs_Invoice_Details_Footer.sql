@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer (IN p_Invoice_ID numeric,
-                                                                                        IN p_Language  Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer (IN C_Invoice_ID numeric,
+                                                                                        IN AD_Language  Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer(IN p_Invoice_ID numeric,
-                                                                                          IN p_Language  Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer(IN C_Invoice_ID numeric,
+                                                                                          IN AD_Language  Character Varying(6))
     RETURNS TABLE
             (
                 descriptionbottom text,
@@ -52,16 +52,16 @@ SELECT i.descriptionbottom,
        i.incotermlocation
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
-         LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language AND ptt.isActive = 'Y'
+         LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = $2 AND ptt.isActive = 'Y'
          LEFT OUTER JOIN AD_Ref_List ref ON i.PaymentRule = ref.Value AND ref.AD_Reference_ID = 195 AND ref.isActive = 'Y'
-         LEFT OUTER JOIN AD_Ref_List_Trl reft ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language AND reft.isActive = 'Y'
+         LEFT OUTER JOIN AD_Ref_List_Trl reft ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = $2 AND reft.isActive = 'Y'
          LEFT OUTER JOIN c_doctype dt ON i.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
-         LEFT OUTER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
+         LEFT OUTER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
          INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
          LEFT OUTER JOIN C_Incoterms inc ON i.c_incoterms_id = inc.c_incoterms_id
-         LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
+         LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = 'de_DE'
 
-WHERE i.C_Invoice_ID = p_Invoice_ID
+WHERE i.C_Invoice_ID = $1
   AND i.isActive = 'Y'
 
 $$
