@@ -51,12 +51,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
-	{
-		return APPLICATION_INFO;
-	}
-
-	@Override
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		if (query.getFilterByQRCode() != null)
