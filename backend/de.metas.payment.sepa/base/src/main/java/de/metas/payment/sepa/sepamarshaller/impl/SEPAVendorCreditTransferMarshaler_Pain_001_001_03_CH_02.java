@@ -878,7 +878,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		Check.errorIf(ibanToUse.length() < bcEndIdx,
 				SepaMarshallerException.class,
-				"Given IBAN {} for line {} is to short. Pls verify that it's actually an IBAN at all",
+				"Given IBAN {} for line {} is to short. Please verify that it's actually an IBAN at all",
 				iban, createInfo(line));
 		return ibanToUse.substring(bcStartIdx, bcEndIdx);
 	}
