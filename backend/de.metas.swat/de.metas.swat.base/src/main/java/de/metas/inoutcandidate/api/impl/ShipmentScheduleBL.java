@@ -251,7 +251,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
+	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
 				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
@@ -364,12 +364,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
-		if (!wasClosed)
-		{
-			return false;
-		}
-
-		return true; // was closed, but is now open
+		return wasClosed;// was closed, but is now open
 	}
 
 	@Override
@@ -454,7 +449,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void updateCatchUoms(@NonNull final ProductId productId, long delayMs)
+	public void updateCatchUoms(@NonNull final ProductId productId, final long delayMs)
 	{
 		if (delayMs < 0)
 		{
@@ -557,7 +552,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		return scheduleEffectiveBL.getPreparationDate(schedule);
 	}
@@ -584,14 +579,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx0(userChanges));
 	}
 
-	private void applyUserChangesInTrx0(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+	private void applyUserChangesInTrx0(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = userChanges.getShipmentScheduleIds();
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> recordsById = shipmentSchedulePA.getByIds(shipmentScheduleIds);
 
 		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
 		{
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
 			{
 
 				final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
