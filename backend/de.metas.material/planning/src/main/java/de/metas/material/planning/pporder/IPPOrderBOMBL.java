@@ -22,13 +22,16 @@ package de.metas.material.planning.pporder;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -39,6 +42,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 public interface IPPOrderBOMBL extends ISingletonService
@@ -131,6 +135,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
+	void validateBeforeClose(I_PP_Order_BOMLine line);
+
 	void close(I_PP_Order_BOMLine line);
 
 	void unclose(I_PP_Order_BOMLine line);
@@ -142,4 +148,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	QtyCalculationsBOM getQtyCalculationsBOM(I_PP_Order order);
 
 	void save(I_PP_Order_BOMLine orderBOMLine);
+
+	Set<ProductId> getProductIdsToIssue(PPOrderId ppOrderId);
+
+	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
 }

@@ -140,6 +140,7 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
@@ -212,9 +213,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -490,7 +491,7 @@ class OLCandOrderFactory
 		//
 		// Prices
 		{
-			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getRecordString());
+			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getCode());
 
 			currentOrderLine.setIsManualPrice(candidate.isManualPrice());
 			if (candidate.isManualPrice())
@@ -656,7 +657,7 @@ class OLCandOrderFactory
 		}
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -669,7 +670,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }

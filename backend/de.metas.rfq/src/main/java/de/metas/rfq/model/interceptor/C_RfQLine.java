@@ -1,15 +1,14 @@
 package de.metas.rfq.model.interceptor;
 
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.util.IRfQWorkDatesAware;
 import de.metas.rfq.util.RfQWorkDatesUtil;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 
 /*
  * #%L

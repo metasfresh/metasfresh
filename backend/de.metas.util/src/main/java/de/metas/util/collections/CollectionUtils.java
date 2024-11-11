@@ -4,9 +4,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -162,7 +165,8 @@ public final class CollectionUtils
 			}
 		}
 
-		Check.assume(result.size() == 1, "One and only one matching element was expected but we got more or none: {}", result);
+		final int size = result.size();
+		Check.assume(size == 1, "One and only one matching element was expected but we got {}: {}", size, result);
 		return result.get(0);
 	}
 
@@ -201,6 +205,7 @@ public final class CollectionUtils
 	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Contract("_, !null -> !null")
 	@Nullable
 	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
 	{
@@ -235,6 +240,7 @@ public final class CollectionUtils
 	/**
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
@@ -294,9 +300,15 @@ public final class CollectionUtils
 		for (final T item : collection)
 		{
 			final R changedItem = mappingFunction.apply(item);
-			result.add(changedItem);
-
-			if (!hasChanges && !Objects.equals(item, changedItem))
+			if (changedItem != null)
+			{
+				result.add(changedItem);
+				if (!hasChanges && !Objects.equals(item, changedItem))
+				{
+					hasChanges = true;
+				}
+			}
+			else
 			{
 				hasChanges = true;
 			}
@@ -341,6 +353,38 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
+	}
+
+	public static <K, V, K2> SetMultimap<K2, V> mapKeys(@NonNull final SetMultimap<K, V> multimap, @NonNull final Function<K, K2> keyMapper)
+	{
+		if (multimap.isEmpty())
+		{
+			//noinspection unchecked
+			return (SetMultimap<K2, V>)multimap;
+		}
+
+		ImmutableSetMultimap.Builder<K2, V> newResult = ImmutableSetMultimap.builder();
+		boolean hasChanges = false;
+		for (final K key : multimap.keySet())
+		{
+			final K2 newKey = keyMapper.apply(key);
+			final Set<V> values = multimap.get(key);
+			newResult.putAll(newKey, values);
+			if (!Objects.equals(key, newKey))
+			{
+				hasChanges = true;
+			}
+		}
+
+		if (hasChanges)
+		{
+			return newResult.build();
+		}
+		else
+		{
+			//noinspection unchecked
+			return (SetMultimap<K2, V>)multimap;
+		}
 	}
 
 	/**
@@ -507,4 +551,17 @@ public final class CollectionUtils
 				.filter(value::equals)
 				.count() > 1;
 	}
+
+	@Nullable
+	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
+	{
+		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : null;
+	}
+
+	@NonNull
+	public static <T> ImmutableSet<T> toImmutableSetOrEmpty(@Nullable final Collection<T> collection)
+	{
+		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : ImmutableSet.of();
+	}
+
 }

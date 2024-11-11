@@ -16,10 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.error.AdIssueFactory;
+
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import de.metas.error.AdIssueFactory;
 
 /**
  * TODO remove this whole class. Move the required code to {@link de.metas.error.AdIssueFactory}. Or {@link de.metas.error.impl.ErrorManager}.

@@ -26,12 +26,17 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -39,13 +44,9 @@ public final class QtyTU implements Comparable<QtyTU>
 {
 	public static QtyTU ofInt(final int intValue)
 	{
-		if (intValue == 0)
+		if (intValue >= 0 && intValue < cache.length)
 		{
-			return ZERO;
-		}
-		else if (intValue == 1)
-		{
-			return ONE;
+			return cache[intValue];
 		}
 		else
 		{
@@ -53,19 +54,49 @@ public final class QtyTU implements Comparable<QtyTU>
 		}
 	}
 
+	@NonNull
 	public static QtyTU ofBigDecimal(@NonNull final BigDecimal bd)
 	{
 		return ofInt(bd.intValueExact());
 	}
 
-	@JsonCreator
+	public static Optional<QtyTU> optionalOfBigDecimal(@Nullable final BigDecimal bd)
+	{
+		return Optional.ofNullable(bd).map(QtyTU::ofBigDecimal);
+	}
+
+	@NonNull
 	public static QtyTU ofString(@NonNull final String stringValue)
 	{
 		return ofInt(NumberUtils.asInt(stringValue));
 	}
 
-	public static final QtyTU ZERO = new QtyTU(0);
-	public static final QtyTU ONE = new QtyTU(1);
+	@JsonCreator
+	@Nullable
+	public static QtyTU ofNullableString(@Nullable final String stringValue)
+	{
+		final String stringValueNorm = StringUtils.trimBlankToNull(stringValue);
+		return stringValueNorm != null ? ofString(stringValueNorm) : null;
+	}
+
+	public static final QtyTU ZERO;
+	public static final QtyTU ONE;
+	public static final QtyTU TWO;
+	public static final QtyTU THREE;
+	public static final QtyTU FOUR;
+	private static final QtyTU[] cache = new QtyTU[] {
+			ZERO = new QtyTU(0),
+			ONE = new QtyTU(1),
+			TWO = new QtyTU(2),
+			THREE = new QtyTU(3),
+			FOUR = new QtyTU(4),
+			new QtyTU(5),
+			new QtyTU(6),
+			new QtyTU(7),
+			new QtyTU(8),
+			new QtyTU(9),
+			new QtyTU(10),
+	};
 
 	final int intValue;
 
@@ -76,6 +107,7 @@ public final class QtyTU implements Comparable<QtyTU>
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return String.valueOf(intValue);
@@ -98,7 +130,90 @@ public final class QtyTU implements Comparable<QtyTU>
 		return this.intValue - other.intValue;
 	}
 
+	public int compareTo(@NonNull final BigDecimal other)
+	{
+		return this.intValue - other.intValueExact();
+	}
+
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
+	public boolean isZero() {return intValue == 0;}
+
 	public boolean isPositive() {return intValue > 0;}
+
+	public boolean isOne() {return intValue == 1;}
+
+	public QtyTU assertPositive() {return assertPositive("qtyTU");}
+
+	public QtyTU assertPositive(@NonNull String variableName)
+	{
+		Check.assumeGreaterThanZero(intValue, variableName);
+		return this;
+	}
+
+	public QtyTU add(@NonNull final QtyTU toAdd)
+	{
+		if (this.intValue == 0)
+		{
+			return toAdd;
+		}
+		else if (toAdd.intValue == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(this.intValue + toAdd.intValue);
+		}
+	}
+
+	public QtyTU subtractOrZero(final int toSubtract)
+	{
+		if (toSubtract <= 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(Math.max(this.intValue - toSubtract, 0));
+		}
+	}
+
+	public QtyTU subtractOrZero(@NonNull final QtyTU toSubtract)
+	{
+		if (toSubtract.intValue == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(Math.max(this.intValue - toSubtract.intValue, 0));
+		}
+	}
+
+	public QtyTU min(@NonNull final QtyTU other)
+	{
+		return this.intValue <= other.intValue ? this : other;
+	}
+
+	public Quantity computeQtyCUsPerTUUsingTotalQty(@NonNull final Quantity qtyCUsTotal)
+	{
+		if (isZero())
+		{
+			throw new AdempiereException("Cannot determine Qty CUs/TU when QtyTU is zero of total CUs " + qtyCUsTotal);
+		}
+		else if (isOne())
+		{
+			return qtyCUsTotal;
+		}
+		else
+		{
+			return qtyCUsTotal.divide(toInt());
+		}
+	}
+
+	public Quantity computeTotalQtyCUsUsingQtyCUsPerTU(@NonNull final Quantity qtyCUsPerTU)
+	{
+		return qtyCUsPerTU.multiply(toInt());
+	}
 }

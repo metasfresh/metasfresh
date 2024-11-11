@@ -464,8 +464,31 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsAdjustCOGS = "IsAdjustCOGS";
 
 	/**
-	 * Set Negativbuchung erlauben.
-	 * Erlaube die Buchung von negativen Werten
+	 * Set Allow Multi Debit and Credit bookings.
+	 * Allow compound transactions with multiple bookings on Debit and on Credit. Enable it only if you know what are you doing. Your Account Balance reports won't work.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowMultiDebitAndCredit (boolean IsAllowMultiDebitAndCredit);
+
+	/**
+	 * Get Allow Multi Debit and Credit bookings.
+	 * Allow compound transactions with multiple bookings on Debit and on Credit. Enable it only if you know what are you doing. Your Account Balance reports won't work.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowMultiDebitAndCredit();
+
+	ModelColumn<I_C_AcctSchema, Object> COLUMN_IsAllowMultiDebitAndCredit = new ModelColumn<>(I_C_AcctSchema.class, "IsAllowMultiDebitAndCredit", null);
+	String COLUMNNAME_IsAllowMultiDebitAndCredit = "IsAllowMultiDebitAndCredit";
+
+	/**
+	 * Set Allow Negative Posting.
+	 * Allow to post negative accounting values
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

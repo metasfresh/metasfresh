@@ -51,10 +51,10 @@
     </EDI_Exp_DesadvLineWithNoPack>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line20_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>EURO</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>Line20_LUGTIN</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>6</QtyCU>
+            <QtyCUsPerTU>6</QtyCUsPerTU>
             <QtyCUsPerLU>82</QtyCUsPerLU>
             <QtyTU>14</QtyTU>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
@@ -93,10 +93,10 @@
     </EDI_Exp_Desadv_Pack>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line10_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>EURO</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>Line10_LUGTIN</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>6</QtyCU>
+            <QtyCUsPerTU>6</QtyCUsPerTU>
             <QtyCUsPerLU>72</QtyCUsPerLU>
             <QtyTU>12</QtyTU>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>

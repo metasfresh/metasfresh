@@ -15,7 +15,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -38,6 +38,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
@@ -85,7 +86,7 @@ final class TestMasterdata
 	public void createDocType(final DocBaseAndSubType docBaseAndSubType)
 	{
 		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-		docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType());
+		docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
 		docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
 		saveRecord(docTypeRecord);
 	}
@@ -125,6 +126,8 @@ final class TestMasterdata
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
 		bpRecord.setVATaxID(vatId);
+		bpRecord.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpRecord.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
@@ -174,6 +177,8 @@ final class TestMasterdata
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
+		bpRecord.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpRecord.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(bpRecord);
 
 		return BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID());
@@ -258,7 +263,7 @@ final class TestMasterdata
 			@NonNull final PriceListId priceListId,
 			@NonNull final LocalDate validFrom)
 	{
-		I_M_PriceList_Version record = newInstance(I_M_PriceList_Version.class);
+		final I_M_PriceList_Version record = newInstance(I_M_PriceList_Version.class);
 		record.setM_PriceList_ID(priceListId.getRepoId());
 		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		saveRecord(record);
@@ -274,7 +279,7 @@ final class TestMasterdata
 
 	public void createPricingRules()
 	{
-		createPricingRule(PriceListVersion.class, 10);
+		createPricingRule(PriceListVersionPricingRule.class, 10);
 	}
 
 	private void createPricingRule(
@@ -326,6 +331,8 @@ final class TestMasterdata
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setSalesPartnerCode(salesRepCode);
 		partner.setIsSalesRep(true);
+		partner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		partner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());

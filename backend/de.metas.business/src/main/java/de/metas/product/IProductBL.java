@@ -211,4 +211,9 @@ public interface IProductBL extends ISingletonService
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
+
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

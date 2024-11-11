@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.process;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -40,10 +41,9 @@ import java.util.function.Predicate;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId, String)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class MD_Candidate_Request_MaterialDocument extends JavaProcess implements IProcessPrecondition
 {
@@ -53,12 +53,12 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 	private final Predicate<I_MD_Candidate> hasSupportedBusinessCase = r -> {
 
-		final String businessCase = r.getMD_Candidate_BusinessCase();
+		final CandidateBusinessCase businessCase = CandidateBusinessCase.ofNullableCode(r.getMD_Candidate_BusinessCase());
 
-		return X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST.equals(businessCase);
+		return CandidateBusinessCase.PRODUCTION.equals(businessCase)
+				|| CandidateBusinessCase.DISTRIBUTION.equals(businessCase)
+				|| CandidateBusinessCase.PURCHASE.equals(businessCase)
+				|| CandidateBusinessCase.FORECAST.equals(businessCase);
 	};
 
 	private final Predicate<I_MD_Candidate> statusIsDocPlanned = r -> {
@@ -66,7 +66,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 		final String status = r.getMD_Candidate_Status();
 
 		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status)
-		|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
+				|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
 	};
 
 	@Override
@@ -77,8 +77,8 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create().list()
-				.stream()
+				.create()
+				.iterateAndStream()
 				.filter(hasSupportedBusinessCase)
 				.filter(statusIsDocPlanned)
 				.map(r -> MaterialDispoGroupId.ofInt(r.getMD_Candidate_GroupId()))
@@ -97,16 +97,9 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		boolean atLeastOneProperCandidateSelected = false;
-		for (final I_MD_Candidate selectedRecord : context.getSelectedModels(I_MD_Candidate.class))
-		{
-			if (hasSupportedBusinessCase.test(selectedRecord)
-					&& statusIsDocPlanned.test(selectedRecord))
-			{
-				atLeastOneProperCandidateSelected = true;
-				break;
-			}
-		}
+		final boolean atLeastOneProperCandidateSelected = context.streamSelectedModels(I_MD_Candidate.class)
+				.anyMatch(selectedRecord -> hasSupportedBusinessCase.test(selectedRecord) 
+						&& statusIsDocPlanned.test(selectedRecord));
 
 		if (!atLeastOneProperCandidateSelected)
 		{

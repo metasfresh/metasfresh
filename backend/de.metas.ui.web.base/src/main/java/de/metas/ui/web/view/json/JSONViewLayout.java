@@ -84,6 +84,9 @@ public final class JSONViewLayout
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String emptyResultHint;
 
+	@JsonProperty("pageLength")
+	private final int pageLength;
+
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -153,6 +156,7 @@ public final class JSONViewLayout
 		description = layout.getDescription(adLanguage);
 		emptyResultText = layout.getEmptyResultText(adLanguage);
 		emptyResultHint = layout.getEmptyResultHint(adLanguage);
+		pageLength = layout.getPageLength();
 
 		//
 		// Elements
@@ -239,50 +243,14 @@ public final class JSONViewLayout
 		return description;
 	}
 
-	public String getEmptyResultText()
-	{
-		return emptyResultText;
-	}
-
-	public String getEmptyResultHint()
-	{
-		return emptyResultHint;
-	}
-
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
 	}
 
-	public boolean hasElements()
-	{
-		return !elements.isEmpty();
-	}
-
 	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
-	}
-
-	public boolean isSupportAttributes()
-	{
-		return supportAttributes;
-	}
-
-	public void setSupportAttributes(final boolean supportAttributes)
-	{
-		this.supportAttributes = supportAttributes;
-	}
-
-	public boolean isSupportTree()
-	{
-		return supportTree;
-	}
-
-	public void enableNewRecord(final String newRecordCaption)
-	{
-		supportNewRecord = true;
-		this.newRecordCaption = newRecordCaption;
 	}
 
 	public void setViewId(final String viewId)

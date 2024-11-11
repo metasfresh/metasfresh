@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.i18n.ITranslatableString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,7 +59,6 @@ import lombok.NonNull;
  *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
-@SuppressWarnings("serial")
 public class MIndexTable extends X_AD_Index_Table
 {
 	private static final CCache<Integer, TableIndexesMap> cache = CCache.<Integer, TableIndexesMap> builder()
@@ -99,10 +99,13 @@ public class MIndexTable extends X_AD_Index_Table
 		super(ctx, AD_Index_Table_ID, trxName);
 	}
 
+	@SuppressWarnings("unused")
 	public MIndexTable(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
+
+	public ITranslatableString getErrorMsgTrl() {return get_ModelTranslationMap().getColumnTrl(COLUMNNAME_ErrorMsg, getErrorMsg());}
 
 	private ImmutableList<MIndexColumn> getIndexColumns()
 	{

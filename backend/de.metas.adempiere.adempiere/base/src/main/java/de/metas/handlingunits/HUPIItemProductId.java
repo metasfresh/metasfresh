@@ -94,7 +94,7 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final HUPIItemProductId id1, final HUPIItemProductId id2)
+	public static boolean equals(@Nullable final HUPIItemProductId id1, @Nullable final HUPIItemProductId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

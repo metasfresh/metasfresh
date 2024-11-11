@@ -44,7 +44,6 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.smooks.io.payload.JavaSource;
-import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -263,7 +262,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
-		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeLUText());
+		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeText());
 		if (packagingCode != null)
 		{
 			final String compudataPackagingCode = switch (packagingCode)
@@ -281,7 +280,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		final String sscc18Value = pack.getPack().getIPASSCC18();
 		p060.setNormalSSCC(sscc18Value);
-		p060.setGrainNummer(pack.getPack().getGTINLUPackingMaterial());
+		p060.setGrainNummer(pack.getPack().getGTINPackingMaterial());
 
 		// p060.setBruttogewicht(xmlInOutLine.getMProductID().getWeight()); // leave empty for now
 		// p060.setVolumen(xmlInOutLine.getMProductID().getVolume()); // leave empty for now
@@ -305,7 +304,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setChargenNo(voidString);
 
 		p100.setCUperTU(
-				formatNumber(packItem.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
+				formatNumber(packItem.getQtyCUsPerTU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
 							 decimalFormat));
 
 		// note that validateExchange() made sure there is at least one

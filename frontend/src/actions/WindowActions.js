@@ -75,6 +75,7 @@ import {
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
+import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -277,7 +278,7 @@ export function sortTab(scope, tabId, field, asc) {
   };
 }
 
-export function updateDataProperty(property, value, scope) {
+function updateDataProperty(property, value, scope) {
   return {
     type: UPDATE_DATA_PROPERTY,
     property,
@@ -817,9 +818,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
  * @todo TODO: This should return a promise
  */
 export function patch(
-  entity,
-  windowType,
-  id = 'NEW',
+  entity, // type, e.g. documentView
+  windowType, // aka windowId
+  id = 'NEW', // documentId
   tabId,
   rowId,
   property,
@@ -846,8 +847,24 @@ export function patch(
       isEdit,
     };
 
-    await dispatch(indicatorState('pending'));
     await dispatch({ type: PATCH_REQUEST, symbol, options });
+
+    //
+    // Update the state with the new property value
+    // In case the PATCH fails on server side, we will update the state again
+    await dispatch(
+      updatePropertyValue({
+        entity,
+        windowId: windowType,
+        docId: id,
+        tabId,
+        rowId,
+        property,
+        value,
+        isModal,
+        disconnected,
+      })
+    );
 
     try {
       const response = await patchRequest(options);
@@ -889,53 +906,85 @@ export function patch(
         (property === dataItem.validStatus.fieldName ||
           dataItem.validStatus.fieldName === undefined)
       ) {
-        await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
-        const errorMessage = dataItem.validStatus.reason;
 
-        dispatch(
-          addNotification(
-            'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
-            errorMessage,
-            5000,
-            'error',
-            ''
-          )
-        );
+        // Don't show the notification because we are showing the error message in Indicator component
+
+        // const errorMessage = dataItem.validStatus.reason;
+        // dispatch(
+        //   addNotification(
+        //     'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
+        //     errorMessage,
+        //     5000,
+        //     'error',
+        //     ''
+        //   )
+        // );
       } else {
-        await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
         return response.data;
       }
     } catch (error) {
-      await dispatch(indicatorState('error'));
       await dispatch({ type: PATCH_FAILURE, symbol });
 
-      const response = await getData({
-        entity: entity,
-        docType: windowType,
-        docId: id,
-        tabId: tabId,
-        rowId: rowId,
-        fetchAdvancedFields: isAdvanced,
-        viewId: viewId,
-      });
-
+      // Restore the state by fetching it from server
       await dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          id,
+        updateDataFromServer({
+          dispatch,
+          entity,
           windowType,
+          id,
+          tabId,
+          rowId,
           isAdvanced,
+          viewId,
+          isModal,
           disconnected,
         })
       );
+
+      // Propagate the exception, so callers are aware that something went wrong.
+      throw error;
     }
   };
 }
+
+const updateDataFromServer = ({
+  entity,
+  windowType,
+  id,
+  tabId,
+  rowId,
+  isAdvanced,
+  viewId,
+  isModal,
+  disconnected,
+}) => {
+  return async (dispatch) => {
+    const response = await getData({
+      entity: entity,
+      docType: windowType,
+      docId: id,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: isAdvanced,
+      viewId: viewId,
+    });
+
+    await dispatch(
+      mapDataToState({
+        data: response.data,
+        isModal,
+        rowId,
+        id,
+        windowType,
+        isAdvanced,
+        disconnected,
+      })
+    );
+  };
+};
 
 export function fireUpdateData({
   windowId,
@@ -1080,7 +1129,9 @@ export function updatePropertyValue({
         return false;
       }
 
-      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      if (tableId) {
+        dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      }
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`
       if (!isModal) {
@@ -1205,6 +1256,32 @@ export function togglePrintingOption(target) {
     type: TOGGLE_PRINTING_OPTION,
     payload: target,
   };
+}
+
+export function openPrintingOptionsModal({
+  title,
+  windowId,
+  documentId,
+  documentNo,
+}) {
+  return openModal({
+    title,
+    windowId,
+    modalType: 'static',
+    //viewId,
+    viewDocumentIds: [documentNo],
+    dataId: documentId,
+    staticModalType: 'printing',
+  });
+}
+
+export function openSelectCurrentWorkplaceModal() {
+  return openModal({
+    title: counterpart.translate('userDropdown.changeWorkplace.caption'),
+    windowId: 'selectCurrentWorkplace',
+    modalType: 'static',
+    staticModalType: STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+  });
 }
 
 /**

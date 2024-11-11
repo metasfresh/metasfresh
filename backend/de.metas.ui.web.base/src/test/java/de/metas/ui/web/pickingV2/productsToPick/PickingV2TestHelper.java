@@ -6,6 +6,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -197,7 +198,9 @@ final class PickingV2TestHelper
 				pickingCandidateRepository,
 				sourceHUsRepository,
 				huReservationService,
-				bpartnersService);
+				bpartnersService,
+				InventoryService.newInstanceForUnitTesting()
+		);
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)

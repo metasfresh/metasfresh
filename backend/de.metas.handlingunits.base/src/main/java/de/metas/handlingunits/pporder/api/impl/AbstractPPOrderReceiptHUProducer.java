@@ -24,8 +24,12 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -64,7 +68,12 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateRe
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -79,13 +88,20 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.mm.attributes.api.LotNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order_BOM;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -95,18 +111,26 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
+	private final static AdMessageKey MESSAGE_ClearanceStatusInfo_Manufactured = AdMessageKey.of("ClearanceStatusInfo.Manufactured");
+
 	// Services
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -116,6 +140,9 @@ import java.util.Map;
 	private PickingCandidateId pickingCandidateId;
 	@Nullable
 	private String lotNumber;
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	private Optional<String> lotNumberFromSequence = null;
 	@Nullable
 	private LocalDate bestBeforeDate;
 	//
@@ -227,7 +254,7 @@ import java.util.Map;
 
 		//
 		// Create Allocation Request
-		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive);
+		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive, ppOrderReceiptCandidateCollector.orgId);
 
 		//
 		// Execute transfer
@@ -306,23 +333,31 @@ import java.util.Map;
 		for (final I_M_HU hu : hus)
 		{
 			final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
+			huAttributes.setSaveOnChange(true);
 
-			if (lotNumber != null
-					&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			if (Check.isNotBlank(lotNumber))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-			}
 
+			}
+			else
+			{
+				final String lotNumber = getOrLoadLotNumberFromSeq();
+				if (Check.isNotBlank(lotNumber)
+						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+				{
+					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
+				}
+			}
 			if (bestBeforeDate != null
 					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 			}
 
-			huAttributes.saveChangesIfNeeded();
-
 			huAttributesBL.updateHUAttributeRecursive(
-					HuId.ofRepoId(hu.getM_HU_ID()),
+					huId,
 					HUAttributeConstants.ATTR_PP_Order_ID,
 					ppOrderId.getRepoId(),
 					null);
@@ -331,6 +366,28 @@ import java.util.Map;
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
 		addAssignedHUs(hus);
+	}
+
+	@Nullable
+	private String getOrLoadLotNumberFromSeq()
+	{
+		//noinspection OptionalAssignedToNull
+		if (lotNumberFromSequence == null)
+		{
+			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
+			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
+			Optional<String> lotNumber = Optional.empty();
+			if (sequenceId != null)
+			{
+				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+																	 .sequenceId(sequenceId)
+																	 .clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+																	 .build());
+
+			}
+			this.lotNumberFromSequence = lotNumber;
+		}
+		return lotNumberFromSequence.orElse(null);
 	}
 
 	@Override
@@ -361,19 +418,48 @@ import java.util.Map;
 		return locatorId;
 	}
 
-	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
+	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive, final OrgId orgId)
 	{
 		final ProductId productId = getProductId();
 		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
+		final I_M_Product product = productDAO.getById(productId);
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
+		final ClearanceStatusInfo clearanceStatusInfo;
+		if (clearanceStatus != null)
+		{
+			final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
+			clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(clearanceStatus)
+					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured))
+					.clearanceDate(InstantAndOrgId.ofInstant(TimeUtil.asInstant(date), OrgId.ofRepoId(product.getAD_Org_ID())))
+					.build();
+
+		}
+		else
+		{
+			clearanceStatusInfo = null;
+		}
+
 		return AllocationUtils.createQtyRequest(huContext,
-												productId, // product
-												qtyToReceive, // the quantity to receive
-												date, // transaction date
-												referencedModel, // referenced model
-												true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+				productId, // product
+				qtyToReceive, // the quantity to receive
+				date, // transaction date
+				referencedModel, // referenced model
+				true, // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+				clearanceStatusInfo // clearance status
 		);
+	}
+
+	private String getOrgUserOrLoggedInUSerLanguage(final Object referencedModel)
+	{
+		if (referencedModel instanceof IClientOrgAware)
+		{
+			final OrgId orgId = OrgId.ofRepoId(((IClientOrgAware)referencedModel).getAD_Org_ID());
+			return partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(orgId);
+		}
+		return Env.getADLanguageOrBaseLanguage();
 	}
 
 	private IHUProducerAllocationDestination createAllocationDestination()
@@ -390,7 +476,7 @@ import java.util.Map;
 				}
 				else
 				{
-					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(receiveUsingHUPIItemProductId);
+					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getRecordById(receiveUsingHUPIItemProductId);
 					final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 					final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, getProductId(), uom);
 

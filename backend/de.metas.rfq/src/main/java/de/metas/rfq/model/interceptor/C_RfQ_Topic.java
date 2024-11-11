@@ -1,10 +1,9 @@
 package de.metas.rfq.model.interceptor;
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.rfq.model.I_C_RfQ_Topic;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.CopyRecordFactory;
-
-import de.metas.rfq.model.I_C_RfQ_Topic;
 
 /*
  * #%L

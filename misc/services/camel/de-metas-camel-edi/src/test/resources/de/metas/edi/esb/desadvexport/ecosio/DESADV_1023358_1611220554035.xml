@@ -17,11 +17,13 @@
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>EURO</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>1</QtyCU>
+            <QtyCUsPerTU>1</QtyCUsPerTU>
+            <QtyCUsPerTU_InInvoiceUOM>0.25</QtyCUsPerTU_InInvoiceUOM>
             <QtyCUsPerLU>1</QtyCUsPerLU>
+            <QtyCUsPerLU_InInvoiceUOM>0.25</QtyCUsPerLU_InInvoiceUOM>
             <QtyTU>1</QtyTU>
             <LotNumber>19</LotNumber>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
@@ -46,7 +48,10 @@
                 <ProductNo>ProductNo</ProductNo>
                 <QtyEntered>1.00</QtyEntered>
                 <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-                <GTIN>1234567890125</GTIN>
+                <GTIN_CU>1234567890125</GTIN_CU>
+                <GTIN_TU>2234567890125</GTIN_TU>
+                <EAN_CU>3234567890125</EAN_CU>
+                <EAN_TU>4234567890125</EAN_TU>
                 <PriceActual>19.900</PriceActual>
                 <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
                 <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>

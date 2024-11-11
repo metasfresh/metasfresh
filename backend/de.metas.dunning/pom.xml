@@ -14,7 +14,7 @@
 
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 

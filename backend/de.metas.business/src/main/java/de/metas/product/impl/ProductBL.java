@@ -15,6 +15,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -23,6 +24,7 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -40,7 +42,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
-import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -50,7 +51,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -70,6 +70,7 @@ public final class ProductBL implements IProductBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -443,27 +444,14 @@ public final class ProductBL implements IProductBL
 	@Override
 	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		final ImmutableSet<UomId> catchUomIds = uomConversionsRepo.getProductConversions(productId)
-				.getCatchUomIds();
-
-		final List<I_C_UOM> catchUOMs = uomsRepo.getByIds(catchUomIds);
-
-		final ImmutableList<UomId> catchWeightUomIds = catchUOMs.stream()
+		final ImmutableSet<UomId> catchUomIds = uomConversionDAO.getProductConversions(productId).getCatchUomIds();
+		return uomsRepo.getByIds(catchUomIds)
+				.stream()
 				.filter(I_C_UOM::isActive)
-				.filter(uom -> X_C_UOM.UOMTYPE_Weigth.equals(uom.getUOMType()))
+				.filter(uom -> UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight())
 				.map(uom -> UomId.ofRepoId(uom.getC_UOM_ID()))
 				.sorted()
-				.collect(ImmutableList.toImmutableList());
-
-		if (catchWeightUomIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(catchWeightUomIds.get(0));
-		}
+				.findFirst();
 	}
 
 	@Override
@@ -535,7 +523,7 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = productsRepo.getById(productId);
 
-		if(!product.isRequiresSupplierApproval())
+		if (!product.isRequiresSupplierApproval())
 		{
 			return ImmutableList.of();
 		}
@@ -557,5 +545,18 @@ public final class ProductBL implements IProductBL
 
 		return productRecord.getDiscontinuedFrom() == null
 				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		return productsRepo.getIssuingToleranceSpec(productId);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIdsInTrx(productIds);
 	}
 }

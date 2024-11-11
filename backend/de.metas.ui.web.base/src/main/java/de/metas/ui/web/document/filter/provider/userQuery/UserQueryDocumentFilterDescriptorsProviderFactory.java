@@ -18,7 +18,6 @@ import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 

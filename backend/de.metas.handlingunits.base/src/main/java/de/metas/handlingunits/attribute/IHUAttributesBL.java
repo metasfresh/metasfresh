@@ -1,6 +1,29 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.attribute;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -48,6 +71,11 @@ public interface IHUAttributesBL extends ISingletonService
 			@Nullable Object attributeValue,
 			@Nullable String onlyHUStatus);
 
+	void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
+
+
+	void updateHUAttribute(@NonNull final IHUContext huContext, @NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
+
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
 	 * <p>
@@ -76,4 +104,8 @@ public interface IHUAttributesBL extends ISingletonService
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);
+
+	void transferAttributesForSingleProductHUs(@NonNull I_M_HU huFrom, @NonNull I_M_HU huTo);
+
+	void updateHUAttribute(@NonNull HuId huId, @NonNull AttributeCode attributeCode, @Nullable Object attributeValue);
 }

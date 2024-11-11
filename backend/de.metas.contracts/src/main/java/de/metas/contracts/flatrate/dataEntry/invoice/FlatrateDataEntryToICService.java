@@ -58,7 +58,7 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
@@ -142,6 +142,7 @@ public class FlatrateDataEntryToICService
 	{
 		final I_M_PriceList_Version priceListVersion = Check.assumeNotNull(priceListBL.getCurrentPriceListVersionOrNull(
 				context.getPricingSystemId(),
+				null,
 				context.getCountryId(),
 				entry.getPeriod().getEndDate(),
 				SOTrx.SALES,

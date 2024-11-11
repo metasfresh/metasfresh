@@ -218,6 +218,13 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@NonNull
+	public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
+	{
+		return getAttributesMap().getOrderedAttributeCodesByIds(orderedAttributeIds);
+	}
+
+	@Override
 	public <T extends I_M_Attribute> T retrieveAttributeByValue(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
 	{
 		final AttributeId attributeId = getAttributesMap().getAttributeIdByCode(attributeCode);
@@ -241,7 +248,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		return getAttributeDisplayNameByValue(AttributeCode.ofString(value));
+	}
+
+	@Override
+	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final AttributeCode attributeCode)
+	{
 		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
 		return attribute != null
 				? Optional.of(attribute.getDisplayName())
@@ -260,7 +272,7 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	@NonNull
-	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
+	public AttributeId getAttributeIdByCode(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCode(attributeCode);
 	}
@@ -722,16 +734,13 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
+	public void deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
-		final int deleteCount = queryBL
-				.createQueryBuilder(I_M_AttributeValue.class)
+		queryBL.createQueryBuilder(I_M_AttributeValue.class)
 				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
 				.create()
 				.delete();
-
-		return deleteCount > 0;
 	}
 
 	@Override
@@ -802,15 +811,6 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public boolean areAttributeSetsEqual(@NonNull final AttributeSetInstanceId firstASIId, @NonNull final AttributeSetInstanceId secondASIId)
-	{
-		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
-		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
-
-		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	@Override
@@ -1016,10 +1016,21 @@ public class AttributeDAO implements IAttributeDAO
 			return attribute != null ? attribute.getAttributeId() : null;
 		}
 
-		@Nullable
-		public AttributeId getAttributeIdByCodeOrNull(@NonNull final String attributeCode)
+		@NonNull
+		public AttributeCode getAttributeCodeById(@NonNull final AttributeId id)
 		{
-			return getAttributeIdByCodeOrNull(AttributeCode.ofString(attributeCode));
+			return getAttributeById(id).getAttributeCode();
+		}
+
+		@NonNull
+		public Attribute getAttributeById(@NonNull final AttributeId id)
+		{
+			final Attribute attribute = attributesById.get(id);
+			if (attribute == null)
+			{
+				throw new AdempiereException("No Attribute found for ID: " + id);
+			}
+			return attribute;
 		}
 
 		@NonNull
@@ -1033,9 +1044,18 @@ public class AttributeDAO implements IAttributeDAO
 			return attributeId;
 		}
 
-		public AttributeId getAttributeIdByCode(@NonNull final String attributeCode)
+		@NonNull
+		public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
 		{
-			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
+			if (orderedAttributeIds.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			return orderedAttributeIds.stream()
+					.map(this::getAttributeCodeById)
+					.collect(ImmutableList.toImmutableList());
 		}
+
 	}
 }

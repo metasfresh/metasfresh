@@ -1,15 +1,15 @@
 package de.metas.ui.web.process;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
-
 import de.metas.process.AdProcessId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -41,12 +41,12 @@ public final class ProcessId
 		return new ProcessId(json);
 	}
 
-	public static ProcessId of(final String processHandlerType, final int processId)
+	public static ProcessId of(final ProcessHandlerType processHandlerType, final int processId)
 	{
 		return new ProcessId(processHandlerType, processId);
 	}
 
-	public static ProcessId of(final String processHandlerType, final String processId)
+	public static ProcessId of(final ProcessHandlerType processHandlerType, final String processId)
 	{
 		return new ProcessId(processHandlerType, processId);
 	}
@@ -63,10 +63,10 @@ public final class ProcessId
 
 	private final String json;
 	//
-	public static final String PROCESSHANDLERTYPE_AD_Process = "ADP";
-	private final String processHandlerType;
+	public static final ProcessHandlerType PROCESSHANDLERTYPE_AD_Process = ProcessHandlerType.ofCode("ADP");
+	@NonNull @Getter private final ProcessHandlerType processHandlerType;
 	//
-	private final String processId;
+	@NonNull @Getter private final String processId;
 	private transient int processIdAsInt = 0;
 
 	@JsonCreator
@@ -79,25 +79,23 @@ public final class ProcessId
 		final int idx = json.indexOf("_");
 		Preconditions.checkArgument(idx > 0, "invalid ProcessId format: %s", json);
 
-		processHandlerType = json.substring(0, idx);
+		processHandlerType = ProcessHandlerType.ofCode(json.substring(0, idx));
 		processId = json.substring(idx + 1);
 	}
 
-	private ProcessId(final String processHandlerType, final int processIdAsInt)
+	private ProcessId(@NonNull final ProcessHandlerType processHandlerType, final int processIdAsInt)
 	{
-		Preconditions.checkArgument(processHandlerType != null && !processHandlerType.isEmpty(), "invalid processHandlerType: %s", processHandlerType);
 		Preconditions.checkArgument(processIdAsInt > 0, "invalid processAsIdInt: %s", processIdAsInt);
 
-		json = processHandlerType + "_" + processIdAsInt;
+		json = processHandlerType.getAsString() + "_" + processIdAsInt;
 		this.processHandlerType = processHandlerType;
 		processId = String.valueOf(processIdAsInt);
 		this.processIdAsInt = processIdAsInt;
 	}
 
-	private ProcessId(final String processHandlerType, final String processId)
+	private ProcessId(@NonNull final ProcessHandlerType processHandlerType, @NonNull final String processId)
 	{
-		Preconditions.checkArgument(processHandlerType != null && !processHandlerType.isEmpty(), "invalid processHandlerType: %s", processHandlerType);
-		Preconditions.checkArgument(processId != null && !processId.isEmpty(), "invalid processId: %s", processId);
+		Check.assumeNotEmpty(processId, "processId shall not be blank");
 
 		json = processHandlerType + "_" + processId;
 		this.processHandlerType = processHandlerType;
@@ -114,16 +112,6 @@ public final class ProcessId
 	public String toJson()
 	{
 		return json;
-	}
-
-	public String getProcessHandlerType()
-	{
-		return processHandlerType;
-	}
-
-	public String getProcessId()
-	{
-		return processId;
 	}
 
 	public int getProcessIdAsInt()
@@ -154,7 +142,7 @@ public final class ProcessId
 	}
 
 	/**
-	 * Convenience method to get the {@link AdProcessId} for this instance if its {@code processIdAsInt} member is set and/or if {@link #getProcessHandlerType()} is {@value #PROCESSHANDLERTYPE_AD_Process}.
+	 * Convenience method to get the {@link AdProcessId} for this instance if its {@code processIdAsInt} member is set and/or if {@link #getProcessHandlerType()} is {@link  #PROCESSHANDLERTYPE_AD_Process}.
 	 * {@code null} otherwise.
 	 */
 	public AdProcessId toAdProcessIdOrNull()
@@ -163,7 +151,7 @@ public final class ProcessId
 		{
 			return AdProcessId.ofRepoId(this.processIdAsInt);
 		}
-		else if (PROCESSHANDLERTYPE_AD_Process.contentEquals(getProcessHandlerType())) // can be derived via standard handler type
+		else if (this.processHandlerType.isADProcess())
 		{
 			return AdProcessId.ofRepoId(getProcessIdAsInt());
 		}

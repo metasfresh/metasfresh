@@ -31,7 +31,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.pricing.rules.AbstractPriceListBasedRule;
+import de.metas.pricing.rules.price_list_version.AbstractPriceListBasedRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;

@@ -24,6 +24,7 @@ package de.metas.contracts.bpartner.repository;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -37,6 +38,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;

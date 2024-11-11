@@ -11,12 +11,16 @@
     <ISO_Code>CHF</ISO_Code>
     <MovementDate>2021-01-19+01:00</MovementDate>
     <POReference>POReference</POReference>
-    <receivergln>1234567890123</receivergln>
-    <sendergln>1234567890124</sendergln>
+    <ReceiverGLN>1234567890123</ReceiverGLN>
+    <SenderGLN>1234567890124</SenderGLN>
     <shipment_documentno>1171035</shipment_documentno>
     <TotalLines>117.76</TotalLines>
-    <totaltaxbaseamt>117.76</totaltaxbaseamt>
-    <totalvat>2.94</totalvat>
+    <TotalTaxBaseAmt>117.76</TotalTaxBaseAmt>
+    <TotalVat>2.94</TotalVat>
+    <SurchargeAmt>-3.53</SurchargeAmt>
+    <TotalLinesWithSurchargeAmt>114.23</TotalLinesWithSurchargeAmt>
+    <TotalVatWithSurchargeAmt>8.00</TotalVatWithSurchargeAmt>
+    <GrandTotalWithSurchargeAmt>122.23</GrandTotalWithSurchargeAmt>
     <EDI_cctop_000_v>
         <!--EDI_cctop_000_v via C_BPartner_Location_ID-->
         <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
@@ -151,7 +155,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty24_CU-EAN1</EAN_CU>
         <EAN_TU>Qty24_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -178,7 +181,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty60_CU-EAN1</EAN_CU>
         <EAN_TU>Qty60_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -205,7 +207,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty10_CU-EAN1</EAN_CU>
         <EAN_TU>Qty10_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_901_991_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -214,6 +215,9 @@
         <TaxAmt>2.94</TaxAmt>
         <TaxBaseAmt>117.76</TaxBaseAmt>
         <TotalAmt>120.70</TotalAmt>
+        <SurchargeAmt>-3.53</SurchargeAmt>
+        <TaxBaseAmtWithSurchargeAmt>114.23</TaxBaseAmtWithSurchargeAmt>
+        <TaxAmtWithSurchargeAmt>8.00</TaxAmtWithSurchargeAmt>
     </EDI_cctop_901_991_v>
     <CountryCode>CH</CountryCode>
     <CountryCode_3digit>CHE</CountryCode_3digit>

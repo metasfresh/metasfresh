@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public class ManualPricePricingRule extends AbstractPriceListBasedRule
+public class ManualPricePricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(ManualPricePricingRule.class);
 
@@ -69,11 +69,6 @@ public class ManualPricePricingRule extends AbstractPriceListBasedRule
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		if (!super.applies(pricingCtx, result))
-		{
-			return false;
-		}
-
 		if (!PricingBL.isManualPrice(pricingCtx))
 		{
 			logger.info("Not applying because not manual price !");

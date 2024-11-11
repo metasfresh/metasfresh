@@ -39,8 +39,7 @@ import java.util.Properties;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -82,7 +81,8 @@ class HURepositoryTest
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
@@ -135,7 +135,7 @@ class HURepositoryTest
 				huPIItemProductRecord,
 				new BigDecimal("49"));
 
-		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).toString();
+		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).asString();
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(attrRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());
@@ -151,7 +151,7 @@ class HURepositoryTest
 		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
 		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
-		assertThat(result.getPackagingGTINs()).containsExactly(
+		assertThat(result.getAllPackaginGTINs()).containsExactly(
 				entry(BPartnerId.ofRepoId(10), "LU-GTIN1"),
 				entry(BPartnerId.ofRepoId(20), "LU-GTIN2"));
 
@@ -170,9 +170,7 @@ class HURepositoryTest
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("4"), uomRecord));
 
-		assertThat(result.getChildHUs()).allSatisfy(childHU -> {
-			assertThat(childHU.getPackagingGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
-		});
+		assertThat(result.getChildHUs()).allSatisfy(childHU -> assertThat(childHU.getAllPackaginGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1")));
 	}
 
 	private void setupPackagingGTINs()

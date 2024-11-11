@@ -23,15 +23,19 @@
 package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.compiere.util.Evaluatees;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -40,12 +44,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class REST_API_StepDef
 {
 	private String userAuthToken;
-	private APIResponse apiResponse;
 
 	private final TestContext testContext;
 
@@ -67,17 +70,41 @@ public class REST_API_StepDef
 			@NonNull final String statusCode,
 			@NonNull final String payload) throws IOException
 	{
-		testContext.setRequestPayload(payload);
+		final String payloadResolved = resolveContextVariables(payload);
+		testContext.setRequestPayload(payloadResolved);
 
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
-				.payload(payload)
+				.payload(payloadResolved)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
+		performHTTPRequest(request);
+	}
+
+	private String resolveContextVariables(final String string)
+	{
+		if (Check.isBlank(string))
+		{
+			return string;
+		}
+
+		final HashMap<String, String> variables = testContext.getVariables();
+		if (variables == null || variables.isEmpty())
+		{
+			return string;
+		}
+
+		return StringExpressionCompiler.instance.compile(string).evaluate(Evaluatees.ofMap(variables), OnVariableNotFound.Preserve);
+	}
+
+	private void performHTTPRequest(final APIRequest request) throws IOException
+	{
+		APIResponse apiResponse = RESTUtil.performHTTPRequest(request);
+		apiResponse = apiResponse.withContent(resolveContextVariables(apiResponse.getContent()));
+
 		testContext.setApiResponse(apiResponse);
 	}
 
@@ -96,8 +123,7 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload")
@@ -106,17 +132,17 @@ public class REST_API_StepDef
 			@NonNull final String verb,
 			@NonNull final String payload) throws IOException
 	{
-		testContext.setRequestPayload(payload);
+		final String payloadResolved = resolveContextVariables(payload);
+		testContext.setRequestPayload(payloadResolved);
 
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.authToken(userAuthToken)
-				.payload(payload)
+				.payload(payloadResolved)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload from context and responds with {string} status code")
@@ -135,8 +161,7 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request")
@@ -150,8 +175,7 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context, expecting status={string}")
@@ -168,8 +192,7 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(status))
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("a {string} request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with {string} status code")
@@ -189,8 +212,7 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@When("a {string} request with the below payload and headers from context is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
@@ -200,7 +222,8 @@ public class REST_API_StepDef
 			@NonNull final String statusCode,
 			@NonNull final String payload) throws IOException
 	{
-		testContext.setRequestPayload(payload);
+		final String payloadResolved = resolveContextVariables(payload);
+		testContext.setRequestPayload(payloadResolved);
 
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
@@ -208,17 +231,17 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
 				.additionalHeaders(testContext.getHttpHeaders())
-				.payload(payload)
+				.payload(payloadResolved)
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@Then("the metasfresh REST-API responds with")
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{
-		JSONAssert.assertEquals(expectedResponse, apiResponse.getContent(), JSONCompareMode.LENIENT);
+		final String expectedResponseResolved = resolveContextVariables(expectedResponse);
+		JSONAssert.assertEquals(expectedResponseResolved, testContext.getApiResponseBodyAsString(), JSONCompareMode.LENIENT);
 	}
 
 	@When("invoke {string} {string} with response code {string}")
@@ -234,21 +257,16 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(responseCode))
 				.build();
 
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
+		performHTTPRequest(request);
 	}
 
 	@And("the actual response body is")
-	public void validate_response_body(@NonNull final String responseBody) throws JsonProcessingException
+	public void validate_response_body(@NonNull final String expectedResponseBodyString) throws JsonProcessingException
 	{
-		final ObjectMapper mapper = new ObjectMapper();
+		final JsonTestResponse actualResponseBody = testContext.getApiResponseBodyAs(JsonTestResponse.class);
+		final JsonTestResponse expectedResponseBody = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(expectedResponseBodyString, JsonTestResponse.class);
 
-		final String responseJson = testContext.getApiResponse().getContent();
-		final JsonTestResponse apiResponse = mapper.readValue(responseJson, JsonTestResponse.class);
-
-		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
-
-		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+		assertThat(actualResponseBody.getMessageBody()).isEqualTo(expectedResponseBody.getMessageBody());
 	}
 
 	@And("the actual response body is empty")
@@ -281,4 +299,25 @@ public class REST_API_StepDef
 
 		testContext.setHttpHeaders(additionalHeaders);
 	}
+
+	@And("put REST context variables")
+	public void putContextVariables(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::putContextVariable);
+	}
+
+	public void putContextVariable(@NonNull final DataTableRow row)
+	{
+		@NonNull final String variableName = row.getAsString("Name");
+		String value = row.getAsOptionalString("Value").orElse("");
+
+		final boolean isResolveVars = row.getAsOptionalBoolean("Resolve").orElse(true);
+		if (isResolveVars)
+		{
+			value = resolveContextVariables(value);
+		}
+
+		testContext.setVariable(variableName, value);
+	}
+
 }
