@@ -111,6 +111,7 @@ public class ManualCandidateService
 
 			candidate.pricingSystemId(pricingResult.getPricingSystemId());
 			candidate.priceListVersionId(pricingResult.getPriceListVersionId());
+			candidate.taxIncluded(pricingResult.isTaxIncluded());
 
 			final ProductPrice priceEntered = ProductPrice.builder()
 					.money(Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId()))
