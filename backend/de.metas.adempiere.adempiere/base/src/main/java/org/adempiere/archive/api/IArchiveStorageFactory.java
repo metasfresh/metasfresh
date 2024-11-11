@@ -23,8 +23,6 @@ package org.adempiere.archive.api;
  */
 
 import de.metas.util.ISingletonService;
-import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.compiere.model.I_AD_Archive;
 
@@ -37,30 +35,6 @@ import java.util.Properties;
  */
 public interface IArchiveStorageFactory extends ISingletonService
 {
-	enum StorageType
-	{
-		Database("DB"),
-		Filesystem("FS");
-
-		@Getter
-		private final String code;
-
-		StorageType(@NonNull final String code)
-		{
-			this.code = code;
-		}
-	}
-
-	/**
-	 * AccessMode - from where the archive is accessed (client side, server side)
-	 */
-	enum AccessMode
-	{
-		CLIENT,
-		SERVER,
-		ALL,
-	}
-
 	/**
 	 * Register a storage handler class
 	 */

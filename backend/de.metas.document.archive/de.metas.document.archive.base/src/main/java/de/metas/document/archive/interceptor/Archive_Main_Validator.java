@@ -36,7 +36,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
+import org.adempiere.archive.api.AccessMode;
+import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -83,12 +84,12 @@ public class Archive_Main_Validator implements ModelValidator
 		this.engine = engine;
 
 		// Register RemoteArchiveStorage
-		archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
+		archiveStorageFactory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
 
 		// NOTE: if we are in developer mode, in most of the cases Remote storage is not accessible but the filesystem storage is on our machine
 		if (developerModeBL.isEnabled())
 		{
-			archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
+			archiveStorageFactory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
 		}
 
 		archiveEventManager.registerArchiveEventListener(docOutboundArchiveEventListener);

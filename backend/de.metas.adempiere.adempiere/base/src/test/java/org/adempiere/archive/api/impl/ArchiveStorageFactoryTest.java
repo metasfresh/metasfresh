@@ -23,8 +23,8 @@ package org.adempiere.archive.api.impl;
  */
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
+import org.adempiere.archive.api.AccessMode;
+import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
@@ -176,8 +176,8 @@ public class ArchiveStorageFactoryTest
 			client.setStoreArchiveOnFileSystem(true);
 			InterfaceWrapperHelper.save(client);
 
-			factory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.ALL, FilesystemArchiveStorage.class);
-			factory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, DummyArchiveStorage.class);
+			factory.registerArchiveStorage(StorageType.Filesystem, AccessMode.ALL, FilesystemArchiveStorage.class);
+			factory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, DummyArchiveStorage.class);
 
 			Ini.setClient(true);
 			assertThat(factory.getArchiveStorage(ctx)).isInstanceOf(DummyArchiveStorage.class);

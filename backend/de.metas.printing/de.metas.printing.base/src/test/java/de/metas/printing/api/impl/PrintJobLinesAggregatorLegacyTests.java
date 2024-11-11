@@ -39,7 +39,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.archive.api.AccessMode;
 import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.api.impl.ArchiveStorageFactory;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -288,8 +290,8 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Setup Mocked Archive Storage
 		archiveStorageFactory.removeAllArchiveStorages(); // make sure there are no other storages registered
 		archiveStorageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.StorageType.Database,
-				IArchiveStorageFactory.AccessMode.ALL, // match for Client and Server, to not bother about Ini.setClient (there are other tests which are checking this)
+				StorageType.Database,
+				AccessMode.ALL, // match for Client and Server, to not bother about Ini.setClient (there are other tests which are checking this)
 				MockedDBArchiveStorage.class);
 
 		//

@@ -27,7 +27,8 @@ import java.util.UUID;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
+import org.adempiere.archive.api.AccessMode;
+import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
@@ -106,15 +107,15 @@ public class RemoteArchiveStorageTests
 		// Configure storages
 		storageFactory = Services.get(IArchiveStorageFactory.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.StorageType.Database,
+				StorageType.Database,
 				AccessMode.ALL,
 				DBArchiveStorage.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.StorageType.Filesystem,
+				StorageType.Filesystem,
 				AccessMode.ALL,
 				FilesystemArchiveStorage.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.StorageType.Filesystem,
+				StorageType.Filesystem,
 				AccessMode.CLIENT,
 				RemoteArchiveStorage.class);
 	}
@@ -148,7 +149,7 @@ public class RemoteArchiveStorageTests
 		assertConfigStorageClass(false, true, FilesystemArchiveStorage.class);
 
 		// Test that remote endpoint is well configured
-		final RemoteArchiveStorage remoteStorage = (RemoteArchiveStorage)storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT);
+		final RemoteArchiveStorage remoteStorage = (RemoteArchiveStorage)storageFactory.getArchiveStorage(ctx, StorageType.Filesystem, AccessMode.CLIENT);
 		Assert.assertEquals("Invalid endpoint class configured for " + remoteStorage,
 				StaticMockedArchiveEndpoint.class, remoteStorage.getEndpoint().getClass());
 	}
@@ -177,7 +178,7 @@ public class RemoteArchiveStorageTests
 		// Create archive on server
 		{
 			Ini.setClient(false);
-			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
+			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, StorageType.Filesystem);
 			archive = storage.newArchive(ctx, ITrx.TRXNAME_None);
 			storage.setBinaryData(archive, data);
 			InterfaceWrapperHelper.save(archive);
@@ -186,7 +187,7 @@ public class RemoteArchiveStorageTests
 		// Retrieve archive on client
 		{
 			Ini.setClient(true);
-			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
+			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, StorageType.Filesystem);
 			final byte[] dataActual = storage.getBinaryData(archive);
 			Assert.assertArrayEquals("Invalid binary data", data, dataActual);
 		}
@@ -199,7 +200,7 @@ public class RemoteArchiveStorageTests
 
 		final byte[] data = createTestData();
 
-		final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT);
+		final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, StorageType.Filesystem, AccessMode.CLIENT);
 		final I_AD_Archive archive = storage.newArchive(ctx, ITrx.TRXNAME_None);
 		storage.setBinaryData(archive, data);
 		InterfaceWrapperHelper.save(archive);
