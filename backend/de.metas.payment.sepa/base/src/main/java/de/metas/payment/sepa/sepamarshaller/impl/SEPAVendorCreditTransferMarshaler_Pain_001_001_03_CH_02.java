@@ -1075,17 +1075,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return paySelectionLine.getLine();
 	}
 
-	@VisibleForTesting
-	@Nullable
-	static String replaceForbiddenChars(@Nullable final String input)
-	{
-		if (input == null)
-		{
-			return null;
-		}
-		return input.replaceAll(FORBIDDEN_CHARS, "_");
-	}
-
 	private String getBPartnerNameById(final int bpartnerRepoId)
 	{
 		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
