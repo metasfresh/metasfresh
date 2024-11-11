@@ -114,7 +114,7 @@ public class ArchiveStorageFactoryTest
 			InterfaceWrapperHelper.save(client);
 
 			final I_AD_Archive archive = factory.getArchiveStorage(ctx).newArchive(ctx);
-			assertThat(archive.isFileSystem()).isFalse();
+			assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(ArchiveStorageConfigId.DATABASE.getRepoId());
 
 			final IArchiveStorage storage = factory.getArchiveStorage(archive);
 			assertThat(storage).isInstanceOf(DBArchiveStorage.class);
@@ -127,7 +127,7 @@ public class ArchiveStorageFactoryTest
 			InterfaceWrapperHelper.save(client);
 
 			final I_AD_Archive archive = factory.getArchiveStorage(ctx).newArchive(ctx);
-			assertThat(archive.isFileSystem()).isTrue();
+			assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(filesystemStorageConfigId.getRepoId());
 
 			final IArchiveStorage storage = factory.getArchiveStorage(archive);
 			assertThat(storage).isInstanceOf(FilesystemArchiveStorage.class);
@@ -168,7 +168,7 @@ public class ArchiveStorageFactoryTest
 			// Update the archive and check
 			storage.setBinaryData(archive, new byte[] { 97, 98, 99 });
 			InterfaceWrapperHelper.save(archive);
-			assertThat(archive.isFileSystem()).isFalse();
+			assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(ArchiveStorageConfigId.DATABASE.getRepoId());
 		}
 	}
 }

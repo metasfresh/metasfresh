@@ -25,13 +25,9 @@ package org.adempiere.archive.spi.impl;
 import de.metas.archive.ArchiveStorageConfig;
 import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.archive.ArchiveStorageType;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,26 +35,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Random;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class FilesystemArchiveStorageTest
 {
 	private FilesystemArchiveStorage storage;
+	private ArchiveStorageConfigId filesystemStorageId;
 
 	@BeforeEach
-	public void init() throws IOException
+	public void beforeEach() throws IOException
 	{
 		AdempiereTestHelper.get().init();
 
-		// final Properties ctx = Env.getCtx();
-		// final I_AD_Client client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
-		// client.setWindowsArchivePath(Files.createTempDirectory(getClass().getSimpleName() + "_").toFile().getAbsolutePath());
-		// client.setUnixArchivePath(client.getWindowsArchivePath());
-		// client.setStoreArchiveOnFileSystem(true);
-		// InterfaceWrapperHelper.save(client);
-		// final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
-		// Env.setClientId(ctx, clientId);
-
-		storage = new FilesystemArchiveStorage(ArchiveStorageConfig.builder()
-				.id(ArchiveStorageConfigId.ofRepoId(1))
+		this.filesystemStorageId = ArchiveStorageConfigId.ofRepoId(1);
+		this.storage = new FilesystemArchiveStorage(ArchiveStorageConfig.builder()
+				.id(filesystemStorageId)
 				.type(ArchiveStorageType.FILE_SYSTEM)
 				.filesystem(ArchiveStorageConfig.Filesystem.builder()
 						.path(Files.createTempDirectory(getClass().getSimpleName() + "_"))
@@ -69,9 +60,7 @@ public class FilesystemArchiveStorageTest
 	@Test
 	public void test_set_getBinaryData()
 	{
-		Ini.setClient(false);
-
-		final I_AD_Archive archive = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Archive.class, ITrx.TRXNAME_None);
+		final I_AD_Archive archive = storage.newArchive();
 		archive.setAD_Org_ID(0);
 		archive.setAD_Process_ID(0);
 		archive.setAD_Table_ID(0);
@@ -80,10 +69,11 @@ public class FilesystemArchiveStorageTest
 		storage.setBinaryData(archive, data);
 		InterfaceWrapperHelper.save(archive);
 
-		Assertions.assertThat(archive.isFileSystem()).isTrue();
+		assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(filesystemStorageId.getRepoId());
+		assertThat(archive.isFileSystem()).isTrue();
 
 		final byte[] dataActual = storage.getBinaryData(archive);
-		Assertions.assertThat(dataActual).isEqualTo(data);
+		assertThat(dataActual).isEqualTo(data);
 	}
 
 	private final Random random = new Random();
