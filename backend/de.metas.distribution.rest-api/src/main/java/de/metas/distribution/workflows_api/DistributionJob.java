@@ -29,6 +29,8 @@ public class DistributionJob
 	@NonNull private final WarehouseInfo dropToWarehouse;
 	@Nullable private final UserId responsibleId;
 	private final boolean isClosed;
+	@Nullable private final String salesOrderDocumentNo;
+	@Nullable private final String ppOrderDocumentNo;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
 	@NonNull WFActivityStatus status;
@@ -43,6 +45,8 @@ public class DistributionJob
 			final @NonNull WarehouseInfo dropToWarehouse,
 			final @Nullable UserId responsibleId,
 			final boolean isClosed,
+			final @Nullable String salesOrderDocumentNo,
+			final @Nullable String ppOrderDocumentNo,
 			final @NonNull List<DistributionJobLine> lines)
 	{
 		this.ddOrderId = ddOrderId;
@@ -53,6 +57,8 @@ public class DistributionJob
 		this.dropToWarehouse = dropToWarehouse;
 		this.responsibleId = responsibleId;
 		this.isClosed = isClosed;
+		this.salesOrderDocumentNo = salesOrderDocumentNo;
+		this.ppOrderDocumentNo = ppOrderDocumentNo;
 		this.lines = ImmutableList.copyOf(lines);
 
 		this.status = WFActivityStatus.computeStatusFromLines(lines, DistributionJobLine::getStatus);

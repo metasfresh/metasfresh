@@ -66,6 +66,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /**
  * Process {@link DDOrderCandidate}s and creates DD Order(s).
@@ -180,7 +181,7 @@ class DDOrderCandidateProcessCommand
 
 			if (headerRecord == null)
 			{
-				headerRecord = createHeaderRecord(headerAggregate.getKey(), headerAggregate.getSalesOrderId());
+				headerRecord = createHeaderRecord(headerAggregate.getKey(), headerAggregate.getUniqueSalesOrderIdOrNull());
 			}
 
 			createLine(lineAggregate, headerRecord);
@@ -380,6 +381,7 @@ class DDOrderCandidateProcessCommand
 
 		boolean isSimulated;
 
+		@Nullable OrderId salesOrderId;
 		@Nullable PPOrderRef forwardPPOrderRef;
 
 		@Nullable ProductPlanningId productPlanningId;
@@ -400,6 +402,7 @@ class DDOrderCandidateProcessCommand
 					.forwardPPOrderRef(candidate.getForwardPPOrderRef())
 					.productPlanningId(candidate.getProductPlanningId())
 					.traceId(candidate.getTraceId())
+					.salesOrderId(candidate.getSalesOrderId())
 					.build();
 		}
 	}
@@ -430,11 +433,13 @@ class DDOrderCandidateProcessCommand
 
 		public Collection<LineAggregate> getLines() {return lineAggregates.values();}
 
-		public OrderId getSalesOrderId()
+		@Nullable
+		public OrderId getUniqueSalesOrderIdOrNull()
 		{
 			final ImmutableSet<OrderId> orderIds = lineAggregates.keySet()
 					.stream()
 					.map(LineAggregationKey::getSalesOrderId)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 
 			return orderIds.size() == 1 ? orderIds.iterator().next() : null;

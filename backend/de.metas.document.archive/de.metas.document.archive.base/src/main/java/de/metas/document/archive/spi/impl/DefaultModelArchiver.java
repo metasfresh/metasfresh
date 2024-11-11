@@ -102,6 +102,9 @@ public class DefaultModelArchiver
 	private final AdProcessId reportProcessId;
 	private final PrintFormatId printFormatId;
 	private final DocumentReportFlavor flavor;
+	private final boolean isDirectEnqueue;
+	private final boolean isDirectProcessQueueItem;
+
 
 	//
 	// Status & cached values
@@ -114,12 +117,16 @@ public class DefaultModelArchiver
 			@NonNull final Object record,
 			@Nullable final DocumentReportFlavor flavor,
 			@Nullable final AdProcessId reportProcessId,
-			@Nullable final PrintFormatId printFormatId)
+			@Nullable final PrintFormatId printFormatId,
+			final boolean isDirectEnqueue,
+			final boolean isDirectProcessQueueItem)
 	{
 		this.record = record;
 		this.flavor = flavor != null ? flavor : DocumentReportFlavor.PRINT;
 		this.reportProcessId = reportProcessId;
 		this.printFormatId = printFormatId;
+		this.isDirectEnqueue = isDirectEnqueue;
+		this.isDirectProcessQueueItem = isDirectProcessQueueItem;
 	}
 
 	@Override
@@ -276,6 +283,8 @@ public class DefaultModelArchiver
 																	  .language(report.getLanguage())
 																	  .isMainReport(report.isMainReport())
 																	  .poReference(report.getPoReference())
+																	  .isDirectEnqueue(isDirectEnqueue)
+																	  .isDirectProcessQueueItem(isDirectProcessQueueItem)
 																	  .overrideDocTypeId(report.getOverrideDocTypeId())
 																	  .build());
 

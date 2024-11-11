@@ -1,9 +1,5 @@
 package de.metas.material.dispo.service.event;
 
-import org.adempiere.warehouse.WarehouseId;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -16,6 +12,9 @@ import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -67,7 +66,10 @@ public class SupplyProposalEvaluator
 				.builder()
 				.type(CandidateType.DEMAND)
 				.demandDetailsQuery(demandDetailsQuery)
-				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(proposal.getSupplyWarehouseId()).build())
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .productId(proposal.getProductId())
+												 .warehouseId(proposal.getSupplyWarehouseId())
+												 .build())
 				.build();
 		final Candidate existingDemandCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedDemandExistsQuery);
 		if (existingDemandCandidate == null)
@@ -79,7 +81,10 @@ public class SupplyProposalEvaluator
 				.builder()
 				.type(CandidateType.SUPPLY)
 				.demandDetailsQuery(demandDetailsQuery)
-				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(proposal.getDemandWarehouseId()).build())
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .productId(proposal.getProductId())
+												 .warehouseId(proposal.getDemandWarehouseId())
+												 .build())
 				.build();
 		final Candidate existingsupplyCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedSupplyExistsQuery);
 		if (existingsupplyCandidate == null)
@@ -115,5 +120,7 @@ public class SupplyProposalEvaluator
 		 */
 		@NonNull
 		WarehouseId demandWarehouseId;
+
+		int productId;
 	}
 }

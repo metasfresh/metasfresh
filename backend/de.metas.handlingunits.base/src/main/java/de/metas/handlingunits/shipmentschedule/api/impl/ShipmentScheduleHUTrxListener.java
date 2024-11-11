@@ -99,7 +99,11 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// * negative means qty was un-allocated(removed) from VHU
 		final Quantity qtyPicked = Quantity.of(trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(huContext, ProductId.ofRepoId(trxLine.getM_Product_ID()), qtyPicked, vhu);
+		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(huContext,
+																				  ProductId.ofRepoId(trxLine.getM_Product_ID()),
+																				  qtyPicked,
+																				  vhu,
+																				  trxLine);
 
 		//
 		// Link VHU to shipment schedule

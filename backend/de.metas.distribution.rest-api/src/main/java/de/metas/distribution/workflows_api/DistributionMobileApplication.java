@@ -10,6 +10,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -50,7 +51,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		if (query.getFilterByQRCode() != null)
 		{
@@ -166,7 +167,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
 		final DistributionJob job = getDistributionJob(wfProcess);
-		return WFProcessHeaderProperties.builder()
+		final WFProcessHeaderProperties.WFProcessHeaderPropertiesBuilder builder = WFProcessHeaderProperties.builder()
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
 						.value(job.getDocumentNo())
@@ -182,8 +183,25 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_To_ID"))
 						.value(job.getDropToWarehouse().getCaption())
-						.build())
-				.build();
+						.build());
+
+		if (Check.isNotBlank(job.getSalesOrderDocumentNo()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
+								  .value(job.getSalesOrderDocumentNo())
+								  .build());
+		}
+
+		if (Check.isNotBlank(job.getPpOrderDocumentNo()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
+								  .value(job.getPpOrderDocumentNo())
+								  .build());
+		}
+
+		return builder.build();
 	}
 
 	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
