@@ -33,6 +33,7 @@ import org.slf4j.helpers.MessageFormatter;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,9 +42,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public final class StringUtils
 {
+	private static final Pattern SEPA_COMPLIANT_PATTERN = Pattern.compile(
+			"([a-zA-Z0-9.,;:'\\+\\-/()\\*\\[\\]{}\\\\`´~ ]|[!\"#%&<>÷=@_$£]|[àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])*");
+
 	private StringUtils()
 	{
 	}
@@ -1062,5 +1067,32 @@ public final class StringUtils
 
 		return params;
 
+	}
+
+	/*
+	 * Replace non-standard SEPA characters with valid SEPA approximations or remove them
+	 */
+	public static String toSepaCompliantText(String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+
+		// Replace curly apostrophe with straight apostrophe
+		String sanitizedText = text.replace("’", "'");
+
+		// Use the SEPA_COMPLIANT_PATTERN to retain only compliant characters
+		StringBuilder compliantText = new StringBuilder();
+		for (int i = 0; i < sanitizedText.length(); i++)
+		{
+			String currentChar = String.valueOf(sanitizedText.charAt(i));
+			if (SEPA_COMPLIANT_PATTERN.matcher(currentChar).matches())
+			{
+				compliantText.append(currentChar);
+			}
+		}
+
+		return compliantText.toString();
 	}
 }
