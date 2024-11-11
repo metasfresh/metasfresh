@@ -77,7 +77,7 @@
 	<title>
 		<band height="216" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="37" y="145" width="164" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
+				<reportElement key="textField-11" x="37" y="145" width="92" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -87,12 +87,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-6" x="37" y="121" width="164" height="13" forecolor="#000000" uuid="c92f9276-6317-4bdd-9067-12af4231a75e"/>
+				<reportElement key="textField-6" x="37" y="121" width="92" height="13" forecolor="#000000" uuid="c92f9276-6317-4bdd-9067-12af4231a75e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -105,7 +105,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="363" y="151" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="425" y="151" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -113,12 +113,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="200" y="145" width="90" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="130" y="145" width="213" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -128,12 +128,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="423" y="151" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
+				<reportElement key="textField-3" x="485" y="151" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,12 +141,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="200" y="121" width="90" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
+				<reportElement key="textField-1" x="130" y="121" width="213" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -159,16 +159,16 @@
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-11" x="37" y="133" width="164" height="13" uuid="99d4bc84-19da-409a-8ff6-79c763b7427b">
+				<reportElement key="textField-11" x="37" y="133" width="92" height="13" uuid="99d4bc84-19da-409a-8ff6-79c763b7427b">
 					<printWhenExpression><![CDATA[new Boolean($F{reference}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-10" x="200" y="133" width="90" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="130" y="133" width="213" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -178,12 +178,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="37" y="176" width="250" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="37" y="176" width="92" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -193,30 +193,19 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{VAT_ID} + $F{vataxid}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{VAT_ID}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="188" width="477" height="13" isPrintWhenDetailOverflows="true" uuid="af1712c5-f942-4697-883e-e90fe63c5cbb">
-					<printWhenExpression><![CDATA[new Boolean($F{vataxid}==null)]]></printWhenExpression>
-				</reportElement>
+				<reportElement x="37" y="200" width="539" height="13" isPrintWhenDetailOverflows="true" uuid="af1712c5-f942-4697-883e-e90fe63c5cbb"/>
 				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="200" width="477" height="13" isPrintWhenDetailOverflows="true" uuid="af1712c5-f942-4697-883e-e90fe63c5cbb">
-					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-13" x="37" y="160" width="164" height="13" uuid="908efb97-a2c6-45bb-ba01-55ae7bf621fd">
+				<reportElement key="textField-13" x="37" y="160" width="92" height="13" uuid="908efb97-a2c6-45bb-ba01-55ae7bf621fd">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -231,7 +220,7 @@
 				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="200" y="160" width="90" height="13" uuid="41ef6222-8131-4881-8554-e4227b4fcb48">
+				<reportElement key="textField-10" x="130" y="160" width="213" height="13" uuid="41ef6222-8131-4881-8554-e4227b4fcb48">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -244,6 +233,21 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-10" x="130" y="176" width="213" height="13" uuid="4cf365ca-0997-4344-867d-db0d92fdba2f">
+					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vataxid}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
