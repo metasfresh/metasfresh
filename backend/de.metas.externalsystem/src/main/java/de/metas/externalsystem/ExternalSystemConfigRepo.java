@@ -109,24 +109,25 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
+		// change the private methods' names to getByCastedId to avoid a StackoverflowError in case on of them gets lost -which was the case for the one with ExternalSystemPCMConfigId
 		switch (id.getType())
 		{
 			case Alberta:
-				return getById(ExternalSystemAlbertaConfigId.cast(id));
+				return getByCastedId(ExternalSystemAlbertaConfigId.cast(id));
 			case Shopware6:
-				return getById(ExternalSystemShopware6ConfigId.cast(id));
+				return getByCastedId(ExternalSystemShopware6ConfigId.cast(id));
 			case Other:
-				return getById(ExternalSystemOtherConfigId.cast(id));
+				return getByCastedId(ExternalSystemOtherConfigId.cast(id));
 			case RabbitMQ:
-				return getById(ExternalSystemRabbitMQConfigId.cast(id));
+				return getByCastedId(ExternalSystemRabbitMQConfigId.cast(id));
 			case WOO:
-				return getById(ExternalSystemWooCommerceConfigId.cast(id));
+				return getByCastedId(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
-				return getById(ExternalSystemGRSSignumConfigId.cast(id));
+				return getByCastedId(ExternalSystemGRSSignumConfigId.cast(id));
 			case LeichUndMehl:
-				return getById(ExternalSystemLeichMehlConfigId.cast(id));
+				return getByCastedId(ExternalSystemLeichMehlConfigId.cast(id));
 			case ProCareManagement:
-				return getById(ExternalSystemPCMConfigId.cast(id));
+				return getByCastedId(ExternalSystemPCMConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -340,7 +341,7 @@ public class ExternalSystemConfigRepo
 				.map(this::buildExternalSystemRabbitMQConfig);
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAlbertaConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemAlbertaConfigId id)
 	{
 		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
 
@@ -404,14 +405,14 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemRabbitMQConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemRabbitMQConfigId id)
 	{
 		final I_ExternalSystem_Config_RabbitMQ_HTTP config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
 		return getExternalSystemParentConfig(config);
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemShopware6ConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemShopware6ConfigId id)
 	{
 		final I_ExternalSystem_Config_Shopware6 config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Shopware6.class);
 
@@ -526,7 +527,7 @@ public class ExternalSystemConfigRepo
 				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemOtherConfigId id)
 	{
 		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getById(id);
 
@@ -547,7 +548,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemWooCommerceConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemWooCommerceConfigId id)
 	{
 		final I_ExternalSystem_Config_WooCommerce config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_WooCommerce.class);
 
@@ -729,7 +730,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemGRSSignumConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemGRSSignumConfigId id)
 	{
 		final I_ExternalSystem_Config_GRSSignum config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_GRSSignum.class);
 
@@ -851,7 +852,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemLeichMehlConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemLeichMehlConfigId id)
 	{
 		final I_ExternalSystem_Config_LeichMehl config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_LeichMehl.class);
 
@@ -916,6 +917,14 @@ public class ExternalSystemConfigRepo
 				.build();
 	}
 
+	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemPCMConfigId id)
+	{
+		final I_ExternalSystem_Config_ProCareManagement config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ProCareManagement.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+	
 	@NonNull
 	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
 	{
