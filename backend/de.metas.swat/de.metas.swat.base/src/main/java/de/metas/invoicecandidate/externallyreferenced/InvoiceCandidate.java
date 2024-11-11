@@ -208,6 +208,8 @@ public class InvoiceCandidate
 	@Nullable
 	private final BankAccountId bankAccountId;
 
+	private final boolean taxIncluded;
+	
 	@Builder
 	private InvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -250,6 +252,7 @@ public class InvoiceCandidate
 			final boolean isManual,
 			final boolean processed,
 			final boolean isActive,
+			final boolean taxIncluded,
 			@Nullable final AuctionId auctionId,
 			@Nullable final BankAccountId bankAccountId)
 	{
@@ -295,6 +298,7 @@ public class InvoiceCandidate
 		this.processed = processed;
 		this.isActive = isActive;
 		this.bankAccountId = bankAccountId;
+		this.taxIncluded = taxIncluded;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(
