@@ -21,6 +21,7 @@ import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AccountIdentification4ChoiceCH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AmountType3Choice;
@@ -185,8 +186,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private int endToEndIdCounter = 0;
 	private int pmtInfCounter = 0;
 
-	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
-
 	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(
 			@NonNull final BankRepository bankRepo,
 			@NonNull final SEPAExportContext exportContext)
@@ -285,7 +284,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			groupHeaderSCT.setCtrlSum(BigDecimal.ZERO);
 
 			final PartyIdentification32CHNameAndId initgPty = objectFactory.createPartyIdentification32CHNameAndId();
-			initgPty.setNm(sepaDocument.getSEPA_CreditorName());
+			initgPty.setNm(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()));
 
 			final ContactDetails2CH ctctDtls = objectFactory.createContactDetails2CH();
 			ctctDtls.setNm("metasfresh");
@@ -504,8 +503,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
 			Check.errorIf(amount == null || amount.signum() <= 0, "Invalid amount={} of SEPA_Export_Line={}", amount, line);
 			Check.errorIf(amount.scale() > currency.getPrecision().toInt(),
-						  "Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
-						  amount, currencyIsoCode, currency.getPrecision(), line);
+					"Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
+					amount, currencyIsoCode, currency.getPrecision(), line);
 			instdAmt.setValue(amount);
 
 			amt.setInstdAmt(instdAmt);
@@ -570,8 +569,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					final String bankName = getBankNameIfAny(line);
 					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
-								  "Zahlart={}, but line {} has no information about the bank name",
-								  paymentType, createInfo(line));
+							"Zahlart={}, but line {} has no information about the bank name",
+							paymentType, createInfo(line));
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
@@ -612,10 +611,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			// Note: since old age we use SEPA_MandateRefNo for the creditor's name (I don't remember why)
 			// task 09617: prefer C_BP_BankAccount.A_Name if available; keep SEPA_MandateRefNo, because setting it as "cdtr/name" might be a best practice
-			cdtr.setNm(getFirstNonEmpty(
+			cdtr.setNm(SepaUtils.replaceForbiddenChars(getFirstNonEmpty(
 					line::getSEPA_MandateRefNo,
 					() -> line.getC_BP_BankAccount().getA_Name(),
-					() -> getBPartnerNameById(line.getC_BPartner_ID())));
+					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
 
 			// task 08655: also provide the creditor's address
 			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
@@ -671,7 +670,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 		// because it's much less complicated
-		final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
+		final String reference = SepaUtils.replaceForbiddenChars(StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription));
 
 		// Remittance Info
 		{
@@ -681,7 +680,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| Objects.equals(paymentType, PAYMENT_TYPE_5))
 			{
 				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
-							  "SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
+						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
 				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
@@ -714,7 +713,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					}
 					else
 					{
-						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
+						final String validReference = StringUtils.trunc(SepaUtils.replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
 						rmtInf.setUstrd(validReference);
 					}
 				}
@@ -740,7 +739,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final String endToEndId;
 			if (exportContext.isReferenceAsEndToEndId())
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_GENERAL);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(SepaUtils.replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_GENERAL);
 			}
 			else
 			{
@@ -807,11 +806,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
 
-		splitStreetAndNumber(location.getAddress1(), pstlAdr);
+		splitStreetAndNumber(SepaUtils.replaceForbiddenChars(location.getAddress1()), pstlAdr);
 
 		pstlAdr.setCtry(location.getC_Country().getCountryCode()); // note: C_Location.C_Country is a mandatory column
 		pstlAdr.setPstCd(location.getPostal());
-		pstlAdr.setTwnNm(location.getCity());
+		pstlAdr.setTwnNm(SepaUtils.replaceForbiddenChars((location.getCity())));
 
 		return pstlAdr;
 	}
@@ -846,14 +845,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				&& Check.isNotBlank(bpBankAccount.getA_Street());
 		if (addressInBankAccountIsComplete)
 		{
-			pstlAdr.getAdrLine().add(bpBankAccount.getA_Street());
-			pstlAdr.getAdrLine().add(bpBankAccount.getA_Zip() + " " + bpBankAccount.getA_City());
+			pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(bpBankAccount.getA_Street()));
+			pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(bpBankAccount.getA_Zip() + " " + bpBankAccount.getA_City()));
 			return pstlAdr;
 		}
 
 		// fall back to the billing location
-		final String firstAdrLineFromLocation = location.getAddress1();
-		final String secondAddressLineFromLocation = location.getPostal() + " " + location.getCity();
+		final String firstAdrLineFromLocation = SepaUtils.replaceForbiddenChars(location.getAddress1());
+		final String secondAddressLineFromLocation = SepaUtils.replaceForbiddenChars(location.getPostal() + " " + location.getCity());
 		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
 		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
 		return pstlAdr;
@@ -884,9 +883,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final String ibanToUse = iban.replaceAll(" ", "");
 
 		Check.errorIf(ibanToUse.length() < bcEndIdx,
-					  SepaMarshallerException.class,
-					  "Given IBAN {} for line {} is to short. Pls verify that it's actually an IBAN at all",
-					  iban, createInfo(line));
+				SepaMarshallerException.class,
+				"Given IBAN {} for line {} is to short. Please verify that it's actually an IBAN at all",
+				iban, createInfo(line));
 		return ibanToUse.substring(bcStartIdx, bcEndIdx);
 	}
 
@@ -976,9 +975,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
 				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
-							  SepaMarshallerException.class,
-							  "line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-							  createInfo(line), currencyCode);
+						SepaMarshallerException.class,
+						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
+						createInfo(line), currencyCode);
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
