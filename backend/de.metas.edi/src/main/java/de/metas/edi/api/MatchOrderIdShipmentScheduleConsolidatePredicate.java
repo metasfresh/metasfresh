@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderQuery;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,10 @@ public class MatchOrderIdShipmentScheduleConsolidatePredicate implements IShipme
 		}
 
 		final I_C_Order orderRecord = orderDAO
-				.retrieveByOrderCriteria(OrderQuery.builder().orderId(orderID).build())
+				.retrieveByOrderCriteria(OrderQuery.builder()
+												 .orderId(orderID)
+												 .orgId(OrgId.ofRepoId(sched.getAD_Org_ID()))
+												 .build())
 				.orElseThrow(() -> new AdempiereException("Unable to retrieve C_Order for C_Order_ID=" + orderID));
 
 		final int desadvID = InterfaceWrapperHelper.create(orderRecord, de.metas.edi.model.I_C_Order.class).getEDI_Desadv_ID();
