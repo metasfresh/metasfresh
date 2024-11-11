@@ -18,6 +18,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.util.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -168,7 +169,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			// Initiating party
 			{
 				final PartyIdentificationSEPA1 initiatingParty = new PartyIdentificationSEPA1();
-				initiatingParty.setNm(StringUtils.toSepaCompliantText(sepaDocument.getSEPA_CreditorName()));
+				initiatingParty.setNm(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()));
 				groupHeader.setInitgPty(initiatingParty);
 			}
 		}
@@ -394,7 +395,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			final PartyIdentificationSEPA2 debitor = new PartyIdentificationSEPA2();
 			directDebitTrxInfo.setDbtr(debitor);
 
-			debitor.setNm(StringUtils.toSepaCompliantText(getBPartnerNameById(line.getC_BPartner_ID())));
+			debitor.setNm(SepaUtils.replaceForbiddenChars(getBPartnerNameById(line.getC_BPartner_ID())));
 
 			// FIXME: Debitor Address
 			// NOTE: this is not mandatory
@@ -440,7 +441,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 	{
 		final PartyIdentificationSEPA5 partyIdCopy = new PartyIdentificationSEPA5();
 
-		partyIdCopy.setNm(StringUtils.toSepaCompliantText(partyId.getNm()));
+		partyIdCopy.setNm(SepaUtils.replaceForbiddenChars(partyId.getNm()));
 
 		// NOTE: address is not mandatory
 		// FIXME: copy address if exists

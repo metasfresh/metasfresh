@@ -9,6 +9,7 @@ import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentification1;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
@@ -108,18 +109,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				"INGBNL2A" // bic
 		);
 		createSEPAExportLineQRVersion(sepaExport,
-									  "001",// SEPA_MandateRefNo
-									  "NL31INGB0000000044",// IBAN
-									  "INGBNL2A", // BIC
-									  new BigDecimal("100"), // amount
-									  eur, "210000000003139471430009017");
+				"001",// SEPA_MandateRefNo
+				"NL31INGB0000000044",// IBAN
+				"INGBNL2A", // BIC
+				new BigDecimal("100"), // amount
+				eur, "210000000003139471430009017");
 
 		createSEPAExportLineQRVersion(sepaExport,
-									  "002", // SEPA_MandateRefNo
-									  "NL31INGB0000000044", // IBAN
-									  "INGBNL2A",// BIC
-									  new BigDecimal("40"), // amount
-									  chf, "210000000003139471430009017");
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("40"), // amount
+				chf, "210000000003139471430009017");
 
 		// invoke the method under test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
@@ -131,7 +132,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
-
 
 	@Test
 	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
@@ -361,9 +361,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final String reference)
 	{
 		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
-															.bankName("myBank")
-															.routingNo("routingNo")
-															.build());
+				.bankName("myBank")
+				.routingNo("routingNo")
+				.build());
 
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
@@ -396,14 +396,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertReplaceForbiddenCharsWorks("(1020739<-) | (1026@313<-)", "(1020739<-) _ (1026@313<-)");
 		assertReplaceForbiddenCharsWorks("(1020739&lt;-) | (1026313&lt;-)", "(1020739&lt;-) _ (1026313&lt;-)");
 		assertReplaceForbiddenCharsWorks("(1020739&lt;-) - (1026313&lt;-)", "(1020739&lt;-) - (1026313&lt;-)");
+		assertReplaceForbiddenCharsWorks("Epis d’Ajoie", "Epis d'Ajoie");
+		assertReplaceForbiddenCharsWorks("t”", "t_");
+		assertReplaceForbiddenCharsWorks("Société", "Société");
+		assertReplaceForbiddenCharsWorks("Aæo", "A_o");
 	}
 
 	private void assertReplaceForbiddenCharsWorks(final String input, final String expected)
 	{
-		final String output = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
+		final String output = SepaUtils.replaceForbiddenChars(input);
 		assertThat(output).isEqualTo(expected);
 	}
-
 
 	@Test
 	public void testIsInvalidQRReference()
