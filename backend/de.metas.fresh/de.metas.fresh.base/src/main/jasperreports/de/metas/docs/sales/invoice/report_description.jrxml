@@ -108,9 +108,9 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="200" splitType="Stretch">
+		<band height="196" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="37" y="136" width="164" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
+				<reportElement key="textField-11" x="37" y="138" width="164" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -151,7 +151,7 @@
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-10" x="139" y="151" width="211" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="139" y="138" width="211" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -179,7 +179,7 @@
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" x="139" y="127" width="211" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
+				<reportElement key="textField-1" x="139" y="112" width="211" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,7 +201,7 @@
 				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-10" x="139" y="139" width="211" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="139" y="125" width="211" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -216,7 +216,7 @@
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="37" y="162" width="252" height="13" isRemoveLineWhenBlank="true" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="37" y="152" width="252" height="13" isRemoveLineWhenBlank="true" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -231,14 +231,14 @@
 				<textFieldExpression><![CDATA[$R{VAT_ID} +" "+ $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="203" width="477" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
+				<reportElement x="37" y="182" width="477" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-15" x="37" y="164" width="102" height="13" uuid="d2d2b9ab-3274-484e-b6ec-83332df10358">
+				<reportElement key="textField-15" x="37" y="166" width="102" height="13" uuid="d2d2b9ab-3274-484e-b6ec-83332df10358">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -253,7 +253,7 @@
 				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="139" y="164" width="211" height="13" uuid="38aae01a-8f2d-4ac9-9cb3-de9731b4564d">
+				<reportElement key="textField-16" x="139" y="166" width="211" height="13" uuid="38aae01a-8f2d-4ac9-9cb3-de9731b4564d">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -266,32 +266,6 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="37" y="177" width="163" height="13" uuid="261be2af-8ff8-423b-9e86-6602c51df867"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="200" y="177" width="104" height="13" uuid="eadfbb13-e6af-4122-841a-72ce1aa81028"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{customernoatvendor}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
