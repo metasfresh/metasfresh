@@ -22,13 +22,14 @@ package org.adempiere.archive.spi.impl;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfig;
+import de.metas.archive.ArchiveStorageConfigId;
+import de.metas.archive.ArchiveStorageType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Properties;
 import java.util.Random;
 
 public class FilesystemArchiveStorageTest
@@ -48,18 +48,22 @@ public class FilesystemArchiveStorageTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final Properties ctx = Env.getCtx();
-		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
-		client.setWindowsArchivePath(Files.createTempDirectory(getClass().getSimpleName() + "_").toFile().getAbsolutePath());
-		client.setUnixArchivePath(client.getWindowsArchivePath());
-		client.setStoreArchiveOnFileSystem(true);
-		InterfaceWrapperHelper.save(client);
-		final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
+		// final Properties ctx = Env.getCtx();
+		// final I_AD_Client client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
+		// client.setWindowsArchivePath(Files.createTempDirectory(getClass().getSimpleName() + "_").toFile().getAbsolutePath());
+		// client.setUnixArchivePath(client.getWindowsArchivePath());
+		// client.setStoreArchiveOnFileSystem(true);
+		// InterfaceWrapperHelper.save(client);
+		// final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
+		// Env.setClientId(ctx, clientId);
 
-		Env.setClientId(ctx, clientId);
-
-		storage = new FilesystemArchiveStorage();
-		storage.init(clientId);
+		storage = new FilesystemArchiveStorage(ArchiveStorageConfig.builder()
+				.id(ArchiveStorageConfigId.ofRepoId(1))
+				.type(ArchiveStorageType.FILE_SYSTEM)
+				.filesystem(ArchiveStorageConfig.Filesystem.builder()
+						.path(Files.createTempDirectory(getClass().getSimpleName() + "_"))
+						.build())
+				.build());
 	}
 
 	@Test

@@ -22,19 +22,21 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfigId;
+import de.metas.archive.ArchiveStorageConfigRepository;
+import de.metas.archive.ArchiveStorageType;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.AccessMode;
-import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Archive_Storage;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -49,13 +51,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class ArchiveStorageFactoryTest
 {
+	private ArchiveStorageConfigId filesystemStorageConfigId;
 	private I_AD_Client client;
 	private ArchiveStorageFactory factory;
 	private Properties ctx;
-
-	public static class DummyArchiveStorage extends DBArchiveStorage
-	{
-	}
 
 	@BeforeEach
 	public void beforeEach(@TempDir Path tempDir)
@@ -64,13 +63,20 @@ public class ArchiveStorageFactoryTest
 
 		ctx = Env.getCtx();
 
-		final String archivePath = tempDir.toFile().getAbsolutePath();
-		System.out.println("Using archive path: " + archivePath);
+		SpringContextHolder.registerJUnitBean(ArchiveStorageConfigRepository.newInstanceForUnitTesting());
+
+		//
+		// Archive Storage: Filesystem
+		{
+			I_AD_Archive_Storage storage = InterfaceWrapperHelper.newInstance(I_AD_Archive_Storage.class);
+			storage.setType(ArchiveStorageType.FILE_SYSTEM.getCode());
+			storage.setPath(tempDir.toAbsolutePath().toString());
+			InterfaceWrapperHelper.save(storage);
+			this.filesystemStorageConfigId = ArchiveStorageConfigId.ofRepoId(storage.getAD_Archive_Storage_ID());
+		}
 
 		client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
-		client.setWindowsArchivePath(archivePath);
-		client.setUnixArchivePath(archivePath);
-		client.setStoreArchiveOnFileSystem(false);
+		client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.DATABASE.getRepoId());
 		InterfaceWrapperHelper.save(client);
 
 		Env.setContext(ctx, "#AD_Client_ID", client.getAD_Client_ID());
@@ -94,8 +100,7 @@ public class ArchiveStorageFactoryTest
 		@Test
 		public void FromContext_FileSystem()
 		{
-			Ini.setClient(false);
-			client.setStoreArchiveOnFileSystem(true);
+			client.setAD_Archive_Storage_ID(filesystemStorageConfigId.getRepoId());
 			InterfaceWrapperHelper.save(client);
 
 			final IArchiveStorage storage = factory.getArchiveStorage(ctx);
@@ -105,7 +110,7 @@ public class ArchiveStorageFactoryTest
 		@Test
 		public void FromArchive_DB()
 		{
-			client.setStoreArchiveOnFileSystem(false);
+			client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.DATABASE.getRepoId());
 			InterfaceWrapperHelper.save(client);
 
 			final I_AD_Archive archive = factory.getArchiveStorage(ctx).newArchive(ctx);
@@ -118,8 +123,7 @@ public class ArchiveStorageFactoryTest
 		@Test
 		public void FromArchive_FileSystem()
 		{
-			Ini.setClient(false);
-			client.setStoreArchiveOnFileSystem(true);
+			client.setAD_Archive_Storage_ID(filesystemStorageConfigId.getRepoId());
 			InterfaceWrapperHelper.save(client);
 
 			final I_AD_Archive archive = factory.getArchiveStorage(ctx).newArchive(ctx);
@@ -139,7 +143,7 @@ public class ArchiveStorageFactoryTest
 			// Configure and create archive using DB storage
 			final I_AD_Archive archive;
 			{
-				client.setStoreArchiveOnFileSystem(false);
+				client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.DATABASE.getRepoId());
 				InterfaceWrapperHelper.save(client);
 
 				final IArchiveStorage storage = factory.getArchiveStorage(ctx);
@@ -147,14 +151,14 @@ public class ArchiveStorageFactoryTest
 				final byte[] data = new byte[] { 65, 66, 67, 68 };
 
 				archive = storage.newArchive(ctx);
-				assertThat(archive.isFileSystem()).isFalse();
+				assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(ArchiveStorageConfigId.DATABASE.getRepoId());
 				storage.setBinaryData(archive, data);
 				InterfaceWrapperHelper.save(archive);
 			}
 
 			//
 			// Configure to use filesystem storage
-			client.setStoreArchiveOnFileSystem(true);
+			client.setAD_Archive_Storage_ID(filesystemStorageConfigId.getRepoId());
 			InterfaceWrapperHelper.save(client);
 
 			final IArchiveStorage storage = factory.getArchiveStorage(archive);
@@ -165,25 +169,6 @@ public class ArchiveStorageFactoryTest
 			storage.setBinaryData(archive, new byte[] { 97, 98, 99 });
 			InterfaceWrapperHelper.save(archive);
 			assertThat(archive.isFileSystem()).isFalse();
-		}
-
-		/**
-		 * Test how custom registered handlers are fetched when accessing from Client and Server side
-		 */
-		@Test
-		public void CustomRegistered()
-		{
-			client.setStoreArchiveOnFileSystem(true);
-			InterfaceWrapperHelper.save(client);
-
-			factory.registerArchiveStorage(StorageType.Filesystem, AccessMode.ALL, FilesystemArchiveStorage.class);
-			factory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, DummyArchiveStorage.class);
-
-			Ini.setClient(true);
-			assertThat(factory.getArchiveStorage(ctx)).isInstanceOf(DummyArchiveStorage.class);
-
-			Ini.setClient(false);
-			assertThat(factory.getArchiveStorage(ctx)).isInstanceOf(FilesystemArchiveStorage.class);
 		}
 	}
 }

@@ -23,7 +23,9 @@ package org.adempiere.archive.api;
  */
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Archive;
 
 import java.util.Properties;
@@ -36,27 +38,14 @@ import java.util.Properties;
 public interface IArchiveStorageFactory extends ISingletonService
 {
 	/**
-	 * Register a storage handler class
-	 */
-	void registerArchiveStorage(StorageType storageType, AccessMode accessMode, Class<? extends IArchiveStorage> storageClass);
-
-	/**
 	 * Default Archive Storage for context's tenant(AD_Client_ID).
 	 */
 	IArchiveStorage getArchiveStorage(final Properties ctx);
 
 	/**
-	 * Get storage for current AD_Client_ID and detected {@link AccessMode}.
-	 */
-	IArchiveStorage getArchiveStorage(Properties ctx, StorageType storageType);
-
-	/**
-	 * Get storage for current AD_Client_ID.
-	 */
-	IArchiveStorage getArchiveStorage(Properties ctx, StorageType storageType, AccessMode accessMode);
-
-	/**
 	 * Archive Storage used for given <code>archive</code>.
 	 */
 	IArchiveStorage getArchiveStorage(final I_AD_Archive archive);
+
+	IArchiveStorage getArchiveStorage(@NonNull ClientId adClientId);
 }

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Archive
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 171076542L;
+	private static final long serialVersionUID = 126835650L;
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -47,6 +47,33 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public int getAD_Archive_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Archive_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Archive_Storage_ID, org.compiere.model.I_AD_Archive_Storage.class);
+	}
+
+	@Override
+	public void setAD_Archive_Storage(final org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Archive_Storage_ID, org.compiere.model.I_AD_Archive_Storage.class, AD_Archive_Storage);
+	}
+
+	@Override
+	public void setAD_Archive_Storage_ID (final int AD_Archive_Storage_ID)
+	{
+		if (AD_Archive_Storage_ID < 1) 
+			set_Value (COLUMNNAME_AD_Archive_Storage_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Archive_Storage_ID, AD_Archive_Storage_ID);
+	}
+
+	@Override
+	public int getAD_Archive_Storage_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Archive_Storage_ID);
 	}
 
 	@Override
@@ -173,6 +200,18 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
+	public org.compiere.model.I_C_Doc_Outbound_Config getC_Doc_Outbound_Config()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Doc_Outbound_Config_ID, org.compiere.model.I_C_Doc_Outbound_Config.class);
+	}
+
+	@Override
+	public void setC_Doc_Outbound_Config(final org.compiere.model.I_C_Doc_Outbound_Config C_Doc_Outbound_Config)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Doc_Outbound_Config_ID, org.compiere.model.I_C_Doc_Outbound_Config.class, C_Doc_Outbound_Config);
+	}
+
+	@Override
 	public void setC_Doc_Outbound_Config_ID (final int C_Doc_Outbound_Config_ID)
 	{
 		if (C_Doc_Outbound_Config_ID < 1) 
@@ -269,19 +308,6 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
-	public void setIsMainArchive (final boolean IsMainArchive)
-	{
-		set_Value (COLUMNNAME_IsMainArchive, IsMainArchive);
-	}
-
-	@Override
-	public boolean isMainArchive()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsMainArchive);
-	}
-
-
-	@Override
 	public void setIsFileSystem (final boolean IsFileSystem)
 	{
 		set_Value (COLUMNNAME_IsFileSystem, IsFileSystem);
@@ -291,6 +317,18 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public boolean isFileSystem() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFileSystem);
+	}
+
+	@Override
+	public void setIsMainArchive (final boolean IsMainArchive)
+	{
+		set_Value (COLUMNNAME_IsMainArchive, IsMainArchive);
+	}
+
+	@Override
+	public boolean isMainArchive() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMainArchive);
 	}
 
 	@Override
@@ -317,23 +355,20 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-
 	@Override
 	public void setOverride_DocType_ID (final int Override_DocType_ID)
 	{
-		if (Override_DocType_ID < 1)
+		if (Override_DocType_ID < 1) 
 			set_Value (COLUMNNAME_Override_DocType_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Override_DocType_ID, Override_DocType_ID);
 	}
 
 	@Override
-	public int getOverride_DocType_ID()
+	public int getOverride_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Override_DocType_ID);
 	}
-
-
 
 	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)

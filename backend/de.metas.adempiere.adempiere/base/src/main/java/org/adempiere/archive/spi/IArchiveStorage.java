@@ -22,11 +22,13 @@ package org.adempiere.archive.spi;
  * #L%
  */
 
-import org.adempiere.service.ClientId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -37,22 +39,26 @@ import java.util.Properties;
  */
 public interface IArchiveStorage
 {
-	/**
-	 * Initialize storage handler.
-	 * <p>
-	 * NOTE: don't call it directly, it's called by API
-	 */
-	void init(ClientId adClientId);
-
 	default I_AD_Archive newArchive() {return newArchive(Env.getCtx());}
 
-	I_AD_Archive newArchive(final Properties ctx);
+	default I_AD_Archive newArchive(final Properties ctx)
+	{
+		return InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, ITrx.TRXNAME_ThreadInherited);
+	}
 
 	@Nullable
 	byte[] getBinaryData(I_AD_Archive archive);
 
 	@Nullable
-	InputStream getBinaryDataAsStream(I_AD_Archive archive);
+	default InputStream getBinaryDataAsStream(final I_AD_Archive archive)
+	{
+		final byte[] inflatedData = getBinaryData(archive);
+		if (inflatedData == null)
+		{
+			return null;
+		}
+		return new ByteArrayInputStream(inflatedData);
+	}
 
 	void setBinaryData(I_AD_Archive archive, byte[] data);
 }

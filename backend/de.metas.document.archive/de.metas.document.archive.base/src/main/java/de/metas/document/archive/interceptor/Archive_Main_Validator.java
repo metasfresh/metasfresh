@@ -26,19 +26,14 @@ import de.metas.cache.CacheMgt;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
-import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IDeveloperModeBL;
+import lombok.Getter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.AccessMode;
-import org.adempiere.archive.api.StorageType;
-import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Doc_Outbound_Config;
@@ -61,12 +56,10 @@ public class Archive_Main_Validator implements ModelValidator
 	private final DocOutboundArchiveEventListener docOutboundArchiveEventListener = SpringContextHolder.instance.getBean(DocOutboundArchiveEventListener.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private int m_AD_Client_ID = -1;
-	private ModelValidationEngine engine;
+	@Getter private ModelValidationEngine engine;
 
 	@Override
 	public int getAD_Client_ID()
@@ -82,15 +75,6 @@ public class Archive_Main_Validator implements ModelValidator
 			m_AD_Client_ID = client.getAD_Client_ID();
 		}
 		this.engine = engine;
-
-		// Register RemoteArchiveStorage
-		archiveStorageFactory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
-
-		// NOTE: if we are in developer mode, in most of the cases Remote storage is not accessible but the filesystem storage is on our machine
-		if (developerModeBL.isEnabled())
-		{
-			archiveStorageFactory.registerArchiveStorage(StorageType.Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
-		}
 
 		archiveEventManager.registerArchiveEventListener(docOutboundArchiveEventListener);
 
@@ -124,14 +108,6 @@ public class Archive_Main_Validator implements ModelValidator
 	{
 		// shall never reach this point
 		throw new IllegalStateException("Not supported: po=" + po + ", timing=" + timing);
-	}
-
-	/**
-	 * @return {@link ModelValidationEngine} which was used on registration
-	 */
-	public ModelValidationEngine getEngine()
-	{
-		return engine;
 	}
 
 	private void registerExportPdfProcess()

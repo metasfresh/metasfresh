@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Archive
  *  @author metasfresh (generated) 
@@ -41,10 +40,35 @@ public interface I_AD_Archive
 	String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
 
 	/**
+	 * Set Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Archive_Storage_ID (int AD_Archive_Storage_ID);
+
+	/**
+	 * Get Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Archive_Storage_ID();
+
+	@Nullable org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage();
+
+	void setAD_Archive_Storage(@Nullable org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage);
+
+	ModelColumn<I_AD_Archive, org.compiere.model.I_AD_Archive_Storage> COLUMN_AD_Archive_Storage_ID = new ModelColumn<>(I_AD_Archive.class, "AD_Archive_Storage_ID", org.compiere.model.I_AD_Archive_Storage.class);
+	String COLUMNNAME_AD_Archive_Storage_ID = "AD_Archive_Storage_ID";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -255,7 +279,11 @@ public interface I_AD_Archive
 	 */
 	int getC_Doc_Outbound_Config_ID();
 
-	ModelColumn<I_AD_Archive, Object> COLUMN_C_Doc_Outbound_Config_ID = new ModelColumn<>(I_AD_Archive.class, "C_Doc_Outbound_Config_ID", null);
+	@Nullable org.compiere.model.I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+
+	void setC_Doc_Outbound_Config(@Nullable org.compiere.model.I_C_Doc_Outbound_Config C_Doc_Outbound_Config);
+
+	ModelColumn<I_AD_Archive, org.compiere.model.I_C_Doc_Outbound_Config> COLUMN_C_Doc_Outbound_Config_ID = new ModelColumn<>(I_AD_Archive.class, "C_Doc_Outbound_Config_ID", org.compiere.model.I_C_Doc_Outbound_Config.class);
 	String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
 
 	/**
@@ -275,7 +303,7 @@ public interface I_AD_Archive
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -396,7 +424,7 @@ public interface I_AD_Archive
 
 	/**
 	 * Set Is Direct Enqueue.
-	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+	 * Decides whether a print queue record should be created automatically when the print item (archive) is created
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -406,7 +434,7 @@ public interface I_AD_Archive
 
 	/**
 	 * Get Is Direct Enqueue.
-	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+	 * Decides whether a print queue record should be created automatically when the print item (archive) is created
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -440,17 +468,6 @@ public interface I_AD_Archive
 	ModelColumn<I_AD_Archive, Object> COLUMN_IsDirectProcessQueueItem = new ModelColumn<>(I_AD_Archive.class, "IsDirectProcessQueueItem", null);
 	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
 
-
-	void setIsMainArchive(boolean IsMainArchive);
-
-	boolean isMainArchive();
-
-	ModelColumn<I_AD_Archive, Object> COLUMN_IsMainArchive = new ModelColumn<>(I_AD_Archive.class, "IsMainArchive", null);
-	String COLUMNNAME_IsMainArchive = "IsMainArchive";
-
-
-
-
 	/**
 	 * Set IsFileSystem.
 	 *
@@ -471,6 +488,27 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_IsFileSystem = new ModelColumn<>(I_AD_Archive.class, "IsFileSystem", null);
 	String COLUMNNAME_IsFileSystem = "IsFileSystem";
+
+	/**
+	 * Set Main Archive.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMainArchive (boolean IsMainArchive);
+
+	/**
+	 * Get Main Archive.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMainArchive();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_IsMainArchive = new ModelColumn<>(I_AD_Archive.class, "IsMainArchive", null);
+	String COLUMNNAME_IsMainArchive = "IsMainArchive";
 
 	/**
 	 * Set Report.
@@ -517,6 +555,28 @@ public interface I_AD_Archive
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Override Doc Type Name.
+	 * Override Doc Type Name
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOverride_DocType_ID (int Override_DocType_ID);
+
+	/**
+	 * Get Override Doc Type Name.
+	 * Override Doc Type Name
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOverride_DocType_ID();
+
+	String COLUMNNAME_Override_DocType_ID = "Override_DocType_ID";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
@@ -538,26 +598,6 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_POReference = new ModelColumn<>(I_AD_Archive.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
-
-	/**
-	 * Set Override Doc TYpe.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOverride_DocType_ID (int Override_DocType_ID);
-
-	/**
-	 * Get Override Doc TYpe.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getOverride_DocType_ID();
-
-	String COLUMNNAME_Override_DocType_ID = "Override_DocType_ID";
 
 	/**
 	 * Set Record ID.
@@ -599,7 +639,7 @@ public interface I_AD_Archive
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

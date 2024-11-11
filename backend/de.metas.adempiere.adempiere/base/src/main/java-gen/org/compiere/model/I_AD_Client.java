@@ -1,352 +1,336 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Client
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_Client 
 {
 
-    /** TableName=AD_Client */
-    public static final String Table_Name = "AD_Client";
+	String Table_Name = "AD_Client";
 
-    /** AD_Table_ID=112 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=112 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Set Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Archive_Storage_ID (int AD_Archive_Storage_ID);
+
+	/**
+	 * Get Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Archive_Storage_ID();
+
+	@Nullable org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage();
+
+	void setAD_Archive_Storage(@Nullable org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage);
+
+	ModelColumn<I_AD_Client, org.compiere.model.I_AD_Archive_Storage> COLUMN_AD_Archive_Storage_ID = new ModelColumn<>(I_AD_Client.class, "AD_Archive_Storage_ID", org.compiere.model.I_AD_Archive_Storage.class);
+	String COLUMNNAME_AD_Archive_Storage_ID = "AD_Archive_Storage_ID";
+
+	/**
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_Client>(I_AD_Client.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sprache.
+	 * Set Language.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Language (java.lang.String AD_Language);
+	void setAD_Language (@Nullable java.lang.String AD_Language);
 
 	/**
-	 * Get Sprache.
+	 * Get Language.
 	 * Language for this entity
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAD_Language();
+	@Nullable java.lang.String getAD_Language();
 
-    /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "AD_Language", null);
-    /** Column name AD_Language */
-    public static final String COLUMNNAME_AD_Language = "AD_Language";
+	ModelColumn<I_AD_Client, Object> COLUMN_AD_Language = new ModelColumn<>(I_AD_Client.class, "AD_Language", null);
+	String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_Org>(I_AD_Client.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Replizierung - Strategie.
+	 * Set Replication Strategy.
 	 * Data Replication Strategy
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_ReplicationStrategy_ID (int AD_ReplicationStrategy_ID);
+	void setAD_ReplicationStrategy_ID (int AD_ReplicationStrategy_ID);
 
 	/**
-	 * Get Replizierung - Strategie.
+	 * Get Replication Strategy.
 	 * Data Replication Strategy
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_ReplicationStrategy_ID();
+	int getAD_ReplicationStrategy_ID();
 
-	public org.compiere.model.I_AD_ReplicationStrategy getAD_ReplicationStrategy();
+	@Nullable org.compiere.model.I_AD_ReplicationStrategy getAD_ReplicationStrategy();
 
-	public void setAD_ReplicationStrategy(org.compiere.model.I_AD_ReplicationStrategy AD_ReplicationStrategy);
+	void setAD_ReplicationStrategy(@Nullable org.compiere.model.I_AD_ReplicationStrategy AD_ReplicationStrategy);
 
-    /** Column definition for AD_ReplicationStrategy_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_ReplicationStrategy> COLUMN_AD_ReplicationStrategy_ID = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_ReplicationStrategy>(I_AD_Client.class, "AD_ReplicationStrategy_ID", org.compiere.model.I_AD_ReplicationStrategy.class);
-    /** Column name AD_ReplicationStrategy_ID */
-    public static final String COLUMNNAME_AD_ReplicationStrategy_ID = "AD_ReplicationStrategy_ID";
+	ModelColumn<I_AD_Client, org.compiere.model.I_AD_ReplicationStrategy> COLUMN_AD_ReplicationStrategy_ID = new ModelColumn<>(I_AD_Client.class, "AD_ReplicationStrategy_ID", org.compiere.model.I_AD_ReplicationStrategy.class);
+	String COLUMNNAME_AD_ReplicationStrategy_ID = "AD_ReplicationStrategy_ID";
 
 	/**
-	 * Set Automatische Archivierung.
+	 * Set Auto Archive.
 	 * Enable and level of automatic Archive of documents
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAutoArchive (java.lang.String AutoArchive);
+	void setAutoArchive (java.lang.String AutoArchive);
 
 	/**
-	 * Get Automatische Archivierung.
+	 * Get Auto Archive.
 	 * Enable and level of automatic Archive of documents
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAutoArchive();
+	java.lang.String getAutoArchive();
 
-    /** Column definition for AutoArchive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_AutoArchive = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "AutoArchive", null);
-    /** Column name AutoArchive */
-    public static final String COLUMNNAME_AutoArchive = "AutoArchive";
+	ModelColumn<I_AD_Client, Object> COLUMN_AutoArchive = new ModelColumn<>(I_AD_Client.class, "AutoArchive", null);
+	String COLUMNNAME_AutoArchive = "AutoArchive";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_Client, Object> COLUMN_Created = new ModelColumn<>(I_AD_Client.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_User>(I_AD_Client.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_Client, Object> COLUMN_Description = new ModelColumn<>(I_AD_Client.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Documenten-Verzeichnis.
+	 * Set Document Directory.
 	 * Directory for documents from the application server
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentDir (java.lang.String DocumentDir);
+	void setDocumentDir (@Nullable java.lang.String DocumentDir);
 
 	/**
-	 * Get Documenten-Verzeichnis.
+	 * Get Document Directory.
 	 * Directory for documents from the application server
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentDir();
+	@Nullable java.lang.String getDocumentDir();
 
-    /** Column definition for DocumentDir */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_DocumentDir = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "DocumentDir", null);
-    /** Column name DocumentDir */
-    public static final String COLUMNNAME_DocumentDir = "DocumentDir";
+	ModelColumn<I_AD_Client, Object> COLUMN_DocumentDir = new ModelColumn<>(I_AD_Client.class, "DocumentDir", null);
+	String COLUMNNAME_DocumentDir = "DocumentDir";
 
 	/**
-	 * Set EMail Test.
-	 * Test EMail
+	 * Set Test EMail.
+	 * Test EMail Connection
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailTest (java.lang.String EMailTest);
+	void setEMailTest (@Nullable java.lang.String EMailTest);
 
 	/**
-	 * Get EMail Test.
-	 * Test EMail
+	 * Get Test EMail.
+	 * Test EMail Connection
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMailTest();
+	@Nullable java.lang.String getEMailTest();
 
-    /** Column definition for EMailTest */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_EMailTest = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "EMailTest", null);
-    /** Column name EMailTest */
-    public static final String COLUMNNAME_EMailTest = "EMailTest";
+	ModelColumn<I_AD_Client, Object> COLUMN_EMailTest = new ModelColumn<>(I_AD_Client.class, "EMailTest", null);
+	String COLUMNNAME_EMailTest = "EMailTest";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Client.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Kostenrechnung sofort.
+	 * Set Cost Immediately.
 	 * Update Costs immediately for testing
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCostImmediate (boolean IsCostImmediate);
+	void setIsCostImmediate (boolean IsCostImmediate);
 
 	/**
-	 * Get Kostenrechnung sofort.
+	 * Get Cost Immediately.
 	 * Update Costs immediately for testing
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCostImmediate();
+	boolean isCostImmediate();
 
-    /** Column definition for IsCostImmediate */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsCostImmediate = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsCostImmediate", null);
-    /** Column name IsCostImmediate */
-    public static final String COLUMNNAME_IsCostImmediate = "IsCostImmediate";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsCostImmediate = new ModelColumn<>(I_AD_Client.class, "IsCostImmediate", null);
+	String COLUMNNAME_IsCostImmediate = "IsCostImmediate";
 
 	/**
-	 * Set Multisprachliche Dokumente.
+	 * Set Multi Lingual Documents.
 	 * Documents are Multi Lingual
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMultiLingualDocument (boolean IsMultiLingualDocument);
+	void setIsMultiLingualDocument (boolean IsMultiLingualDocument);
 
 	/**
-	 * Get Multisprachliche Dokumente.
+	 * Get Multi Lingual Documents.
 	 * Documents are Multi Lingual
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMultiLingualDocument();
+	boolean isMultiLingualDocument();
 
-    /** Column definition for IsMultiLingualDocument */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsMultiLingualDocument = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsMultiLingualDocument", null);
-    /** Column name IsMultiLingualDocument */
-    public static final String COLUMNNAME_IsMultiLingualDocument = "IsMultiLingualDocument";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsMultiLingualDocument = new ModelColumn<>(I_AD_Client.class, "IsMultiLingualDocument", null);
+	String COLUMNNAME_IsMultiLingualDocument = "IsMultiLingualDocument";
 
 	/**
-	 * Set Verbuchung sofort.
-	 * Post the accounting immediately for testing
+	 * Set Post Immediately (Deprecated).
+	 * Post the accounting immediately for testing (Deprecated)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPostImmediate (boolean IsPostImmediate);
+	void setIsPostImmediate (boolean IsPostImmediate);
 
 	/**
-	 * Get Verbuchung sofort.
-	 * Post the accounting immediately for testing
+	 * Get Post Immediately (Deprecated).
+	 * Post the accounting immediately for testing (Deprecated)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPostImmediate();
+	boolean isPostImmediate();
 
-    /** Column definition for IsPostImmediate */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsPostImmediate = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsPostImmediate", null);
-    /** Column name IsPostImmediate */
-    public static final String COLUMNNAME_IsPostImmediate = "IsPostImmediate";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsPostImmediate = new ModelColumn<>(I_AD_Client.class, "IsPostImmediate", null);
+	String COLUMNNAME_IsPostImmediate = "IsPostImmediate";
 
 	/**
 	 * Set Server EMail.
@@ -356,7 +340,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsServerEMail (boolean IsServerEMail);
+	void setIsServerEMail (boolean IsServerEMail);
 
 	/**
 	 * Get Server EMail.
@@ -366,37 +350,31 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isServerEMail();
+	boolean isServerEMail();
 
-    /** Column definition for IsServerEMail */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsServerEMail = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsServerEMail", null);
-    /** Column name IsServerEMail */
-    public static final String COLUMNNAME_IsServerEMail = "IsServerEMail";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsServerEMail = new ModelColumn<>(I_AD_Client.class, "IsServerEMail", null);
+	String COLUMNNAME_IsServerEMail = "IsServerEMail";
 
 	/**
-	 * Set SMTP Anmeldung.
-	 * Ihr EMail-Server verlangt eine Anmeldung
+	 * Set SMTP Authorization.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSmtpAuthorization (boolean IsSmtpAuthorization);
+	void setIsSmtpAuthorization (boolean IsSmtpAuthorization);
 
 	/**
-	 * Get SMTP Anmeldung.
-	 * Ihr EMail-Server verlangt eine Anmeldung
+	 * Get SMTP Authorization.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSmtpAuthorization();
+	boolean isSmtpAuthorization();
 
-    /** Column definition for IsSmtpAuthorization */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsSmtpAuthorization = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsSmtpAuthorization", null);
-    /** Column name IsSmtpAuthorization */
-    public static final String COLUMNNAME_IsSmtpAuthorization = "IsSmtpAuthorization";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsSmtpAuthorization = new ModelColumn<>(I_AD_Client.class, "IsSmtpAuthorization", null);
+	String COLUMNNAME_IsSmtpAuthorization = "IsSmtpAuthorization";
 
 	/**
 	 * Set Start TLS.
@@ -405,7 +383,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsStartTLS (boolean IsStartTLS);
+	void setIsStartTLS (boolean IsStartTLS);
 
 	/**
 	 * Get Start TLS.
@@ -414,65 +392,59 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isStartTLS();
+	boolean isStartTLS();
 
-    /** Column definition for IsStartTLS */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsStartTLS = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsStartTLS", null);
-    /** Column name IsStartTLS */
-    public static final String COLUMNNAME_IsStartTLS = "IsStartTLS";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsStartTLS = new ModelColumn<>(I_AD_Client.class, "IsStartTLS", null);
+	String COLUMNNAME_IsStartTLS = "IsStartTLS";
 
 	/**
-	 * Set Beta-Funktionalität verwenden.
+	 * Set Use Beta Functions.
 	 * Enable the use of Beta Functionality
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsUseBetaFunctions (boolean IsUseBetaFunctions);
+	void setIsUseBetaFunctions (boolean IsUseBetaFunctions);
 
 	/**
-	 * Get Beta-Funktionalität verwenden.
+	 * Get Use Beta Functions.
 	 * Enable the use of Beta Functionality
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isUseBetaFunctions();
+	boolean isUseBetaFunctions();
 
-    /** Column definition for IsUseBetaFunctions */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsUseBetaFunctions = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsUseBetaFunctions", null);
-    /** Column name IsUseBetaFunctions */
-    public static final String COLUMNNAME_IsUseBetaFunctions = "IsUseBetaFunctions";
+	ModelColumn<I_AD_Client, Object> COLUMN_IsUseBetaFunctions = new ModelColumn<>(I_AD_Client.class, "IsUseBetaFunctions", null);
+	String COLUMNNAME_IsUseBetaFunctions = "IsUseBetaFunctions";
 
 	/**
-	 * Set Materialfluß.
+	 * Set Material Policy.
 	 * Material Movement Policy
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMMPolicy (java.lang.String MMPolicy);
+	void setMMPolicy (java.lang.String MMPolicy);
 
 	/**
-	 * Get Materialfluß.
+	 * Get Material Policy.
 	 * Material Movement Policy
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMMPolicy();
+	java.lang.String getMMPolicy();
 
-    /** Column definition for MMPolicy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_MMPolicy = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "MMPolicy", null);
-    /** Column name MMPolicy */
-    public static final String COLUMNNAME_MMPolicy = "MMPolicy";
+	ModelColumn<I_AD_Client, Object> COLUMN_MMPolicy = new ModelColumn<>(I_AD_Client.class, "MMPolicy", null);
+	String COLUMNNAME_MMPolicy = "MMPolicy";
 
 	/**
-	 * Set Modell-Validierungs-Klassen.
+	 * Set Model Validation Classes.
 	 * List of data model validation classes separated by ;
 
 	 *
@@ -480,10 +452,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setModelValidationClasses (java.lang.String ModelValidationClasses);
+	void setModelValidationClasses (@Nullable java.lang.String ModelValidationClasses);
 
 	/**
-	 * Get Modell-Validierungs-Klassen.
+	 * Get Model Validation Classes.
 	 * List of data model validation classes separated by ;
 
 	 *
@@ -491,12 +463,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getModelValidationClasses();
+	@Nullable java.lang.String getModelValidationClasses();
 
-    /** Column definition for ModelValidationClasses */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_ModelValidationClasses = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "ModelValidationClasses", null);
-    /** Column name ModelValidationClasses */
-    public static final String COLUMNNAME_ModelValidationClasses = "ModelValidationClasses";
+	ModelColumn<I_AD_Client, Object> COLUMN_ModelValidationClasses = new ModelColumn<>(I_AD_Client.class, "ModelValidationClasses", null);
+	String COLUMNNAME_ModelValidationClasses = "ModelValidationClasses";
 
 	/**
 	 * Set Name.
@@ -505,7 +475,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -514,67 +484,61 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_Client, Object> COLUMN_Name = new ModelColumn<>(I_AD_Client.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Password Reset Mail.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPasswordReset_MailText_ID (int PasswordReset_MailText_ID);
+	void setPasswordReset_MailText_ID (int PasswordReset_MailText_ID);
 
 	/**
 	 * Get Password Reset Mail.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPasswordReset_MailText_ID();
+	int getPasswordReset_MailText_ID();
 
-	public org.compiere.model.I_R_MailText getPasswordReset_MailText();
+	@Nullable org.compiere.model.I_R_MailText getPasswordReset_MailText();
 
-	public void setPasswordReset_MailText(org.compiere.model.I_R_MailText PasswordReset_MailText);
+	void setPasswordReset_MailText(@Nullable org.compiere.model.I_R_MailText PasswordReset_MailText);
 
-    /** Column definition for PasswordReset_MailText_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_R_MailText> COLUMN_PasswordReset_MailText_ID = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_R_MailText>(I_AD_Client.class, "PasswordReset_MailText_ID", org.compiere.model.I_R_MailText.class);
-    /** Column name PasswordReset_MailText_ID */
-    public static final String COLUMNNAME_PasswordReset_MailText_ID = "PasswordReset_MailText_ID";
+	ModelColumn<I_AD_Client, org.compiere.model.I_R_MailText> COLUMN_PasswordReset_MailText_ID = new ModelColumn<>(I_AD_Client.class, "PasswordReset_MailText_ID", org.compiere.model.I_R_MailText.class);
+	String COLUMNNAME_PasswordReset_MailText_ID = "PasswordReset_MailText_ID";
 
 	/**
-	 * Set Anfrage-EMail.
+	 * Set Request EMail.
 	 * EMail address to send automated mails from or receive mails for automated processing (fully qualified)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestEMail (java.lang.String RequestEMail);
+	void setRequestEMail (@Nullable java.lang.String RequestEMail);
 
 	/**
-	 * Get Anfrage-EMail.
+	 * Get Request EMail.
 	 * EMail address to send automated mails from or receive mails for automated processing (fully qualified)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRequestEMail();
+	@Nullable java.lang.String getRequestEMail();
 
-    /** Column definition for RequestEMail */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_RequestEMail = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "RequestEMail", null);
-    /** Column name RequestEMail */
-    public static final String COLUMNNAME_RequestEMail = "RequestEMail";
+	ModelColumn<I_AD_Client, Object> COLUMN_RequestEMail = new ModelColumn<>(I_AD_Client.class, "RequestEMail", null);
+	String COLUMNNAME_RequestEMail = "RequestEMail";
 
 	/**
-	 * Set Anfrage-Verzeichnis.
+	 * Set Request Folder.
 	 * EMail folder to process incoming emails;
  if empty INBOX is used
 	 *
@@ -582,10 +546,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestFolder (java.lang.String RequestFolder);
+	void setRequestFolder (@Nullable java.lang.String RequestFolder);
 
 	/**
-	 * Get Anfrage-Verzeichnis.
+	 * Get Request Folder.
 	 * EMail folder to process incoming emails;
  if empty INBOX is used
 	 *
@@ -593,87 +557,77 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRequestFolder();
+	@Nullable java.lang.String getRequestFolder();
 
-    /** Column definition for RequestFolder */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_RequestFolder = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "RequestFolder", null);
-    /** Column name RequestFolder */
-    public static final String COLUMNNAME_RequestFolder = "RequestFolder";
+	ModelColumn<I_AD_Client, Object> COLUMN_RequestFolder = new ModelColumn<>(I_AD_Client.class, "RequestFolder", null);
+	String COLUMNNAME_RequestFolder = "RequestFolder";
 
 	/**
-	 * Set Anfrage-Nutzer.
+	 * Set Request User.
 	 * User Name (ID) of the email owner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestUser (java.lang.String RequestUser);
+	void setRequestUser (@Nullable java.lang.String RequestUser);
 
 	/**
-	 * Get Anfrage-Nutzer.
+	 * Get Request User.
 	 * User Name (ID) of the email owner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRequestUser();
+	@Nullable java.lang.String getRequestUser();
 
-    /** Column definition for RequestUser */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_RequestUser = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "RequestUser", null);
-    /** Column name RequestUser */
-    public static final String COLUMNNAME_RequestUser = "RequestUser";
+	ModelColumn<I_AD_Client, Object> COLUMN_RequestUser = new ModelColumn<>(I_AD_Client.class, "RequestUser", null);
+	String COLUMNNAME_RequestUser = "RequestUser";
 
 	/**
-	 * Set Passwort Anfrage-Nutzer.
+	 * Set Request User Password.
 	 * Password of the user name (ID) for mail processing
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestUserPW (java.lang.String RequestUserPW);
+	void setRequestUserPW (@Nullable java.lang.String RequestUserPW);
 
 	/**
-	 * Get Passwort Anfrage-Nutzer.
+	 * Get Request User Password.
 	 * Password of the user name (ID) for mail processing
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRequestUserPW();
+	@Nullable java.lang.String getRequestUserPW();
 
-    /** Column definition for RequestUserPW */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_RequestUserPW = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "RequestUserPW", null);
-    /** Column name RequestUserPW */
-    public static final String COLUMNNAME_RequestUserPW = "RequestUserPW";
+	ModelColumn<I_AD_Client, Object> COLUMN_RequestUserPW = new ModelColumn<>(I_AD_Client.class, "RequestUserPW", null);
+	String COLUMNNAME_RequestUserPW = "RequestUserPW";
 
 	/**
 	 * Set EMail-Server.
-	 * Hostname of Mail Server for SMTP and IMAP
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSMTPHost (java.lang.String SMTPHost);
+	void setSMTPHost (@Nullable java.lang.String SMTPHost);
 
 	/**
 	 * Get EMail-Server.
-	 * Hostname of Mail Server for SMTP and IMAP
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSMTPHost();
+	@Nullable java.lang.String getSMTPHost();
 
-    /** Column definition for SMTPHost */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_SMTPHost = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "SMTPHost", null);
-    /** Column name SMTPHost */
-    public static final String COLUMNNAME_SMTPHost = "SMTPHost";
+	ModelColumn<I_AD_Client, Object> COLUMN_SMTPHost = new ModelColumn<>(I_AD_Client.class, "SMTPHost", null);
+	String COLUMNNAME_SMTPHost = "SMTPHost";
 
 	/**
 	 * Set SMTP Port.
@@ -682,7 +636,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSMTPPort (int SMTPPort);
+	void setSMTPPort (int SMTPPort);
 
 	/**
 	 * Get SMTP Port.
@@ -691,12 +645,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSMTPPort();
+	int getSMTPPort();
 
-    /** Column definition for SMTPPort */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_SMTPPort = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "SMTPPort", null);
-    /** Column name SMTPPort */
-    public static final String COLUMNNAME_SMTPPort = "SMTPPort";
+	ModelColumn<I_AD_Client, Object> COLUMN_SMTPPort = new ModelColumn<>(I_AD_Client.class, "SMTPPort", null);
+	String COLUMNNAME_SMTPPort = "SMTPPort";
 
 	/**
 	 * Set Store Archive On File System.
@@ -705,7 +657,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStoreArchiveOnFileSystem (boolean StoreArchiveOnFileSystem);
+	void setStoreArchiveOnFileSystem (boolean StoreArchiveOnFileSystem);
 
 	/**
 	 * Get Store Archive On File System.
@@ -714,12 +666,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isStoreArchiveOnFileSystem();
+	boolean isStoreArchiveOnFileSystem();
 
-    /** Column definition for StoreArchiveOnFileSystem */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_StoreArchiveOnFileSystem = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "StoreArchiveOnFileSystem", null);
-    /** Column name StoreArchiveOnFileSystem */
-    public static final String COLUMNNAME_StoreArchiveOnFileSystem = "StoreArchiveOnFileSystem";
+	ModelColumn<I_AD_Client, Object> COLUMN_StoreArchiveOnFileSystem = new ModelColumn<>(I_AD_Client.class, "StoreArchiveOnFileSystem", null);
+	String COLUMNNAME_StoreArchiveOnFileSystem = "StoreArchiveOnFileSystem";
 
 	/**
 	 * Set Store Attachments On File System.
@@ -728,7 +678,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStoreAttachmentsOnFileSystem (boolean StoreAttachmentsOnFileSystem);
+	void setStoreAttachmentsOnFileSystem (boolean StoreAttachmentsOnFileSystem);
 
 	/**
 	 * Get Store Attachments On File System.
@@ -737,12 +687,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isStoreAttachmentsOnFileSystem();
+	boolean isStoreAttachmentsOnFileSystem();
 
-    /** Column definition for StoreAttachmentsOnFileSystem */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_StoreAttachmentsOnFileSystem = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "StoreAttachmentsOnFileSystem", null);
-    /** Column name StoreAttachmentsOnFileSystem */
-    public static final String COLUMNNAME_StoreAttachmentsOnFileSystem = "StoreAttachmentsOnFileSystem";
+	ModelColumn<I_AD_Client, Object> COLUMN_StoreAttachmentsOnFileSystem = new ModelColumn<>(I_AD_Client.class, "StoreAttachmentsOnFileSystem", null);
+	String COLUMNNAME_StoreAttachmentsOnFileSystem = "StoreAttachmentsOnFileSystem";
 
 	/**
 	 * Set Unix Archive Path.
@@ -751,7 +699,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUnixArchivePath (java.lang.String UnixArchivePath);
+	void setUnixArchivePath (@Nullable java.lang.String UnixArchivePath);
 
 	/**
 	 * Get Unix Archive Path.
@@ -760,12 +708,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUnixArchivePath();
+	@Nullable java.lang.String getUnixArchivePath();
 
-    /** Column definition for UnixArchivePath */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_UnixArchivePath = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "UnixArchivePath", null);
-    /** Column name UnixArchivePath */
-    public static final String COLUMNNAME_UnixArchivePath = "UnixArchivePath";
+	ModelColumn<I_AD_Client, Object> COLUMN_UnixArchivePath = new ModelColumn<>(I_AD_Client.class, "UnixArchivePath", null);
+	String COLUMNNAME_UnixArchivePath = "UnixArchivePath";
 
 	/**
 	 * Set Unix Attachment Path.
@@ -774,7 +720,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUnixAttachmentPath (java.lang.String UnixAttachmentPath);
+	void setUnixAttachmentPath (@Nullable java.lang.String UnixAttachmentPath);
 
 	/**
 	 * Get Unix Attachment Path.
@@ -783,67 +729,58 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUnixAttachmentPath();
+	@Nullable java.lang.String getUnixAttachmentPath();
 
-    /** Column definition for UnixAttachmentPath */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_UnixAttachmentPath = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "UnixAttachmentPath", null);
-    /** Column name UnixAttachmentPath */
-    public static final String COLUMNNAME_UnixAttachmentPath = "UnixAttachmentPath";
+	ModelColumn<I_AD_Client, Object> COLUMN_UnixAttachmentPath = new ModelColumn<>(I_AD_Client.class, "UnixAttachmentPath", null);
+	String COLUMNNAME_UnixAttachmentPath = "UnixAttachmentPath";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_Client, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Client.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Client, org.compiere.model.I_AD_User>(I_AD_Client.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_AD_Client, Object> COLUMN_Value = new ModelColumn<>(I_AD_Client.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Windows Archive Path.
@@ -852,7 +789,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWindowsArchivePath (java.lang.String WindowsArchivePath);
+	void setWindowsArchivePath (@Nullable java.lang.String WindowsArchivePath);
 
 	/**
 	 * Get Windows Archive Path.
@@ -861,12 +798,10 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getWindowsArchivePath();
+	@Nullable java.lang.String getWindowsArchivePath();
 
-    /** Column definition for WindowsArchivePath */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_WindowsArchivePath = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "WindowsArchivePath", null);
-    /** Column name WindowsArchivePath */
-    public static final String COLUMNNAME_WindowsArchivePath = "WindowsArchivePath";
+	ModelColumn<I_AD_Client, Object> COLUMN_WindowsArchivePath = new ModelColumn<>(I_AD_Client.class, "WindowsArchivePath", null);
+	String COLUMNNAME_WindowsArchivePath = "WindowsArchivePath";
 
 	/**
 	 * Set Windows Attachment Path.
@@ -875,7 +810,7 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWindowsAttachmentPath (java.lang.String WindowsAttachmentPath);
+	void setWindowsAttachmentPath (@Nullable java.lang.String WindowsAttachmentPath);
 
 	/**
 	 * Get Windows Attachment Path.
@@ -884,10 +819,8 @@ public interface I_AD_Client
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getWindowsAttachmentPath();
+	@Nullable java.lang.String getWindowsAttachmentPath();
 
-    /** Column definition for WindowsAttachmentPath */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_WindowsAttachmentPath = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "WindowsAttachmentPath", null);
-    /** Column name WindowsAttachmentPath */
-    public static final String COLUMNNAME_WindowsAttachmentPath = "WindowsAttachmentPath";
+	ModelColumn<I_AD_Client, Object> COLUMN_WindowsAttachmentPath = new ModelColumn<>(I_AD_Client.class, "WindowsAttachmentPath", null);
+	String COLUMNNAME_WindowsAttachmentPath = "WindowsAttachmentPath";
 }

@@ -22,19 +22,17 @@ package org.adempiere.archive.spi.impl;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfig;
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Client;
-import org.compiere.util.Ini;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -43,6 +41,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -50,7 +49,7 @@ import java.util.Properties;
  *
  * @author tsa
  */
-public class FilesystemArchiveStorage extends AbstractArchiveStorage
+public class FilesystemArchiveStorage implements IArchiveStorage
 {
 	private static final Logger logger = LogManager.getLogger(FilesystemArchiveStorage.class);
 
@@ -59,59 +58,18 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	 */
 	private static final String ARCHIVE_FOLDER_PLACEHOLDER = "%ARCHIVE_FOLDER%";
 
-	private String archivePathRoot;
+	@NonNull private final ArchiveStorageConfigId storageConfigId;
+	@NonNull private final String archivePathRoot;
 
-	public FilesystemArchiveStorage()
+	public FilesystemArchiveStorage(final ArchiveStorageConfig config)
 	{
-		super();
+		this.storageConfigId = config.getId();
+		this.archivePathRoot = normalizePath(config.getFileSystemNotNull().getPath());
 	}
 
-	@Override
-	public void init(@NonNull final ClientId adClientId)
+	private static String normalizePath(@NonNull final Path path)
 	{
-		final IClientDAO clientDAO = Services.get(IClientDAO.class);
-		final I_AD_Client client = clientDAO.getById(adClientId);
-		this.archivePathRoot = getArchivePath(client);
-		logger.info("init: Archive Path: {}, Config={}", archivePathRoot, client);
-	}
-
-	private void checkContext()
-	{
-		Check.assume(!Ini.isSwingClient() || Services.get(IDeveloperModeBL.class).isEnabled(), "Server mode required");
-
-		if (Check.isEmpty(archivePathRoot, true))
-		{
-			throw new IllegalArgumentException("FilesystemArchiveStorage is not configured. No root path defined.");
-		}
-	}
-
-	private static String getArchivePath(final I_AD_Client config)
-	{
-		String archivePathRoot;
-		if (File.separatorChar == '\\')
-		{
-			archivePathRoot = config.getWindowsArchivePath();
-		}
-		else
-		{
-			archivePathRoot = config.getUnixArchivePath();
-		}
-
-		if (Check.isEmpty(archivePathRoot, true))
-		{
-			throw new AdempiereException("No archive path defined for " + config);
-		}
-
-		// Fix path separator
-		if (File.separatorChar == '\\')
-		{
-			archivePathRoot = archivePathRoot.replace('/', File.separatorChar);
-		}
-		else
-		{
-			archivePathRoot = archivePathRoot.replace('\\', File.separatorChar);
-		}
-
+		String archivePathRoot = path.toAbsolutePath().toString();
 		if (!archivePathRoot.endsWith(File.separator))
 		{
 			// log.warn("archive path doesn't end with " + File.separator);
@@ -124,9 +82,8 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	@Override
 	public I_AD_Archive newArchive(final Properties ctx)
 	{
-		checkContext();
-
-		final I_AD_Archive archive = super.newArchive(ctx);
+		final I_AD_Archive archive = IArchiveStorage.super.newArchive(ctx);
+		archive.setAD_Archive_Storage_ID(storageConfigId.getRepoId());
 		archive.setIsFileSystem(true);
 		return archive;
 	}
@@ -137,8 +94,6 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	@Override
 	public byte[] getBinaryData(final I_AD_Archive archive)
 	{
-		checkContext();
-
 		byte[] data = archive.getBinaryData();
 		if (data == null)
 		{
@@ -178,8 +133,6 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	@Override
 	public void setBinaryData(final I_AD_Archive archive, final byte[] inflatedData)
 	{
-		checkContext();
-
 		if (inflatedData == null || inflatedData.length == 0)
 		{
 			throw new IllegalArgumentException("InflatedData is NULL");

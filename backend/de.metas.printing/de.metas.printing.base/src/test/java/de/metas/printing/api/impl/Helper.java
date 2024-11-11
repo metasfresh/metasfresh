@@ -1,6 +1,8 @@
 package de.metas.printing.api.impl;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.archive.ArchiveStorageConfigId;
+import de.metas.archive.ArchiveStorageConfigRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.engine.IDocumentBL;
@@ -147,6 +149,7 @@ public class Helper
 	private final String testDisplayName;
 
 	private TestClientUI clientUI = null;
+	private I_AD_Client client;
 	private PrintOutputFacade printOutputFacade;
 
 	public Helper(@NonNull final TestName testName)
@@ -192,8 +195,8 @@ public class Helper
 
 		//
 		// AD_Client
-		final I_AD_Client client = printingDAO.newInstance(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
-		client.setStoreArchiveOnFileSystem(false);
+		this.client = printingDAO.newInstance(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
+		//client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.DATABASE.getRepoId());
 		InterfaceWrapperHelper.save(client);
 		Env.setContext(ctx, "#AD_Client_ID", client.getAD_Client_ID());
 
@@ -217,6 +220,7 @@ public class Helper
 		Language.setBaseLanguage(() -> "de_DE");
 
 		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
+		SpringContextHolder.registerJUnitBean(ArchiveStorageConfigRepository.newInstanceForUnitTesting());
 
 		printOutputFacade = new PrintOutputFacade(
 				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
@@ -248,6 +252,12 @@ public class Helper
 		return clientUI;
 	}
 
+	public void setClientArchiveStorageConfigId(final ArchiveStorageConfigId configId)
+	{
+		client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.toRepoId(configId));
+		InterfaceWrapperHelper.save(client);
+	}
+
 	public I_C_Print_Job createPrintJob()
 	{
 		final I_C_Print_Job printJob = printingDAO.newInstance(ctx, I_C_Print_Job.class, ITrx.TRXNAME_None);
@@ -274,7 +284,7 @@ public class Helper
 		final String trxName = InterfaceWrapperHelper.getTrxName(printJob);
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
-		final org.compiere.model.I_AD_Archive archive = storage.newArchive(ctx, trxName);
+		final org.compiere.model.I_AD_Archive archive = storage.newArchive(ctx);
 		archive.setName(Long.toString(SystemTime.millis()));
 		storage.setBinaryData(archive, pdfBinaryData);
 		printingDAO.save(archive);
@@ -706,12 +716,7 @@ public class Helper
 
 		final double equalsPerc = bytesEqual * 100 / len;
 
-		if (equalsPerc < matchingPercent)
-		{
-			return false;
-		}
-
-		return true;
+		return !(equalsPerc < matchingPercent);
 	}
 
 	public I_Test createTestRecord()
@@ -738,7 +743,7 @@ public class Helper
 		final String trxName = InterfaceWrapperHelper.getTrxName(record);
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
-		final I_AD_Archive archive = InterfaceWrapperHelper.create(storage.newArchive(ctx, trxName), I_AD_Archive.class);
+		final I_AD_Archive archive = InterfaceWrapperHelper.create(storage.newArchive(ctx), I_AD_Archive.class);
 		archive.setAD_Org_ID(AD_Org_ID);
 		archive.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(wrapper.getTableName()));
 		archive.setRecord_ID(wrapper.getId());

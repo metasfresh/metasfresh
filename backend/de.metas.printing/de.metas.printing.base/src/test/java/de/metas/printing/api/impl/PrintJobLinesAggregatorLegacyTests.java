@@ -22,6 +22,7 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
@@ -39,9 +40,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.archive.api.AccessMode;
 import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.StorageType;
 import org.adempiere.archive.api.impl.ArchiveStorageFactory;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -89,11 +88,11 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	@Test
 	public void test01_cal()
 	{
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		helper.createPrinterHWCalibration("printer01-HW",
 				"iso-a7", // task 08458: printer doesn't have A4, but the system shall create it on the fly
-				"tray01-HW",10, 10, 20); // 03733
+				"tray01-HW", 10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob
@@ -132,7 +131,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob, printerRouting, "01");
@@ -172,13 +171,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
 				printerRouting,
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("printer01", "tray01",10, -1, 10, 15),
+				helper.createPrinterRouting("printer01", "tray01", 10, -1, 10, 15),
 				"02");
 		helper.createPrintJobLine(printJob,
 				printerRouting,
@@ -212,13 +211,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Setup PrintJob
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 1, 2),
+				helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 1, 2),
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer02", "tray01",10, -1, 3, 4),
+				helper.createPrinterRouting("test03-printer02", "tray01", 10, -1, 3, 4),
 				"02");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 5, 6),
+				helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 5, 6),
 				"03");
 		helper.createPrintJobInstructions(printJob);
 		InterfaceWrapperHelper.save(printJob);
@@ -251,6 +250,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 
 	public static class MockedDBArchiveStorage extends DBArchiveStorage
 	{
+		public static final ArchiveStorageConfigId CONFIG_ID = ArchiveStorageConfigId.ofRepoId(12345);
 		private static final Set<Integer> archiveIdsToFail = new HashSet<Integer>();
 
 		public static void reset()
@@ -288,16 +288,15 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup Mocked Archive Storage
-		archiveStorageFactory.removeAllArchiveStorages(); // make sure there are no other storages registered
-		archiveStorageFactory.registerArchiveStorage(
-				StorageType.Database,
-				AccessMode.ALL, // match for Client and Server, to not bother about Ini.setClient (there are other tests which are checking this)
-				MockedDBArchiveStorage.class);
+		{
+			archiveStorageFactory.setArchiveStorage(MockedDBArchiveStorage.CONFIG_ID, new MockedDBArchiveStorage());
+			helper.setClientArchiveStorageConfigId(MockedDBArchiveStorage.CONFIG_ID);
+		}
 
 		//
 		// Setup Routing
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
-		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW",10, 10, 20); // 03733
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
+		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW", 10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob
