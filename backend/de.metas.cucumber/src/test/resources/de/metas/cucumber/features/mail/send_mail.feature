@@ -8,7 +8,6 @@ Feature: Test sending an outbound mail
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  @ignore
   Scenario: SMTP
     Given email successfully sent
       | mailbox.type | mailbox.smtp.host$env | mailbox.smtp.port | mailbox.smtp.auth | mailbox.from$env | mailbox.smtp.username$env | mailbox.smtp.password$env | mailbox.smtp.startTLS | to$env         | subject      | message      |
