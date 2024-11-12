@@ -34,12 +34,15 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
 	List<I_C_Doc_Outbound_Log> retrieveLog(TableRecordReference tableRecordReference);
 
 	I_C_Doc_Outbound_Log getById(@NonNull DocOutboundLogId docOutboundLogId);
+
+	Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull List<DocOutboundLogId> ids);
 
 	@Nullable
 	I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(@NonNull DocOutboundLogId docOutboundLogId);
