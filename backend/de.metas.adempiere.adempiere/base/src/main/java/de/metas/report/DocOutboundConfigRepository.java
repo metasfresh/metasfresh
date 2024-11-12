@@ -23,6 +23,7 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
 import de.metas.util.Services;
@@ -45,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -91,6 +91,7 @@ public class DocOutboundConfigRepository
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.tableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
 				.printFormatId(PrintFormatId.ofRepoIdOrNull(record.getAD_PrintFormat_ID()))
+				.storageConfigId(ArchiveStorageConfigId.ofRepoIdOrNull(record.getAD_Archive_Storage_ID()))
 				.ccPath(record.getCCPath())
 				.lines(configCCList)
 				.build();
@@ -168,7 +169,7 @@ public class DocOutboundConfigRepository
 		final List<DocOutboundConfigCC> configCCList = config.getLines();
 		final List<PrintFormatId> printFormatIds = configCCList.stream()
 				.map(DocOutboundConfigCC::getPrintFormatId)
-				.collect(Collectors.toList());
+				.toList();
 
 		if (!printFormatIds.isEmpty()) {printFormatIdList.addAll(printFormatIds);}
 

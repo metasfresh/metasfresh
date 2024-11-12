@@ -17,10 +17,35 @@ public interface I_C_Doc_Outbound_Config
 
 
 	/**
+	 * Set Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Archive_Storage_ID (int AD_Archive_Storage_ID);
+
+	/**
+	 * Get Archive Storage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Archive_Storage_ID();
+
+	@Nullable org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage();
+
+	void setAD_Archive_Storage(@Nullable org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage);
+
+	ModelColumn<I_C_Doc_Outbound_Config, org.compiere.model.I_AD_Archive_Storage> COLUMN_AD_Archive_Storage_ID = new ModelColumn<>(I_C_Doc_Outbound_Config.class, "AD_Archive_Storage_ID", org.compiere.model.I_AD_Archive_Storage.class);
+	String COLUMNNAME_AD_Archive_Storage_ID = "AD_Archive_Storage_ID";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -52,7 +77,7 @@ public interface I_C_Doc_Outbound_Config
 
 	/**
 	 * Set Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -62,7 +87,7 @@ public interface I_C_Doc_Outbound_Config
 
 	/**
 	 * Get Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -101,6 +126,7 @@ public interface I_C_Doc_Outbound_Config
 
 	/**
 	 * Set CC Path.
+	 * File Path used to store the file
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -110,6 +136,7 @@ public interface I_C_Doc_Outbound_Config
 
 	/**
 	 * Get CC Path.
+	 * File Path used to store the file
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -158,7 +185,7 @@ public interface I_C_Doc_Outbound_Config
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -229,7 +256,7 @@ public interface I_C_Doc_Outbound_Config
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

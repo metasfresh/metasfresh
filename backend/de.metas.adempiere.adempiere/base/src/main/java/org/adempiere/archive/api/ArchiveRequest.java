@@ -22,6 +22,7 @@
 
 package org.adempiere.archive.api;
 
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
@@ -43,6 +44,8 @@ import java.util.Properties;
 @Builder
 public class ArchiveRequest
 {
+	@Nullable ArchiveStorageConfigId storageConfigId;
+	
 	@Nullable DocumentReportFlavor flavor;
 	Resource data;
 
@@ -77,7 +80,7 @@ public class ArchiveRequest
 	@Nullable Language language;
 
 	@Nullable String poReference;
-	
+
 	//
 	// Printing:
 	boolean isDirectEnqueue;

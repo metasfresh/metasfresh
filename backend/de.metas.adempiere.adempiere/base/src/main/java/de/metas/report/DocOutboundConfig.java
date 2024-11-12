@@ -1,6 +1,7 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,6 +20,7 @@ public class DocOutboundConfig
 	@NonNull ClientId clientId;
 	@NonNull AdTableId tableId;
 	@Nullable PrintFormatId printFormatId;
+	@Nullable ArchiveStorageConfigId storageConfigId;
 	@Nullable String ccPath;
 	@NonNull ImmutableList<DocOutboundConfigCC> lines;
 
@@ -28,6 +30,7 @@ public class DocOutboundConfig
 			@NonNull final ClientId clientId,
 			@NonNull final AdTableId tableId,
 			@Nullable final PrintFormatId printFormatId, 
+			@Nullable final ArchiveStorageConfigId storageConfigId,
 			@Nullable final String ccPath,
 			@Nullable final List<DocOutboundConfigCC> lines)
 	{
@@ -35,6 +38,7 @@ public class DocOutboundConfig
 		this.clientId = clientId;
 		this.tableId = tableId;
 		this.printFormatId = printFormatId;
+		this.storageConfigId = storageConfigId;
 		this.ccPath = StringUtils.trimBlankToNull(ccPath);
 		this.lines = lines != null ? ImmutableList.copyOf(lines) : ImmutableList.of();
 	}

@@ -85,7 +85,9 @@ public class ArchiveBL implements IArchiveBL
 			return ArchiveResult.EMPTY;
 		}
 
-		final IArchiveStorage storage = archiveStorageFactory.getArchiveStorage(ctxToUse);
+		final IArchiveStorage storage = request.getStorageConfigId() != null
+				? archiveStorageFactory.getArchiveStorage(request.getStorageConfigId())
+				: archiveStorageFactory.getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse);
 		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
@@ -244,10 +246,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (isReport)
-			{
-				return false;
-			}
+			return !isReport;
 		}
 		return true;
 	}

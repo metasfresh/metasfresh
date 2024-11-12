@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_C_Doc_Outbound_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -181516811L;
+	private static final long serialVersionUID = 1382260663L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Config (final Properties ctx, final int C_Doc_Outbound_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,33 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Archive_Storage_ID, org.compiere.model.I_AD_Archive_Storage.class);
+	}
+
+	@Override
+	public void setAD_Archive_Storage(final org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Archive_Storage_ID, org.compiere.model.I_AD_Archive_Storage.class, AD_Archive_Storage);
+	}
+
+	@Override
+	public void setAD_Archive_Storage_ID (final int AD_Archive_Storage_ID)
+	{
+		if (AD_Archive_Storage_ID < 1) 
+			set_Value (COLUMNNAME_AD_Archive_Storage_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Archive_Storage_ID, AD_Archive_Storage_ID);
+	}
+
+	@Override
+	public int getAD_Archive_Storage_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Archive_Storage_ID);
 	}
 
 	@Override

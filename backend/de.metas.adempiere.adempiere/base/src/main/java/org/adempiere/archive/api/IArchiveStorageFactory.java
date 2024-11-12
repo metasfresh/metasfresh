@@ -22,6 +22,7 @@ package org.adempiere.archive.api;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.archive.spi.IArchiveStorage;
@@ -48,4 +49,6 @@ public interface IArchiveStorageFactory extends ISingletonService
 	IArchiveStorage getArchiveStorage(final I_AD_Archive archive);
 
 	IArchiveStorage getArchiveStorage(@NonNull ClientId adClientId);
+
+	IArchiveStorage getArchiveStorage(@NonNull ArchiveStorageConfigId storageConfigId);
 }

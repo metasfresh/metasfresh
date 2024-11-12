@@ -8,7 +8,6 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
-import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
@@ -38,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -257,32 +257,33 @@ public class DefaultModelArchiver
 			throw new AdempiereException("Cannot create PDF data for " + this);
 		}
 
+		final DocOutboundConfig docOutboundConfig = getDocOutboundConfig().orElse(null);
+
 		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
 
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-																	  .flavor(report.getFlavor())
-																	  .data(report.getReportData().orElse(null))
-																	  .force(true)
-																	  .save(true)
-																	  .asyncBatchId(report.getAsyncBatchId())
-																	  .documentNo(documentNo)
-																	  .recordRef(report.getDocumentRef())
-																	  .processId(report.getReportProcessId())
-																	  .pinstanceId(report.getReportPInstanceId())
-																	  .archiveName(report.getFilename())
-																	  .bpartnerId(report.getBpartnerId())
-																	  .language(report.getLanguage())
-																	  .isMainReport(report.isMainReport())
-																	  .poReference(report.getPoReference())
-																	  .overrideDocTypeId(report.getOverrideDocTypeId())
-																	  .build());
+				.storageConfigId(docOutboundConfig != null ? docOutboundConfig.getStorageConfigId() : null)
+				.flavor(report.getFlavor())
+				.data(report.getReportData().orElse(null))
+				.force(true)
+				.save(true)
+				.asyncBatchId(report.getAsyncBatchId())
+				.documentNo(documentNo)
+				.recordRef(report.getDocumentRef())
+				.processId(report.getReportProcessId())
+				.pinstanceId(report.getReportPInstanceId())
+				.archiveName(report.getFilename())
+				.bpartnerId(report.getBpartnerId())
+				.language(report.getLanguage())
+				.isMainReport(report.isMainReport())
+				.poReference(report.getPoReference())
+				.overrideDocTypeId(report.getOverrideDocTypeId())
+				.build());
 
-		final I_AD_Archive archive = InterfaceWrapperHelper.create(
-				Objects.requireNonNull(archiveResult.getArchiveRecord()),
-				I_AD_Archive.class);
+		final I_AD_Archive archive = Objects.requireNonNull(archiveResult.getArchiveRecord());
 
 		// 09417: reference the config and it's settings will decide if a printing queue item shall be created
-		archive.setC_Doc_Outbound_Config_ID(getDocOutboundConfigId().map(DocOutboundConfigId::getRepoId).orElse(-1));
+		archive.setC_Doc_Outbound_Config_ID(DocOutboundConfigId.toRepoId(docOutboundConfig != null ? docOutboundConfig.getId() : null));
 		archive.setOverride_DocType_ID(DocTypeId.toRepoId(report.getOverrideDocTypeId()));
 
 		// https://github.com/metasfresh/metasfresh/issues/1240

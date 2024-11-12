@@ -96,7 +96,8 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 		return getArchiveStorage(storageConfigId);
 	}
 
-	private IArchiveStorage getArchiveStorage(@NonNull final ArchiveStorageConfigId storageConfigId)
+	@Override
+	public IArchiveStorage getArchiveStorage(@NonNull final ArchiveStorageConfigId storageConfigId)
 	{
 		return archiveStorages.getOrLoad(storageConfigId, this::createArchiveStorage);
 	}
