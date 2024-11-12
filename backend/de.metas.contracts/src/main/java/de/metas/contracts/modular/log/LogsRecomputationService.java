@@ -135,6 +135,42 @@ public class LogsRecomputationService
 		}
 	}
 
+	private void recomputeForShippingNotificationLines(@NonNull final List<ShippingNotificationLine> shippingNotificationLinesList)
+	{
+		shippingNotificationLinesList.forEach(line -> modularContractService.scheduleLogCreation(
+				DocStatusChangedEvent.builder()
+						.tableRecordReference(TableRecordReference.of(I_M_Shipping_NotificationLine.Table_Name,
+																	  Check.assumeNotNull(line.getId(), "ShippingNotificationLineId shouldn't be null")))
+						.modelAction(ModelAction.RECREATE_LOGS)
+						.userInChargeId(Env.getLoggedUserId())
+						.build())
+		);
+	}
+
+	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	{
+		inOutDAO.retrieveAllLines(inOut)
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
+	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		ppCostCollectorDAO.getByOrderId(ppOrderId)
+				.forEach(ppCostCollector -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(ppCostCollector))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
 
 	public void recomputeLogs(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
 	{
@@ -170,7 +206,7 @@ public class LogsRecomputationService
 	public void recomputeForInOut(@NonNull final IQueryFilter<I_M_InOut> filter)
 	{
 		inOutDAO.stream(filter)
-				.forEach(this::recomputeForInOut);
+				.forEach(this::recomputeForInOutInNewTrx);
 	}
 
 	public void recomputeForOrder(@NonNull final IQueryFilter<I_C_Order> filter)
@@ -205,7 +241,7 @@ public class LogsRecomputationService
 		ppOrderDAO.stream(filter)
 				.map(I_PP_Order::getPP_Order_ID)
 				.map(PPOrderId::ofRepoId)
-				.forEach(this::recomputeForPPOrder);
+				.forEach(this::recomputeForPPOrderInNewTrx);
 	}
 
 	public void recomputeForShippingNotification(@NonNull final IQueryFilter<I_M_Shipping_Notification> filter)
@@ -234,7 +270,7 @@ public class LogsRecomputationService
 		);
 	}
 
-	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	private void recomputeForInOutInNewTrx(@NonNull final I_M_InOut inOut)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
@@ -312,7 +348,7 @@ public class LogsRecomputationService
 				);
 	}
 
-	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	private void recomputeForPPOrderInNewTrx(@NonNull final PPOrderId ppOrderId)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
@@ -334,7 +370,7 @@ public class LogsRecomputationService
 
 		switch (recordRef.getTableName())
 		{
-			case I_PP_Order.Table_Name -> recomputeForPPOrder(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
+			case I_PP_Order.Table_Name -> recomputeForPPOrderInNewTrx(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
 			default -> trxManager.runInNewTrx(() -> modularContractService
 					.scheduleLogCreation(
 							DocStatusChangedEvent.builder()
@@ -359,21 +395,5 @@ public class LogsRecomputationService
 								 .userInChargeId(Env.getLoggedUserId())
 								 .build()))
 				);
-	}
-
-	private void recomputeForShippingNotificationLines(@NonNull final List<ShippingNotificationLine> shippingNotificationLinesList)
-	{
-		trxManager.assertThreadInheritedTrxNotExists();
-
-		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
-		trxManager.runInNewTrx(() -> shippingNotificationLinesList
-				.forEach(line -> modularContractService.scheduleLogCreation(
-						DocStatusChangedEvent.builder()
-								.tableRecordReference(TableRecordReference.of(I_M_Shipping_NotificationLine.Table_Name,
-																			  Check.assumeNotNull(line.getId(), "ShippingNotificationLineId shouldn't be null")))
-								.modelAction(ModelAction.RECREATE_LOGS)
-								.userInChargeId(Env.getLoggedUserId())
-								.build()))
-		);
 	}
 }
