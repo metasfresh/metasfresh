@@ -123,6 +123,12 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return getCurrentSelections().getDefaultSelection();
 	}
 
+	@NonNull
+	public ViewRowIdsOrderedSelection getLastOrderedSelection()
+	{
+		return getCurrentSelections().getLastOrderedSelection();
+	}
+
 	private ViewRowIdsOrderedSelections getCurrentSelections()
 	{
 		return currentSelectionsRef.computeIfNull(this::createViewRowIdsOrderedSelections);

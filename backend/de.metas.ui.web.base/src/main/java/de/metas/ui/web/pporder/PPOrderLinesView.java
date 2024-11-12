@@ -256,6 +256,14 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
+	public final ImmutableList<DocumentId> getLastOrderedSelectionIds(
+			final int firstRow,
+			final int pageLength)
+	{
+		return ImmutableList.of();
+	}
+	
+	@Override
 	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection viewDocumentIds, final SqlOptions sqlOpts)
 	{
 		return null; // not supported

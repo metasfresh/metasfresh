@@ -1,8 +1,5 @@
 package de.metas.ui.web.process.json;
 
-import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,8 +8,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
@@ -24,6 +19,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.Data;
 import lombok.NonNull;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -91,7 +90,7 @@ public class JSONCreateProcessInstanceRequest
 	//
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final Set<String> viewDocumentIdsStrings;
+	private final LinkedHashSet<String> viewDocumentIdsStrings;
 	//
 	@JsonIgnore
 	private final transient ViewRowIdsSelection viewRowIdsSelection;
@@ -134,7 +133,7 @@ public class JSONCreateProcessInstanceRequest
 			@JsonProperty("rowId") final String rowId,
 			//
 			@JsonProperty("viewId") final String viewIdStr,
-			@JsonProperty("viewDocumentIds") final Set<String> viewDocumentIdsStrings,
+			@JsonProperty("viewDocumentIds") final LinkedHashSet<String> viewDocumentIdsStrings,
 			//
 			@JsonProperty("parentViewId") final String parentViewIdStr,
 			@JsonProperty("parentViewSelectedIds") final Set<String> parentViewDocumentIdsStrings,
@@ -160,7 +159,7 @@ public class JSONCreateProcessInstanceRequest
 		//
 		// When called from view: current viewId and selected rowIds
 		this.viewIdStr = viewIdStr;
-		this.viewDocumentIdsStrings = viewDocumentIdsStrings == null ? null : ImmutableSet.copyOf(viewDocumentIdsStrings);
+		this.viewDocumentIdsStrings = viewDocumentIdsStrings;
 		if (viewIdStr != null && !viewIdStr.isEmpty())
 		{
 			final ViewId viewId = ViewId.ofViewIdString(viewIdStr, windowId);
