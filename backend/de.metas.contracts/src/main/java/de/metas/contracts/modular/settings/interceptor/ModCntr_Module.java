@@ -22,19 +22,20 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
+import de.metas.contracts.modular.settings.ModularContractModuleDeleteRequest;
 import de.metas.contracts.modular.settings.ModularContractModuleUpdateRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractType;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -42,6 +43,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
@@ -52,6 +54,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -59,10 +62,10 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.metas.contracts.modular.ComputingMethodType.AddValueOnProcessedProduct;
-import static de.metas.contracts.modular.ComputingMethodType.AddValueOnRawProduct;
+import static de.metas.contracts.modular.ComputingMethodType.NEED_UOM_EACH_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.NEED_UOM_MATCHING_SETTINGS_PROCESSED_PRODUCT_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.NEED_UOM_MATCHING_SETTINGS_RAW_PRODUCT_METHODS;
 import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_SALES_METHODS;
-import static de.metas.contracts.modular.ComputingMethodType.SubtractValueOnRawProduct;
 
 @Component
 @Interceptor(I_ModCntr_Module.class)
@@ -78,6 +81,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsRaw");
+	private static final AdMessageKey ERROR_PRODUCT_NEEDS_UOM_EACH = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsUOMEach");
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsProcessed");
 	private static final AdMessageKey ERROR_INTERIM_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_INV_GROUP_NOT_FOUND = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InvoicingGroupNotFound");
@@ -85,6 +89,7 @@ public class ModCntr_Module
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final ModularContractSettingsService modularContractSettingsService;
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
@@ -220,6 +225,10 @@ public class ModCntr_Module
 					throw new AdempiereException(ERROR_INV_GROUP_NOT_FOUND);
 				}
 			}
+			case PurchaseAverageAddedValueOnShippedQuantity, PurchaseStorageCost ->
+			{
+				modularContractSettingsService.upsertDefinitiveModule(module);
+			}
 		}
 	}
 
@@ -230,6 +239,38 @@ public class ModCntr_Module
 				.build());
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void deleteDefinitiveModulesIfNeededAfterDelete(@NonNull final I_ModCntr_Module record)
+	{
+		final ModularContractTypeId definitiveModularContractTypeId = modularContractSettingsService.getRelatedDefinitiveTypeId(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()));
+		if(definitiveModularContractTypeId != null)
+		{
+			modularContractSettingsRepository.deleteModule(ModularContractModuleDeleteRequest.builder()
+																   .modularContractSettingsId(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()))
+																   .modularContractTypeId(definitiveModularContractTypeId)
+																   .build());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID)
+	public void deleteDefinitiveModulesIfNeededAfterChange(@NonNull final I_ModCntr_Module record)
+	{
+		final ModularContractTypeId oldModularContractTypeId = ModularContractTypeId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(record, I_ModCntr_Module.class).getModCntr_Type_ID());
+		if(oldModularContractTypeId == null)
+		{
+			return;
+		}
+
+		final ModularContractTypeId definitiveModularContractTypeId = modularContractSettingsService.getRelatedDefinitiveTypeId(oldModularContractTypeId);
+		if(definitiveModularContractTypeId != null)
+		{
+			modularContractSettingsRepository.deleteModule(ModularContractModuleDeleteRequest.builder()
+																   .modularContractSettingsId(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()))
+																   .modularContractTypeId(definitiveModularContractTypeId)
+																   .build());
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validateProductsUOM(@NonNull final I_ModCntr_Module record)
 	{
@@ -237,20 +278,24 @@ public class ModCntr_Module
 		final UomId moduleUOMId = productBL.getStockUOMId(module.getProductId());
 		final ModularContractSettings settings = modularContractSettingsService.getById(module.getModularContractSettingsId());
 
-		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(AddValueOnRawProduct, SubtractValueOnRawProduct);
 		final UomId rawUOMId = productBL.getStockUOMId(settings.getRawProductId());
-		if (module.isMatchingAnyOf(rawComputingMethods) && !UomId.equals(moduleUOMId, rawUOMId))
+		if (module.isMatchingAnyOf(NEED_UOM_MATCHING_SETTINGS_RAW_PRODUCT_METHODS) && !UomId.equals(moduleUOMId, rawUOMId))
 		{
 			throw new AdempiereException(ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW);
+		}
+
+		if (module.isMatchingAnyOf(NEED_UOM_EACH_METHODS) && !uomDAO.isUOMEach(moduleUOMId))
+		{
+			throw new AdempiereException(ERROR_PRODUCT_NEEDS_UOM_EACH);
 		}
 
 		if (settings.getProcessedProductId() == null)
 		{
 			return;
 		}
-		final ImmutableList<ComputingMethodType> processedComputingMethods = ImmutableList.of(AddValueOnProcessedProduct);
+
 		final UomId processedUOMId = productBL.getStockUOMId(settings.getProcessedProductId());
-		if (module.isMatchingAnyOf(processedComputingMethods) && !UomId.equals(moduleUOMId, processedUOMId))
+		if (module.isMatchingAnyOf(NEED_UOM_MATCHING_SETTINGS_PROCESSED_PRODUCT_METHODS) && !UomId.equals(moduleUOMId, processedUOMId))
 		{
 			throw new AdempiereException(ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED);
 		}

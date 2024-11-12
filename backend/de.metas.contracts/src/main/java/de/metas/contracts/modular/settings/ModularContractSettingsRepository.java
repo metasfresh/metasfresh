@@ -40,7 +40,6 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -508,6 +507,31 @@ public class ModularContractSettingsRepository
 		{
 			existingModuleConfig.setName(moduleName);
 		}
+
+		final SeqNo seqNo = request.getSeqno();
+		if(seqNo != null)
+		{
+			existingModuleConfig.setSeqNo(seqNo.toInt());
+		}
+
+		final ModularContractSettingsId modularContractSettingsId = request.getModularContractSettingsId();
+		if(modularContractSettingsId != null)
+		{
+			existingModuleConfig.setModCntr_Settings_ID(modularContractSettingsId.getRepoId());
+		}
+
+		final InvoicingGroupType invoicingGroupType = request.getInvoicingGroupType();
+		if(invoicingGroupType != null)
+		{
+			existingModuleConfig.setInvoicingGroup(invoicingGroupType.getCode());
+		}
+
+		final Boolean processed = request.getProcessed();
+		if(processed != null)
+		{
+			existingModuleConfig.setProcessed(processed);
+		}
+
 		saveRecord(existingModuleConfig);
 	}
 
@@ -649,27 +673,41 @@ public class ModularContractSettingsRepository
 		}
 	}
 
-	@Nullable
-	I_ModCntr_Module retrieveInformativeLogModuleRecordOrNull(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractTypeId modularContractTypeId)
+	public void upsertModule(@NonNull final ModularContractModuleQuery query, @NonNull final ModularContractModuleUpdateRequest updateRequest)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
-				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
-				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, modularContractTypeId)
-				.create()
-				.firstOnly();
+		final I_ModCntr_Module existingModuleConfig = retrieveModuleRecordOrNull(query);
+		final I_ModCntr_Module moduleConfig = existingModuleConfig != null ? existingModuleConfig : InterfaceWrapperHelper.newInstance(I_ModCntr_Module.class);
+		updateModule(moduleConfig, updateRequest);
 	}
 
-
 	@Nullable
-	public I_ModCntr_Module retrieveDefinitiveInvoiceModuleRecordOrNull(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	public I_ModCntr_Module retrieveModuleRecordOrNull(@NonNull final ModularContractModuleQuery query)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
-				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
-				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID,
-								  ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct,
-								  ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
-				.create()
-				.firstOnly();
+		final IQueryBuilder<I_ModCntr_Module> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Module.class);
+		if(query.getModularContractSettingsId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, query.getModularContractSettingsId());
+		}
+
+		if(!query.getModularContractTypeIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, query.getModularContractTypeIds());
+		}
+
+		if(query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
+
+		return queryBuilder.create().firstOnly();
 	}
 
+	public void deleteModule(@NonNull final ModularContractModuleDeleteRequest deleteRequest)
+	{
+		queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, deleteRequest.getModularContractSettingsId())
+				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, deleteRequest.getModularContractTypeId())
+				.create()
+				.delete();
+	}
 }

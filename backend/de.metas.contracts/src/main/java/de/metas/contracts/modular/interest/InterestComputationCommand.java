@@ -60,6 +60,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.log.LogEntryDocumentType.ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES;
+
 @RequiredArgsConstructor
 @Builder
 public class InterestComputationCommand
@@ -277,7 +279,7 @@ public class InterestComputationCommand
 				.billable(true)
 				.processed(false)
 				.lockOwner(request.getLockOwner())
-				.logEntryDocumentType(LogEntryDocumentType.SHIPPING_NOTIFICATION)
+				.logEntryDocumentTypes(ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES)
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
@@ -391,8 +393,8 @@ public class InterestComputationCommand
 			@NonNull final ModularContractLogEntry shippingNotification,
 			@NonNull final BonusAndInterestTimeInterval bonusAndInterestTimeInterval)
 	{
-		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
-					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
+		Check.assume(shippingNotification.getDocumentType().isAnyShippingNotificationType(),
+					 "Expecting DocumentType in " + ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES +
 							 " but got " + shippingNotification.getDocumentType() + "! LogId=" + shippingNotification.getId());
 
 		final Money shippingNotificationAmount = Optional

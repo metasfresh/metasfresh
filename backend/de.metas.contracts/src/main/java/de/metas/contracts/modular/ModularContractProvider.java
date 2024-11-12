@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
@@ -52,7 +53,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -85,7 +86,6 @@ public class ModularContractProvider
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -93,6 +93,12 @@ public class ModularContractProvider
 	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
 	@NonNull private final ShippingNotificationService shippingNotificationService;
+
+	public static ModularContractProvider newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractProvider(ShippingNotificationService.newInstanceForJUnitTesting());
+	}
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForShippingNotificationLine(@NonNull final ShippingNotificationLineId shippingNotificationLineId)
@@ -130,18 +136,13 @@ public class ModularContractProvider
 		{
 			return null;
 		}
-		final Set<FlatrateTermId> contractIds = streamPurchaseContractsForSalesOrderLine(orderAndLineId)
-				.collect(Collectors.toSet());
-		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
-		return contractIds.stream().findFirst().orElse(null);
+		return streamPurchaseContractForSalesOrderLine(orderAndLineId).findFirst().orElse(null);
 	}
 
 	@NonNull
-	public Stream<FlatrateTermId> streamPurchaseContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
+	public Stream<FlatrateTermId> streamPurchaseContractForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		final I_C_OrderLine orderLine = orderBL.getLineById(orderAndLineId);
-
-		return streamModularPurchaseContractBySalesOrderWithProductId(orderAndLineId.getOrderId(), ProductId.ofRepoId(orderLine.getM_Product_ID()));
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(orderBL.getLineById(orderAndLineId).getPurchase_Modular_Flatrate_Term_ID()));
 	}
 
 	@NonNull
@@ -274,14 +275,13 @@ public class ModularContractProvider
 	{
 		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(inOutLineId);
 		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
-		if (!inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0 || orderId == null)
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(inOutLineRecord.getC_Order_ID(), inOutLineRecord.getC_OrderLine_ID());
+		if (!inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0 || orderAndLineId == null)
 		{
 			return Stream.empty();
 		}
 
-
-		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
+		return streamPurchaseContractForSalesOrderLine(orderAndLineId);
 	}
 
 	@NonNull
@@ -298,27 +298,25 @@ public class ModularContractProvider
 		return streamSalesContractsForSalesOrderLine(orderLineId);
 	}
 
-	private @NonNull Stream<FlatrateTermId> streamModularPurchaseContractBySalesOrderWithProductId(final OrderId orderId, final ProductId productId)
+	@NonNull
+	public Set<FlatrateTermId> getInitialPurchaseModularContractCandidatesForSalesOrderLine(@NonNull final OrderId orderId, @NonNull final ProductId productId)
 	{
 		final I_C_Order order = orderBL.getById(orderId);
 		if(!order.isSOTrx())
 		{
-			return Stream.empty();
+			return ImmutableSet.of();
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and warehouseBL.getBPartnerId demands NonNull
-
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-
 		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
 
 		if (harvestingYearId == null || harvestingCalendarId == null)
 		{
-			return Stream.empty();
+			return ImmutableSet.of();
 		}
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
-				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
+				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
 				.productId(productId)
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
@@ -326,7 +324,7 @@ public class ModularContractProvider
 				.calendarId(harvestingCalendarId)
 				.build();
 
-		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(query).collect(Collectors.toSet());
 	}
 
 

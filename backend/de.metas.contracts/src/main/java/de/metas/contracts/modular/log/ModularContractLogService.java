@@ -49,8 +49,11 @@
  import de.metas.invoicecandidate.api.IInvoiceCandDAO;
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  import de.metas.lock.api.LockOwner;
+ import de.metas.money.CurrencyId;
+ import de.metas.money.Money;
  import de.metas.order.OrderLineId;
  import de.metas.organization.IOrgDAO;
+ import de.metas.organization.LocalDateAndOrgId;
  import de.metas.organization.OrgId;
  import de.metas.pricing.IEditablePricingContext;
  import de.metas.pricing.IPricingResult;
@@ -86,6 +89,10 @@
  import java.util.Optional;
  import java.util.stream.Stream;
 
+ import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
+ import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS;
+ import static de.metas.contracts.modular.log.LogEntryDocumentType.ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES;
+
  @Service
  @RequiredArgsConstructor
  public class ModularContractLogService
@@ -95,6 +102,7 @@
 	 public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
 	 public static final String INVOICE_DETAILS_RECEIVED = "IN";
 	 public static final String INVOICE_DETAILS_SHIPPED = "OUT";
+	 public static final String INVOICE_DETAILS_FINAL_INVOICE_DATE = "finalInvoiceDate";
 
 	 @NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	 @NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -148,17 +156,26 @@
 			 @NonNull final TableRecordReference tableRecordReference,
 			 @NonNull final AdMessageKey errorMessage)
 	 {
-		 if (hasAnyProcessedLogs(tableRecordReference))
+		 throwErrorIfProcessedLogsExistForRecord(tableRecordReference, null, errorMessage);
+	 }
+
+	 public void throwErrorIfProcessedLogsExistForRecord(
+			 @NonNull final TableRecordReference tableRecordReference,
+			 @Nullable final ModularContractModuleId moduleId,
+			 @NonNull final AdMessageKey errorMessage)
+	 {
+		 if (hasAnyProcessedLogs(tableRecordReference, moduleId))
 		 {
 			 throw new AdempiereException(errorMessage);
 		 }
 	 }
 
-	 private boolean hasAnyProcessedLogs(@NonNull final TableRecordReference tableRecordReference)
+	 public boolean hasAnyProcessedLogs(@NonNull final TableRecordReference tableRecordReference, @Nullable final ModularContractModuleId moduleId)
 	 {
 		 final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				 .referenceSet(TableRecordReferenceSet.of(tableRecordReference))
 				 .processed(true)
+				 .contractModuleId(moduleId)
 				 .build();
 
 		 return modularContractLogDAO.anyMatch(query);
@@ -279,30 +296,65 @@
 		 return modularContractLogDAO.create(request);
 	 }
 
-	 public void setDefinitiveICLogsProcessed(final ModularContractLogQuery modularContractLogQuery, final InvoiceCandidateId invoiceCandidateId)
+	 public void setDefinitiveICLogsProcessed(
+			 @NonNull final ModularContractLogQuery modularContractLogQuery,
+			 @NonNull final InvoiceCandidateId invoiceCandidateId,
+			 @NonNull final CurrencyId currencyId,
+			 @NonNull final UomId uomId)
 	 {
 		 final ModularContractLogEntriesList modularContractLogEntries = getModularContractLogEntries(modularContractLogQuery);
-		 final UomId uomId = modularContractLogEntries.getUniqueProductPriceOrErrorNotNull().getUomId();
-		 final ModularContractLogEntriesList manufacturingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.PRODUCTION);
-		 final ModularContractLogEntriesList receiptRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
-		 final ModularContractLogEntriesList shippingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.SHIPMENT);
+		 final ModuleConfig moduleConfig = modularContractSettingsService.getByModuleId(modularContractLogEntries.getSingleModuleId());
+		 final ModularContractLogEntriesList finalInvoiceRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.FINAL_INVOICE);
+		 final ModularContractLogEntriesList shipmentRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.SHIPMENT);
+		 final LocalDateAndOrgId finalInvoiceDate = finalInvoiceRecords.getSingleTransactionDate();
 
-		 final Quantity manufacturingRecordsQtySum = manufacturingRecords.getQtySum(uomId, uomConversionBL);
-		 final Quantity receiptRecordsQtySum = receiptRecords.getQtySum(uomId, uomConversionBL);
+		 final ImmutableList<InvoiceDetailItem> invoiceDetailItems;
+		 final InvoiceDetailItem finalInvoiceDateDetailItem = InvoiceDetailItem.builder()
+				 .label(INVOICE_DETAILS_FINAL_INVOICE_DATE)
+				 .date(finalInvoiceDate != null ? finalInvoiceDate.toLocalDate() : null)
+				 .orgId(modularContractLogEntries.getSingleClientAndOrgId().getOrgId())
+				 .build();
 
-		 final Quantity receivedQty = manufacturingRecordsQtySum.signum() > 0 ? manufacturingRecordsQtySum : receiptRecordsQtySum;
-		 final Quantity shippedQty = shippingRecords.getQtySum(uomId, uomConversionBL);
-		 final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
-		 final ImmutableList<InvoiceDetailItem> invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
-						 .label(INVOICE_DETAILS_RECEIVED)
-						 .qty(receivedQty.negate())
-						 .orgId(orgId)
-						 .build(),
-				 InvoiceDetailItem.builder()
-						 .label(INVOICE_DETAILS_SHIPPED)
-						 .qty(shippedQty)
-						 .orgId(orgId)
-						 .build());
+		 if(moduleConfig.isMatchingAnyOf(DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS))
+		 {
+			 final Quantity finalInvoicedQty = finalInvoiceRecords.getQtySum(uomId, uomConversionBL);
+			 final Quantity shippedQty = shipmentRecords.getQtySum(uomId, uomConversionBL);
+			 final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
+			 invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
+														   .label(INVOICE_DETAILS_RECEIVED)
+														   .qty(finalInvoicedQty.negate())
+														   .orgId(orgId)
+														   .build(),
+												   InvoiceDetailItem.builder()
+														   .label(INVOICE_DETAILS_SHIPPED)
+														   .qty(shippedQty)
+														   .orgId(orgId)
+														   .build(),
+												   finalInvoiceDateDetailItem
+			 );
+		 }
+		 else if(moduleConfig.isMatchingAnyOf(ImmutableSet.of(ComputingMethodType.DefinitiveInvoiceStorageCost, ComputingMethodType.DefinitiveInvoiceAverageAVOnShippedQty)))
+		 {
+			 final Money finalInvoicedAmount = finalInvoiceRecords.getAmountSum().orElseGet(() -> Money.zero(currencyId));
+			 final Money definitiveAmount = shipmentRecords.getAmountSum().orElseGet(() -> Money.zero(currencyId));
+			 final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
+			 invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
+														   .label(INVOICE_DETAILS_RECEIVED)
+														   .price(finalInvoicedAmount.negate().toBigDecimal())
+														   .orgId(orgId)
+														   .build(),
+												   InvoiceDetailItem.builder()
+														   .label(INVOICE_DETAILS_SHIPPED)
+														   .price(definitiveAmount.toBigDecimal())
+														   .orgId(orgId)
+														   .build(),
+												   finalInvoiceDateDetailItem
+			 );
+		 }
+		 else
+		 {
+			 throw new AdempiereException("Unknown Definitive Invoice Computing Method");
+		 }
 
 		 invoiceCandidateWithDetailsRepository.save(InvoiceCandidateWithDetails.builder()
 				 .invoiceCandidateId(invoiceCandidateId)
@@ -352,7 +404,7 @@
 		 }
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
-			 return ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
+			 return DEFINITIVE_INVOICE_SPECIFIC_METHODS;
 		 }
 		 if (docTypeBL.isInterimInvoice(docTypeId))
 		 {
@@ -394,7 +446,9 @@
 						 .build()
 		 );
 
-		 final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
+		 final ModularContractLogEntriesList shipmentLogs = moduleConfig.isMatchingAnyOf(DEFINITIVE_INVOICE_SPECIFIC_METHODS) ?
+				 logs.subsetOf(LogEntryDocumentType.SHIPMENT)
+				 : logs.subsetOf(ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES);
 		 final ProductPrice averagePrice = getAveragePrice(shipmentLogs, flatrateTermId, moduleConfig);
 
 		 final ContractSpecificPriceRequest contractSpecificPriceRequest = ContractSpecificPriceRequest.builder()
@@ -402,7 +456,7 @@
 				 .modularContractModuleId(modularContractModuleId)
 				 .build();
 		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
-		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfExcluding(LogEntryDocumentType.SHIPMENT).subsetOf(false);
+		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfExcluding(ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES).subsetOf(false);
 		 modularContractLogDAO.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
 	 }
 

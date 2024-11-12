@@ -356,9 +356,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.getEntryIds());
 		}
 
-		if (query.getFlatrateTermId() != null)
+		if (!query.getFlatrateTermIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermIds());
 		}
 
 		if (query.getModularContractTypeId() != null)
@@ -411,9 +411,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID, query.getInvoicingGroupId());
 		}
 
-		if (query.getLogEntryDocumentType() != null)
+		if (!query.getLogEntryDocumentTypes().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType, query.getLogEntryDocumentType().getCode());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType, query.getLogEntryDocumentTypes());
 		}
 
 		if (query.isOnlyIfAmountIsSet())

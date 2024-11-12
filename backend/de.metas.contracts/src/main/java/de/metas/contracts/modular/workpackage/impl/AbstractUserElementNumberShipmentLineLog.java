@@ -49,6 +49,8 @@ import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -66,12 +68,15 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Optional;
 
 @Component
@@ -85,6 +90,7 @@ public abstract class AbstractUserElementNumberShipmentLineLog extends AbstractM
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModularContractService modularContractService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -119,6 +125,7 @@ public abstract class AbstractUserElementNumberShipmentLineLog extends AbstractM
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
+		final LocalDateAndOrgId physicalClearanceDate = extractPhysicalClearanceDate(orderBL.getById(OrderId.ofRepoId(inOutRecord.getC_Order_ID())));
 
 		final ProductPriceWithFlags contractSpecificScalePrice = getContractSpecificScalePrice(createLogRequest).orElse(null);
 
@@ -162,6 +169,7 @@ public abstract class AbstractUserElementNumberShipmentLineLog extends AbstractM
 				.quantity(quantity)
 				.amount(calculateAmount(quantity, productPrice, uomConversionBL))
 				.transactionDate(transactionDate)
+				.physicalClearanceDate(physicalClearanceDate)
 				.priceActual(productPrice)
 				.year(yearAndCalendarId.yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
@@ -195,11 +203,20 @@ public abstract class AbstractUserElementNumberShipmentLineLog extends AbstractM
 	}
 
 	@NotNull
-	protected LocalDateAndOrgId extractTransactionDate(final I_M_InOut inOutRecord)
+	private LocalDateAndOrgId extractTransactionDate(final I_M_InOut inOutRecord)
 	{
 		return LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
 				OrgId.ofRepoId(inOutRecord.getAD_Org_ID()),
 				orgDAO::getTimeZone);
+	}
+
+	@Nullable
+	private LocalDateAndOrgId extractPhysicalClearanceDate(@NonNull final I_C_Order orderRecord)
+	{
+		final Timestamp physicalClearanceDate = orderRecord.getPhysicalClearanceDate();
+		return physicalClearanceDate != null ? LocalDateAndOrgId.ofTimestamp(orderRecord.getPhysicalClearanceDate(),
+																			 OrgId.ofRepoId(orderRecord.getAD_Org_ID()),
+																			 orgDAO::getTimeZone) : null;
 	}
 
 	@Override

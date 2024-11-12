@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -94,29 +95,6 @@ public interface I_C_OrderLine
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
-
-	/**
-	 * Get Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getBase_Commission_Points_Per_Price_UOM();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_OrderLine.class, "Base_Commission_Points_Per_Price_UOM", null);
-	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Pricing system.
@@ -454,7 +432,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -463,7 +441,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -985,7 +963,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExplodedFrom_BOMLine_ID = "ExplodedFrom_BOMLine_ID";
 
 	/**
-	 * Set SAP PayT ID.
+	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -994,7 +972,7 @@ public interface I_C_OrderLine
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get SAP PayT ID.
+	 * Get External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1203,27 +1181,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Delivery Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDeliveryClosed (boolean IsDeliveryClosed);
-
-	/**
-	 * Get Delivery Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDeliveryClosed();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
-	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
-
-	/**
 	 * Set CP.
 	 * Campaign Price
 	 *
@@ -1245,6 +1202,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsCampaignPrice = new ModelColumn<>(I_C_OrderLine.class, "IsCampaignPrice", null);
 	String COLUMNNAME_IsCampaignPrice = "IsCampaignPrice";
+
+	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
 	 * Set Description Only.
@@ -1675,7 +1653,7 @@ public interface I_C_OrderLine
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1685,7 +1663,7 @@ public interface I_C_OrderLine
 	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1698,7 +1676,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
@@ -1707,7 +1685,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getM_Product_DocumentNote();
 
@@ -1814,7 +1792,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Destination warehouse .
+	 * Set Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1823,7 +1801,7 @@ public interface I_C_OrderLine
 	void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Destination warehouse .
+	 * Get Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2295,6 +2273,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ProfitPriceActual = "ProfitPriceActual";
 
 	/**
+	 * Set Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchase_Modular_Flatrate_Term_ID (int Purchase_Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchase_Modular_Flatrate_Term_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Purchase_Modular_Flatrate_Term_ID = new ModelColumn<>(I_C_OrderLine.class, "Purchase_Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Purchase_Modular_Flatrate_Term_ID = "Purchase_Modular_Flatrate_Term_ID";
+
+	/**
 	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
@@ -2703,27 +2702,6 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_TaxAmtInfo = new ModelColumn<>(I_C_OrderLine.class, "TaxAmtInfo", null);
 	String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
-
-	/**
-	 * Set Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
-
-	/**
-	 * Get Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getTraded_Commission_Percent();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_OrderLine.class, "Traded_Commission_Percent", null);
-	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
 
 	/**
 	 * Get Updated.

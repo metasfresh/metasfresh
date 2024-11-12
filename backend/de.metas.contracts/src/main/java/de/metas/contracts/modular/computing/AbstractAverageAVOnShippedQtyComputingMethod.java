@@ -25,7 +25,7 @@ package de.metas.contracts.modular.computing;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.inout.IInOutDAO;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.money.Money;
@@ -48,13 +48,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public abstract class AbstractAverageAVOnShippedQtyComputingMethod extends AbstractComputingMethodHandler
 {
-	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull protected final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull protected final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ComputingMethodService computingMethodService;
 
 	// computeAverageAmount with at least 12 digit precision, will be rounded on IC creation according to priceList precision
-	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
+	protected final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -62,18 +62,17 @@ public abstract class AbstractAverageAVOnShippedQtyComputingMethod extends Abstr
 
 		if (recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
-			final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
-			final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+			final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+			final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
 			if (orderId == null)
 			{
 				return false;
 			}
-			return inOutRecord.isSOTrx();
+			return inOutRecord.isSOTrx() && !inOutBL.isProformaShipment(inOutRecord);
 		}
 		return false;
-
 	}
 
 	@Override

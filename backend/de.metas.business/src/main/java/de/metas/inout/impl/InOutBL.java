@@ -777,6 +777,12 @@ public class InOutBL implements IInOutBL
 	@Override
 	public boolean isProformaShipment(@NonNull final InOutId inOutId)
 	{
-		return docTypeBL.isProformaShipment(DocTypeId.ofRepoId(getById(inOutId).getC_DocType_ID()));
+		return isProformaShipment(getById(inOutId));
+	}
+
+	@Override
+	public boolean isProformaShipment(@NonNull final I_M_InOut inOutRecord)
+	{
+		return docTypeBL.isProformaShipment(DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID()));
 	}
 }

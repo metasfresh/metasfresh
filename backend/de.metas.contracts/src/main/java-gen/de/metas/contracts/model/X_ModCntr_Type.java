@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 511602404L;
+	private static final long serialVersionUID = -1741344544L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -147,6 +147,10 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnRawProductShippedQty = "SalesOnRawProductShippedQty";
 	/** SalesOnProcessedProductShippedQty = SalesOnProcessedProductShippedQty */
 	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnProcessedProductShippedQty = "SalesOnProcessedProductShippedQty";
+	/** DefinitiveInvoiceAverageAVOnShippedQty = DefinitiveInvoiceAverageAVOnShippedQty */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceAverageAVOnShippedQty = "DefinitiveInvoiceAverageAVOnShippedQty";
+	/** DefinitiveInvoiceStorageCost = DefinitiveInvoiceStorageCost */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceStorageCost = "DefinitiveInvoiceStorageCost";
 	@Override
 	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{

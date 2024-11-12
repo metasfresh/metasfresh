@@ -26,10 +26,8 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractStorageCostLogHandler;
 import de.metas.lang.SOTrx;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -39,8 +37,6 @@ import org.springframework.stereotype.Component;
 @Component
 class ShipmentLineLog extends AbstractStorageCostLogHandler
 {
-	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	public ShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,

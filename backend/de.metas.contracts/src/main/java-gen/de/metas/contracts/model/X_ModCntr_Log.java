@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -270141697L;
+	private static final long serialVersionUID = 1832463929L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -348,6 +348,10 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Lieferavis = "ShippingNotification";
 	/** Import Log = ImportLog */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ImportLog = "ImportLog";
+	/** ProformaShipment = ProformaShipment */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProformaShipment = "ProformaShipment";
+	/** ProformaShippingNotification = ProformaShippingNotification */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProformaShippingNotification = "ProformaShippingNotification";
 	@Override
 	public void setModCntr_Log_DocumentType (final java.lang.String ModCntr_Log_DocumentType)
 	{

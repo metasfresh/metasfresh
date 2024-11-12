@@ -63,6 +63,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
@@ -280,6 +281,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	Set<FlatrateTermId> getInterimContractIdsByModularContractId(@NonNull FlatrateTermId modularFlatrateTermId);
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);

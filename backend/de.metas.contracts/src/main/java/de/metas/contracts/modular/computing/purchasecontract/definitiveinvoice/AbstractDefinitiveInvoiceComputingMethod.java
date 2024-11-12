@@ -38,6 +38,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
@@ -51,12 +52,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_SALES_METHODS;
 
 @RequiredArgsConstructor
 public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractComputingMethodHandler
@@ -90,6 +94,12 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 
 			return !inventoryBL.isReversal(inventory);
 		}
+		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
+		{
+			return computingMethodService.isFinalInvoiceLineForComputingMethod(
+					InvoiceLineId.ofRepoId(recordRef.getRecord_ID()),
+					PURCHASE_SALES_METHODS);
+		}
 
 		return false;
 
@@ -112,6 +122,7 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 		{
 			case I_M_InOutLine.Table_Name -> getContractStreamForInOut(recordRef);
 			case I_M_InventoryLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInventory(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 			default -> Stream.empty();
 		};
 	}
@@ -134,8 +145,8 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		final ModularContractLogEntriesList productionOrReceiptLogs = logs.subsetOf(getSourceLogEntryDocumentType());
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
+		final ModularContractLogEntriesList invoiceLineLogs = logs.subsetOf(LogEntryDocumentType.FINAL_INVOICE);
 		final ProductId productId = request.getProductId();
 		final UomId uomId = productBL.getStockUOMId(productId);
 		final ProductPrice productPrice = modularContractPriceService.retrievePrice(
@@ -145,18 +156,20 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 						.build()
 		).getProductPrice();
 
-		final Quantity producedOrReceiptQty = productionOrReceiptLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity invoicedQty = invoiceLineLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
-		final Quantity qtyDifference = shippedQty.subtract(producedOrReceiptQty);
+		final Quantity qtyDifference = shippedQty.subtract(invoicedQty);
 		final ComputingResponse.ComputingResponseBuilder responseBuilder = ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull());
-		if (qtyDifference.isZero())
+
+		final boolean proformaLogsExists = !logs.subsetOf(LogEntryDocumentType.PROFORMA_SHIPMENT).isEmpty();
+		if (qtyDifference.isZero() && proformaLogsExists)
 		{
 			return responseBuilder
 					.price(productPrice.toZero())
-					.qty(qtyDifference.toOne())
+					.qty(qtyDifference.toOne()) // with 0 no IC would be created, but we want to have it on the invoice, if other corrections exist
 					.build();
 		}
 		if (!qtyDifference.isPositive())

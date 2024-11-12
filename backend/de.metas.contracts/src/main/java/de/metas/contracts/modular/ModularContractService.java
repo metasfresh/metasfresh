@@ -29,6 +29,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
@@ -42,22 +43,32 @@ import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
 
@@ -66,6 +77,8 @@ import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SP
 public class ModularContractService
 {
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
@@ -73,6 +86,9 @@ public class ModularContractService
 	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularContractSettingsService modularContractSettingsService;
+	@NonNull private final ModularContractProvider contractProvider;
+
+	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
 
 	public static ModularContractService newInstanceForJUnitTesting()
 	{
@@ -83,7 +99,8 @@ public class ModularContractService
 			ComputingMethodService.newInstanceForJUnitTesting(),
 			new ModularContractPriceRepository(),
 			ModularContractLogService.newInstanceForJUnitTesting(),
-			ModularContractSettingsService.newInstanceForJUnitTesting()
+			ModularContractSettingsService.newInstanceForJUnitTesting(),
+			ModularContractProvider.newInstanceForJUnitTesting()
 		);
 	}
 
@@ -139,7 +156,14 @@ public class ModularContractService
 		}
 
 		final ModularContractSettings settings = modularContractSettingsService.getByFlatrateTermIdOrNull(contractId);
-		if (settings == null || !settings.isMatching(handler.getComputingMethodType()))
+		final ComputingMethodType computingMethodType = handler.getComputingMethodType();
+		if (settings == null || !settings.contains(computingMethodType))
+		{
+			return false;
+		}
+
+		// Stop log creation after final invoice
+		if(flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isFinalInvoiceSpecificMethod())
 		{
 			return false;
 		}
@@ -228,11 +252,84 @@ public class ModularContractService
 		{
 			return;
 		}
-		final FlatrateTermId flatrateTermId = Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present");
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId);
 
 		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
 				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
 				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
+
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord))
+		{
+			updateIsFinalInvoiced(flatrateTermId, false);
+		}
 	}
 
+	public FlatrateTermId getFlatrateTermIdByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present");
+	}
+
+	public void updateIsFinalInvoiced(@NonNull final InvoiceId invoiceId, final boolean isFinalInvoiced)
+	{
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId))
+		{
+			updateIsFinalInvoiced(getFlatrateTermIdByInvoiceId(invoiceId), isFinalInvoiced);
+		}
+	}
+
+	public void updateIsFinalInvoiced(@NonNull final FlatrateTermId flatrateTermId, final boolean isFinalInvoiced)
+	{
+		final I_C_Flatrate_Term flatrateTerm = flatrateBL.getById(flatrateTermId);
+		flatrateTerm.setIsFinalInvoiced(isFinalInvoiced);
+		flatrateBL.save(flatrateTerm);
+	}
+
+	public void setPurchaseModularContractIdsIfExists(@NonNull final I_C_Order orderRecord, final boolean isErrorIfMoreThanOneFound)
+	{
+		if(!orderRecord.isSOTrx())
+		{
+			return;
+		}
+		for(final I_C_OrderLine orderLineRecord : orderDAO.retrieveOrderLines(orderRecord))
+		{
+			updatePurchaseModularContractId(orderLineRecord, isErrorIfMoreThanOneFound);
+			orderDAO.save(orderLineRecord);
+		}
+	}
+
+	public void updatePurchaseModularContractId(
+			@NonNull final I_C_OrderLine orderLineRecord,
+			final boolean isErrorIfMoreThanOneFound)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLineRecord.getC_Order_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+		final Set<FlatrateTermId> contractIds = contractProvider.getInitialPurchaseModularContractCandidatesForSalesOrderLine(orderId, productId);
+		final FlatrateTermId currentFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(orderLineRecord.getPurchase_Modular_Flatrate_Term_ID());
+
+		if (contractIds.isEmpty())
+		{
+			orderLineRecord.setPurchase_Modular_Flatrate_Term_ID(-1);
+		}
+		else if (contractIds.size() == 1)
+		{
+			final FlatrateTermId newFlatrateTermId = CollectionUtils.singleElement(contractIds);
+			if(FlatrateTermId.equals(currentFlatrateTermId, newFlatrateTermId))
+			{
+				return;
+			}
+			orderLineRecord.setPurchase_Modular_Flatrate_Term_ID(newFlatrateTermId.getRepoId());
+		}
+		else if (isErrorIfMoreThanOneFound && FlatrateTermId.ofRepoIdOrNull(orderLineRecord.getPurchase_Modular_Flatrate_Term_ID()) == null)
+		{
+			throw new AdempiereException(MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE);
+		}
+	}
+
+	public boolean isFinalInvoiceLineForComputingMethod(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final ComputingMethodType computingMethodType,
+			@Nullable final ColumnOption columnOption)
+	{
+		return computingMethodService.isFinalInvoiceLineForComputingMethod(invoiceLineId, ImmutableSet.of(computingMethodType), columnOption);
+	}
 }
