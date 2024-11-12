@@ -92,6 +92,7 @@
  import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
  import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS;
  import static de.metas.contracts.modular.log.LogEntryDocumentType.ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES;
+ import static de.metas.contracts.modular.log.LogEntryDocumentType.TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES;
 
  @Service
  @RequiredArgsConstructor
@@ -456,7 +457,7 @@
 				 .modularContractModuleId(modularContractModuleId)
 				 .build();
 		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
-		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfExcluding(ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES).subsetOf(false);
+		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOf(TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES).subsetOf(false);
 		 modularContractLogDAO.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
 	 }
 

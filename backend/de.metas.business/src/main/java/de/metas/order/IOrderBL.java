@@ -273,6 +273,9 @@ public interface IOrderBL extends ISingletonService
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 
 	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
+
+	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);
 
 	I_C_BPartner getBPartner(I_C_Order order);

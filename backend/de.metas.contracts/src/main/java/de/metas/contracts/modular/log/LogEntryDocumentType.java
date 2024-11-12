@@ -63,6 +63,8 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 
 	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPMENT, PROFORMA_SHIPMENT);
 
+	public static final ImmutableSet<LogEntryDocumentType> TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES = ImmutableSet.of(MATERIAL_RECEIPT, PRODUCTION);
+
 	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPPING_NOTIFICATION, PROFORMA_SHIPPING_NOTIFICATION);
 
 	public static final ImmutableSet<LogEntryDocumentType> INTEREST_SPECIFIC_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(
