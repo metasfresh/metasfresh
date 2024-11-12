@@ -23,6 +23,7 @@
 package de.metas.document.archive.spi.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.archive.ArchiveStorageConfigRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -66,6 +67,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		AdempiereTestHelper.get().init();
 
 		helper = new DefaultModelArchiverTestHelper();
+		SpringContextHolder.registerJUnitBean(ArchiveStorageConfigRepository.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
 		SpringContextHolder.registerJUnitBean(new DocOutboundConfigService(DocOutboundConfigRepository.instance));
 
