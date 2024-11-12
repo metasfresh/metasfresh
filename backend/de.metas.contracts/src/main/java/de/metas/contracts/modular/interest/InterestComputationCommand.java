@@ -272,18 +272,21 @@ public class InterestComputationCommand
 			@NonNull final InterestComputationRequest request,
 			@Nullable final FlatrateTermId onlyForContractId)
 	{
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.computingMethodType(request.getComputingMethodType())
-				.flatrateTermId(onlyForContractId)
 				.invoicingGroupId(request.getInvoicingGroupId())
 				.billable(true)
 				.processed(false)
 				.lockOwner(request.getLockOwner())
 				.logEntryDocumentTypes(ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES)
-				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
-				.build();
+				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC);
 
-		return modularContractLogService.streamModularContractLogEntries(query);
+		if(onlyForContractId != null)
+		{
+			queryBuilder.flatrateTermId(onlyForContractId);
+		}
+
+		return modularContractLogService.streamModularContractLogEntries(queryBuilder.build());
 	}
 
 	@NonNull
