@@ -18,10 +18,7 @@ package org.compiere.model;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-<<<<<<< HEAD
 import de.metas.bpartner.BPartnerLocationId;
-=======
->>>>>>> 6e9871bb5ea (intoduce C_OrderTax/C_InvoiceTax.IsDocumentLevel (#18839))
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
