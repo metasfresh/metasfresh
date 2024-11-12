@@ -49,8 +49,8 @@ import lombok.ToString;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.OldAndNewValues;
+import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
@@ -474,12 +474,6 @@ public final class DefaultView implements IEditableView
 	private ViewRowIdsOrderedSelection getOrderedSelection(final DocumentQueryOrderByList orderBys)
 	{
 		return selectionsRef.getOrderedSelection(orderBys);
-	}
-
-	@NonNull
-	private ViewRowIdsOrderedSelection getLastOrderedSelection()
-	{
-		return selectionsRef.getLastOrderedSelection();
 	}
 
 	@Override

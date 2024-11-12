@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -134,11 +133,5 @@ final class ViewRowIdsOrderedSelections
 		}
 
 		return selectionIds.build();
-	}
-
-	@NonNull
-	public ViewRowIdsOrderedSelection getLastOrderedSelection()
-	{
-		return Iterables.getLast(selectionsByOrderBys.values());
 	}
 }
