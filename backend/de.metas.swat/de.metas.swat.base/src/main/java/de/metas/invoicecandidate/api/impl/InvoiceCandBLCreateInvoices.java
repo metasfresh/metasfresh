@@ -395,7 +395,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
 			}
-			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -421,6 +420,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
+			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
