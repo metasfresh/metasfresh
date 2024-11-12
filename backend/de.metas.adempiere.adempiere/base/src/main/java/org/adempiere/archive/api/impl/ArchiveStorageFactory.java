@@ -27,14 +27,12 @@ import de.metas.archive.ArchiveStorageConfig;
 import de.metas.archive.ArchiveStorageConfigId;
 import de.metas.archive.ArchiveStorageConfigRepository;
 import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.SpringContextHolder;
@@ -42,13 +40,11 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Archive_Storage;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import java.util.Properties;
 
 public class ArchiveStorageFactory implements IArchiveStorageFactory
 {
-	private static final Logger logger = LogManager.getLogger(ArchiveStorageFactory.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private ArchiveStorageConfigRepository _storageConfigRepository; // lazy
 
@@ -108,20 +104,10 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 	private IArchiveStorage createArchiveStorage(@NonNull final ArchiveStorageConfigId storageConfigId)
 	{
 		final ArchiveStorageConfig storageConfig = storageConfigRepository().getById(storageConfigId);
-		switch (storageConfig.getType())
+		return switch (storageConfig.getType())
 		{
-			case DATABASE ->
-			{
-				return new DBArchiveStorage(storageConfig);
-			}
-			case FILE_SYSTEM ->
-			{
-				return new FilesystemArchiveStorage(storageConfig);
-			}
-			default ->
-			{
-				throw new AdempiereException("Unsupported archive storage type '" + storageConfig.getType() + "'");
-			}
-		}
+			case DATABASE -> new DBArchiveStorage(storageConfig);
+			case FILE_SYSTEM ->new FilesystemArchiveStorage(storageConfig);
+		};
 	}
 }

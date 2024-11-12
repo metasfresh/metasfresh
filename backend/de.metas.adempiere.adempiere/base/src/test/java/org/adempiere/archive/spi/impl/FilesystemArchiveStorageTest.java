@@ -70,7 +70,6 @@ public class FilesystemArchiveStorageTest
 		InterfaceWrapperHelper.save(archive);
 
 		assertThat(archive.getAD_Archive_Storage_ID()).isEqualTo(filesystemStorageId.getRepoId());
-		assertThat(archive.isFileSystem()).isTrue();
 
 		final byte[] dataActual = storage.getBinaryData(archive);
 		assertThat(dataActual).isEqualTo(data);

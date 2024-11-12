@@ -469,27 +469,6 @@ public interface I_AD_Archive
 	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
 
 	/**
-	 * Set IsFileSystem.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsFileSystem (boolean IsFileSystem);
-
-	/**
-	 * Get IsFileSystem.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isFileSystem();
-
-	ModelColumn<I_AD_Archive, Object> COLUMN_IsFileSystem = new ModelColumn<>(I_AD_Archive.class, "IsFileSystem", null);
-	String COLUMNNAME_IsFileSystem = "IsFileSystem";
-
-	/**
 	 * Set Main Archive.
 	 *
 	 * <br>Type: YesNo

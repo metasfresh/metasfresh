@@ -90,7 +90,7 @@ public class ArchiveStorageFactoryTest
 		@Test
 		public void FromContext_DB()
 		{
-			client.setStoreArchiveOnFileSystem(false);
+			client.setAD_Archive_Storage_ID(ArchiveStorageConfigId.DATABASE.getRepoId());
 			InterfaceWrapperHelper.save(client);
 
 			final IArchiveStorage storage = factory.getArchiveStorage(ctx);

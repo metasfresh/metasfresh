@@ -60,7 +60,6 @@ public class DBArchiveStorage implements IArchiveStorage
 	{
 		final I_AD_Archive archive = IArchiveStorage.super.newArchive(ctx);
 		archive.setAD_Archive_Storage_ID(storageConfigId.getRepoId());
-		archive.setIsFileSystem(false);
 		return archive;
 	}
 
@@ -158,6 +157,6 @@ public class DBArchiveStorage implements IArchiveStorage
 		}
 
 		archive.setBinaryData(compressedData);
-		archive.setIsFileSystem(false);
+		archive.setAD_Archive_Storage_ID(storageConfigId.getRepoId());
 	}
 }

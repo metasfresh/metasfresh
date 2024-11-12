@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1828598194L;
+	private static final long serialVersionUID = -879548260L;
 
     /** Standard Constructor */
     public X_AD_Client (final Properties ctx, final int AD_Client_ID, @Nullable final String trxName)
@@ -395,18 +395,6 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	}
 
 	@Override
-	public void setStoreArchiveOnFileSystem (final boolean StoreArchiveOnFileSystem)
-	{
-		set_Value (COLUMNNAME_StoreArchiveOnFileSystem, StoreArchiveOnFileSystem);
-	}
-
-	@Override
-	public boolean isStoreArchiveOnFileSystem() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_StoreArchiveOnFileSystem);
-	}
-
-	@Override
 	public void setStoreAttachmentsOnFileSystem (final boolean StoreAttachmentsOnFileSystem)
 	{
 		set_Value (COLUMNNAME_StoreAttachmentsOnFileSystem, StoreAttachmentsOnFileSystem);
@@ -416,18 +404,6 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	public boolean isStoreAttachmentsOnFileSystem() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_StoreAttachmentsOnFileSystem);
-	}
-
-	@Override
-	public void setUnixArchivePath (final @Nullable java.lang.String UnixArchivePath)
-	{
-		set_Value (COLUMNNAME_UnixArchivePath, UnixArchivePath);
-	}
-
-	@Override
-	public java.lang.String getUnixArchivePath() 
-	{
-		return get_ValueAsString(COLUMNNAME_UnixArchivePath);
 	}
 
 	@Override
@@ -452,18 +428,6 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
-	}
-
-	@Override
-	public void setWindowsArchivePath (final @Nullable java.lang.String WindowsArchivePath)
-	{
-		set_Value (COLUMNNAME_WindowsArchivePath, WindowsArchivePath);
-	}
-
-	@Override
-	public java.lang.String getWindowsArchivePath() 
-	{
-		return get_ValueAsString(COLUMNNAME_WindowsArchivePath);
 	}
 
 	@Override

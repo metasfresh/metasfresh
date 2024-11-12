@@ -84,7 +84,6 @@ public class FilesystemArchiveStorage implements IArchiveStorage
 	{
 		final I_AD_Archive archive = IArchiveStorage.super.newArchive(ctx);
 		archive.setAD_Archive_Storage_ID(storageConfigId.getRepoId());
-		archive.setIsFileSystem(true);
 		return archive;
 	}
 
@@ -171,7 +170,7 @@ public class FilesystemArchiveStorage implements IArchiveStorage
 			// 04692: metas-ts removed xml processing because totally don't need it, and it's prone to "content-is-not-allowed-in-prolog" errors
 			final String archiveInfo = ARCHIVE_FOLDER_PLACEHOLDER + getArchivePathSnippet(archive) + filenamePart;
 			archive.setBinaryData(archiveInfo.getBytes(StandardCharsets.UTF_8));
-			archive.setIsFileSystem(true);
+			archive.setAD_Archive_Storage_ID(storageConfigId.getRepoId());
 		}
 		catch (Exception e)
 		{

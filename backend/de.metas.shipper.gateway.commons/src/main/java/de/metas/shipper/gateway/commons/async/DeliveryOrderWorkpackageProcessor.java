@@ -19,14 +19,13 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
@@ -78,12 +77,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
 	// Services
 
-	private final ShipperGatewayServicesRegistry shipperRegistry;
-
-	public DeliveryOrderWorkpackageProcessor()
-	{
-		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
-	}
+	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -156,8 +150,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final String fileName = CoalesceUtil.firstNotEmptyTrimmed(packageLabel.getFileName(), packageLabel.getType().toString()) + fileExtWithDot;
 		final byte[] labelData = packageLabel.getLabelData();
 
-		final Properties ctx = Env.getCtx();
-		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(ctx);
+		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(Env.getCtx());
 		final I_AD_Archive archive = archiveStorage.newArchive();
 
 		final ITableRecordReference deliveryOrderRef = deliveryOrderRepo.toTableRecordReference(deliveryOrder);

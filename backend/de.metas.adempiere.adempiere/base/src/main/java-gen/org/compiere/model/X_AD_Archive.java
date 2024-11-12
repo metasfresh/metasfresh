@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 126835650L;
+	private static final long serialVersionUID = 2115837742L;
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -305,18 +305,6 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public boolean isDirectProcessQueueItem() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDirectProcessQueueItem);
-	}
-
-	@Override
-	public void setIsFileSystem (final boolean IsFileSystem)
-	{
-		set_Value (COLUMNNAME_IsFileSystem, IsFileSystem);
-	}
-
-	@Override
-	public boolean isFileSystem() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFileSystem);
 	}
 
 	@Override

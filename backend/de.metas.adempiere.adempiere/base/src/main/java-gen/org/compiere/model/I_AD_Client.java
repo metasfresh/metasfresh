@@ -20,7 +20,7 @@ public interface I_AD_Client
 	 * Set Archive Storage.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Archive_Storage_ID (int AD_Archive_Storage_ID);
@@ -29,14 +29,14 @@ public interface I_AD_Client
 	 * Get Archive Storage.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Archive_Storage_ID();
 
-	@Nullable org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage();
+	org.compiere.model.I_AD_Archive_Storage getAD_Archive_Storage();
 
-	void setAD_Archive_Storage(@Nullable org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage);
+	void setAD_Archive_Storage(org.compiere.model.I_AD_Archive_Storage AD_Archive_Storage);
 
 	ModelColumn<I_AD_Client, org.compiere.model.I_AD_Archive_Storage> COLUMN_AD_Archive_Storage_ID = new ModelColumn<>(I_AD_Client.class, "AD_Archive_Storage_ID", org.compiere.model.I_AD_Archive_Storage.class);
 	String COLUMNNAME_AD_Archive_Storage_ID = "AD_Archive_Storage_ID";
@@ -651,27 +651,6 @@ public interface I_AD_Client
 	String COLUMNNAME_SMTPPort = "SMTPPort";
 
 	/**
-	 * Set Store Archive On File System.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setStoreArchiveOnFileSystem (boolean StoreArchiveOnFileSystem);
-
-	/**
-	 * Get Store Archive On File System.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isStoreArchiveOnFileSystem();
-
-	ModelColumn<I_AD_Client, Object> COLUMN_StoreArchiveOnFileSystem = new ModelColumn<>(I_AD_Client.class, "StoreArchiveOnFileSystem", null);
-	String COLUMNNAME_StoreArchiveOnFileSystem = "StoreArchiveOnFileSystem";
-
-	/**
 	 * Set Store Attachments On File System.
 	 *
 	 * <br>Type: YesNo
@@ -691,27 +670,6 @@ public interface I_AD_Client
 
 	ModelColumn<I_AD_Client, Object> COLUMN_StoreAttachmentsOnFileSystem = new ModelColumn<>(I_AD_Client.class, "StoreAttachmentsOnFileSystem", null);
 	String COLUMNNAME_StoreAttachmentsOnFileSystem = "StoreAttachmentsOnFileSystem";
-
-	/**
-	 * Set Unix Archive Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUnixArchivePath (@Nullable java.lang.String UnixArchivePath);
-
-	/**
-	 * Get Unix Archive Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getUnixArchivePath();
-
-	ModelColumn<I_AD_Client, Object> COLUMN_UnixArchivePath = new ModelColumn<>(I_AD_Client.class, "UnixArchivePath", null);
-	String COLUMNNAME_UnixArchivePath = "UnixArchivePath";
 
 	/**
 	 * Set Unix Attachment Path.
@@ -781,27 +739,6 @@ public interface I_AD_Client
 
 	ModelColumn<I_AD_Client, Object> COLUMN_Value = new ModelColumn<>(I_AD_Client.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
-
-	/**
-	 * Set Windows Archive Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWindowsArchivePath (@Nullable java.lang.String WindowsArchivePath);
-
-	/**
-	 * Get Windows Archive Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getWindowsArchivePath();
-
-	ModelColumn<I_AD_Client, Object> COLUMN_WindowsArchivePath = new ModelColumn<>(I_AD_Client.class, "WindowsArchivePath", null);
-	String COLUMNNAME_WindowsArchivePath = "WindowsArchivePath";
 
 	/**
 	 * Set Windows Attachment Path.

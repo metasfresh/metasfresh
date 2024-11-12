@@ -31,7 +31,6 @@ import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
 import de.metas.printing.api.impl.Helper;
 import de.metas.printing.api.util.PdfCollator;
-import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
@@ -76,7 +75,7 @@ class PrintingDataFactoryTest
 	private enum Mode
 	{
 		with_C_Doc_Outbound_Log,
-		without_C_Doc_Outbound_Log;
+		without_C_Doc_Outbound_Log,
 	}
 
 	@ParameterizedTest
