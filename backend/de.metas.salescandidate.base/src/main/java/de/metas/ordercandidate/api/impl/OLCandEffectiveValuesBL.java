@@ -13,6 +13,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -31,6 +33,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -43,6 +46,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(@NonNull final I_C_OLCand olCand)
@@ -66,11 +70,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public ZonedDateTime getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return CoalesceUtil.coalesceSuppliers(
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate()));
+		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
+		
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate(), tz));
 	}
 
 	@Override
@@ -127,6 +133,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
 		final ProductId productId = getM_Product_Effective_ID(olCand);
@@ -138,6 +145,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public UomId getEffectiveUomId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		return olCandRecord.isManualPrice()
@@ -163,7 +171,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		}
 
 		// only if we have nothing else to work with, we go with our internal stock-UOM
-		return productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return productBL.getStockUOMId(getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@NonNull
@@ -174,7 +182,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
 		
-		return Quantitys.create(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return Quantitys.create(result, getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@Override
@@ -258,6 +266,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
@@ -266,6 +275,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerId getBillBPartnerEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return coalesceSuppliers(
@@ -288,6 +298,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getBillContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
