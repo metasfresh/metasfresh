@@ -114,7 +114,7 @@ public class MassConcatenateOutboundPdfs extends ViewBasedProcessTemplate implem
 		}
 		else
 		{
-			final ImmutableList<DocOutboundLogId> ids = selectedRowIds.toListIds(DocOutboundLogId::ofRepoId);
+			final ImmutableList<DocOutboundLogId> ids = selectedRowIds.toIdsList(DocOutboundLogId::ofRepoId);
 			return streamArchivesForLogIds(ids);
 		}
 	}

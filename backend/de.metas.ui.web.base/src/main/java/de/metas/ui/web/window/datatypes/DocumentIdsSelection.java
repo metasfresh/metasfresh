@@ -262,6 +262,17 @@ public final class DocumentIdsSelection
 		return ImmutableList.copyOf(documentIds);
 	}
 
+	@NonNull
+	public <T> ImmutableList<T> toImmutableList(@NonNull final Function<DocumentId, T> mapper)
+	{
+		assertNotAll();
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return documentIds.stream().map(mapper).collect(ImmutableList.toImmutableList());
+	}
+
 	public Set<Integer> toIntSet()
 	{
 		return toSet(DocumentId::toInt);
@@ -272,11 +283,14 @@ public final class DocumentIdsSelection
 		return toSet(idMapper.compose(DocumentId::toInt));
 	}
 
-	public <ID extends RepoIdAware> ImmutableList<ID> toListIds(@NonNull final Function<Integer, ID> idMapper)
+	/**
+	 * Similar to {@link #toIds(Function)} but this returns a list, so it preserves the order
+	 */
+	public <ID extends RepoIdAware> ImmutableList<ID> toIdsList(@NonNull final Function<Integer, ID> idMapper)
 	{
-		return toImmutableList().stream().map(idMapper.compose(DocumentId::toInt)).collect(ImmutableList.toImmutableList());
+		return toImmutableList(idMapper.compose(DocumentId::toInt));
 	}
-	
+
 	public Set<String> toJsonSet()
 	{
 		if (all)
