@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -466,11 +467,8 @@ public final class OLCand implements IProductPriceAware
 
 	public int getHUPIProductItemId()
 	{
-		if (olCandRecord.getM_HU_PI_Item_Product_Override_ID() > 0)
-		{
-			return olCandRecord.getM_HU_PI_Item_Product_Override_ID();
-		}
-		return olCandRecord.getM_HU_PI_Item_Product_ID();
+		final HUPIItemProductId packingInstructions = olCandEffectiveValuesBL.getEffectivePackingInstructions(olCandRecord);
+		return HUPIItemProductId.toRepoId(packingInstructions);
 	}
 
 	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
