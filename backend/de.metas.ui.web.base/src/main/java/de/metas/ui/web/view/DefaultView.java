@@ -383,20 +383,6 @@ public final class DefaultView implements IEditableView
 				.build();
 	}
 
-	@Override
-	public ImmutableList<DocumentId> getLastOrderedSelectionIds(
-			final int firstRow,
-			final int pageLength)
-	{
-		assertNotClosed();
-		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
-
-		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-		final ViewRowIdsOrderedSelection lastOrderedSelection = getLastOrderedSelection();
-
-		return viewDataRepository.retrieveRowIdsByPage(evalCtx, lastOrderedSelection, firstRow, pageLength);
-	}
-	
 	private List<ViewResultColumn> extractViewResultColumns(@NonNull final List<IViewRow> rows)
 	{
 		if (rows.isEmpty())

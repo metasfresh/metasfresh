@@ -198,14 +198,6 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public final ImmutableList<DocumentId> getLastOrderedSelectionIds(
-			final int firstRow,
-			final int pageLength)
-	{
-		return ImmutableList.of();
-	}
-	
-	@Override
 	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		throw new UnsupportedOperationException();

@@ -291,14 +291,6 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public final ImmutableList<DocumentId> getLastOrderedSelectionIds(
-			final int firstRow,
-			final int pageLength)
-	{
-		return ImmutableList.of();
-	}
-	
-	@Override
 	public SqlViewRowsWhereClause getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds, final SqlOptions sqlOpts_NOTUSED)
 	{
 		return rowsBuffer.getSqlWhereClause(rowIds);

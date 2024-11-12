@@ -148,8 +148,6 @@ public interface IView
 
 	ViewResult getPage(int firstRow, int pageLength, ViewRowsOrderBy orderBy);
 
-	ImmutableList<DocumentId> getLastOrderedSelectionIds(final int firstRow, final int pageLength);
-	
 	default ViewResult getPageWithRowIdsOnly(
 			final int firstRow,
 			final int pageLength,

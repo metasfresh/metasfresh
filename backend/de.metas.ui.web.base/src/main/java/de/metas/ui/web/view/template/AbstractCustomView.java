@@ -215,14 +215,6 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return DocumentQueryOrderByList.EMPTY;
 	}
 
-	@Override
-	public final ImmutableList<DocumentId> getLastOrderedSelectionIds(
-			final int firstRow,
-			final int pageLength)
-	{
-		return ImmutableList.of();
-	}
-
 	/**
 	 * Just returns {@code null}.
 	 */
