@@ -22,7 +22,9 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
+import de.metas.archive.ArchiveStorageConfig;
 import de.metas.archive.ArchiveStorageConfigId;
+import de.metas.archive.ArchiveStorageType;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
@@ -252,6 +254,14 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		public static final ArchiveStorageConfigId CONFIG_ID = ArchiveStorageConfigId.ofRepoId(12345);
 		private static final Set<Integer> archiveIdsToFail = new HashSet<Integer>();
+		
+		MockedDBArchiveStorage()
+		{
+			super(ArchiveStorageConfig.builder()
+					.id(CONFIG_ID)
+					.type(ArchiveStorageType.DATABASE)
+					.build());
+		}
 
 		public static void reset()
 		{
