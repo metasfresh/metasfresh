@@ -246,8 +246,13 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return selections.withDefaultSelection(defaultSelectionBeforeFacetsFiltering, defaultSelection);
 	}
 
-	public ViewRowIdsOrderedSelection getOrderedSelection(final DocumentQueryOrderByList orderBys)
+	public ViewRowIdsOrderedSelection getOrderedSelection(@Nullable final DocumentQueryOrderByList orderBys)
 	{
+		if(orderBys == null || orderBys.isEmpty())
+		{
+			return getDefaultSelection();
+		}
+		
 		return computeCurrentSelections(selections -> computeOrderBySelectionIfAbsent(selections, orderBys))
 				.getSelection(orderBys);
 	}

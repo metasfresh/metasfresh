@@ -12,12 +12,15 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.LinkedHashSet;
@@ -51,12 +54,14 @@ public class JSONCreateProcessInstanceRequest
 {
 	@JsonProperty("processId")
 	private final String processIdStr;
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final ProcessId processId;
 
 	//
 	// Called from single row (header or included document)
-	/** Document type (aka AD_Window_ID) */
+	/**
+	 * Document type (aka AD_Window_ID)
+	 */
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final WindowId windowId;
@@ -73,13 +78,13 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
 	//
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final transient DocumentPath singleDocumentPath;
 	//
 	@JsonProperty("selectedTab")
 	private final JSONSelectedIncludedTab selectedTab;
 	//
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final transient List<DocumentPath> selectedIncludedDocumentPaths;
 
 	//
@@ -88,11 +93,15 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String viewIdStr;
 	//
+	@JsonProperty("viewOrderBy")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONViewOrderBy> viewOrderBy;
+	//
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final LinkedHashSet<String> viewDocumentIdsStrings;
 	//
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final transient ViewRowIdsSelection viewRowIdsSelection;
 
 	//
@@ -105,7 +114,7 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> parentViewSelectedIdsStrings;
 	//
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final transient ViewRowIdsSelection parentViewRowIdsSelection;
 
 	//
@@ -118,7 +127,7 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> childViewSelectedIdsStrings;
 	//
-	@JsonIgnore
+	@Getter @JsonIgnore
 	private final transient ViewRowIdsSelection childViewRowIdsSelection;
 
 	@JsonCreator
@@ -133,6 +142,7 @@ public class JSONCreateProcessInstanceRequest
 			@JsonProperty("rowId") final String rowId,
 			//
 			@JsonProperty("viewId") final String viewIdStr,
+			@JsonProperty("viewOrderBy") final List<JSONViewOrderBy> viewOrderBy,
 			@JsonProperty("viewDocumentIds") final LinkedHashSet<String> viewDocumentIdsStrings,
 			//
 			@JsonProperty("parentViewId") final String parentViewIdStr,
@@ -165,10 +175,12 @@ public class JSONCreateProcessInstanceRequest
 			final ViewId viewId = ViewId.ofViewIdString(viewIdStr, windowId);
 			final DocumentIdsSelection viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
 			viewRowIdsSelection = ViewRowIdsSelection.of(viewId, viewDocumentIds);
+			this.viewOrderBy = viewOrderBy;
 		}
 		else
 		{
 			viewRowIdsSelection = null;
+			this.viewOrderBy = null;
 		}
 
 		this.parentViewIdStr = parentViewIdStr;
@@ -200,7 +212,7 @@ public class JSONCreateProcessInstanceRequest
 				.toString();
 	}
 
-	private static final DocumentPath createDocumentPathOrNull(final WindowId windowId, final String documentId, final String tabId, final String rowIdStr)
+	private static DocumentPath createDocumentPathOrNull(final WindowId windowId, final String documentId, final String tabId, final String rowIdStr)
 	{
 		if (windowId != null && !Check.isEmpty(documentId))
 		{
@@ -217,37 +229,7 @@ public class JSONCreateProcessInstanceRequest
 		return null;
 	}
 
-	public ProcessId getProcessId()
-	{
-		return processId;
-	}
-
-	public DocumentPath getSingleDocumentPath()
-	{
-		return singleDocumentPath;
-	}
-
-	public ViewRowIdsSelection getViewRowIdsSelection()
-	{
-		return viewRowIdsSelection;
-	}
-
-	public ViewRowIdsSelection getParentViewRowIdsSelection()
-	{
-		return parentViewRowIdsSelection;
-	}
-
-	public ViewRowIdsSelection getChildViewRowIdsSelection()
-	{
-		return childViewRowIdsSelection;
-	}
-
-	public List<DocumentPath> getSelectedIncludedDocumentPaths()
-	{
-		return selectedIncludedDocumentPaths;
-	}
-
-	private static final List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
+	private static List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
 	{
 		if (windowId == null || Check.isEmpty(documentIdStr, true) || selectedTab == null)
 		{
@@ -262,6 +244,11 @@ public class JSONCreateProcessInstanceRequest
 				.map(DocumentId::of)
 				.map(rowId -> DocumentPath.includedDocumentPath(windowId, documentId, selectedTabId, rowId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public DocumentQueryOrderByList getViewOrderBys()
+	{
+		return JSONViewOrderBy.toDocumentQueryOrderByList(viewOrderBy);
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
