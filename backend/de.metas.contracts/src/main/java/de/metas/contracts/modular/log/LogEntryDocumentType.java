@@ -63,7 +63,7 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 
 	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPMENT, PROFORMA_SHIPMENT);
 
-	public static final ImmutableSet<LogEntryDocumentType> TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES = ImmutableSet.of(MATERIAL_RECEIPT, PRODUCTION);
+	public static final ImmutableSet<LogEntryDocumentType> TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES = ImmutableSet.of(MATERIAL_RECEIPT, PRODUCTION, INVENTORY);
 
 	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPPING_NOTIFICATION, PROFORMA_SHIPPING_NOTIFICATION);
 
@@ -93,7 +93,7 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 
 	public boolean isShipment() { return this.equals(SHIPMENT); }
 	public boolean isProformaShipment() { return this.equals(PROFORMA_SHIPMENT); }
-	public boolean isAnyShipmentType() { return ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
+	public boolean isAnyShipmentType() { return ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
 	public boolean isShippingNotification() { return this.equals(SHIPPING_NOTIFICATION); }
 	public boolean isProformaShippingNotification() { return this.equals(PROFORMA_SHIPPING_NOTIFICATION); }
 	public boolean isAnyShippingNotificationType() { return ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
