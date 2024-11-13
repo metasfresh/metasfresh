@@ -519,7 +519,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
+	public ImmutableList<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
 												 final ViewRowIdsOrderedSelection orderedSelection,
 												 final int firstRow,
 												 final int pageLength)

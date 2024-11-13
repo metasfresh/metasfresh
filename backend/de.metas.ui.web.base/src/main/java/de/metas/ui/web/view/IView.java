@@ -102,6 +102,7 @@ public interface IView
 
 	long size();
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;
@@ -217,6 +218,11 @@ public interface IView
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
 	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
 	{
 		return streamByIds(rowIds);
 	}
