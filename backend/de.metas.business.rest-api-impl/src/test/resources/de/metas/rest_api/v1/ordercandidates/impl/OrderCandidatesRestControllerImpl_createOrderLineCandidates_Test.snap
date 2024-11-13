@@ -1194,7 +1194,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000000,
       "org": {
         "code": "EAN-2011234567890",
@@ -1301,7 +1301,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000001,
       "org": {
         "code": "EAN-2011234567890",
@@ -1408,7 +1408,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000002,
       "org": {
         "code": "EAN-2011234567890",
@@ -1515,7 +1515,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000003,
       "org": {
         "code": "EAN-2011234567890",
@@ -1622,7 +1622,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000004,
       "org": {
         "code": "EAN-2011234567890",
@@ -1729,7 +1729,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000005,
       "org": {
         "code": "EAN-2011234567890",
@@ -1836,7 +1836,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000006,
       "org": {
         "code": "EAN-2011234567890",
@@ -1943,7 +1943,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000007,
       "org": {
         "code": "EAN-2011234567890",
@@ -2050,7 +2050,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000008,
       "org": {
         "code": "EAN-2011234567890",
@@ -2157,7 +2157,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000009,
       "org": {
         "code": "EAN-2011234567890",
@@ -2264,7 +2264,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000010,
       "org": {
         "code": "EAN-2011234567890",
@@ -2371,7 +2371,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000011,
       "org": {
         "code": "EAN-2011234567890",
@@ -2478,7 +2478,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000012,
       "org": {
         "code": "EAN-2011234567890",
@@ -2585,7 +2585,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000013,
       "org": {
         "code": "EAN-2011234567890",
@@ -2692,7 +2692,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000014,
       "org": {
         "code": "EAN-2011234567890",
@@ -2799,7 +2799,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000015,
       "org": {
         "code": "EAN-2011234567890",
@@ -2906,7 +2906,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000016,
       "org": {
         "code": "EAN-2011234567890",
@@ -3013,7 +3013,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000017,
       "org": {
         "code": "EAN-2011234567890",
@@ -3120,7 +3120,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000018,
       "org": {
         "code": "EAN-2011234567890",
@@ -3227,7 +3227,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000019,
       "org": {
         "code": "EAN-2011234567890",
@@ -3334,7 +3334,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "externalHeaderId": "2011234567890_2009_01:001",
       "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
       "flatrateConditionsId": 0,
-      "huPIItemProductId": 0,
+      "huPIItemProductId": -1,
       "id": 1000020,
       "org": {
         "code": "EAN-2011234567890",
