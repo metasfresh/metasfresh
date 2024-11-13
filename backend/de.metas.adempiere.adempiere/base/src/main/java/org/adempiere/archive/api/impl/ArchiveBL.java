@@ -22,6 +22,7 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -29,6 +30,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.report.DocumentReportFlavor;
+import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
@@ -53,6 +55,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
@@ -249,10 +252,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (request.isReport())
-			{
-				return false;
-			}
+			return !request.isReport();
 		}
 		return true;
 	}
@@ -346,4 +346,23 @@ public class ArchiveBL implements IArchiveBL
 				.build();
 	}
 
+	@Override
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId archiveId)
+	{
+		return archiveDAO.getRecordById(archiveId);
+	}
+
+	@Override
+	@Nullable
+	public DocTypeId getOverrideDocTypeId(@NotNull final ArchiveId archiveId)
+	{
+		final I_AD_Archive archive = getRecordById(archiveId);
+		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
+	}
+
+	@Override
+	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
+	{
+		archiveDAO.updatePrintedRecords(ids, userId);
+	}
 }

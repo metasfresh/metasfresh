@@ -154,6 +154,7 @@ export function actionsRequest({
   selectedIds,
   selectedTabId,
   selectedRowIds,
+  viewOrderBy,
   childViewId,
   childViewSelectedIds,
 }) {
@@ -169,6 +170,7 @@ export function actionsRequest({
     return allActionsRequest({
       windowId: type,
       viewId: id,
+      viewOrderBy,
       selectedIds,
       childViewId,
       childViewSelectedIds,

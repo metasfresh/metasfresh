@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.exceptions.DBException;
 
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -59,7 +60,7 @@ public interface IViewDataRepository
 
 	List<IViewRow> retrievePage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection orderedSelection, int firstRow, int pageLength) throws DBException;
 
-	List<DocumentId> retrieveRowIdsByPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection orderedSelection, int firstRow, int pageLength);
+	ImmutableList<DocumentId> retrieveRowIdsByPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection orderedSelection, int firstRow, int pageLength);
 
 	<T> List<T> retrieveModelsByIds(ViewId viewId, DocumentIdsSelection rowIds, Class<T> modelClass);
 

@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
@@ -50,6 +51,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -118,6 +120,26 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	public I_C_Doc_Outbound_Log getById(@NonNull final DocOutboundLogId docOutboundLogId)
 	{
 		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
+	}
+
+	@Override
+	public Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull final List<DocOutboundLogId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID, ids)
+				.create()
+				.stream()
+				.sorted(FixedOrderByKeyComparator.notMatchedAtTheEnd(ids, DocOutboundDAO::extractId));
+	}
+
+	private static DocOutboundLogId extractId(final I_C_Doc_Outbound_Log record)
+	{
+		return DocOutboundLogId.ofRepoId(record.getC_Doc_Outbound_Log_ID());
 	}
 
 	@Override
