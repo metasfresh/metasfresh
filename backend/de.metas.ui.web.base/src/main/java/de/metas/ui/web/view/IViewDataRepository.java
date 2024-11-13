@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -9,7 +10,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import com.google.common.collect.ImmutableList;
 import org.adempiere.exceptions.DBException;
 
 import java.util.List;

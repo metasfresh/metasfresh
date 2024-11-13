@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import de.metas.util.GuavaCollectors;
-import lombok.Getter;
 
 import javax.annotation.Nullable;
 import java.util.List;
