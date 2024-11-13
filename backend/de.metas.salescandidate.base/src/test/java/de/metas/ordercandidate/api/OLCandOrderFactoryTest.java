@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
@@ -83,6 +84,8 @@ class OLCandOrderFactoryTest
 				new GroupCompensationLineCreateRequestFactory(),
 				Optional.empty()
 		));
+
+		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(
@@ -185,6 +188,7 @@ class OLCandOrderFactoryTest
 			olCandRecord.setM_Product_ID(productId.getRepoId());
 			olCandRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
 			olCandRecord.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());
+			olCandRecord.setDateCandidate(SystemTime.asTimestamp());
 			InterfaceWrapperHelper.saveRecord(olCandRecord);
 
 			return new OLCandFactory().toOLCand(olCandRecord);
