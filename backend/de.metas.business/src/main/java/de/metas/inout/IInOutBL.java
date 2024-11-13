@@ -217,4 +217,6 @@ public interface IInOutBL extends ISingletonService
 	Instant getDateAcct(InOutId inoutId);
 
     boolean isProformaShipment(@NonNull InOutId inOutId);
+
+	boolean isProformaShipment(@NonNull I_M_InOut inOutRecord);
 }

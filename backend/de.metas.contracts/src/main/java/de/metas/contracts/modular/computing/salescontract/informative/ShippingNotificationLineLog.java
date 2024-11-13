@@ -24,6 +24,7 @@ package de.metas.contracts.modular.computing.salescontract.informative;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
@@ -39,9 +40,10 @@ import org.springframework.stereotype.Component;
 @Component
 class ShippingNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
-	@NonNull @Getter private final SalesInformativeLogComputingMethod computingMethod;
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
+	@Getter @NonNull private final SalesInformativeLogComputingMethod computingMethod;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
 	public ShippingNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,

@@ -150,4 +150,5 @@ public interface IOrderDAO extends ISingletonService
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
 
+	Stream<I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 }

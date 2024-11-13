@@ -79,7 +79,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
-			return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
+			return contractProvider.streamPurchaseContractForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
 		}
 		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
 		{

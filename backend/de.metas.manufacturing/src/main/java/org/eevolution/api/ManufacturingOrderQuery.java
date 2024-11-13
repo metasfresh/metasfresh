@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.dao.ValueRestriction;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.product.ResourceId;
@@ -51,6 +52,8 @@ public class ManufacturingOrderQuery
 	@Nullable Instant canBeExportedFrom;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	boolean onlyDrafted;
+
+	@Nullable FlatrateTermId modularFlatrateTermId;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 }

@@ -24,8 +24,8 @@ package de.metas.contracts.modular.computing.salescontract.addedvalue;
 
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractShipmentComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.salescontract.AbstractShipmentComputingMethod;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 

@@ -28,10 +28,8 @@ import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractAverageAVOnShippedQtyComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -43,8 +41,6 @@ import java.util.stream.Stream;
 @Component
 public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShippedQtyComputingMethod
 {
-	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.PurchaseAverageAddedValueOnShippedQuantity;
 
@@ -68,7 +64,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShi
 	@Override
 	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
-		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
+		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
 		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isPurchase();

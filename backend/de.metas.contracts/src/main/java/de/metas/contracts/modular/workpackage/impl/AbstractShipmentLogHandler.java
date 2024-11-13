@@ -78,7 +78,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -87,11 +87,12 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 
 	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
-	@NonNull @Getter private final IComputingMethodHandler computingMethod;
+	@Getter @NonNull private final IComputingMethodHandler computingMethod;
 
-	public AbstractShipmentLogHandler(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			final @NonNull IComputingMethodHandler computingMethod)
+	public AbstractShipmentLogHandler(
+			@NonNull final ModularContractService modularContractService,
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final IComputingMethodHandler computingMethod)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
@@ -106,7 +107,13 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 		{
 			return false;
 		}
+
 		final I_M_InOut inOut = inOutDAO.getByLineIdInTrx(InOutLineId.ofRepoId(tableRef.getRecord_ID()));
+		final boolean isProforma = inOutBL.isProformaShipment(inOut);
+		if ((getLogEntryDocumentType().isShipment() && isProforma) || (getLogEntryDocumentType().isProformaShipment() && !isProforma))
+		{
+			return false;
+		}
 
 		return inOut.isSOTrx();
 	}

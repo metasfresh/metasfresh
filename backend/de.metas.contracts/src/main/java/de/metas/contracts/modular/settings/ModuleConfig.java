@@ -84,4 +84,9 @@ public class ModuleConfig
 	{
 		return modularContractType.getColumnOption();
 	}
+
+	public boolean isMatching(@Nullable final ColumnOption columnOption)
+	{
+		return ColumnOption.equals(getColumnOption(), columnOption);
+	}
 }

@@ -41,9 +41,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
-import static de.metas.contracts.modular.log.LogEntryDocumentType.INTERIM_INVOICE;
-import static de.metas.contracts.modular.log.LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
-import static de.metas.contracts.modular.log.LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
 @Component
 @Interceptor(I_ModCntr_Log.class)
@@ -61,13 +58,11 @@ public class ModCntr_Log
 	{
 		final ModularContractLogEntryId id = ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
 		final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType());
-		if (SHIPPING_NOTIFICATION.equals(logEntryDocumentType) ||
-				INTERIM_INVOICE.equals(logEntryDocumentType) ||
-				PURCHASE_MODULAR_CONTRACT.equals((logEntryDocumentType)))
+		if (logEntryDocumentType.isInterestSpecificType())
 		{
 			final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(log.getModCntr_Module_ID());
 			final ComputingMethodType computingMethodType = contractSettingsRepo.getByModuleId(modularContractModuleId).getComputingMethodType();
-			if (ComputingMethodType.AddValueOnInterim.equals(computingMethodType) || ComputingMethodType.SubtractValueOnInterim.equals(computingMethodType))
+			if (computingMethodType.isInterestSpecificMethod())
 			{
 				interestRepo.deleteByModularContractLogEntryId(id);
 			}
@@ -77,7 +72,7 @@ public class ModCntr_Log
 	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = I_ModCntr_Log.COLUMNNAME_IsBillable)
 	public void updateAverageContractSpecificPriceIfNeeded(@NonNull final I_ModCntr_Log log)
 	{
-		if(!LogEntryDocumentType.SHIPMENT.getCode().equals(log.getModCntr_Log_DocumentType()))
+		if(!LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType()).isAnyShipmentType())
 		{
 			return;
 		}

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -186763908L;
+	private static final long serialVersionUID = -490384294L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -63,19 +63,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
-	}
-
-	@Override
-	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
-	{
-		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
-	}
-
-	@Override
-	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -880,18 +867,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
-	{
-		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
-	}
-
-	@Override
-	public boolean isDeliveryClosed()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
-	}
-
-	@Override
 	public void setIsCampaignPrice (final boolean IsCampaignPrice)
 	{
 		set_Value (COLUMNNAME_IsCampaignPrice, IsCampaignPrice);
@@ -901,6 +876,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isCampaignPrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCampaignPrice);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override
@@ -1603,6 +1590,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setPurchase_Modular_Flatrate_Term_ID (final int Purchase_Modular_Flatrate_Term_ID)
+	{
+		if (Purchase_Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, Purchase_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getPurchase_Modular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Purchase_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
 	public void setQtyDelivered (final BigDecimal QtyDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
@@ -1869,19 +1871,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public BigDecimal getTaxAmtInfo() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
-	{
-		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
-	}
-
-	@Override
-	public BigDecimal getTraded_Commission_Percent()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

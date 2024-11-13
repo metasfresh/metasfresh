@@ -20,21 +20,18 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.salescontract;
+package de.metas.contracts.modular.computing;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -52,12 +49,12 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public abstract class AbstractShipmentComputingMethod extends AbstractComputingMethodHandler
 {
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	protected final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
 
-	@Getter @NonNull private final ComputingMethodType computingMethodType;
+	@NonNull @Getter private final ComputingMethodType computingMethodType;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -70,8 +67,9 @@ public abstract class AbstractShipmentComputingMethod extends AbstractComputingM
 
 		final I_M_InOutLine inOutLineRecord = getShipmentLine(recordRef);
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
 
-		return inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
+		return orderId != null && inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
 	}
 
 	@Override

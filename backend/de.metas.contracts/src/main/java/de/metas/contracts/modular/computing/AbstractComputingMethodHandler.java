@@ -48,7 +48,7 @@ public abstract class AbstractComputingMethodHandler implements IComputingMethod
 	 * This is the default implementation, used by yet-unimplemented methods. Its result ensures the IC is not created.
 	 */
 	@Override
-	 @NonNull
+	@NonNull
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());

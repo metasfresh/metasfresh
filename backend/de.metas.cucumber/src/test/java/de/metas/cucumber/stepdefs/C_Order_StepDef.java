@@ -793,7 +793,7 @@ public class C_Order_StepDef
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		softly.assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 
-		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
+		final I_C_DocType docType = docTypeDAO.getById(orderBL.getDocTypeIdEffectiveOrNull(order));
 		softly.assertThat(docType).isNotNull();
 		softly.assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
 

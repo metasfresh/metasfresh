@@ -31,7 +31,6 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
@@ -56,7 +55,6 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -75,8 +73,6 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 
-	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -91,6 +87,17 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		this.notificationService = notificationService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.contractLogDAO = contractLogDAO;
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest createLogRequest)
+	{
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final ShippingNotificationId shippingNotificationId = ShippingNotificationId.ofRepoId(notificationLine.getM_Shipping_Notification_ID());
+
+		final boolean isProforma = notificationService.isProformaShippingNotification(shippingNotificationId);
+		return (getLogEntryDocumentType().isShippingNotification() && !isProforma) || (getLogEntryDocumentType().isProformaShippingNotification() && isProforma);
 	}
 
 	@Override

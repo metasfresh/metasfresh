@@ -34,6 +34,8 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.money.CurrencyId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -87,8 +89,12 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 	{
 		if (!computingResponse.getIds().isEmpty())
 		{
-			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(
+					ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()),
+					CurrencyId.ofRepoId(invoiceCandidate.getC_Currency_ID()),
+					UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()))
+			);
 		}
 	}
 

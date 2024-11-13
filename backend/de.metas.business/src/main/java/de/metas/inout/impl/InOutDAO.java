@@ -632,6 +632,12 @@ public class InOutDAO implements IInOutDAO
 		return sqlQueryBuilder;
 	}
 
+	@Override
+	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
+	{
+		return toSqlQuery(query).create().stream();
+	}
+
 	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
 	{
 		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
@@ -648,6 +654,10 @@ public class InOutDAO implements IInOutDAO
 		if (query.getDocStatus() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (!query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
 		}
 
 		return sqlQueryBuilder;
