@@ -8,7 +8,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -54,11 +57,33 @@ public class JSONViewOrderBy
 			return ImmutableList.of();
 		}
 
-		return orderBys.stream().map(JSONViewOrderBy::of).collect(ImmutableList.toImmutableList());
+		return orderBys.stream()
+				.map(JSONViewOrderBy::of)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	public static DocumentQueryOrderByList toDocumentQueryOrderByList(@Nullable final List<JSONViewOrderBy> orderBys)
+	{
+		if (orderBys == null || orderBys.isEmpty())
+		{
+			return DocumentQueryOrderByList.EMPTY;
+		}
+
+		return orderBys.stream()
+				.map(JSONViewOrderBy::toDocumentQueryOrderBy)
+				.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+	}
+	
 	private static JSONViewOrderBy of(@NonNull final DocumentQueryOrderBy orderBy)
 	{
 		return new JSONViewOrderBy(orderBy.getFieldName(), orderBy.isAscending());
+	}
+
+	public DocumentQueryOrderBy toDocumentQueryOrderBy()
+	{
+		return DocumentQueryOrderBy.builder()
+				.fieldName(fieldName)
+				.ascending(ascending)
+				.build();
 	}
 }

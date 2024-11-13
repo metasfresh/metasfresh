@@ -249,11 +249,13 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
 export const allActionsRequest = ({
   windowId,
   viewId,
+  viewOrderBy,
   selectedIds,
   childViewId,
   childViewSelectedIds,
 }) => {
   return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
+    viewOrderBy,
     selectedIds,
     childViewId,
     childViewSelectedIds,
@@ -265,6 +267,7 @@ export function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
+  viewOrderBy,
   selectedIds,
   childView,
   parentView,
@@ -273,6 +276,7 @@ export function quickActionsRequest({
   if (childView && childView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
@@ -280,6 +284,7 @@ export function quickActionsRequest({
   } else if (parentView && parentView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
@@ -287,6 +292,7 @@ export function quickActionsRequest({
   } else {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
     };
   }

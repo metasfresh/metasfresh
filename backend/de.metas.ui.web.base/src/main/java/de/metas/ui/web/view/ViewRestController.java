@@ -48,6 +48,7 @@ import de.metas.ui.web.view.json.JSONGetViewActionsRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewHeaderProperties;
 import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
@@ -61,6 +62,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -467,7 +469,8 @@ public class ViewRestController
 	private ViewAsPreconditionsContext createPreconditionsContext(
 			@NonNull final String windowId,
 			@NonNull final String viewIdString,
-			final String viewProfileIdStr,
+			@Nullable final String viewProfileIdStr,
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
 			final Set<String> selectedIds,
 			final String parentViewId,
 			final Set<String> parentViewSelectedIds,
@@ -485,6 +488,7 @@ public class ViewRestController
 		return ViewAsPreconditionsContext.builder()
 				.view(view)
 				.viewProfileId(ViewProfileId.fromJson(viewProfileIdStr))
+				.viewOrderBys(viewOrderBys)
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -504,6 +508,7 @@ public class ViewRestController
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())
@@ -531,6 +536,7 @@ public class ViewRestController
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
 				.viewProfileIdStr(request.getViewProfileId())
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())
@@ -557,9 +563,8 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr));
 		final IView view = viewsRepo.getView(viewId);
-		if (view instanceof IViewZoomIntoFieldSupport)
+		if (view instanceof final IViewZoomIntoFieldSupport zoomIntoSupport)
 		{
-			final IViewZoomIntoFieldSupport zoomIntoSupport = (IViewZoomIntoFieldSupport)view;
 			final DocumentId rowId = DocumentId.of(rowIdStr);
 			final DocumentZoomIntoInfo zoomIntoInfo = zoomIntoSupport.getZoomIntoInfo(rowId, fieldName);
 			final DocumentPath zoomIntoDocumentPath = documentZoomIntoService.getDocumentPath(zoomIntoInfo);
