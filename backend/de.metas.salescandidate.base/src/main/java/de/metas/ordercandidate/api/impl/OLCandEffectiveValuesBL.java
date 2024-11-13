@@ -75,7 +75,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	{
 		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
 
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override(), tz),
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised(), tz),
 				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered(), tz),
@@ -136,6 +136,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
 		final ProductId productId = getM_Product_Effective_ID(olCand);
@@ -147,6 +148,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public UomId getEffectiveUomId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		return olCandRecord.isManualPrice()
@@ -172,7 +174,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		}
 
 		// only if we have nothing else to work with, we go with our internal stock-UOM
-		return productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return productBL.getStockUOMId(getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@NonNull
@@ -183,7 +185,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
 
-		return Quantitys.of(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return Quantitys.of(result, getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@Override
@@ -267,6 +269,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
@@ -275,6 +278,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerId getBillBPartnerEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return coalesceSuppliers(
@@ -297,6 +301,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getBillContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
