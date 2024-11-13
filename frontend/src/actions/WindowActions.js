@@ -225,16 +225,16 @@ export function initLayoutSuccess(layout, scope) {
 
 // @VisibleForTesting
 export function initDataSuccess({
-  data,
-  docId,
-  includedTabsInfo,
-  saveStatus,
-  scope,
-  standardActions,
-  validStatus,
-  websocket,
-  hasComments,
-}) {
+                                  data,
+                                  docId,
+                                  includedTabsInfo,
+                                  saveStatus,
+                                  scope,
+                                  standardActions,
+                                  validStatus,
+                                  websocket,
+                                  hasComments,
+                                }) {
   return {
     type: INIT_DATA_SUCCESS,
     data,
@@ -332,25 +332,25 @@ export function updateDataFieldProperty(property, item, scope) {
 }
 
 export function openModal({
-  title = '',
-  windowId,
-  modalType,
-  tabId = null,
-  rowId = null,
-  isAdvanced = false,
-  viewId = null,
-  viewDocumentIds = null,
-  dataId = null,
-  triggerField = null,
-  parentViewId = null,
-  parentViewSelectedIds = null,
-  childViewId = null,
-  childViewSelectedIds = null,
-  staticModalType = null,
-  parentWindowId = null,
-  parentDocumentId = null,
-  parentFieldId = null,
-}) {
+                            title = '',
+                            windowId,
+                            modalType,
+                            tabId = null,
+                            rowId = null,
+                            isAdvanced = false,
+                            viewId = null,
+                            viewDocumentIds = null,
+                            dataId = null,
+                            triggerField = null,
+                            parentViewId = null,
+                            parentViewSelectedIds = null,
+                            childViewId = null,
+                            childViewSelectedIds = null,
+                            staticModalType = null,
+                            parentWindowId = null,
+                            parentDocumentId = null,
+                            parentFieldId = null,
+                          }) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
@@ -515,14 +515,14 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  * param {object}
  */
 export function createSearchWindow({
-  windowId: windowType,
-  docId,
-  tabId,
-  rowId,
-  isModal,
-  dispatch,
-  title,
-}) {
+                                     windowId: windowType,
+                                     docId,
+                                     tabId,
+                                     rowId,
+                                     isModal,
+                                     dispatch,
+                                     title,
+                                   }) {
   dispatch(
     createView({
       windowId: windowType,
@@ -545,15 +545,15 @@ export function createSearchWindow({
  * Main method to generate window
  */
 export function createWindow({
-  windowId: windowType,
-  docId,
-  tabId,
-  rowId,
-  isModal,
-  isAdvanced,
-  disconnected,
-  title,
-}) {
+                               windowId: windowType,
+                               docId,
+                               tabId,
+                               rowId,
+                               isModal,
+                               isAdvanced,
+                               disconnected,
+                               title,
+                             }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
   return (dispatch) => {
@@ -632,25 +632,25 @@ export function createWindow({
         dispatch(updateModal(null, docId));
         const { includedTabsInfo } = responseDocuments[0];
         includedTabsInfo &&
-          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
       docId = responseDocuments[elem].id;
       disconnected !== 'inlineTab' &&
-        dispatch(
-          initDataSuccess({
-            data: parseToDisplay(responseDocuments[elem].fieldsByName),
-            docId,
-            saveStatus: data.saveStatus,
-            scope: getScope(isModal),
-            standardActions: data.standardActions,
-            validStatus: data.validStatus,
-            includedTabsInfo: data.includedTabsInfo,
-            websocket: data.websocketEndpoint,
-            hasComments: data.hasComments,
-          })
-        );
+      dispatch(
+        initDataSuccess({
+          data: parseToDisplay(responseDocuments[elem].fieldsByName),
+          docId,
+          saveStatus: data.saveStatus,
+          scope: getScope(isModal),
+          standardActions: data.standardActions,
+          validStatus: data.validStatus,
+          includedTabsInfo: data.includedTabsInfo,
+          websocket: data.websocketEndpoint,
+          hasComments: data.hasComments,
+        })
+      );
 
       if (isModal) {
         if (rowId === 'NEW') {
@@ -897,8 +897,8 @@ export function patch(
 
       // prevent recursion in merge
       data.documents &&
-        data.documents.documents &&
-        delete data.documents.documents;
+      data.documents.documents &&
+      delete data.documents.documents;
 
       await dispatch(
         mapDataToState({
@@ -914,7 +914,7 @@ export function patch(
 
       // update the inlineTabsInfo if such information is present
       includedTabsInfo &&
-        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
+      dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
       if (
         dataItem &&
@@ -968,16 +968,16 @@ export function patch(
 }
 
 const updateDataFromServer = ({
-  entity,
-  windowType,
-  id,
-  tabId,
-  rowId,
-  isAdvanced,
-  viewId,
-  isModal,
-  disconnected,
-}) => {
+                                entity,
+                                windowType,
+                                id,
+                                tabId,
+                                rowId,
+                                isAdvanced,
+                                viewId,
+                                isModal,
+                                disconnected,
+                              }) => {
   return async (dispatch) => {
     const response = await getData({
       entity: entity,
@@ -1004,13 +1004,13 @@ const updateDataFromServer = ({
 };
 
 export function fireUpdateData({
-  windowId,
-  documentId,
-  tabId,
-  rowId,
-  isModal,
-  fetchAdvancedFields,
-}) {
+                                 windowId,
+                                 documentId,
+                                 tabId,
+                                 rowId,
+                                 isModal,
+                                 fetchAdvancedFields,
+                               }) {
   return (dispatch) => {
     getData({
       entity: 'window',
@@ -1070,9 +1070,9 @@ function mapDataToState({ data, isModal, rowId, disconnected }) {
     dataArray.map((item, index) => {
       const parsedItem = item.fieldsByName
         ? {
-            ...item,
-            fieldsByName: parseToDisplay(item.fieldsByName),
-          }
+          ...item,
+          fieldsByName: parseToDisplay(item.fieldsByName),
+        }
         : item;
 
       if (
@@ -1082,7 +1082,7 @@ function mapDataToState({ data, isModal, rowId, disconnected }) {
         // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
         // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
         disconnected !== 'inlineTab' &&
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };
@@ -1093,12 +1093,12 @@ function updateStatus(responseData) {
     const updateDispatch = (item) => {
       if (!item.rowId) {
         item.validStatus &&
-          dispatch(updateDataValidStatus('master', item.validStatus));
+        dispatch(updateDataValidStatus('master', item.validStatus));
         item.saveStatus &&
-          dispatch(updateDataSaveStatus('master', item.saveStatus));
+        dispatch(updateDataSaveStatus('master', item.saveStatus));
         // TODO: We probably don't need this anymore
         item.includedTabsInfo &&
-          dispatch(updateDataIncludedTabsInfo('master', item.includedTabsInfo));
+        dispatch(updateDataIncludedTabsInfo('master', item.includedTabsInfo));
       }
     };
 
@@ -1117,19 +1117,19 @@ function updateStatus(responseData) {
  * in MasterWidget
  */
 export function updatePropertyValue({
-  windowId,
-  docId,
-  property,
-  value,
-  tabId,
-  rowId,
-  isModal,
-  entity,
-  tableId,
-  disconnected,
-  action,
-  ret,
-}) {
+                                      windowId,
+                                      docId,
+                                      property,
+                                      value,
+                                      tabId,
+                                      rowId,
+                                      isModal,
+                                      entity,
+                                      tableId,
+                                      disconnected,
+                                      action,
+                                      ret,
+                                    }) {
   return (dispatch) => {
     if (rowId) {
       const change = {
@@ -1142,7 +1142,7 @@ export function updatePropertyValue({
       // - for the `inlineTab` type we will update the corresponding branch in the store
       if (disconnected === 'inlineTab') {
         action === 'patch' &&
-          dispatch(patchInlineTab({ ret, windowId, tabId, docId, rowId }));
+        dispatch(patchInlineTab({ ret, windowId, tabId, docId, rowId }));
         return false;
       }
 
@@ -1515,11 +1515,11 @@ export function togglePrintingOption(target) {
 }
 
 export function openPrintingOptionsModal({
-  title,
-  windowId,
-  documentId,
-  documentNo,
-}) {
+                                           title,
+                                           windowId,
+                                           documentId,
+                                           documentNo,
+                                         }) {
   return openModal({
     title,
     windowId,
