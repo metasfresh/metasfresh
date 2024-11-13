@@ -25,11 +25,11 @@ import { findViewByViewId, getView } from '../reducers/viewHandler';
  * @param {string} viewProfileId
  */
 export function fetchQuickActions({
-  windowId,
-  viewId,
-  isModal,
-  viewProfileId = null,
-}) {
+                                    windowId,
+                                    viewId,
+                                    isModal,
+                                    viewProfileId = null,
+                                  }) {
   return (dispatch, getState) => {
     let actionPromises = [null];
     const state = getState();
@@ -91,13 +91,13 @@ export function fetchQuickActions({
  * @param {boolean} isModal
  */
 function getQuickActionRequests({
-  windowId,
-  viewId,
-  isParent,
-  includedView,
-  viewProfileId,
-  isModal,
-}) {
+                                  windowId,
+                                  viewId,
+                                  isParent,
+                                  includedView,
+                                  viewProfileId,
+                                  isModal,
+                                }) {
   return (dispatch, getState) => {
     const requestPromises = [];
     const state = getState();
@@ -182,13 +182,13 @@ function getQuickActionRequests({
  * @param {object} parentView
  */
 export function requestQuickActions({
-  windowId,
-  viewId,
-  viewProfileId,
-  selectedIds,
-  childView,
-  parentView,
-}) {
+                                      windowId,
+                                      viewId,
+                                      viewProfileId,
+                                      selectedIds,
+                                      childView,
+                                      parentView,
+                                    }) {
   return (dispatch, getState) => {
     const id = getQuickActionsId({ windowId, viewId });
     const globalState = getState();
