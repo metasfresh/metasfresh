@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.process.SelectionSize;
 import de.metas.util.lang.RepoIdAware;
@@ -8,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -71,7 +73,8 @@ public final class DocumentIdsSelection
 		return documentId != null ? new DocumentIdsSelection(false, ImmutableSet.of(documentId)) : EMPTY;
 	}
 
-	public static DocumentIdsSelection ofStringSet(final Collection<String> stringDocumentIds)
+	@NonNull
+	public static DocumentIdsSelection ofStringSet(@Nullable final Collection<String> stringDocumentIds)
 	{
 		if (stringDocumentIds == null || stringDocumentIds.isEmpty())
 		{
@@ -248,6 +251,28 @@ public final class DocumentIdsSelection
 		return documentIds.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public ImmutableList<DocumentId> toImmutableList()
+	{
+		assertNotAll();
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return ImmutableList.copyOf(documentIds);
+	}
+
+	@NonNull
+	public <T> ImmutableList<T> toImmutableList(@NonNull final Function<DocumentId, T> mapper)
+	{
+		assertNotAll();
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return documentIds.stream().map(mapper).collect(ImmutableList.toImmutableList());
+	}
+
 	public Set<Integer> toIntSet()
 	{
 		return toSet(DocumentId::toInt);
@@ -256,6 +281,14 @@ public final class DocumentIdsSelection
 	public <ID extends RepoIdAware> ImmutableSet<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
 	{
 		return toSet(idMapper.compose(DocumentId::toInt));
+	}
+
+	/**
+	 * Similar to {@link #toIds(Function)} but this returns a list, so it preserves the order
+	 */
+	public <ID extends RepoIdAware> ImmutableList<ID> toIdsList(@NonNull final Function<Integer, ID> idMapper)
+	{
+		return toImmutableList(idMapper.compose(DocumentId::toInt));
 	}
 
 	public Set<String> toJsonSet()

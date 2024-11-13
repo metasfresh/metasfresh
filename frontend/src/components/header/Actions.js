@@ -11,6 +11,7 @@ import {
 import { getSelection, getTableId } from '../../reducers/tables';
 
 import Loader from '../app/Loader';
+import { findViewByViewId } from '../../reducers/viewHandler';
 
 /**
  * @file Class based component.
@@ -66,6 +67,7 @@ class Actions extends Component {
     const {
       windowType,
       viewId,
+      viewOrderBy,
       childViewId,
       childViewSelectedIds,
       entity,
@@ -79,6 +81,7 @@ class Actions extends Component {
         entity,
         type: windowType,
         viewId,
+        viewOrderBy,
         childViewId,
         childViewSelectedIds,
         id: docId,
@@ -358,11 +361,16 @@ Actions.propTypes = {
   plugins: PropTypes.any,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, props) => {
   const { includedView } = state.viewHandler;
   const result = {
     plugins: state.pluginsHandler.files,
   };
+
+  if (props.viewId) {
+    const view = findViewByViewId(state, props.viewId);
+    result.viewOrderBy = view?.orderBy;
+  }
 
   if (includedView && includedView.viewId) {
     const childViewTableId = getTableId({
