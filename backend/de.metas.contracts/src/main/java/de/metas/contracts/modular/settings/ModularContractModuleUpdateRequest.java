@@ -22,7 +22,9 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.Value;
 
@@ -32,7 +34,11 @@ import javax.annotation.Nullable;
 @Builder
 public class ModularContractModuleUpdateRequest
 {
+	@Nullable ModularContractSettingsId modularContractSettingsId;
 	@Nullable ModularContractTypeId modularContractTypeId;
 	@Nullable ProductId productId;
 	@Nullable String moduleName;
+	@Nullable SeqNo seqno;
+	@Nullable InvoicingGroupType invoicingGroupType;
+	@Nullable Boolean processed;
 }

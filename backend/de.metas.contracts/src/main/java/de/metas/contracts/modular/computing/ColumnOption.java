@@ -27,6 +27,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @RequiredArgsConstructor
 @Getter
 public enum ColumnOption
@@ -35,4 +38,9 @@ public enum ColumnOption
 	UserElementNumber2(I_M_InOutLine.COLUMNNAME_UserElementNumber2);
 
 	@NonNull private final String columnName;
+
+	public static boolean equals(@Nullable final ColumnOption columnOption1, @Nullable final ColumnOption columnOption2)
+	{
+		return Objects.equals(columnOption1, columnOption2);
+	}
 }

@@ -24,6 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
@@ -36,8 +37,8 @@ import org.springframework.stereotype.Component;
 @Getter
 class ShippingNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
-	@NonNull
-	private final AVInterimComputingMethod computingMethod;
+	@NonNull private final AVInterimComputingMethod computingMethod;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
 	public ShippingNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,

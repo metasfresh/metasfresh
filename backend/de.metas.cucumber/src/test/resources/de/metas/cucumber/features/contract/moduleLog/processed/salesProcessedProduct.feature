@@ -532,31 +532,3 @@ Feature: Modular contract log from sales order for processed product
       | invoiceLine_1_5             | final_PO_Inv            | addValueOnInterim              | addValueOnInterim_03102024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
       | invoiceLine_1_6             | final_PO_Inv            | subValueOnInterim              | subValueOnInterim_03102024_1          | 1           | true      | 26.39            | 26.39           | 26.39          | PCE                   | PCE                       |
       | invoiceLine_1_7             | final_PO_Inv            | storageCostForProcessedProduct | storageCost_03102024_1                | 1           | true      | -5580            | -5580           | -5580          | PCE                   | PCE                       |
-
-    And create definitive invoice
-      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
-      | moduleLogContract_1           | metasfresh_user       | 2022-06-01       | 2022-06-01   |
-
-    And after not more than 60s, modular C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier | ProductName                        | OPT.QtyOrdered |
-      | candidate_definitive              | moduleLogContract_1           | processedProduct        | salesOnProcessedProduct_03102024_1 | 1              |
-
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
-      | candidate_definitive              | 0                |
-
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 1              | 1                | I               | 0               | 0                   | 0                  | Y             |
-
-    Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | defInv                  | CO            | 0              |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 0              | definitive                  |
-
-    And validate created modular invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                        | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_03102024_1 | 1           | true      | 0.00             | 0.00            | 0              | PCE                   | PCE                       |

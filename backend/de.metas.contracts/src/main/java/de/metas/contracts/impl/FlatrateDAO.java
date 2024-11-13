@@ -74,8 +74,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1183,7 +1185,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
 				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,
 						buildModularContractSettingsQueryFilter(modularFlatrateTermQuery))
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
@@ -1203,6 +1205,19 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (modularFlatrateTermQuery.getDateToGreaterOrEqual() != null)
 		{
 			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, modularFlatrateTermQuery.getDateToGreaterOrEqual());
+		}
+
+		if (modularFlatrateTermQuery.getWarehouseId() != null)
+		{
+			final IQuery<I_M_Warehouse> warehouseQueryBuilder = queryBL.createQueryBuilder(I_M_Warehouse.class)
+					.addEqualsFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, modularFlatrateTermQuery.getWarehouseId())
+					.create();
+
+			final IQuery<I_C_Order> orderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+					.addInSubQueryFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseQueryBuilder)
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQueryBuilder);
 		}
 
 		return queryBuilder.create()
@@ -1341,7 +1356,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false))
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsFinalInvoiced, false))
 				.anyMatch();
 	}
 

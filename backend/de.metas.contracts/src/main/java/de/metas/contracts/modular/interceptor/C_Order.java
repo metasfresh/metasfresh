@@ -79,6 +79,18 @@ public class C_Order
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void beforeComplete(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.setPurchaseModularContractIdsIfExists(orderRecord, true);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_Order.COLUMNNAME_Harvesting_Year_ID, I_C_Order.COLUMNNAME_M_Warehouse_ID })
+	public void afterChange(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.setPurchaseModularContractIdsIfExists(orderRecord, false);
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Order orderRecord)
 	{

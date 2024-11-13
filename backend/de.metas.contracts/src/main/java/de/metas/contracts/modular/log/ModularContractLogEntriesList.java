@@ -2,11 +2,13 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -66,18 +68,23 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 
 	public ModularContractLogEntriesList subsetOf(@NonNull final LogEntryDocumentType documentType)
 	{
+		return subsetOf(ImmutableSet.of(documentType));
+	}
+
+	public ModularContractLogEntriesList subsetOf(@NonNull final Collection<LogEntryDocumentType> documentTypes)
+	{
 		return ModularContractLogEntriesList.ofCollection(
 				list.stream()
-						.filter(log -> documentType.equals(log.getDocumentType()))
+						.filter(log -> documentTypes.contains(log.getDocumentType()))
 						.toList()
 		);
 	}
 
-	public ModularContractLogEntriesList subsetOfExcluding(@NonNull final LogEntryDocumentType documentType)
+	public ModularContractLogEntriesList subsetOfExcluding(@NonNull final Collection<LogEntryDocumentType> documentTypes)
 	{
 		return ModularContractLogEntriesList.ofCollection(
 				list.stream()
-						.filter(log -> !documentType.equals(log.getDocumentType()))
+						.filter(log -> !documentTypes.contains(log.getDocumentType()))
 						.toList()
 		);
 	}
@@ -125,6 +132,21 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public ProductId getSingleProductId()
 	{
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
+	}
+
+	public ModularContractModuleId getSingleModuleId()
+	{
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getModularContractModuleId);
+	}
+
+	@Nullable
+	public LocalDateAndOrgId getSingleTransactionDate()
+	{
+		if(list.isEmpty())
+		{
+			return null;
+		}
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getTransactionDate);
 	}
 
 	@Nullable

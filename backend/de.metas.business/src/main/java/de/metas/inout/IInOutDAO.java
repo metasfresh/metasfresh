@@ -160,4 +160,6 @@ public interface IInOutDAO extends ISingletonService
 	Stream<I_M_InOutLine> stream(@NonNull InOutLineQuery query);
 
 	Stream<I_M_InOut> stream(@NonNull IQueryFilter<I_M_InOut> inOutFilter);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull InOutQuery query);
 }

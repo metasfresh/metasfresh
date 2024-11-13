@@ -1628,6 +1628,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isFinalInvoiceOrFinalCreditMemo(final InvoiceId invoiceId)
+	{
+		return isFinalInvoiceOrFinalCreditMemo(getById(invoiceId));
+	}
+
+	@Override
 	public final boolean isFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);

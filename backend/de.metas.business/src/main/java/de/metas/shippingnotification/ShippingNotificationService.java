@@ -28,10 +28,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
@@ -41,6 +41,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
@@ -58,8 +59,15 @@ import java.util.stream.Stream;
 public class ShippingNotificationService
 {
 	// services
-	private final ShippingNotificationRepository shippingNotificationRepository;
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
+	public static ShippingNotificationService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ShippingNotificationService(ShippingNotificationRepository.newInstanceForJUnitTesting());
+	}
 
 	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
@@ -214,5 +222,10 @@ public class ShippingNotificationService
 		}
 
 		return null;
+	}
+
+	public boolean isProformaShippingNotification(@NonNull final ShippingNotificationId shippingNotificationId)
+	{
+		return docTypeBL.isProformaShippingNotification(getById(shippingNotificationId).getDocTypeId());
 	}
 }

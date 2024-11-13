@@ -185,6 +185,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -2466,7 +2467,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ModularContractLogEntriesList logs = SpringContextHolder.instance.getBean(ModularContractLogDAO.class).getModularContractLogEntries(ModularContractLogQuery
 				.builder()
 				.flatrateTermId(flatrateTermId)
-				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
+				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS)
 				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
@@ -2645,6 +2646,17 @@ public class FlatrateBL implements IFlatrateBL
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
 				.create()
 				.firstIdOnly());
+	}
+
+	@Override
+	public Set<FlatrateTermId> getInterimContractIdsByModularContractId(@NonNull final FlatrateTermId modularFlatrateTermId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull

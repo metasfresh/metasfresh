@@ -79,6 +79,7 @@ public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogH
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+	@Getter private final boolean billable = false;
 
 	public AbstractInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
@@ -155,7 +156,7 @@ public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogH
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.ofBoolean(invoiceRecord.isSOTrx()))
-						.isBillable(false)
+						.isBillable(isBillable())
 						.processed(false)
 						.quantity(qtyEntered)
 						.amount(amount)

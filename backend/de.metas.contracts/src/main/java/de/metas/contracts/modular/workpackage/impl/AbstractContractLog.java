@@ -67,12 +67,12 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 	protected final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
 	protected final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull protected final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 

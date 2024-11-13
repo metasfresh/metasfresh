@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -32,6 +33,7 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.impl.InterimFlatrateTermService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
@@ -89,7 +91,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		if (!settings.isMatching(ComputingMethodType.INTERIM_CONTRACT))
+		if (!settings.contains(ComputingMethodType.INTERIM_CONTRACT))
 		{
 			return;
 		}
@@ -133,6 +135,7 @@ public class C_Flatrate_Term
 						.tableRecordReference(TableRecordReference.of(inoutLine))
 						.modelAction(COMPLETED)
 						.userInChargeId(Env.getLoggedUserId())
+						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
 						.build())
 				);
 	}
