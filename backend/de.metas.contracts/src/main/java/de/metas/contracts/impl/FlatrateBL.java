@@ -185,12 +185,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO;
 import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.disableReadOnlyColumnCheck;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -2646,17 +2645,6 @@ public class FlatrateBL implements IFlatrateBL
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
 				.create()
 				.firstIdOnly());
-	}
-
-	@Override
-	public Set<FlatrateTermId> getInterimContractIdsByModularContractId(@NonNull final FlatrateTermId modularFlatrateTermId)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
-				.create()
-				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull
