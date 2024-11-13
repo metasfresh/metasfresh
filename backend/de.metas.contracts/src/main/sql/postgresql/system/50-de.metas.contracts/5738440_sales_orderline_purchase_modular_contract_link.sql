@@ -41,14 +41,15 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-11-05 13:1
 
 -- Name: Purchase_Modular_Flatrate_Term_ID
 -- 2024-11-05T13:38:37.086Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540694,'C_Flatrate_Term.C_Flatrate_Term_ID IN (SELECT ft.C_Flatrate_Term_ID
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540694, 'C_Flatrate_Term.C_Flatrate_Term_ID IN (SELECT ft.C_Flatrate_Term_ID
  FROM C_Flatrate_Term ft
-     INNER JOIN C_Flatrate_Conditions c ON ft.c_flatrate_conditions_id = c.c_flatrate_conditions_id
-     INNER JOIN ModCntr_Settings mc ON @Harvesting_Year_ID/0@>0
+     INNER JOIN C_Flatrate_Conditions c ON (ft.c_flatrate_conditions_id = c.c_flatrate_conditions_id AND c.isActive = ''Y'')
+     INNER JOIN ModCntr_Settings mc ON (@Harvesting_Year_ID/0@>0
      AND mc.ModCntr_Settings_ID = c.ModCntr_Settings_ID
+     AND mc.isActive = ''Y''
      AND (mc.M_Raw_Product_ID = @M_Product_ID@ OR mc.M_Processed_Product_ID = @M_Product_ID@)
-     AND mc.C_Year_ID = @Harvesting_Year_ID/0@ AND mc.isSOTrx = ''N''
- WHERE ft.type_conditions = ''ModularContract''AND ft.isSOTrx = ''N'' )',TO_TIMESTAMP('2024-11-05 14:38:36.877','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Purchase_Modular_Flatrate_Term_ID','S',TO_TIMESTAMP('2024-11-05 14:38:36.877','YYYY-MM-DD HH24:MI:SS.US'),100)
+     AND mc.C_Year_ID = @Harvesting_Year_ID/0@ AND mc.isSOTrx = ''N'')
+ WHERE ft.type_conditions = ''ModularContract'' AND ft.isSOTrx = ''N'' )',TO_TIMESTAMP('2024-11-05 14:38:36.877','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Purchase_Modular_Flatrate_Term_ID','S',TO_TIMESTAMP('2024-11-05 14:38:36.877','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- Column: C_OrderLine.Purchase_Modular_Flatrate_Term_ID
