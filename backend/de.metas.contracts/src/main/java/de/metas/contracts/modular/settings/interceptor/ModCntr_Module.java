@@ -160,6 +160,8 @@ public class ModCntr_Module
 			throw new AdempiereException(ERROR_MORE_THAN_ONE_SALES_COMPUTING_METHOD_SET);
 		}
 
+		validateProductsUOM(module);
+
 		switch (computingMethodType)
 		{
 			case Receipt, Sales ->
@@ -225,11 +227,9 @@ public class ModCntr_Module
 					throw new AdempiereException(ERROR_INV_GROUP_NOT_FOUND);
 				}
 			}
-			case PurchaseAverageAddedValueOnShippedQuantity, PurchaseStorageCost ->
-			{
-				modularContractSettingsService.upsertDefinitiveModule(module);
-			}
+			case PurchaseAverageAddedValueOnShippedQuantity, PurchaseStorageCost -> modularContractSettingsService.upsertDefinitiveModule(module);
 		}
+		deleteDefinitiveModulesIfNeeded(record);
 	}
 
 	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)
@@ -252,11 +252,11 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID)
-	public void deleteDefinitiveModulesIfNeededAfterChange(@NonNull final I_ModCntr_Module record)
+	private void deleteDefinitiveModulesIfNeeded(@NonNull final I_ModCntr_Module record)
 	{
 		final ModularContractTypeId oldModularContractTypeId = ModularContractTypeId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(record, I_ModCntr_Module.class).getModCntr_Type_ID());
-		if(oldModularContractTypeId == null)
+		final ModularContractTypeId newModularContractTypeId = ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID());
+		if(oldModularContractTypeId == null || ModularContractTypeId.equals(oldModularContractTypeId, newModularContractTypeId))
 		{
 			return;
 		}
@@ -271,10 +271,8 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void validateProductsUOM(@NonNull final I_ModCntr_Module record)
+	private void validateProductsUOM(@NonNull final ModuleConfig module)
 	{
-		final ModuleConfig module = modularContractSettingsRepository.fromRecord(record);
 		final UomId moduleUOMId = productBL.getStockUOMId(module.getProductId());
 		final ModularContractSettings settings = modularContractSettingsService.getById(module.getModularContractSettingsId());
 
