@@ -708,6 +708,14 @@ public class ModularContractSettingsRepository
 				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, deleteRequest.getModularContractSettingsId())
 				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, deleteRequest.getModularContractTypeId())
 				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_ModCntr_Module.COLUMNNAME_Processed, false)
+				.execute();
+
+		queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, deleteRequest.getModularContractSettingsId())
+				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, deleteRequest.getModularContractTypeId())
+				.create()
 				.delete();
 	}
 }
