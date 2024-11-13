@@ -127,7 +127,7 @@ public class DefinitiveInvoiceStorageCostComputingMethod extends AbstractStorage
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 		final Money finalInvoiceAmount = invoiceLineLogs.getAmountSum()
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
-		final Money amountDiff = finalInvoiceAmount.subtract(storageCostTotalAmount);
+		final Money amountDiff = storageCostTotalAmount.subtract(finalInvoiceAmount);
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		final ProductPrice priceWithStockUOM = ProductPrice.builder()
