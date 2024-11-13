@@ -7,29 +7,33 @@ import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
+  CLOSE_FILTER_BOX,
   CLOSE_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
-  CLOSE_FILTER_BOX,
-  DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  INIT_WINDOW,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  INIT_WINDOW,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
+  RESET_PRINTING_OPTIONS,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -40,52 +44,49 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-  SET_PRINTING_OPTIONS,
-  RESET_PRINTING_OPTIONS,
-  TOGGLE_PRINTING_OPTION,
-  SET_SPINNER,
 } from '../constants/ActionTypes';
-import { createView } from './ViewActions';
+import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
+  formatParentUrl,
   getData,
-  patchRequest,
   getLayout,
   getProcessData,
-  getTabRequest,
-  startProcess,
-  formatParentUrl,
   getTabLayoutRequest,
+  getTabRequest,
+  patchRequest,
+  startProcess,
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
 import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
+  deleteNotification,
   setNotificationProgress,
   setProcessPending,
   setProcessSaved,
-  deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
-  updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
+  updateCommentsPanelTextInput,
 } from './CommentsPanelActions';
 import {
   createTabTable,
-  updateTabTable,
-  updateTableSelection,
   updateTableRowProperty,
+  updateTableSelection,
+  updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
-import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
+import {
+  STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+} from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -1249,6 +1250,7 @@ export function createProcess({
   tabId,
   documentType,
   viewId,
+  viewOrderBy,
   selectedTab,
   childViewId,
   childViewSelectedIds,
@@ -1277,6 +1279,7 @@ export function createProcess({
         tabId,
         documentType,
         viewId,
+        viewOrderBy,
         selectedTab,
         childViewId,
         childViewSelectedIds,

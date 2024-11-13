@@ -217,6 +217,7 @@ export async function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
+  viewOrderBy,
   selectedIds,
   childView,
   parentView,
@@ -225,6 +226,7 @@ export async function quickActionsRequest({
   if (childView && childView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
@@ -232,6 +234,7 @@ export async function quickActionsRequest({
   } else if (parentView && parentView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
@@ -239,6 +242,7 @@ export async function quickActionsRequest({
   } else {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
     };
   }

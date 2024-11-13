@@ -6,7 +6,9 @@ import classnames from 'classnames';
 
 import { startProcess } from '../../api';
 import { openFile, processNewRecord } from '../../actions/GenericActions';
-import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
+import {
+  updateCommentsPanelOpenFlag
+} from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,
@@ -219,6 +221,7 @@ class Modal extends Component {
       parentSelection,
       isAdvanced,
       viewId,
+      viewOrderBy,
       modalViewDocumentIds,
       activeTabId,
       childViewId,
@@ -289,6 +292,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
+            viewOrderBy,
             documentType,
             ids: viewId
               ? modalViewDocumentIds
@@ -930,6 +934,7 @@ const mapStateToProps = (state, props) => {
     indicator: state.windowHandler.indicator,
     parentViewId,
     parentId,
+    viewOrderBy: parentView?.orderBy,
     printingOptions: state.windowHandler.printingOptions,
   };
 };

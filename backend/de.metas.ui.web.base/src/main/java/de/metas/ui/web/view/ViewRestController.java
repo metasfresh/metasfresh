@@ -42,6 +42,7 @@ import de.metas.ui.web.view.json.JSONGetViewActionsRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewHeaderProperties;
 import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
@@ -54,6 +55,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -79,6 +81,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -405,7 +408,8 @@ public class ViewRestController
 	private ViewAsPreconditionsContext createPreconditionsContext(
 			@NonNull final String windowId,
 			@NonNull final String viewIdString,
-			final String viewProfileIdStr,
+			@Nullable final String viewProfileIdStr,
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
 			final Set<String> selectedIds,
 			final String parentViewId,
 			final Set<String> parentViewSelectedIds,
@@ -423,6 +427,7 @@ public class ViewRestController
 		return ViewAsPreconditionsContext.builder()
 				.view(view)
 				.viewProfileId(ViewProfileId.fromJson(viewProfileIdStr))
+				.viewOrderBys(viewOrderBys)
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -441,6 +446,7 @@ public class ViewRestController
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())
@@ -467,6 +473,7 @@ public class ViewRestController
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
 				.viewProfileIdStr(request.getViewProfileId())
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())

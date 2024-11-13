@@ -38,6 +38,7 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
@@ -499,7 +500,19 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
+	{
+		return streamByIds(rowIds, null, QueryLimit.ONE_THOUSAND);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds, null, suggestedLimit);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @Nullable final DocumentQueryOrderByList orderBys, @NonNull final QueryLimit suggestedLimit)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -511,7 +524,7 @@ public final class DefaultView implements IEditableView
 			checkChangedRows();
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
+			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getOrderedSelection(orderBys);
 
 			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)

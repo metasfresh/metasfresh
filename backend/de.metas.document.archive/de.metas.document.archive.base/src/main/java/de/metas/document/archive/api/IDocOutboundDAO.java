@@ -22,20 +22,20 @@ package de.metas.document.archive.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.process.PInstanceId;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
@@ -59,6 +59,8 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
 
+	Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull List<DocOutboundLogId> ids);
+	
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
 	 *

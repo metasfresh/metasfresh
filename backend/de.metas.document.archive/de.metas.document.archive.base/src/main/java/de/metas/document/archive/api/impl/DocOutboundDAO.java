@@ -22,13 +22,15 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -40,25 +42,25 @@ import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
 
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
@@ -90,6 +92,26 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		return coalesce(config, configSys);
 	}
 
+	@Override
+	public Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull final List<DocOutboundLogId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID, ids)
+				.create()
+				.stream()
+				.sorted(FixedOrderByKeyComparator.notMatchedAtTheEnd(ids, DocOutboundDAO::extractId));
+	}
+
+	private static DocOutboundLogId extractId(final I_C_Doc_Outbound_Log record)
+	{
+		return DocOutboundLogId.ofRepoId(record.getC_Doc_Outbound_Log_ID());
+	}
+	
 	private void throwExceptionIfNotNull(
 			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
 			final int tableId,

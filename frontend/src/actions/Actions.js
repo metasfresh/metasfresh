@@ -1,18 +1,18 @@
 import { quickActionsRequest, topActionsRequest } from '../api';
 import {
   DELETE_QUICK_ACTIONS,
-  TOP_ACTIONS_DELETE,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
   FETCH_QUICK_ACTIONS_SUCCESS,
-  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_DELETE,
   TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
   TOP_ACTIONS_SUCCESS,
 } from '../constants/ActionTypes';
 
-import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
+import { getQuickActions, getQuickActionsId } from '../reducers/actionsHandler';
 import { getTable, getTableId } from '../reducers/tables';
-import { getView } from '../reducers/viewHandler';
+import { findViewByViewId, getView } from '../reducers/viewHandler';
 
 /*
  * @method fetchQuickActions
@@ -191,7 +191,8 @@ export function requestQuickActions({
 }) {
   return (dispatch, getState) => {
     const id = getQuickActionsId({ windowId, viewId });
-    const quickActions = getQuickActions(getState(), id);
+    const globalState = getState();
+    const quickActions = getQuickActions(globalState, id);
 
     // don't fetch quick actions if there's already a pending request
     if (!quickActions.pending) {
@@ -200,10 +201,14 @@ export function requestQuickActions({
         payload: { id },
       });
 
+      const view = findViewByViewId(globalState, viewId);
+      const viewOrderBy = view?.orderBy;
+
       return quickActionsRequest({
         windowId,
         viewId,
         viewProfileId,
+        viewOrderBy,
         selectedIds,
         childView,
         parentView,
