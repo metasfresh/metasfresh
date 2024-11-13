@@ -109,7 +109,7 @@ public class MassConcatenateOutboundPdfs extends ViewBasedProcessTemplate implem
 		else if (selectedRowIds.isAll())
 		{
 			final Stream<? extends IViewRow> rowIdsStream = getView().streamByIds(selectedRowIds, getViewOrderBys(), QueryLimit.NO_LIMIT);
-			return StreamUtils.dice(rowIdsStream, CHUNK_SIZE)
+			return StreamUtils.dice(rowIdsStream, CHUNK_SIZE) // take CHUNK_SIZE Ids at one time and load their archives
 					.flatMap(this::streamArchivesForRows);
 		}
 		else

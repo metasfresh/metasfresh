@@ -577,7 +577,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @Nullable DocumentQueryOrderByList orderBys, @NonNull final QueryLimit suggestedLimit)
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @Nullable final DocumentQueryOrderByList orderBys, @NonNull final QueryLimit suggestedLimit)
 	{
 		if (rowIds.isEmpty())
 		{
