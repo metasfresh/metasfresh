@@ -217,6 +217,16 @@ public interface IView
 		return retrieveModelsByIds(rowIds, modelClass).stream();
 	}
 
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
