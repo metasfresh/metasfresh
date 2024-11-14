@@ -22,6 +22,8 @@ package org.eevolution.model.validator;
  * #L%
  */
 
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.lowlevel.DeleteOrdersQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -52,10 +54,14 @@ public class PP_Order_BOMLine
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
 
 	private final DDOrderCandidateRepository ddOrderCandidateRepository;
+	private final DDOrderLowLevelService ddOrderLowLevelService;
 
-	public PP_Order_BOMLine(@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository)
+	public PP_Order_BOMLine(
+			@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository,
+			@NonNull final DDOrderLowLevelService ddOrderLowLevelService)
 	{
 		this.ddOrderCandidateRepository = ddOrderCandidateRepository;
+		this.ddOrderLowLevelService = ddOrderLowLevelService;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order_BOMLine());
 	}
 
@@ -132,8 +138,13 @@ public class PP_Order_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
 	{
+		final PPOrderBOMLineId bomLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
+		ddOrderLowLevelService.deleteOrders(DeleteOrdersQuery.builder()
+													.ppOrderBOMLineId(bomLineId)
+													.build());
 		ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
-												  .ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
+												  .ppOrderBOMLineId(bomLineId)
+												  .deleteEvenIfProceed(true)
 												  .build());
 	}
 }

@@ -104,6 +104,7 @@ public class DDOrderCandidateAdvisedHandler
 						.demandWarehouseId(event.getSourceWarehouseId())
 						.demandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()))
 						.productId(event.getProductId())
+						.date(event.getSupplyRequiredDescriptorNotNull().getDemandDate())
 						.build()
 		);
 	}
