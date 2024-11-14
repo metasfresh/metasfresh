@@ -84,6 +84,7 @@ public class DocBaseAndSubType
 	public boolean isInternalVendorInvoice() { return docBaseType.isPurchaseInvoice() && docSubType.isInternalVendorInvoice(); }
 	public boolean isDeliveryInstruction() { return docBaseType.isShipperTransportation() && docSubType.isDeliveryInstruction(); }
 	public boolean isCallOrder() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isCallOrder(); }
+	public boolean isFrameAgreement() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isFrameAgreement(); }
 	public boolean isMediated() { return ( docBaseType.isPurchaseOrder() ) && docSubType.isMediated(); }
 	public boolean isRequisition() { return ( docBaseType.isPurchaseOrder() ) && docSubType.isRequisition(); }
 
