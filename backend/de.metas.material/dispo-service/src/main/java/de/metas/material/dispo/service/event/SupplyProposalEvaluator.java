@@ -5,6 +5,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -15,6 +16,8 @@ import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -67,6 +70,7 @@ public class SupplyProposalEvaluator
 				.type(CandidateType.DEMAND)
 				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .atTime(DateAndSeqNo.atTimeNoSeqNo(proposal.getDate()))
 												 .productId(proposal.getProductId())
 												 .warehouseId(proposal.getSupplyWarehouseId())
 												 .build())
@@ -82,6 +86,7 @@ public class SupplyProposalEvaluator
 				.type(CandidateType.SUPPLY)
 				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .atTime(DateAndSeqNo.atTimeNoSeqNo(proposal.getDate()))
 												 .productId(proposal.getProductId())
 												 .warehouseId(proposal.getDemandWarehouseId())
 												 .build())
@@ -122,5 +127,8 @@ public class SupplyProposalEvaluator
 		WarehouseId demandWarehouseId;
 
 		int productId;
+
+		@NonNull
+		Instant date;
 	}
 }
