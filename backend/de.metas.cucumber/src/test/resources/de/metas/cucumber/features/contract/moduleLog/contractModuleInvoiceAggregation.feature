@@ -59,8 +59,8 @@ Feature: Invoice candidate aggregation with harvesting details rule
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | so_1       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
-      | so_2       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_1       | true    | bp_harvestingSO          | 2023-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_2       | true    | bp_harvestingSO          | 2023-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | soLine_1   | so_1                  | harvestingProd          | 4          |
@@ -138,8 +138,8 @@ Feature: Invoice candidate aggregation with harvesting details rule
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | so_1       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
-      | so_2       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2022                         | warehouseStd                  |
+      | so_1       | true    | bp_harvestingSO          | 2023-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_2       | true    | bp_harvestingSO          | 2022-07-03  | harvesting_calendar                     | year_2022                         | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | soLine_1   | so_1                  | harvestingProd          | 3          |
@@ -219,8 +219,8 @@ Feature: Invoice candidate aggregation with harvesting details rule
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | so_1       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
-      | so_2       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_1       | true    | bp_harvestingSO          | 2023-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_2       | true    | bp_harvestingSO          | 2022-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | soLine_1   | so_1                  | harvestingProd          | 4          |
@@ -297,8 +297,8 @@ Feature: Invoice candidate aggregation with harvesting details rule
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | so_1       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
-      | so_2       | true    | bp_harvestingSO          | 2022-03-03  | harvesting_calendar                     | year_2022                         | warehouseStd                  |
+      | so_1       | true    | bp_harvestingSO          | 2023-07-03  | harvesting_calendar                     | year_2023                         | warehouseStd                  |
+      | so_2       | true    | bp_harvestingSO          | 2022-07-03  | harvesting_calendar                     | year_2022                         | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | soLine_1   | so_1                  | harvestingProd          | 4          |
