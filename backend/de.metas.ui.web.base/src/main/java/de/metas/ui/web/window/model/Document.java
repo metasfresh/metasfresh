@@ -1007,8 +1007,7 @@ public final class Document
 
 	private IDocumentField getFieldOrNull(final String fieldName)
 	{
-		final IDocumentField documentField = fieldsByName.get(fieldName);
-		return documentField;
+		return fieldsByName.get(fieldName);
 	}
 
 	public IDocumentFieldView getFieldViewOrNull(final String fieldName)
@@ -2160,6 +2159,11 @@ public final class Document
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);
+	}
+	
+	public boolean containsField(@NonNull final String fieldName)
+	{
+		return fieldsByName.containsKey(fieldName);
 	}
 
 	@NonNull

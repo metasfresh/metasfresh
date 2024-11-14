@@ -72,7 +72,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		//
 		// Location
 		final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
-		if (locationFieldName != null)
+		if (locationFieldName != null && document.containsField(locationFieldName))
 		{
 			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(
 					bpartnerId,
@@ -86,7 +86,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		//
 		// Contact
 		final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
-		if (bpContactIdFieldName != null)
+		if (bpContactIdFieldName != null && document.containsField(bpContactIdFieldName))
 		{
 			final BPartnerContactId bpContactId = BPartnerContactId.ofRepoIdOrNull(
 					bpartnerId,
