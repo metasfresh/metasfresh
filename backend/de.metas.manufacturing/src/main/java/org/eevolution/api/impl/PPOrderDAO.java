@@ -179,6 +179,11 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PlanningStatus, query.getOnlyPlanningStatuses());
 		}
 
+		if(query.getModularFlatrateTermId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_Modular_Flatrate_Term_ID, query.getModularFlatrateTermId());
+		}
+
 		//
 		// Order BYs
 		query.getSortingOptions()

@@ -22,9 +22,11 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
+import de.metas.contracts.modular.log.LogsRecomputationService;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -51,18 +53,26 @@ public class C_Invoice
 
 	@NonNull private final ModularContractService contractService;
 	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
+	@NonNull private final LogsRecomputationService logsRecomputationService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		invokeHandlerForEachLine(invoiceRecord, COMPLETED);
+		contractService.updateIsFinalInvoiced(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()), true);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
 	public void afterReverse(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		invokeHandlerForEachLine(invoiceRecord, REVERSED);
 		contractService.afterInvoiceReverse(invoiceRecord, logHandlerRegistry);
+		invokeHandlerForEachLine(invoiceRecord, REVERSED);
+
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) && !invoiceRecord.isSOTrx())
+		{
+			final FlatrateTermId flatrateTermId = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+			logsRecomputationService.recomputeAllFinalInvoiceRelatedLogsLinkedTo(flatrateTermId);
+		}
 	}
 
 	private void invokeHandlerForEachLine(

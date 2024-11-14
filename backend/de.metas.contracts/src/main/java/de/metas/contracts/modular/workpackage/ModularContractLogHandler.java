@@ -73,8 +73,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
-
 @Service
 @RequiredArgsConstructor
 class ModularContractLogHandler
@@ -189,7 +187,15 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		modularLogService.throwErrorIfProcessedLogsExistForRecord(request.getHandleLogsRequest().getTableRecordReference(), MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+		if(modularLogService.hasAnyProcessedLogs(request.getRecordRef(), request.getModularContractModuleId()))
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Method: {} | No logs recreated for contractId: {} & request: {}! reason: processed logs found!"
+							, "recreateLogs",
+							request.getContractId(),
+							request);
+			return;
+		}
 
 		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
 

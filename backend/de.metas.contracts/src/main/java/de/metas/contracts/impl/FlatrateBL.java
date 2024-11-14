@@ -187,9 +187,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO;
 import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.disableReadOnlyColumnCheck;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -2466,7 +2466,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ModularContractLogEntriesList logs = SpringContextHolder.instance.getBean(ModularContractLogDAO.class).getModularContractLogEntries(ModularContractLogQuery
 				.builder()
 				.flatrateTermId(flatrateTermId)
-				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
+				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS)
 				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)

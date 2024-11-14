@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -246498512L;
+	private static final long serialVersionUID = 1958962592L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -881,6 +881,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isClosingWithCorrectionSum() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosingWithCorrectionSum);
+	}
+
+	@Override
+	public void setIsFinalInvoiced (final boolean IsFinalInvoiced)
+	{
+		set_Value (COLUMNNAME_IsFinalInvoiced, IsFinalInvoiced);
+	}
+
+	@Override
+	public boolean isFinalInvoiced() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFinalInvoiced);
 	}
 
 	@Override

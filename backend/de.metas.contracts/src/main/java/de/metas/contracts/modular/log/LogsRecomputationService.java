@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
@@ -29,14 +30,20 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutQuery;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineQuery;
+import de.metas.shippingnotification.ShippingNotificationLine;
+import de.metas.shippingnotification.ShippingNotificationQuery;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StreamUtils;
 import lombok.NonNull;
@@ -46,12 +53,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -61,6 +70,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +91,86 @@ public class LogsRecomputationService
 	private final ModularContractService modularContractService;
 	@NonNull
 	private final ModularContractLogDAO modularContractLogDAO;
+
+	public void recomputeAllFinalInvoiceRelatedLogsLinkedTo(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.getById(flatrateTermId);
+
+		final OrderId flatrateTermOrderId = OrderId.ofRepoId(flatrateTerm.getC_Order_Term_ID());
+		inOutDAO.retrieveByQuery(InOutQuery.builder()
+										 .orderId(flatrateTermOrderId)
+										 .build())
+						.forEach(this::recomputeForInOut);
+
+		if(flatrateTerm.isSOTrx())
+		{
+			shippingNotificationService.getByQuery(ShippingNotificationQuery.builder()
+														   .orderId(flatrateTermOrderId)
+														   .build())
+					.forEach(shippingNotification -> recomputeForShippingNotificationLines(shippingNotification.getLines()));
+		}
+		else
+		{
+			final Set<OrderId> salesOrderIds = orderDAO.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractId(flatrateTermId).build())
+					.map(I_C_OrderLine::getC_Order_ID)
+					.map(OrderId::ofRepoId)
+					.collect(Collectors.toSet());
+
+			inOutDAO.retrieveByQuery(InOutQuery.builder()
+											 .orderIds(salesOrderIds)
+											 .build())
+					.forEach(this::recomputeForInOut);
+
+			shippingNotificationService.getByQuery(ShippingNotificationQuery.builder()
+														   .orderIds(salesOrderIds)
+														   .build())
+					.forEach(shippingNotification -> recomputeForShippingNotificationLines(shippingNotification.getLines()));
+
+			ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+														 .modularFlatrateTermId(flatrateTermId)
+														 .build())
+					.map(I_PP_Order::getPP_Order_ID)
+					.map(PPOrderId::ofRepoId)
+					.forEach(this::recomputeForPPOrder);
+		}
+	}
+
+	private void recomputeForShippingNotificationLines(@NonNull final List<ShippingNotificationLine> shippingNotificationLinesList)
+	{
+		shippingNotificationLinesList.forEach(line -> modularContractService.scheduleLogCreation(
+				DocStatusChangedEvent.builder()
+						.tableRecordReference(TableRecordReference.of(I_M_Shipping_NotificationLine.Table_Name,
+																	  Check.assumeNotNull(line.getId(), "ShippingNotificationLineId shouldn't be null")))
+						.modelAction(ModelAction.RECREATE_LOGS)
+						.userInChargeId(Env.getLoggedUserId())
+						.build())
+		);
+	}
+
+	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	{
+		inOutDAO.retrieveAllLines(inOut)
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
+	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		ppCostCollectorDAO.getByOrderId(ppOrderId)
+				.forEach(ppCostCollector -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(ppCostCollector))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
 
 	public void recomputeLogs(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
 	{
@@ -116,7 +206,7 @@ public class LogsRecomputationService
 	public void recomputeForInOut(@NonNull final IQueryFilter<I_M_InOut> filter)
 	{
 		inOutDAO.stream(filter)
-				.forEach(this::recomputeForInOut);
+				.forEach(this::recomputeForInOutInNewTrx);
 	}
 
 	public void recomputeForOrder(@NonNull final IQueryFilter<I_C_Order> filter)
@@ -151,7 +241,7 @@ public class LogsRecomputationService
 		ppOrderDAO.stream(filter)
 				.map(I_PP_Order::getPP_Order_ID)
 				.map(PPOrderId::ofRepoId)
-				.forEach(this::recomputeForPPOrder);
+				.forEach(this::recomputeForPPOrderInNewTrx);
 	}
 
 	public void recomputeForShippingNotification(@NonNull final IQueryFilter<I_M_Shipping_Notification> filter)
@@ -180,7 +270,7 @@ public class LogsRecomputationService
 		);
 	}
 
-	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	private void recomputeForInOutInNewTrx(@NonNull final I_M_InOut inOut)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
@@ -258,7 +348,7 @@ public class LogsRecomputationService
 				);
 	}
 
-	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	private void recomputeForPPOrderInNewTrx(@NonNull final PPOrderId ppOrderId)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
@@ -280,7 +370,7 @@ public class LogsRecomputationService
 
 		switch (recordRef.getTableName())
 		{
-			case I_PP_Order.Table_Name -> recomputeForPPOrder(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
+			case I_PP_Order.Table_Name -> recomputeForPPOrderInNewTrx(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
 			default -> trxManager.runInNewTrx(() -> modularContractService
 					.scheduleLogCreation(
 							DocStatusChangedEvent.builder()

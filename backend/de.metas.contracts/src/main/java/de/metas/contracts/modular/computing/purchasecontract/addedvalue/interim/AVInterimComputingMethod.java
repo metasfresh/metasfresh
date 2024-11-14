@@ -63,9 +63,9 @@ import java.util.Optional;
 public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 {
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final MoneyService moneyService;

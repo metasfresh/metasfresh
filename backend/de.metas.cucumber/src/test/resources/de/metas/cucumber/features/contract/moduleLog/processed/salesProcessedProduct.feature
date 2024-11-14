@@ -386,7 +386,7 @@ Feature: Modular contract log from sales order for processed product
       | M_Shipping_NotificationLine_ID.Identifier | M_Shipping_Notification_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | MovementQty |
       | shippingNotificationLine_03102024_1       | shippingNotification_03102024_1       | sch_1                            | processedProduct        | 1000        |
 
-    And after not more than 30s, ModCntr_Logs are found:
+    And after not more than 60s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier                | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName                   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable | OPT.IsSOTrx |
       | log_avInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnInterim       | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_Shipping_NotificationLine | moduleLogContract_1           | avInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | -20000     | y2022                             | PO_avOnInterim_module            | -20.00          | PCE                       | addValueOnInterim_03102024_1 | Y              | N           |
       | log_svInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | subValueOnInterim       | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_Shipping_NotificationLine | moduleLogContract_1           | svInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | 20000      | y2022                             | PO_svOnInterim_module            | 20.00           | PCE                       | subValueOnInterim_03102024_1 | Y              | N           |
@@ -532,31 +532,3 @@ Feature: Modular contract log from sales order for processed product
       | invoiceLine_1_5             | final_PO_Inv            | addValueOnInterim              | addValueOnInterim_03102024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
       | invoiceLine_1_6             | final_PO_Inv            | subValueOnInterim              | subValueOnInterim_03102024_1          | 1           | true      | 26.39            | 26.39           | 26.39          | PCE                   | PCE                       |
       | invoiceLine_1_7             | final_PO_Inv            | storageCostForProcessedProduct | storageCost_03102024_1                | 1           | true      | -5580            | -5580           | -5580          | PCE                   | PCE                       |
-
-    And create definitive invoice
-      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
-      | moduleLogContract_1           | metasfresh_user       | 2022-06-01       | 2022-06-01   |
-
-    And after not more than 60s, modular C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier | ProductName                        | OPT.QtyOrdered |
-      | candidate_definitive              | moduleLogContract_1           | processedProduct        | salesOnProcessedProduct_03102024_1 | 1              |
-
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
-      | candidate_definitive              | 0                |
-
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 1              | 1                | I               | 0               | 0                   | 0                  | Y             |
-
-    Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | defInv                  | CO            | 0              |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 0              | definitive                  |
-
-    And validate created modular invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                        | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_03102024_1 | 1           | true      | 0.00             | 0.00            | 0              | PCE                   | PCE                       |

@@ -25,7 +25,6 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
@@ -79,7 +78,6 @@ public class PurchaseModularContractLog extends AbstractContractLog
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 

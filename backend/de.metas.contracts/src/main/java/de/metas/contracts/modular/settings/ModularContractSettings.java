@@ -137,7 +137,7 @@ public class ModularContractSettings
 				.toList();
 	}
 
-	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	public boolean contains(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
 	}

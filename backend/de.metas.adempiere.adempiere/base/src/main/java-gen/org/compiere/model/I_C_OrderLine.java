@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -2312,6 +2313,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_ProfitPriceActual = new ModelColumn<>(I_C_OrderLine.class, "ProfitPriceActual", null);
 	String COLUMNNAME_ProfitPriceActual = "ProfitPriceActual";
+
+	/**
+	 * Set Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchase_Modular_Flatrate_Term_ID (int Purchase_Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchase_Modular_Flatrate_Term_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Purchase_Modular_Flatrate_Term_ID = new ModelColumn<>(I_C_OrderLine.class, "Purchase_Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Purchase_Modular_Flatrate_Term_ID = "Purchase_Modular_Flatrate_Term_ID";
 
 	/**
 	 * Set Shipped Qty.

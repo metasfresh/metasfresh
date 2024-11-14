@@ -213,6 +213,12 @@ public class ModularContractLogEntry
 		this.userElementNumber2 = userElementNumber2;
 	}
 
+	@Nullable
+	public UomId getPriceActualUOMId()
+	{
+		return priceActual != null ? priceActual.getUomId() : null;
+	}
+
 	@NonNull
 	public Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{

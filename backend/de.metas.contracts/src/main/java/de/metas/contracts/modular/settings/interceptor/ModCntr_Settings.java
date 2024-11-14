@@ -25,9 +25,9 @@ package de.metas.contracts.modular.settings.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
@@ -67,7 +67,7 @@ public class ModCntr_Settings
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	@NonNull private final ModularContractSettingsService modularContractSettingsService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE }, ignoreColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_IsActive })
 	public void validateSettings(@NonNull final I_ModCntr_Settings record)
 	{
 		modularContractSettingsService.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
@@ -104,7 +104,7 @@ public class ModCntr_Settings
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
-		modularContractSettingsService.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
+		modularContractSettingsService.upsertDefinitiveInvoiceSalesModule(modularContractSettingsId, rawProductId, processedProductId);
 
 	}
 

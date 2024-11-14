@@ -24,24 +24,18 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractInvoiceLineLog;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.lang.SOTrx;
+import de.metas.contracts.modular.workpackage.impl.AbstractFinalInvoiceLineLog;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
+public class FinalInvoiceLineLog extends AbstractFinalInvoiceLineLog
 {
 	@NonNull private final InformativeLogComputingMethod computingMethod;
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_INVOICE;
 
 	public FinalInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
@@ -52,20 +46,5 @@ public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
 	{
 		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
-	}
-
-	@Override
-	public boolean applies(final @NonNull CreateLogRequest request)
-	{
-		final TableRecordReference recordRef = request.getRecordRef();
-		if (!recordRef.tableNameEqualsTo(getSupportedTableName()))
-		{
-			return false;
-		}
-
-		final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
-		final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
-
-		return soTrx.isPurchase() && invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord);
 	}
 }
