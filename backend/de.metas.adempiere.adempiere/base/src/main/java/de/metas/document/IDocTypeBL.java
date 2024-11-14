@@ -70,6 +70,8 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isCallOrder(DocTypeId docTypeId);
 
+	boolean isFrameAgreement(@NonNull DocTypeId docTypeId);
+
 	boolean isInternalVendorInvoice(DocTypeId docTypeId);
 
 	boolean isProformaSO(DocTypeId docTypeId);

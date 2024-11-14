@@ -164,6 +164,12 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isFrameAgreement(@NonNull final DocTypeId docTypeId)
+	{
+		return getDocBaseAndSubType(docTypeId).isFrameAgreement();
+	}
+
+	@Override
 	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
 	{
 		return getDocBaseAndSubType(docTypeId).isInternalVendorInvoice();

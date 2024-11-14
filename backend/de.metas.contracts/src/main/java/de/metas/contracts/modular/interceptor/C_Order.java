@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -35,6 +36,7 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,6 +76,8 @@ public class C_Order
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractService contractService;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
@@ -214,5 +218,20 @@ public class C_Order
 
 		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO)
 				.markAsUserValidationError();
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, I_C_Order.COLUMNNAME_DateOrdered })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, I_C_Order.COLUMNNAME_DateOrdered })
+	public void setHarvestingYearIfNeeded(@NonNull final I_C_Order orderRecord)
+	{
+		final YearId harvestingYearId = orderBL.getSuitableHarvestingYearId(orderRecord);
+
+		final YearId existingHarvestingYearId = YearId.ofRepoIdOrNull(orderRecord.getHarvesting_Year_ID());
+
+		if(!YearId.equals(existingHarvestingYearId,harvestingYearId))
+		{
+			orderRecord.setHarvesting_Year_ID(YearId.toRepoId(harvestingYearId));
+		}
 	}
 }
