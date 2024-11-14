@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.calendar.standard.YearId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocSubType;
@@ -274,6 +275,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isCallOrder(@NonNull I_C_Order order);
 
+	boolean isFrameAgreement(@NonNull I_C_Order order);
+
 	boolean isMediated(@NonNull I_C_Order order);
 
 	boolean isPrepay(OrderId orderId);
@@ -391,4 +394,6 @@ public interface IOrderBL extends ISingletonService
 	ShippingNotificationFromOrderProducer newShippingNotificationProducer();
 
 	InOutFromOrderProducer newInOutFromOrderProducer();
+
+	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
 }
