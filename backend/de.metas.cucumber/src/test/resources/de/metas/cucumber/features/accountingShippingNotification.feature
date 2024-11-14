@@ -60,7 +60,7 @@ Feature: accounting for shipping notification
       | pp_2       | plv_2                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | o_1        | N       | bpartner_1               | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |
+      | o_1        | N       | bpartner_1               | 2023-07-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 20         |
@@ -122,7 +122,7 @@ Feature: accounting for shipping notification
   reverse shipment -> validate fact accounts
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.DeliveryRule |
-      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
+      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2023-07-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -132,7 +132,7 @@ Feature: accounting for shipping notification
       | s_ol_1     | ol_1                      | N             |
     And generate M_Shipping_Notification:
       | C_Order_ID.Identifier | PhysicalClearanceDate |
-      | o_1                   | 2021-04-20            |
+      | o_1                   | 2023-07-20            |
     And after not more than 30s, M_Shipping_Notifications are found
       | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
       | shippingNotification_21092023         | o_1                   | CO        | bpartner_1                   | bpLocationDefault                     | bpContactDefault          | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
@@ -141,10 +141,10 @@ Feature: accounting for shipping notification
       | shippingNotificationLine_21092023_1       | shippingNotification_21092023         | s_ol_1                           | p_1                     | 10          |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-20                |
+      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2023-07-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_1                           | 10           | 0            | 10         | false     | 2023-07-20                |
 
     And after not more than 30s, the shippingNotification document with identifier shippingNotification_21092023 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR  | CR  | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
@@ -153,7 +153,7 @@ Feature: accounting for shipping notification
 
     And generate M_Shipping_Notification:
       | C_Order_ID.Identifier | PhysicalClearanceDate |
-      | o_1                   | 2021-04-19            |
+      | o_1                   | 2023-07-19            |
     And after not more than 30s, M_Shipping_Notifications are found
       | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
       | shippingNotification_21092023_2       | o_1                   | CO        | bpartner_1                   | bpLocationDefault                     | bpContactDefault          | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
@@ -209,7 +209,7 @@ Feature: accounting for shipping notification
   Scenario: generate shipping notification for sales order having fact accounts generated for it, but when order is voided, then notification is reversed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.DeliveryRule |
-      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
+      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2023-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -219,7 +219,7 @@ Feature: accounting for shipping notification
       | s_ol_1     | ol_1                      | N             |
     And generate M_Shipping_Notification:
       | C_Order_ID.Identifier | PhysicalClearanceDate |
-      | o_1                   | 2021-04-20            |
+      | o_1                   | 2023-07-20            |
     And after not more than 30s, M_Shipping_Notifications are found
       | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
       | shippingNotification_21092023         | o_1                   | CO        | bpartner_1                   | bpLocationDefault                     | bpContactDefault          | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
@@ -228,10 +228,10 @@ Feature: accounting for shipping notification
       | shippingNotificationLine_21092023_1       | shippingNotification_21092023         | s_ol_1                           | p_1                     | 10          |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-20                |
+      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2023-07-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_1                           | 10           | 0            | 10         | false     | 2023-07-20                |
     When the order identified by o_1 is voided
     And after not more than 30s, locate reversal M_Shipping_Notifications
       | M_Shipping_Notification_ID.Identifier | Reversal_ID.Identifier        |
@@ -251,7 +251,7 @@ Feature: accounting for shipping notification
   Scenario: generate shipping notification from sales order, ship more than notified and validate fact accounts generated for the shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.DeliveryRule |
-      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
+      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2023-07-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -262,7 +262,7 @@ Feature: accounting for shipping notification
 
     And generate M_Shipping_Notification:
       | C_Order_ID.Identifier | PhysicalClearanceDate |
-      | o_1                   | 2021-04-20            |
+      | o_1                   | 2023-07-20            |
     And after not more than 30s, M_Shipping_Notifications are found
       | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
       | shippingNotification_21092023         | o_1                   | CO        | bpartner_1                   | bpLocationDefault                     | bpContactDefault          | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
@@ -290,10 +290,10 @@ Feature: accounting for shipping notification
 
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-20                |
+      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2023-07-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 0            | 20           | 10         | true      | 2021-04-20                |
+      | s_ol_1                           | 0            | 20           | 10         | true      | 2023-07-20                |
 
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR  | CR  | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
@@ -318,7 +318,7 @@ Feature: accounting for shipping notification
   Scenario: generate shipping notification from sales order, ship less than notified and validate fact accounts generated for the shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.DeliveryRule |
-      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
+      | o_1        | true    | bpartner_1               | bpLocationDefault                     | bpContactDefault          | 2023-07-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | F                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -329,7 +329,7 @@ Feature: accounting for shipping notification
 
     And generate M_Shipping_Notification:
       | C_Order_ID.Identifier | PhysicalClearanceDate |
-      | o_1                   | 2021-04-20            |
+      | o_1                   | 2023-07-20            |
     And after not more than 30s, M_Shipping_Notifications are found
       | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
       | shippingNotification_21092023         | o_1                   | CO        | bpartner_1                   | bpLocationDefault                     | bpContactDefault          | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
@@ -356,10 +356,10 @@ Feature: accounting for shipping notification
 
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-20                |
+      | o_1                   | bpartner_1               | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2023-07-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 5            | 5            | 10         | false     | 2021-04-20                |
+      | s_ol_1                           | 5            | 5            | 10         | false     | 2023-07-20                |
 
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR   | CR   | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
