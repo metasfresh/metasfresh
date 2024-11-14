@@ -5,11 +5,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -29,12 +29,12 @@ import java.util.stream.Stream;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,6 @@ import java.util.stream.Stream;
  */
 
 @EqualsAndHashCode
-@ToString
 public class DocumentQueryOrderByList
 {
 	public static DocumentQueryOrderByList ofList(@Nullable final List<DocumentQueryOrderBy> list)
@@ -60,9 +59,10 @@ public class DocumentQueryOrderByList
 	/**
 	 * @param orderBysListStr Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered
 	 */
-	public static DocumentQueryOrderByList parse(final String orderBysListStr)
+	public static DocumentQueryOrderByList parse(@Nullable final String orderBysListStr)
 	{
-		if (Check.isEmpty(orderBysListStr, true))
+		final String orderBysListStrNorm = StringUtils.trimBlankToNull(orderBysListStr);
+		if (orderBysListStrNorm == null)
 		{
 			return EMPTY;
 		}
@@ -70,7 +70,7 @@ public class DocumentQueryOrderByList
 		return Splitter.on(',')
 				.trimResults()
 				.omitEmptyStrings()
-				.splitToList(orderBysListStr)
+				.splitToList(orderBysListStrNorm)
 				.stream()
 				.map(DocumentQueryOrderBy::parse)
 				.collect(toDocumentQueryOrderByList());
@@ -83,6 +83,25 @@ public class DocumentQueryOrderByList
 	private DocumentQueryOrderByList(@NonNull final List<DocumentQueryOrderBy> list)
 	{
 		this.list = ImmutableList.copyOf(list);
+	}
+
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return toStringSyntax();
+	}
+
+	public String toStringSyntax()
+	{
+		if (list.isEmpty())
+		{
+			return "";
+		}
+
+		return list.stream()
+				.map(DocumentQueryOrderBy::toStringSyntax)
+				.collect(Collectors.joining(","));
 	}
 
 	public ImmutableList<DocumentQueryOrderBy> toList()
@@ -119,7 +138,7 @@ public class DocumentQueryOrderByList
 		final Comparator<T> noopComparator = (o1, o2) -> 0;
 
 		return stream()
-				.map(orderBy -> orderBy.<T> asComparator(fieldValueExtractor, jsonOpts))
+				.map(orderBy -> orderBy.asComparator(fieldValueExtractor, jsonOpts))
 				.reduce(Comparator::thenComparing)
 				.orElse(noopComparator);
 	}
