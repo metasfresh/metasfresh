@@ -1,24 +1,16 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+
+DROP VIEW IF EXISTS M_InOut_Desadv_Pack_V
+;
+
+CREATE OR REPLACE VIEW M_InOut_Desadv_Pack_V AS
+SELECT pack.*,
+       inout_for_pack.m_inout_id,
+       (SELECT c.PackagingCode FROM M_HU_PackagingCode c WHERE c.M_HU_PackagingCode_ID = pack.M_HU_PackagingCode_ID) AS M_HU_PackagingCode_Text
+FROM EDI_Desadv_Pack pack
+         inner join (select distinct item.edi_desadv_pack_id, item.m_inout_id from edi_desadv_pack_item item) inout_for_pack on pack.edi_desadv_pack_id = inout_for_pack.edi_desadv_pack_id
+;
+
+-----------------------------------------------
 
 drop view if exists M_InOut_DesadvLine_V
 ;
@@ -27,9 +19,9 @@ create or replace view M_InOut_DesadvLine_V as
 select shipment.m_inout_id                                                       as M_InOut_Desadv_ID,
        case
            when desadvInOutLine.edi_desadvline_id > 0 then
-                  desadvInOutLine.m_inoutline_id
+               desadvInOutLine.m_inoutline_id
                                                       else
-           FLOOR(RANDOM() * (100000))  -- using a random string for those desadv lines that are not in the current shipment, as we don't want any packs to match it
+               FLOOR(RANDOM() * (100000))  -- using a random string for those desadv lines that are not in the current shipment, as we don't want any packs to match it
        end                                                                        as M_InOut_DesadvLine_V_ID,
 
        shipment.m_inout_id,
