@@ -35,6 +35,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
@@ -57,6 +58,8 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * @see #retrieveConfig(Properties, int)
 	 */
 	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
+
+	Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull List<DocOutboundLogId> ids);
 
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
@@ -84,6 +87,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
-	
+
 	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
 }

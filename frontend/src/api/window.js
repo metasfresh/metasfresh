@@ -1,4 +1,4 @@
-import { post, get, delete as del } from 'axios';
+import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
@@ -144,6 +144,7 @@ export function startProcess(processType, pinstanceId) {
 export function getProcessData({
   processId,
   viewId,
+  viewOrderBy,
   documentType,
   ids,
   tabId,
@@ -160,6 +161,7 @@ export function getProcessData({
 
   if (viewId) {
     payload.viewId = viewId;
+    payload.viewOrderBy = viewOrderBy;
     payload.viewDocumentIds = ids;
 
     if (childViewId) {

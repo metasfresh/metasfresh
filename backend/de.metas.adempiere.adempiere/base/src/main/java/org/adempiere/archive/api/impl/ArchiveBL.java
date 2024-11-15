@@ -22,6 +22,7 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -30,11 +31,14 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportFlavor;
+import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
@@ -53,7 +57,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
@@ -64,6 +67,8 @@ import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+
 	@Override
 	@Nullable
 	public I_AD_Archive archive(final Resource data,
@@ -271,10 +276,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (request.isReport())
-			{
-				return false;
-			}
+			return !request.isReport();
 		}
 		return true;
 	}
@@ -359,7 +361,14 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<I_AD_Archive> getLastArchive(
+	public Optional<AdArchive> getLastArchive(
+			@NonNull final TableRecordReference reference)
+	{
+		return getLastArchiveRecord(reference).map(this::toAdArchive);
+	}
+	
+	@Override
+	public Optional<I_AD_Archive> getLastArchiveRecord(
 			@NonNull final TableRecordReference reference)
 	{
 		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
@@ -379,8 +388,21 @@ public class ArchiveBL implements IArchiveBL
 	public Optional<Resource> getLastArchiveBinaryData(
 			@NonNull final TableRecordReference reference)
 	{
-		return getLastArchive(reference)
-				.map(this::getBinaryData)
-				.map(ByteArrayResource::new);
+		return getLastArchive(reference).map(AdArchive::getArchiveDataAsResource);
+	}
+
+	@Override
+	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
+	{
+		archiveDAO.updatePrintedRecords(ids, userId);
+	}
+
+	private AdArchive toAdArchive(final I_AD_Archive record)
+	{
+		return AdArchive.builder()
+				.id(ArchiveId.ofRepoId(record.getAD_Archive_ID()))
+				.archiveData(getBinaryData(record))
+				.contentType(getContentType(record))
+				.build();
 	}
 }

@@ -100,6 +100,7 @@ export function actionsRequest({
   selectedIds,
   selectedTabId,
   selectedRowIds,
+  viewOrderBy,
   childViewId,
   childViewSelectedIds,
 }) {
@@ -117,6 +118,7 @@ export function actionsRequest({
     return post(
       `${config.API_URL}/documentView/${windowId}/${viewId}/actions`,
       {
+        viewOrderBy,
         selectedIds,
         childViewId,
         childViewSelectedIds,

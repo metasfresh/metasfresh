@@ -103,6 +103,7 @@ public interface IView
 
 	long size();
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;
@@ -213,6 +214,16 @@ public interface IView
 	default <T> Stream<T> streamModelsByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final Class<T> modelClass)
 	{
 		return retrieveModelsByIds(rowIds, modelClass).stream();
+	}
+
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
 	}
 
 	/**

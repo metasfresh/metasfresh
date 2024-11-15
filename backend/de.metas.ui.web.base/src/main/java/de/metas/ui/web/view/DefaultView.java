@@ -501,11 +501,17 @@ public final class DefaultView implements IEditableView
 	@Override
 	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
 	{
-		return streamByIds(rowIds, QueryLimit.ONE_THOUSAND);
+		return streamByIds(rowIds, null, QueryLimit.ONE_THOUSAND);
 	}
 
 	@Override
 	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds, null, suggestedLimit);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @Nullable final DocumentQueryOrderByList orderBys, @NonNull final QueryLimit suggestedLimit)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -517,7 +523,7 @@ public final class DefaultView implements IEditableView
 			checkChangedRows();
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
+			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getOrderedSelection(orderBys);
 
 			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)

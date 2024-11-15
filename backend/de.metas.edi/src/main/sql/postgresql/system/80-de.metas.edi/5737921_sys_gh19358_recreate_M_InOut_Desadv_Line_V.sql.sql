@@ -27,9 +27,9 @@ create or replace view M_InOut_DesadvLine_V as
 select shipment.m_inout_id                                                       as M_InOut_Desadv_ID,
        case
            when desadvInOutLine.edi_desadvline_id > 0 then
-                  desadvInOutLine.m_inoutline_id
+               desadvInOutLine.m_inoutline_id
                                                       else
-           FLOOR(RANDOM() * (100000))  -- using a random string for those desadv lines that are not in the current shipment, as we don't want any packs to match it
+               FLOOR(RANDOM() * (100000))  -- using a random string for those desadv lines that are not in the current shipment, as we don't want any packs to match it
        end                                                                        as M_InOut_DesadvLine_V_ID,
 
        shipmentLine.m_inout_id,
