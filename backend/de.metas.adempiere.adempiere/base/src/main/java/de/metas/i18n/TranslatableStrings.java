@@ -11,7 +11,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
