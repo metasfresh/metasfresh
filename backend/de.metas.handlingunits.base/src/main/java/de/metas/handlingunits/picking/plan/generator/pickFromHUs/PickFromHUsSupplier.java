@@ -146,7 +146,8 @@ public class PickFromHUsSupplier
 				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
 				.addOnlyWithProductId(request.getProductId())
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.setExcludeReserved();
+				.setExcludeReserved()
+				.setIgnoreHUsScheduledInDDOrder(request.isIgnoreHUsScheduledInDDOrderSchedules());
 
 		if (request.isEnforceMandatoryAttributesOnPicking())
 		{

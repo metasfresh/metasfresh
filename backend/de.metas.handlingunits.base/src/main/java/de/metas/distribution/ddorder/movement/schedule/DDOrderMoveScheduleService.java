@@ -120,6 +120,7 @@ public class DDOrderMoveScheduleService
 		return DDOrderMovePlanCreateCommand.builder()
 				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
 				.huReservationService(huReservationService)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
 				.request(request)
 				.build().execute();
 	}
@@ -145,6 +146,7 @@ public class DDOrderMoveScheduleService
 		final DDOrderLineId ddOrderLineId = planLine.getDdOrderLineId();
 		return planLine.getSteps()
 				.stream()
+				.filter(planStep -> planStep.getScheduleId() == null)
 				.map(planStep -> toScheduleToMoveRequest(planStep, ddOrderId, ddOrderLineId));
 	}
 
