@@ -315,6 +315,11 @@ public class DDOrderService
 		unassignFromResponsibleAndSave(ddOrder);
 	}
 
+	public void removeAllNotStartedSchedules(final DDOrderId ddOrderId)
+	{
+		ddOrderMoveScheduleService.removeNotStarted(ddOrderId);
+	}
+
 	private void unassignFromResponsibleAndSave(final I_DD_Order ddOrder)
 	{
 		ddOrder.setAD_User_Responsible_ID(-1);

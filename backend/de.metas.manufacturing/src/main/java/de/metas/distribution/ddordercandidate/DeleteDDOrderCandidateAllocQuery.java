@@ -20,39 +20,34 @@
  * #L%
  */
 
-package de.metas.distribution.ddorder.lowlevel;
+package de.metas.distribution.ddordercandidate;
 
-import de.metas.order.OrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
 
 @Value
-public class DeleteOrdersQuery
+public class DeleteDDOrderCandidateAllocQuery
 {
-	boolean onlySimulated;
-
 	@Nullable
-	OrderLineId salesOrderLineId;
+	DDOrderCandidateId ddOrderCandidateId;
 	@Nullable
-	PPOrderBOMLineId ppOrderBOMLineId;
+	DDOrderLineId ddOrderLineId;
 
 	@Builder
-	public DeleteOrdersQuery(
-			final boolean onlySimulated,
-			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final PPOrderBOMLineId ppOrderBOMLineId)
+	public DeleteDDOrderCandidateAllocQuery(
+			@Nullable final DDOrderCandidateId ddOrderCandidateId,
+			@Nullable final DDOrderLineId ddOrderLineId)
 	{
-		if (!onlySimulated && salesOrderLineId == null && ppOrderBOMLineId == null)
+		if (ddOrderCandidateId == null && ddOrderLineId == null)
 		{
 			throw new AdempiereException("Deleting all records is not allowed!");
 		}
 
-		this.onlySimulated = onlySimulated;
-		this.salesOrderLineId = salesOrderLineId;
-		this.ppOrderBOMLineId = ppOrderBOMLineId;
+		this.ddOrderCandidateId = ddOrderCandidateId;
+		this.ddOrderLineId = ddOrderLineId;
 	}
 }
