@@ -41,8 +41,8 @@ import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
@@ -120,7 +120,8 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
@@ -283,11 +284,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				olCandBL,
 				new DummyOLCandWithUOMForTUsCapacityProvider());
 
-		final OLCandRegistry olCandRegistry = new OLCandRegistry(
+		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
-		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
@@ -305,9 +306,9 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID()));
+			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 

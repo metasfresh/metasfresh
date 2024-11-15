@@ -6,16 +6,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate 
+public interface I_C_Invoice_Candidate
 {
 
 	String Table_Name = "C_Invoice_Candidate";
 
-//	/** AD_Table_ID=540270 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540270 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -1794,6 +1794,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
 	 * Set Beleg soll per EDI übermittelt werden.

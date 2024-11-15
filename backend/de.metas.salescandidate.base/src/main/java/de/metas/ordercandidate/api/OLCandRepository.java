@@ -74,14 +74,6 @@ public class OLCandRepository
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
-	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
-	{
-		return RelationTypeOLCandSource.builder()
-				.orderDefaults(processor.getDefaults())
-				.olCandProcessorId(processor.getId())
-				.build();
-	}
-
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");

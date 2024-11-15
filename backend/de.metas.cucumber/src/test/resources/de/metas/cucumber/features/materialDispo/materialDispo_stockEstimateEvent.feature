@@ -10,6 +10,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent without stock or ATP

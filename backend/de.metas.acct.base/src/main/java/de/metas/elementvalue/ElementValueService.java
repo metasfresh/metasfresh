@@ -28,10 +28,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.elementvalue.ElementValueRepository.AccountValueComparisonMode;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
@@ -47,8 +50,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class ElementValueService
 {
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ElementValueRepository elementValueRepository;
 	private final TreeNodeService treeNodeService;
+	private static final String SYSCONFIG_AccountValueComparisonMode = "ElementValueService.AccountValueComparisonMode";
 
 	public ElementValueService(
 			@NonNull final ElementValueRepository elementValueRepository,
@@ -186,6 +191,12 @@ public class ElementValueService
 	// TODO: introduce ChartOfAccountsId as parameter
 	public ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
 	{
-		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo);
+		final AccountValueComparisonMode comparisonMode = getAccountValueComparisonMode();
+		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo, comparisonMode);
+	}
+
+	private AccountValueComparisonMode getAccountValueComparisonMode()
+	{
+		return AccountValueComparisonMode.ofNullableString(sysConfigBL.getValue(SYSCONFIG_AccountValueComparisonMode));
 	}
 }

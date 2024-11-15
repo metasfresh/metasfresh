@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.email.templates.ClientMailTemplates;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -70,6 +71,8 @@ public interface IClientDAO extends ISingletonService
 	I_AD_ClientInfo retrieveClientInfo(Properties ctx, int adClientId);
 
 	ClientEMailConfig getEMailConfigById(ClientId clientId);
+
+	ClientMailTemplates getClientMailTemplatesById(ClientId clientId);
 
 	boolean isMultilingualDocumentsEnabled(ClientId adClientId);
 

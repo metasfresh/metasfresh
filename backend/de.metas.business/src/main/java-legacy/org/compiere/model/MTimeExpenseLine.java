@@ -338,7 +338,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 				+ "(SELECT SUM(Qty*ConvertedAmt) FROM S_TimeExpenseLine tel "
 				+ "WHERE te.S_TimeExpense_ID=tel.S_TimeExpense_ID) "
 			+ "WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 	}	//	updateHeader
 	
 }	//	MTimeExpenseLine

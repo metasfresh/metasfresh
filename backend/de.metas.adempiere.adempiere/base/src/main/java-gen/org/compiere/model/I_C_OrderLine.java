@@ -1139,6 +1139,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
 	 * Set CP.
 	 * Campaign Price
 	 *

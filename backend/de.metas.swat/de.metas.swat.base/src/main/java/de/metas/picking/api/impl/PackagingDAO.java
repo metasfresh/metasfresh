@@ -1,5 +1,4 @@
 package de.metas.picking.api.impl;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;

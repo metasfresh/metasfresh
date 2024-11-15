@@ -1,3 +1,5 @@
+package de.metas.edi.process.export.impl;
+
 /*
  * #%L
  * de.metas.edi
@@ -19,8 +21,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.edi.process.export.impl;
 
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.IDesadvDAO;

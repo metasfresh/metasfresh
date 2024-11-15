@@ -66,7 +66,7 @@ public class QuerySelectionHelper
 		final String trxName = query.getTrxName();
 
 		final Instant now = retrieveDatabaseCurrentTime();
-		final int rowsCount = DB.executeUpdateEx(
+		final int rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				params.toArray(),
 				trxName);

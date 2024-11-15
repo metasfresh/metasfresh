@@ -26,6 +26,7 @@ import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostTypeId;
@@ -110,7 +111,7 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		final CostElementRepository costElementRepo = new CostElementRepository();
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 

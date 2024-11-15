@@ -47,6 +47,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "420",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           },
           {
@@ -62,6 +63,109 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "190",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
+            "inDispute" : false
+          }
+        ]
+      }
+    },
+    "pickedData" : {
+      "productId" : 300000,
+      "qtyPicked" : {
+        "qty" : "0",
+        "uomId" : 100000
+      },
+      "qtyPickedInUOM" : {
+        "qty" : "0",
+        "uomId" : 110000
+      }
+    },
+    "invoicedData" : {
+      "qtys" : {
+        "productId" : 300000,
+        "stockQty" : {
+          "qty" : "0",
+          "uomId" : 100000
+        },
+        "uomQty" : {
+          "qty" : "0",
+          "uomId" : 110000
+        }
+      },
+      "netAmount" : {
+        "value" : 0,
+        "currencyId" : 200000
+      }
+    },
+    "invoicableQtyBasedOn" : "CatchWeight",
+    "invoiceRule" : "AfterDelivery",
+    "priceUomId" : 110000
+  }
+]
+
+
+de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTest.ofRecord_RevertInouts=[
+  {
+    "id" : 100001,
+    "soTrx" : "SALES",
+    "product" : {
+      "id" : 300000,
+      "stocked" : false
+    },
+    "uomId" : 110000,
+    "orderedData" : {
+      "qty" : {
+        "qty" : "80",
+        "uomId" : 110000
+      },
+      "qtyInStockUom" : {
+        "qty" : "20",
+        "uomId" : 100000
+      },
+      "orderFullyDelivered" : false
+    },
+    "deliveredData" : {
+      "shipmentData" : {
+        "productId" : 300000,
+        "qtyInStockUom" : {
+          "qty" : "0",
+          "uomId" : 100000
+        },
+        "qtyNominal" : {
+          "qty" : "0",
+          "uomId" : 110000
+        },
+        "deliveredQtyItems" : [
+          {
+            "qtyInStockUom" : {
+              "qty" : "10",
+              "uomId" : 100000
+            },
+            "qtyNominal" : {
+              "qty" : "400",
+              "uomId" : 100003
+            },
+            "qtyCatch" : {
+              "qty" : "420",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : false,
+            "inDispute" : false
+          },
+          {
+            "qtyInStockUom" : {
+              "qty" : "5",
+              "uomId" : 100000
+            },
+            "qtyNominal" : {
+              "qty" : "200",
+              "uomId" : 100003
+            },
+            "qtyCatch" : {
+              "qty" : "190",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : false,
             "inDispute" : false
           }
         ]
@@ -143,6 +247,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "400",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           },
           {
@@ -154,6 +259,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "200",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           }
         ]

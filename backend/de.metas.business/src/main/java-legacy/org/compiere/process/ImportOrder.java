@@ -26,14 +26,8 @@ import de.metas.util.Services;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.DocumentLocation;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -144,7 +138,7 @@ public class ImportOrder extends JavaProcess
 		{
 			sql = new StringBuffer("DELETE FROM I_Order "
 										   + "WHERE I_IsImported='Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 			log.debug("Deleted Old Imported =" + no);
 		}
 
@@ -160,7 +154,7 @@ public class ImportOrder extends JavaProcess
 																																																	   + " I_ErrorMsg = ' ',"
 																																																	   + " I_IsImported = 'N' "
 																																																	   + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Reset=" + no);
 
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -168,7 +162,7 @@ public class ImportOrder extends JavaProcess
 									   + "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0"
 									   + " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Org=" + no);
@@ -179,26 +173,26 @@ public class ImportOrder extends JavaProcess
 									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
 									   + " AND d.DocBaseType='POO' AND o.AD_Client_ID=d.AD_Client_ID) "
 									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PO DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "    //	SO Document Type Name
 									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
 									   + " AND d.DocBaseType='SOO' AND o.AD_Client_ID=d.AD_Client_ID) "
 									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set SO DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
 									   + " AND d.DocBaseType IN ('SOO','POO') AND o.AD_Client_ID=d.AD_Client_ID) "
 									   //+ "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
 									   + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order "    //	Error Invalid Doc Type Name
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocTypeName, ' "
 									   + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid DocTypeName=" + no);
@@ -208,25 +202,25 @@ public class ImportOrder extends JavaProcess
 									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
 									   + " AND d.DocBaseType='POO' AND o.AD_Client_ID=d.AD_Client_ID) "
 									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PO Default DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "    //	Default SO
 									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
 									   + " AND d.DocBaseType='SOO' AND o.AD_Client_ID=d.AD_Client_ID) "
 									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set SO Default DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
 									   + " AND d.DocBaseType IN('SOO','POO') AND o.AD_Client_ID=d.AD_Client_ID) "
 									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Default DocType=" + no);
 		sql = new StringBuffer("UPDATE I_Order "    // No DocType
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No DocType, ' "
 									   + "WHERE C_DocType_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No DocType=" + no);
@@ -237,13 +231,13 @@ public class ImportOrder extends JavaProcess
 									   + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='SOO' AND o.AD_Client_ID=d.AD_Client_ID)"
 									   + " AND C_DocType_ID IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set IsSOTrx=Y=" + no);
 		sql = new StringBuffer("UPDATE I_Order o SET IsSOTrx='N' "
 									   + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='POO' AND o.AD_Client_ID=d.AD_Client_ID)"
 									   + " AND C_DocType_ID IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set IsSOTrx=N=" + no);
 
 		//	Price List
@@ -251,32 +245,32 @@ public class ImportOrder extends JavaProcess
 									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
 									   + " AND p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Default Currency PriceList=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
 									   + " AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Default PriceList=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
 									   + " WHERE p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Currency PriceList=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
 									   + " WHERE p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PriceList=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PriceList, ' "
 									   + "WHERE M_PriceList_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No PriceList=" + no);
@@ -287,20 +281,20 @@ public class ImportOrder extends JavaProcess
 									   + "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm p"
 									   + " WHERE o.PaymentTermValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PaymentTerm=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET C_PaymentTerm_ID=(SELECT MAX(C_PaymentTerm_ID) FROM C_PaymentTerm p"
 									   + " WHERE p.IsDefault='Y' AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE C_PaymentTerm_ID IS NULL AND o.PaymentTermValue IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Default PaymentTerm=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PaymentTerm, ' "
 									   + "WHERE C_PaymentTerm_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No PaymentTerm=" + no);
@@ -311,7 +305,7 @@ public class ImportOrder extends JavaProcess
 									   + "SET M_Warehouse_ID=(SELECT MAX(M_Warehouse_ID) FROM M_Warehouse w"
 									   + " WHERE o.AD_Client_ID=w.AD_Client_ID AND o.AD_Org_ID=w.AD_Org_ID) "
 									   + "WHERE M_Warehouse_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());    //	Warehouse for Org
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());    //	Warehouse for Org
 		if (no != 0)
 		{
 			log.debug("Set Warehouse=" + no);
@@ -322,7 +316,7 @@ public class ImportOrder extends JavaProcess
 									   + "WHERE M_Warehouse_ID IS NULL"
 									   + " AND EXISTS (SELECT AD_Client_ID FROM M_Warehouse w WHERE w.AD_Client_ID=o.AD_Client_ID GROUP BY AD_Client_ID HAVING COUNT(*)=1)"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.debug("Set Only Client Warehouse=" + no);
@@ -332,7 +326,7 @@ public class ImportOrder extends JavaProcess
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' "
 									   + "WHERE M_Warehouse_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No Warehouse=" + no);
@@ -348,7 +342,7 @@ public class ImportOrder extends JavaProcess
 									   + " ) "
 									   + "WHERE C_BPartner_ID IS NULL AND EMail IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from EMail=" + no);
 		//	BP from ContactName
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -361,7 +355,7 @@ public class ImportOrder extends JavaProcess
 									   + "WHERE C_BPartner_ID IS NULL AND ContactName IS NOT NULL"
 									   + " AND EXISTS (SELECT Name FROM AD_User u WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL GROUP BY Name HAVING COUNT(*)=1)"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from ContactName=" + no);
 		//	BP from Value
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -373,7 +367,7 @@ public class ImportOrder extends JavaProcess
 									   + " ) "
 									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set BP from Value=" + no);
 		//	Default BP
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -381,7 +375,7 @@ public class ImportOrder extends JavaProcess
 									   + " WHERE o.AD_Client_ID=c.AD_Client_ID) "
 									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NULL AND Name IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Default BP=" + no);
 
 		//	Existing Location ? Exact Match
@@ -397,7 +391,7 @@ public class ImportOrder extends JavaProcess
 									   + " AND o.C_Region_ID=l.C_Region_ID AND o.C_Country_ID=l.C_Country_ID) "
 									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 									   + " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Found Location=" + no);
 		//	Set Bill Location from BPartner
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -410,7 +404,7 @@ public class ImportOrder extends JavaProcess
 									   + ") "
 									   + "WHERE C_BPartner_ID IS NOT NULL AND BillTo_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set BP BillTo from BP=" + no);
 		//	Set Location from BPartner
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -423,14 +417,14 @@ public class ImportOrder extends JavaProcess
 									   + ") "
 									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set BP Location from BP=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BP Location, ' "
 									   + "WHERE C_BPartner_ID IS NOT NULL AND (BillTo_ID IS NULL OR C_BPartner_Location_ID IS NULL)"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No BP Location=" + no);
@@ -451,14 +445,14 @@ public class ImportOrder extends JavaProcess
 									   + " WHERE o.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, o.AD_Client_ID)) "
 									   + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL AND CountryCode IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Country=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Country, ' "
 									   + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Country=" + no);
@@ -471,7 +465,7 @@ public class ImportOrder extends JavaProcess
 									   + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
 									   + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Region Default=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -480,7 +474,7 @@ public class ImportOrder extends JavaProcess
 									   + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
 									   + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Region=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_Order o "
@@ -489,7 +483,7 @@ public class ImportOrder extends JavaProcess
 									   + " AND EXISTS (SELECT * FROM C_Country c"
 									   + " WHERE c.C_Country_ID=o.C_Country_ID AND c.HasRegion='Y')"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Region=" + no);
@@ -501,27 +495,27 @@ public class ImportOrder extends JavaProcess
 									   + " WHERE o.ProductValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
 									   + " WHERE o.UPC=p.UPC AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_Product_ID IS NULL AND UPC IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Product from UPC=" + no);
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
 									   + " WHERE o.SKU=p.SKU AND o.AD_Client_ID=p.AD_Client_ID) "
 									   + "WHERE M_Product_ID IS NULL AND SKU IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Product fom SKU=" + no);
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
 									   + "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Product=" + no);
@@ -532,13 +526,13 @@ public class ImportOrder extends JavaProcess
 									   + "SET C_Charge_ID=(SELECT C_Charge_ID FROM C_Charge c"
 									   + " WHERE o.ChargeName=c.Name AND o.AD_Client_ID=c.AD_Client_ID) "
 									   + "WHERE C_Charge_ID IS NULL AND ChargeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Charge=" + no);
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Charge, ' "
 									   + "WHERE C_Charge_ID IS NULL AND (ChargeName IS NOT NULL)"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Charge=" + no);
@@ -549,7 +543,7 @@ public class ImportOrder extends JavaProcess
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Product and Charge, ' "
 									   + "WHERE M_Product_ID IS NOT NULL AND C_Charge_ID IS NOT NULL "
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Product and Charge exclusive=" + no);
@@ -561,13 +555,13 @@ public class ImportOrder extends JavaProcess
 									   + " WHERE o.TaxIndicator=t.TaxIndicator AND o.AD_Client_ID=t.AD_Client_ID) "
 									   + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set Tax=" + no);
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Tax, ' "
 									   + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("Invalid Tax=" + no);
@@ -723,7 +717,7 @@ public class ImportOrder extends JavaProcess
 									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner, ' "
 									   + "WHERE C_BPartner_ID IS NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 		{
 			log.warn("No BPartner=" + no);
@@ -942,7 +936,7 @@ public class ImportOrder extends JavaProcess
 		sql = new StringBuffer("UPDATE I_Order "
 									   + "SET I_IsImported='N', Updated=now() "
 									   + "WHERE I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		addLog(0, null, new BigDecimal(no), "@Errors@");
 		//
 		addLog(0, null, new BigDecimal(noInsert), "@C_Order_ID@: @Inserted@");

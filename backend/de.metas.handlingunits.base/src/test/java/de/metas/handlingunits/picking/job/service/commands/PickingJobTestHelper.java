@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -130,6 +131,8 @@ public class PickingJobTestHelper
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
+
 		// User one record ID sequence for each table
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
@@ -160,8 +163,8 @@ public class PickingJobTestHelper
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
 						bpartnerBL,
-						inventoryService
-				),
+						ADReferenceService.newMocked(),
+						inventoryService),
 				new PickingJobHUReservationService(huReservationService),
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,

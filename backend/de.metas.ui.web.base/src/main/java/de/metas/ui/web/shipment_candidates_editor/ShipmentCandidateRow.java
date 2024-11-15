@@ -1,21 +1,7 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
-import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest.ShipmentScheduleUserChangeRequestBuilder;
@@ -37,6 +23,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L

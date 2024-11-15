@@ -355,7 +355,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private Optional<ProductPrice> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
 	{
-		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(receiptInOutLineId);
+		final I_M_InOutLine receiptLine = inoutsRepo.getLineByIdInTrx(receiptInOutLineId);
 		return Optional.of(receiptLine)
 				.map(I_M_InOutLine::getC_OrderLine)
 				.map(orderLineBL::getCostPrice);

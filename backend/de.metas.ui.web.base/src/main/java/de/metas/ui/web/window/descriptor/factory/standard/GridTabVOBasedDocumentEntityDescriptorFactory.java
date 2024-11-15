@@ -1,12 +1,12 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;

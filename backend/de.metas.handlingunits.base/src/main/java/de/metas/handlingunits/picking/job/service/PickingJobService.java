@@ -14,6 +14,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
@@ -77,7 +78,7 @@ public class PickingJobService
 {
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
-	
+
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -276,7 +277,7 @@ public class PickingJobService
 				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
 	}

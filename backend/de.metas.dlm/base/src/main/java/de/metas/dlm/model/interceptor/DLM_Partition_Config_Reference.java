@@ -1,14 +1,13 @@
 package de.metas.dlm.model.interceptor;
 
+import de.metas.ad_reference.TableRefTable;
+import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.util.DisplayType;
-
-import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -56,18 +55,18 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-		final TableRefInfo tableRefInfo;
+		final TableRefTable tableRefTable;
 		if (lookupDAO.isTableReference(ad_Reference_ID))
 		{
-			tableRefInfo = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
+			tableRefTable = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
 		}
 		else
 		{
 			final String columnName = ref.getDLM_Referencing_Column().getColumnName();
-			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(columnName);
+			tableRefTable = lookupDAO.retrieveTableDirectRefInfo(columnName);
 		}
 
-		if (tableRefInfo == null)
+		if (tableRefTable == null)
 		{
 			// what we do further up is not very sophisticated. e.g. for "CreatedBy", we currently don't find the table name.
 			// therefore, don't set the table to null since we don't know that there is no table for the given column
@@ -76,6 +75,6 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefInfo.getTableName()));
+		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefTable.getTableName()));
 	}
 }

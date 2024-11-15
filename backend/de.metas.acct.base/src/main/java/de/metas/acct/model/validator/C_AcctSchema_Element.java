@@ -180,13 +180,13 @@ public class C_AcctSchema_Element
 		{
 			final int clientId = elementRecord.getAD_Client_ID();
 			final String sql = "UPDATE C_ValidCombination SET " + element + "=? WHERE " + element + " IS NULL AND AD_Client_ID=?";
-			DB.executeUpdateEx(sql, new Object[] { id, clientId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, clientId }, ITrx.TRXNAME_ThreadInherited);
 		}
 		//
 		{
 			final int acctSchemaId = elementRecord.getC_AcctSchema_ID();
 			final String sql = "UPDATE Fact_Acct SET " + element + "=? WHERE " + element + " IS NULL AND C_AcctSchema_ID=?";
-			DB.executeUpdateEx(sql, new Object[] { id, acctSchemaId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, acctSchemaId }, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

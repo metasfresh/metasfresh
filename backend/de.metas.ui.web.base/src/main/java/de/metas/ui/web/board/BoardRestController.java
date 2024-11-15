@@ -54,7 +54,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
@@ -344,7 +343,7 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
@@ -355,7 +354,7 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
+				.transform(list -> JSONLookupValuesPage.of(list, userSession.getAD_Language()));
 	}
 
 	private JSONViewResult toJSONCardsViewResult(

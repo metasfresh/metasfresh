@@ -414,11 +414,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
-		DB.executeUpdateEx(sql,
-						   sqlParams.toArray(),
-						   trxName,
-						   QUERY_TIME_OUT,
-						   rs -> currentSeq.setValue(rs.getInt(1)));
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												sqlParams.toArray(),
+												trxName,
+												QUERY_TIME_OUT,
+												rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}

@@ -70,6 +70,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -87,6 +91,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static de.metas.common.util.IdConstants.toRepoId;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
@@ -650,15 +655,101 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 	}
 
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
+		{
+			deleteRecord(candidateRecord);
+			deleteRecord(stockCandidate);
+		}
+		else
+		{
+			deleteRecord(stockCandidate);
+			deleteRecord(candidateRecord);
+		}
+
+		return deleteResult;
+	}
+
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateAndDetailsById(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() <= 0)
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(candidateId)
+													  .build());
+		}
+		else
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(stockCandidateId)
+													  .build());
+		}
+
+		return deleteResult;
+	}
+
 	@NonNull
 	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus())
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive())
-				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class);
+
+		if (deleteCandidatesQuery.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive());
+		}
+
+		if (Check.isNotBlank(deleteCandidatesQuery.getStatus()))
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus());
+		}
+
+		if (deleteCandidatesQuery.getCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, deleteCandidatesQuery.getCandidateId());
+		}
+
+		queryBuilder
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
@@ -672,12 +763,12 @@ public class CandidateRepositoryWriteService
 	{
 		alreadySeenIds.add(candidateId);
 
-		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
 
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-				DateAndSeqNo
+														   DateAndSeqNo
 						.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
 						.seqNo(candidateRecord.getSeqNo())
@@ -787,18 +878,118 @@ public class CandidateRepositoryWriteService
 				.execute();
 	}
 
-	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
+	private void deleteRelatedRecordsForId(
+			@NonNull final I_MD_Candidate candidate,
+			@NonNull final Set<CandidateId> alreadySeenIds)
 	{
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		final IQueryFilter<I_MD_Candidate> stockQueryFilter;
 
-		for (final Candidate candidate : candidates)
+		if (candidate.getMD_Candidate_Parent_ID() > 0)
 		{
-			final Candidate changedCandidate = updater.apply(candidate);
-			if (!Objects.equals(candidate, changedCandidate))
-			{
-				updateCandidateById(changedCandidate);
-			}
+			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
+					.setJoinOr()
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID())
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_Parent_ID());
 		}
+		else
+		{
+			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID());
+		}
+
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.filter(stockQueryFilter)
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+
+		deleteDemandDetailsRecords(candidateId);
+		deleteDistDetailsRecords(candidateId);
+		deleteProdDetailsRecords(candidateId);
+		deletePurchaseDetailsRecords(candidateId);
+		deleteStockChangeDetailsRecords(candidateId);
+		deleteTransactionDetailsRecords(candidateId);
+	}
+
+	private void deleteDemandDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteDistDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateId)
+				.create()
+				.delete();
+	}
+
+	private void deleteProdDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deletePurchaseDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Purchase_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteStockChangeDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteTransactionDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	@NonNull
+	private CandidateId getStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
+	{
+		Check.assume(!MD_CANDIDATE_TYPE_STOCK.equals(candidate.getMD_Candidate_Type()), "The given Candidate is a Stock Candidate!");
+
+		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		{
+			return CandidateId.ofRepoId(candidate.getMD_Candidate_Parent_ID());
+		}
+
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+		return candidateRepositoryRetrieval.retrieveSingleChild(candidateId)
+				.orElseThrow(() -> new AdempiereException("No stock found for CandidateId!")
+						.appendParametersToMessage()
+						.setParameter("CandidateId", candidateId))
+				.getId();
+	}
+
+	@NonNull
+	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
+																 DateAndSeqNo
+																		 .builder()
+																		 .date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
+																		 .seqNo(candidateRecord.getSeqNo())
+																		 .build(),
+																 candidateRecord.getQty());
 	}
 
 	@Value

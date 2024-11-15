@@ -1,19 +1,7 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
@@ -32,11 +20,19 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -66,7 +62,6 @@ import lombok.NonNull;
  * Note that technically this is contained in the left-hand side {@link PackageableView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PickingSlotView implements IView
 {
@@ -185,7 +180,7 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
 		throw new UnsupportedOperationException();
 	}

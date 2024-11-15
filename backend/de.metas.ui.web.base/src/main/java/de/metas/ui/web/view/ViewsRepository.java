@@ -146,7 +146,7 @@ public class ViewsRepository implements IViewsRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final int no = DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
+			final int no = DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
 		catch (final Exception ex)

@@ -33,6 +33,7 @@ import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -105,6 +106,7 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 				.process(exchange -> {
 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 					// make sure that our lines are sorted by line number
+					xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 					sortPacksAndItems(xmlDesadv);
 
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.

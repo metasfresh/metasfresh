@@ -63,11 +63,11 @@ public class PickingSlotsClearingViewFilters
 				.setFilterId(FILTER_ID_BPartner)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_C_BPartner_ID)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(bpartnerLookupDescriptor))
+						.fieldName(PARAM_C_BPartner_ID)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Lookup)
+						.lookupDescriptor(bpartnerLookupDescriptor))
 				.build();
 
 	}

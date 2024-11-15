@@ -4,6 +4,7 @@
     <C_Invoice_ID>1488989</C_Invoice_ID>
     <DateInvoiced>2021-02-05+01:00</DateInvoiced>
     <DateOrdered>2021-02-05+01:00</DateOrdered>
+    <DateAcct>2021-02-05+01:00</DateAcct>
     <eancom_doctype>380</eancom_doctype>
     <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
     <GrandTotal>120.70</GrandTotal>

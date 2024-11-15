@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
@@ -25,13 +26,14 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
 @Component
+@RequiredArgsConstructor
 public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssue");
@@ -40,16 +42,12 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private final ManufacturingJobService manufacturingJobService;
 	private final ProductHazardSymbolService productHazardSymbolService;
 	private final ProductAllergensService productAllergensService;
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	public RawMaterialsIssueActivityHandler(
-			@NonNull final ManufacturingJobService manufacturingJobService,
-			@NonNull final ProductHazardSymbolService productHazardSymbolService,
-			@NonNull final ProductAllergensService productAllergensService)
+			@NonNull final ManufacturingJobService manufacturingJobService)
 	{
 		this.manufacturingJobService = manufacturingJobService;
-		this.productHazardSymbolService = productHazardSymbolService;
-		this.productAllergensService = productAllergensService;
 	}
 
 	@Override
@@ -112,7 +110,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private JsonRejectReasonsList getJsonRejectReasonsList(final @NonNull JsonOpts jsonOpts)
 	{
-		return JsonRejectReasonsList.of(adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
+		return JsonRejectReasonsList.of(adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
 	}
 
 	@Override

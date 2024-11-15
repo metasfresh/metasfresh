@@ -2,6 +2,7 @@ package de.metas.currency.impl;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.Objects;
 
 import org.adempiere.service.ClientId;
 
@@ -35,7 +36,7 @@ import lombok.Value;
 
 @Value
 @Builder
-final class CurrencyConversionTypeRouting
+class CurrencyConversionTypeRouting
 {
 	@NonNull
 	ClientId clientId;
@@ -61,7 +62,20 @@ final class CurrencyConversionTypeRouting
 
 	public static Comparator<CurrencyConversionTypeRouting> moreSpecificFirstComparator()
 	{
-		return (routing1, routing2) -> routing1.isMoreSpecificThan(routing2) ? -1 : 0;
+		return (routing1, routing2) -> {
+			if (Objects.equals(routing1, routing2))
+			{
+				return 0;
+			}
+			else if (routing1.isMoreSpecificThan(routing2))
+			{
+				return -1;
+			}
+			else
+			{
+				return +1;
+			}
+		};
 	}
 
 	public boolean isMoreSpecificThan(@NonNull final CurrencyConversionTypeRouting other)

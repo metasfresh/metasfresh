@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,10 +39,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -283,15 +285,18 @@ public class C_OrderLine_StepDef
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer expectedProductId = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
 					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
 					.create()
 					.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -366,6 +371,12 @@ public class C_OrderLine_StepDef
 				}
 			}
 
+			final BigDecimal updatedQtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			if (updatedQtyOrdered != null)
+			{
+				orderLine.setQtyOrdered(updatedQtyOrdered);
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
@@ -384,7 +395,8 @@ public class C_OrderLine_StepDef
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
@@ -397,19 +409,71 @@ public class C_OrderLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
+		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(uomBPartner355Code))
+		{
+			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomBPartner355Code));
+			assertThat(orderLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
+		}
+
+		final String isManualPriceStr = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_IsManualPrice);
+
+		if (Check.isNotBlank(isManualPriceStr))
+		{
+			final boolean isManualPrice = StringUtils.toBoolean(isManualPriceStr);
+			assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
+		}
+
+		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
+
+		if (Check.isNotBlank(bPartnerQtyItemCapacity))
+		{
+			assertThat(orderLine.getBPartner_QtyItemCapacity()).isEqualByComparingTo(bPartnerQtyItemCapacity);
+		}
+
+		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
+		if (qtyEnteredInBPartnerUOM != null)
+		{
+			assertThat(orderLine.getQtyEnteredInBPartnerUOM()).isEqualByComparingTo(qtyEnteredInBPartnerUOM);
+		}
+
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEntered);
+		if (qtyEntered != null)
+		{
+			assertThat(orderLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+		}
+
+		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(uomCode))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
+			assertThat(orderLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
+
+		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+
+		if (qtyItemCapacity != null)
+		{
+			assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
+		}
+
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 
 		if (dateOrdered != null)
 		{
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
+
+		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
 		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualTo(price);
 		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
-		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualTo(qtyordered);
-		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualTo(qtyinvoiced);
+		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualByComparingTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
@@ -433,6 +497,12 @@ public class C_OrderLine_StepDef
 		{
 			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355PriceCode));
 			assertThat(orderLine.getPrice_UOM_ID()).isEqualTo(productPriceUomId.getRepoId());
+		}
+
+		final String productDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ProductDescription);
+		if (de.metas.util.Check.isNotBlank(productDescription))
+		{
+			assertThat(orderLine.getProductDescription()).isEqualTo(productDescription);
 		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -465,6 +535,12 @@ public class C_OrderLine_StepDef
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));
+		}
+
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
+		if (qtyReserved != null)
+		{
+			assertThat(orderLine.getQtyReserved()).isEqualByComparingTo(qtyReserved);
 		}
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);

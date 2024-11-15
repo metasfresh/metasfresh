@@ -49,6 +49,7 @@ public class DocumentReportInfo
 	BPartnerId bpartnerId;
 	DocTypeId docTypeId;
 	Language language;
+	String poReference;
 
 	@NonNull
 	@Builder.Default

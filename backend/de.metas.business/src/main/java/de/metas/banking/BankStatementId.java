@@ -33,6 +33,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
+import java.util.Objects;
 
 @Value
 public class BankStatementId implements RepoIdAware
@@ -66,7 +67,7 @@ public class BankStatementId implements RepoIdAware
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
-	
+
 	private BankStatementId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_ID");
@@ -77,5 +78,10 @@ public class BankStatementId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable BankStatementId id1, @Nullable BankStatementId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

@@ -57,7 +57,7 @@ public class IFABPartnerImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCountries(@NonNull final ImportRecordsSelection selection)
@@ -70,6 +70,6 @@ public class IFABPartnerImportTableSqlUpdater
 				.append("WHERE C_Country_ID IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 }

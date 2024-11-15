@@ -11,6 +11,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
@@ -149,6 +150,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -340,8 +342,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
-				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
-						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getDocTypeInvoiceId().isPresent()
+						? invoiceHeader.getDocTypeInvoiceId().get()
 						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
@@ -490,7 +492,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
-			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
+
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
@@ -925,6 +928,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
+				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.build();
 	}
 

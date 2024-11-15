@@ -190,5 +190,8 @@ public interface IInOutBL extends ISingletonService
 
 	String getLocationEmail(InOutId ofRepoId);
 
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
+
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
 }

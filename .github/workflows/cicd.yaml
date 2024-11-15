@@ -659,7 +659,7 @@ jobs:
           - profile: flaky
             params: -Dcucumber.filter.tags="@ghActions:flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @ghActions:flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -674,6 +674,10 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           cucumberparams: ${{ matrix.params }}
+          TEST_SMTP_HOST: ${{ secrets.TEST_SMTP_HOST }}
+          TEST_SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
+          TEST_SMTP_USER: ${{ secrets.TEST_SMTP_USER }}
+          TEST_SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
         timeout-minutes: 120
         run: |
           mkdir cucumber

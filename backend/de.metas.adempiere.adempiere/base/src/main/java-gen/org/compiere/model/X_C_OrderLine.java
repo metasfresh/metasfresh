@@ -822,6 +822,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
 	public void setIsCampaignPrice (final boolean IsCampaignPrice)
 	{
 		set_Value (COLUMNNAME_IsCampaignPrice, IsCampaignPrice);

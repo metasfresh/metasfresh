@@ -56,6 +56,7 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(2)).isSameAs(QueryLimit.TWO);
 		assertThat(QueryLimit.ofInt(100)).isSameAs(QueryLimit.ONE_HUNDRED);
 		assertThat(QueryLimit.ofInt(500)).isSameAs(QueryLimit.FIVE_HUNDRED);
+		assertThat(QueryLimit.ofInt(1000)).isSameAs(QueryLimit.ONE_THOUSAND);
 
 		assertThat(QueryLimit.ofInt(5).toInt()).isEqualTo(5);
 	}

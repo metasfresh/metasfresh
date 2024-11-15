@@ -24,6 +24,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -64,6 +66,8 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+
+		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 	}
 
 	/**

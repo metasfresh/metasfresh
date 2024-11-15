@@ -63,6 +63,10 @@ import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
@@ -136,6 +140,34 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+
+	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
+	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> map = dataTable.asMaps().get(0);
+
+		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
+		final int productId = Integer.parseInt(map.get("M_Product_ID"));
+		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
+		final BigDecimal qty = new BigDecimal(map.get("Qty"));
+
+		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
+
+		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
+				.materialDescriptor(descriptor)
+				.shipmentScheduleId(shipmentScheduleId)
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(qty)
+						.reservedQuantityDelta(qty)
+						.reservedQuantity(qty)
+						.orderedQuantityDelta(qty)
+						.build())
+				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
+				.build();
+
+		postMaterialEventService.enqueueEventNow(shipmentScheduleCreatedEvent);
+	}
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -346,8 +378,17 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(event);
+	}
+
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")
+	public void metasfresh_has_no_md_cand_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
+	{
+		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
+
+		final Supplier<Boolean> candidateWasDeleted = () -> MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId()) == null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 
 	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")

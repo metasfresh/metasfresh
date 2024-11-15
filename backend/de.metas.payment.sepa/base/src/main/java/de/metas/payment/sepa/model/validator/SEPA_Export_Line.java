@@ -61,6 +61,14 @@ public class SEPA_Export_Line
 			return;
 		}
 
+		final String QR_IBAN = bpBankAccount.getQR_IBAN();
+
+		if (Check.isNotBlank(QR_IBAN))
+		{
+			esrImport.setOtherAccountIdentification(""); // set nothing, but we need to make sure that tag is closed
+			return;
+		}
+
 		final IESRBPBankAccountBL esrBankAccountBL = Services.get(IESRBPBankAccountBL.class);
 		final IESRImportBL esrBL = Services.get(IESRImportBL.class);
 

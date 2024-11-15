@@ -198,9 +198,9 @@ public class HUPricing extends AttributePricing
 		//
 		// Get the default product price attribute, if any
 		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
-						.setProductId(pricingCtx.getProductId())
-						.onlyAttributePricing()
-						.onlyValidPrices(true)
+				.setProductId(pricingCtx.getProductId())
+				.onlyAttributePricing()
+				.onlyValidPrices(true)
 						.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
@@ -264,9 +264,9 @@ public class HUPricing extends AttributePricing
 		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(@Nullable final HUPIItemProductId packingMaterialId)
 	{
-		if (packingMaterialId == null)
+		if (packingMaterialId == null || !packingMaterialId.isRegular())
 		{
 			return HUPIItemProductMatcher_None;
 		}

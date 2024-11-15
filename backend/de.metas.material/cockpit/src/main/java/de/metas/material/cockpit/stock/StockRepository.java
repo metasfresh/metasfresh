@@ -89,7 +89,7 @@ public class StockRepository
 
 			final String insertSQL = createInsertSqlStatement(sqlQuery, uuid);
 
-			final int insertCount = DB.executeUpdateEx(
+			final int insertCount = DB.executeUpdateAndThrowExceptionOnFail(
 					insertSQL,
 					sqlQuery.getParametersEffective().toArray(),
 					ITrx.TRXNAME_ThreadInherited);

@@ -28,17 +28,22 @@ import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
+import org.adempiere.ad.dao.impl.StringToNumericModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -155,10 +160,41 @@ public class ElementValueRepository
 		return toElementValue(record);
 	}
 
-	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
+	public enum AccountValueComparisonMode
 	{
-		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+		RESPECT_ACCOUNTS_TREE,
+		NUMERIC,
+		;
 
+		public static AccountValueComparisonMode ofNullableString(@Nullable final String value)
+		{
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm == null)
+			{
+				return RESPECT_ACCOUNTS_TREE;
+			}
+			else
+			{
+				return valueOf(valueNorm);
+			}
+		}
+	}
+
+	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo, @NonNull final AccountValueComparisonMode comparisonMode)
+	{
+		switch (comparisonMode)
+		{
+			case RESPECT_ACCOUNTS_TREE:
+				return getElementValueIdsBetween_RESPECT_ACCOUNTS_TREE(accountValueFrom, accountValueTo);
+			case NUMERIC:
+				return getElementValueIdsBetween_NUMERIC(accountValueFrom, accountValueTo);
+			default:
+				throw new AdempiereException("Unknown comparison mode: " + comparisonMode);
+		}
+	}
+
+	private ImmutableSet<ElementValueId> getElementValueIdsBetween_RESPECT_ACCOUNTS_TREE(final String accountValueFrom, final String accountValueTo)
+	{
 		final I_C_ElementValue from = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, accountValueFrom + "%")
@@ -175,9 +211,30 @@ public class ElementValueRepository
 				.create()
 				.first();
 
+		if(from == null || to == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
+				.create()
+				.listIds(ElementValueId::ofRepoId);
+	}
+
+	private ImmutableSet<ElementValueId> getElementValueIdsBetween_NUMERIC(final String accountValueFrom, final String accountValueTo)
+	{
+		final BigDecimal from = NumberUtils.asBigDecimal(accountValueFrom);
+		final BigDecimal to = NumberUtils.asBigDecimal(accountValueTo);
+
+		final StringToNumericModifier stringToNumericModifier = new StringToNumericModifier();
+
+		return queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from, to, stringToNumericModifier)
 				.create()
 				.listIds(ElementValueId::ofRepoId);
 	}

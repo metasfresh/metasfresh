@@ -139,6 +139,12 @@ public class RabbitMqListener implements MessageListener
 	{
 
 		connectionFactory = new CachingConnectionFactory(host, port);
+
+		// Attempt to fix ordering issues when sending first ORDERS lines and then the EDI_ReplicationTrx_Update
+		// Also see https://stackoverflow.com/questions/62592526/rabbitmq-topic-exchange-message-ordering 
+		// and https://github.com/metasfresh/metasfresh/pull/18529/files#diff-a8e9572e04cbf14f200ad7a09e00b03c7189f3c4125835d9b4c7e8be01ff599aR104
+		connectionFactory.setChannelCacheSize(1);
+		
 		if (userName != null && password != null)
 		{
 			connectionFactory.setUsername(userName);

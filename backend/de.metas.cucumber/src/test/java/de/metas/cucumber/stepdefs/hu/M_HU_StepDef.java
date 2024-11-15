@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +63,7 @@ import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -76,6 +77,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
@@ -137,11 +139,13 @@ public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -156,6 +160,15 @@ public class M_HU_StepDef
 	private final TestContext restTestContext;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	private final TestContext testContext;
+
+	@And("all the hu data is reset")
+	public void reset_data()
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+	}
 
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
@@ -786,6 +799,25 @@ public class M_HU_StepDef
 				validateHU(jsonHU.getIncludedHUs(), includedHusIdentifiers, huIdentifierToRow);
 			}
 		}
+	}
+
+
+	@And("return hu from customer")
+	public void return_HU_from_customer(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			returnHUFromCustomer(tableRow);
+		}
+	}
+
+	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Picking_Candidate.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
 	}
 
 	@NonNull

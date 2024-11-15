@@ -1,14 +1,25 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
+
 
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
@@ -59,4 +70,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isMediated(DocTypeId docTypeId);
 
 	boolean isCallOrder(DocTypeId docTypeId);
+
+	void save(I_C_DocType dt);
 }

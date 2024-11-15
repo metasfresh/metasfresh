@@ -1,3 +1,5 @@
+package de.metas.edi.process;
+
 /*
  * #%L
  * de.metas.edi
@@ -19,8 +21,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.edi.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQueue;

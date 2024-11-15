@@ -8,6 +8,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        pack.created,
        pack.createdby,
        line.edi_desadvline_id,
+       linePack.edi_desadvline_pack_id,
        ipa_sscc18,
        pack.isactive,
        pack.updated,
@@ -34,4 +35,5 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
 from EDI_Desadv_Pack pack
          INNER JOIN EDI_Desadv_Pack_Item item on pack.edi_desadv_pack_id = item.edi_desadv_pack_id
          INNER JOIN EDI_DesadvLine line ON item.edi_desadvline_id = line.edi_desadvline_id
+         INNER JOIN edi_desadvline_pack linePack ON linePack.edi_desadv_id = pack.edi_desadv_id
 ;

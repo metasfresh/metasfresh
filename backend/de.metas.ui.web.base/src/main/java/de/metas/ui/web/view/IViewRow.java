@@ -71,7 +71,7 @@ public interface IViewRow
 
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
-	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+	 * Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
 	 */
 	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
 
@@ -93,6 +93,11 @@ public interface IViewRow
 	default Object getFieldValueAsJsonObject(@NonNull final String fieldName, final JSONOptions jsonOpts)
 	{
 		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);
+	}
+
+	default Comparable<?> getFieldValueAsComparable(@NonNull final String fieldName, final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues().getAsComparable(fieldName, jsonOpts);
 	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
@@ -133,7 +138,9 @@ public interface IViewRow
 	default ITranslatableString getSingleColumnCaption() { return TranslatableStrings.empty(); }
 	// @formatter:on
 
-	/** @return a stream of given row and all it's included rows recursively */
+	/**
+	 * @return a stream of given row and all it's included rows recursively
+	 */
 	default Stream<IViewRow> streamRecursive()
 	{
 		return this.getIncludedRows()

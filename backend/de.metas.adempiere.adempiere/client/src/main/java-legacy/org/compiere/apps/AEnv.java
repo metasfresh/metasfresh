@@ -532,10 +532,6 @@ public final class AEnv
 		{
 			OnlineHelp.openInDefaultBrowser();
 		}
-		else if (actionCommand.equals("EMailSupport"))
-		{
-			ADialog.createSupportEMail(SwingUtils.getFrame(c), SwingUtils.getFrame(c).getTitle(), "\n\n");
-		}
 		else if (actionCommand.equals("About"))
 		{
 			showCenterScreen(new AboutBox(SwingUtils.getFrame(c)));

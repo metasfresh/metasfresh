@@ -158,7 +158,7 @@ public class Merge
 			{
 				sql = "DELETE FROM " + TableName + " WHERE " + ColumnName + "=" + from_ID;
 
-				if (DB.executeUpdate(sql, m_trx.getTrxName()) < 0)
+				if (DB.executeUpdateAndSaveErrorOnFail(sql, m_trx.getTrxName()) < 0)
 				{
 					m_errorLog.append(Env.NL).append("DELETE FROM ").append(TableName)
 							.append(" - ");
@@ -235,7 +235,7 @@ public class Merge
 					+ " AND " + X_M_Cost.COLUMNNAME_CumulatedQty + "=0";
 		}
 
-		int count = DB.executeUpdate(sql, m_trx.getTrxName());
+		int count = DB.executeUpdateAndSaveErrorOnFail(sql, m_trx.getTrxName());
 
 		if (count < 0)
 		{

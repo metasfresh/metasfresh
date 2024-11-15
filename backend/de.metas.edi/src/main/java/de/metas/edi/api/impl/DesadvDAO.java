@@ -36,6 +36,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
@@ -65,6 +66,7 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final EDIDesadvQuery query)
@@ -108,14 +110,23 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(@NonNull final I_EDI_Desadv desadv, final int line)
+	public I_EDI_DesadvLine retrieveLineById(final @NonNull EDIDesadvLineId ediDesadvLineId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
+		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+	}
+
+	@Override
+	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(
+			@NonNull final I_EDI_Desadv desadv,
+			final int line,
+			@NonNull final BPartnerId bPartnerId)
+	{
+		final IQueryBuilder<I_EDI_DesadvLine> query = queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line)
-				.create()
-				.firstOnly(I_EDI_DesadvLine.class);
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
+
+		return query.create().firstOnly(I_EDI_DesadvLine.class);
 	}
 
 	@Override
@@ -161,7 +172,7 @@ public class DesadvDAO implements IDesadvDAO
 				.create()
 				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
 	}
-	
+
 	@Override
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
@@ -283,7 +294,7 @@ public class DesadvDAO implements IDesadvDAO
 	@Override
 	public BigDecimal retrieveMinimumSumPercentage()
 	{
-		final String minimumPercentageAccepted_Value = Services.get(ISysConfigBL.class).getValue(
+		final String minimumPercentageAccepted_Value = sysConfigBL.getValue(
 				SYS_CONFIG_DefaultMinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
 		try
 		{
@@ -306,6 +317,35 @@ public class DesadvDAO implements IDesadvDAO
 	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
 	{
 		InterfaceWrapperHelper.save(ediDesadvLine);
+	}
+
+	@Override
+	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
+	{
+		InterfaceWrapperHelper.save(ediDesadvLine);
+	}
+
+	@Override
+	@NonNull
+	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, statusSet)
+				.create()
+				.list(I_M_InOut.class);
+	}
+
+	@Override
+	@NonNull
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId)
+				.create()
+				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
 	}
 
 	@Override

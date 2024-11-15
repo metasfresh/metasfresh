@@ -436,9 +436,9 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		if (orderLine.getQtyOrdered().signum() <= 0)
+		if (orderLine.getQtyOrdered().signum() <= 0 || orderLine.isDeliveryClosed())
 		{
-			logger.debug("Given orderLine {} has QtyOrdered<=0; setting QtyReserved=0.", orderLine);
+			logger.debug("Given orderLine {} has QtyOrdered<=0 or delivery was closed; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -598,7 +598,11 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
-			throw new AdempiereException(TranslatableStrings.constant("for TU-UOMs, we must have qtyItemCapacity"));// TODO: nice user message
+			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID="+orderLine.getC_OrderLine_ID()))
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", orderLine.getC_Order_ID())
+					.setParameter("Line", orderLine.getLine())
+					.setParameter("M_Product_ID", orderLine.getM_Product_ID());
 		}
 		return qtyItemCapacity;
 	}

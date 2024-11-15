@@ -1,18 +1,16 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
-import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.stream.Stream;
 
 /*
  * #%L

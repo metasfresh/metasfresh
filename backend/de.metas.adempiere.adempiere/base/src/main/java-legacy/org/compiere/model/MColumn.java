@@ -311,7 +311,7 @@ public class MColumn extends X_AD_Column
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Column_ID=").append(get_ID());
-				int no = DB.executeUpdate(sql.toString(), get_TrxName());
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
 		}
@@ -368,6 +368,182 @@ public class MColumn extends X_AD_Column
 	{
 		String sqlStmt = "SELECT AD_Table_ID FROM AD_Column WHERE AD_Column_ID=?";
 		return DB.getSQLValue(trxName, sqlStmt, AD_Column_ID);
+	}
+
+	/**
+	 * Sync this column with the database
+	 *
+	 * @return SQLs
+	 */
+	public List<String> syncDatabase()
+	{
+		final MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
+		table.set_TrxName(get_TrxName());  // otherwise table.getSQLCreate may miss current column
+		if (table.get_ID() <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + getAD_Table_ID());
+		}
+
+		final List<String> sqlStatements;
+		final boolean addingSingleColumn;
+		final String tableName = table.getTableName();
+		if (isDBTableExists(tableName))
+		{
+			final DBColumn dbColumn = retrieveDBColumn(tableName, getColumnName());
+			if (dbColumn != null)
+			{
+				// Update existing column
+				sqlStatements = getSQLModify(tableName, isMandatory() != dbColumn.isMandatory());
+				addingSingleColumn = false;
+			}
+			else
+			{
+				// No existing column
+				sqlStatements = getSQLAdd(tableName);
+				addingSingleColumn = true;
+			}
+		}
+		else
+		{
+			// No DB table
+			sqlStatements = ImmutableList.of(table.getSQLCreate());
+			addingSingleColumn = false;
+		}
+
+		//
+		// Execute
+		sqlStatements.forEach(sqlStatement -> executeSQL(tableName, sqlStatement, addingSingleColumn));
+
+		return sqlStatements;
+	}
+
+	private static boolean isDBTableExists(final String tableName)
+	{
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = DB.getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			final String catalog = DB.getDatabase().getCatalog();
+			final String schema = DB.getDatabase().getSchema();
+			final String tableNameNorm = DB.normalizeDBIdentifier(tableName, md);
+
+			//
+			rs = md.getTables(catalog, schema, tableNameNorm, null);
+			if (rs.next())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+
+	}
+
+	@Value
+	@Builder
+	private static final class DBColumn
+	{
+		final String columnName;
+		final boolean mandatory; // i.e. NOT NULL
+	}
+
+	@Nullable
+	private static DBColumn retrieveDBColumn(@NonNull final String tableName, @NonNull final String columnName)
+	{
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = DB.getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			final String catalog = DB.getDatabase().getCatalog();
+			final String schema = DB.getDatabase().getSchema();
+			final String tableNameNorm = DB.normalizeDBIdentifier(tableName, md);
+
+			//
+			rs = md.getColumns(catalog, schema, tableNameNorm, null);
+			while (rs.next())
+			{
+				final String currColumnName = rs.getString("COLUMN_NAME");
+				if (!currColumnName.equalsIgnoreCase(columnName))
+				{
+					continue;
+				}
+
+				// update existing column
+				final boolean mandatory = DatabaseMetaData.columnNoNulls == rs.getInt("NULLABLE");
+
+				return DBColumn.builder()
+						.columnName(currColumnName)
+						.mandatory(mandatory)
+						.build();
+			}
+
+			// Column not found
+			return null;
+		}
+		catch (SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+	}
+
+	/**
+	 * Executes the given SQL statement.
+	 * 
+	 * @param tableName the table name that needs to be changed
+	 * @param sqlStatement the DDL that needs to be executed
+	 * @param addingSingleColumn tells if the given {@code sqlStatement} is about adding a (single) column, as opposed to creating a whole table.
+	 *            If this parameter's value is {@code true} and if {@link #isAddColumnDDL(String)} returns {@code true} on the given {@code statement},
+	 *            then the given statement is wrapped into an invocation of the {@code db_alter_table()} DB function.
+	 *            See that function and its documentation for more infos.
+	 */
+	private static void executeSQL(final String tableName, final String sqlStatement, final boolean addingSingleColumn)
+	{
+		if (addingSingleColumn && isAddColumnDDL(sqlStatement))
+		{
+			final String sql = MigrationScriptFileLoggerHolder.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
+			final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
+			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		}
+		else
+		{
+			DB.executeUpdateAndThrowExceptionOnFail(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
+
+	/**
+	 * 
+	 * @param statement
+	 * @return {@code true} if the given statement is something like {@code ... ALTER TABLE ... ADD COLUMN ...} (case-insensitive!).
+	 */
+	private static boolean isAddColumnDDL(final String statement)
+	{
+		if (Check.isEmpty(statement, true))
+		{
+			return false;
+		}
+
+		// example: ALTER TABLE public.C_BPartner ADD COLUMN AD_User_ID NUMERIC(10)
+		return statement.matches("(?i).*alter table [^ ]+ add column .*");
 	}
 
 	public static boolean isSuggestSelectionColumn(String columnName, boolean caseSensitive)

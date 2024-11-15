@@ -62,6 +62,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -593,8 +594,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Invoice_ID=" + getC_Invoice_ID();
-		final int noLine = DB.executeUpdate("UPDATE C_InvoiceLine " + set, get_TrxName());
-		final int noTax = DB.executeUpdate("UPDATE C_InvoiceTax " + set, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceTax " + set, get_TrxName());
 		m_lines = null;
 		m_taxes = null;
 		log.debug(processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -757,7 +758,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM C_Invoice o WHERE ol.C_Invoice_ID=o.C_Invoice_ID) "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #" + no);
 		}
 		return true;
@@ -840,8 +841,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// No Cash Book
 		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash()
-				&& MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
+		if (paymentRule.isCash() &&
+				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()) &&
+				MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
 		{
 			throw new AdempiereException("@NoCashBook@");
 		}
@@ -917,7 +919,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String trxName = get_TrxName();
 
 		// Delete Taxes
-		DB.executeUpdateEx("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -1050,6 +1052,52 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			approveIt();
 		}
+
+		// POS supports multiple payments
+		boolean fromPOS = false;
+		if (getC_Order_ID() > 0)
+		{
+			fromPOS = getC_Order().getC_POS_ID() > 0;
+		}
+
+		// Create Cash
+		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
+		if (paymentRule.isCash() &&
+				!fromPOS &&
+				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
+		{
+			// Modifications for POSterita
+			//
+			// MCash cash = MCash.get (getCtx(), getAD_Org_ID(),
+			// getDateInvoiced(), getC_Currency_ID(), get_TrxName());
+
+			MCash cash;
+
+			final int posId = Env.getContextAsInt(getCtx(), Env.POS_ID);
+
+			if (posId != 0)
+			{
+				final MPOS pos = new MPOS(getCtx(), posId, get_TrxName());
+				final int cashBookId = pos.getC_CashBook_ID();
+				cash = MCash.get(getCtx(), cashBookId, getDateInvoiced(), get_TrxName());
+			}
+			else
+			{
+				cash = MCash.get(getCtx(), getAD_Org_ID(),
+								 getDateInvoiced(), getC_Currency_ID(), get_TrxName());
+			}
+
+			// End Posterita Modifications
+
+			if (cash == null || cash.get_ID() <= 0)
+			{
+				throw new AdempiereException("@NoCashBook@");
+			}
+			final MCashLine cl = new MCashLine(cash);
+			cl.setInvoice(this);
+			cl.saveEx(get_TrxName());
+			setC_CashLine_ID(cl.getC_CashLine_ID());
+		}    // CashBook
 
 		// Update Order & Match
 		int matchInv = 0;

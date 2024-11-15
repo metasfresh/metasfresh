@@ -120,7 +120,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
@@ -136,7 +136,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final int clientId = Env.getAD_Client_ID(ctx);
 		final String chunkUUID = UUID.randomUUID().toString();
 
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
 		logger.debug("Invalidated {} entries for AD_Client_ID={}", count, clientId);
 
 		if (count > 0)
@@ -199,7 +199,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} shipment schedules for headerAggregationKeys={}", count, headerAggregationKeys);
 		//
 		if (count > 0)
@@ -234,7 +234,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
 				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
@@ -255,7 +255,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "\n WHERE " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'"
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
-		final int count = DB.executeUpdateEx(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, pinstanceId);
 		//
 		if (count > 0)
@@ -333,7 +333,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Execute
 		final String trxName = ITrx.TRXNAME_None;
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
 		//
@@ -567,7 +567,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
 				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
 				;
-		final int countTagged = DB.executeUpdateEx(sqlUpdate, ITrx.TRXNAME_None);
+		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 
@@ -578,7 +578,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final Object[] param = { pinstanceId };
 		final Mutable<HashSet<Integer>> shipmentScheduleIds = new Mutable<>(new HashSet<>());
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				param,
 				ITrx.TRXNAME_None,
@@ -611,7 +611,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final Object[] sqlParams = new Object[] { pinstanceId };
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
-		final int result = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
 	}
 

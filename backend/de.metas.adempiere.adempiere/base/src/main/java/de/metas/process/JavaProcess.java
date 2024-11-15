@@ -1,20 +1,27 @@
 package de.metas.process;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -42,31 +49,23 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * Java Process base class.
- *
+ * <p>
  * Also see
  * <ul>
  * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
@@ -114,7 +113,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	public static final String MSG_OK = "OK";
 	/**
 	 * Process failed error message. To be returned from {@link #doIt()}.
-	 *
+	 * <p>
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
@@ -326,7 +325,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given process instance info.
-	 *
+	 * <p>
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
 	 *
 	 * @param pi process instance info
@@ -358,7 +357,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given preconditions context.
-	 *
+	 * <p>
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
 	 *
 	 * @param context preconditions context
@@ -402,7 +401,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Load process autowired parameter from given <code>source</code>.
-	 *
+	 * <p>
 	 * If the parameter value is not valid (e.g. mandatory required but was null),
 	 * this method won't fail but will simply not set the value.
 	 */
@@ -559,7 +558,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Ends current transaction, if a local transaction.
-	 *
+	 * <p>
 	 * This method can be called as many times as possible and even if the transaction was not started before.
 	 */
 	private void endTrx(final boolean success)
@@ -702,9 +701,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Actual process business logic to be executed.
-	 *
+	 * <p>
 	 * This method is called after {@link #prepare()}.
-	 *
+	 * <p>
 	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}.
 	 * By default, this method is executed in transaction.
 	 *
@@ -886,7 +885,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/** @return selected included row IDs of current single selected document */
-	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
+	protected final <T> ImmutableSet<Integer> getSelectedIncludedRecordIds(@NonNull final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		return getProcessInfo().getSelectedIncludedRecords().stream()
@@ -894,6 +893,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.map(TableRecordReference::getRecord_ID)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	protected final <T, ID extends RepoIdAware> ImmutableSet<ID> getSelectedIncludedRecordIds(@NonNull final Class<T> modelClass, @NonNull final IntFunction<ID> idMapper)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		return getProcessInfo().getSelectedIncludedRecords().stream()
+				.filter(recordRef -> recordRef.getTableName().equals(tableName))
+				.map(recordRef -> idMapper.apply(recordRef.getRecord_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 
 	/** @return selected included rows of current single selected document */
 	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
@@ -970,7 +979,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Gets parameters as array.
-	 *
+	 * <p>
 	 * Please consider using {@link #getParameters()}.
 	 *
 	 * @return parameters array
@@ -1007,8 +1016,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		getResult().addLog(id, date, number, msg);
-	}	// addLog
+		addLog(id, date, number,  msg, null);
+	}
+
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
+	{
+
+		getResult().addLog(id, date, number, msg, warningMessages);
+	}
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
@@ -1018,9 +1033,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
+		return addLog(null, msg, msgParameters);
+	}
+
+	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
+	{
 		if (msg != null)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
+			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
 		}
 		return this;
 	}	// addLog
@@ -1098,7 +1118,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
-	 *
+	 * <p>
 	 * If this exception is thrown:
 	 * <ul>
 	 * <li>the process will be terminated right away

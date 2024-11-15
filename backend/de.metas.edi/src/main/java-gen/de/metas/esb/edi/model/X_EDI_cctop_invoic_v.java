@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -159,6 +160,18 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	public java.lang.String getCreditMemoReasonText() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreditMemoReasonText);
+	}
+
+	@Override
+	public void setDateAcct (final @Nullable java.sql.Timestamp DateAcct)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateAcct()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
 
 	@Override

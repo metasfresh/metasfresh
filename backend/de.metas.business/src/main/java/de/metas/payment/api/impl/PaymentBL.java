@@ -412,7 +412,10 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
-			invoices.add(alloc.getC_Invoice());
+			if (alloc.getC_Invoice_ID() > 0)
+			{
+				invoices.add(alloc.getC_Invoice());
+			}
 		}
 
 		for (final I_C_Invoice inv : invoices)

@@ -36,6 +36,9 @@ BEGIN
 
     UPDATE ad_user SET password =public.hash_column_value_if_needed(valueplain := p_target_metasfresh_pw) WHERE name = 'metasfresh';
 
+    -- not included in mini dumps
+    CREATE SCHEMA IF NOT EXISTS backup;
+
     IF p_target_has_reports_service
     THEN
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/ReportServlet' WHERE name ILIKE 'de.metas.adempiere.report.jasper.JRServerServlet';

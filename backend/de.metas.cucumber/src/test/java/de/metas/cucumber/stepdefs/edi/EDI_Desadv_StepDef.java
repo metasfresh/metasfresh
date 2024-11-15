@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -51,6 +53,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -74,16 +77,19 @@ public class EDI_Desadv_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
+	private final Edi_Desadv_StepDefData ediDesadvTable;
 
 	public EDI_Desadv_StepDef(
 			@NonNull final EDI_Desadv_StepDefData desadvTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final Edi_Desadv_StepDefData ediDesadvTable,
 			@NonNull final EDI_Exp_Desadv_StepDefData ediExpDesadvTable)
 	{
 		this.desadvTable = desadvTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.ediDesadvTable = ediDesadvTable;
 		this.ediExpDesadvTable = ediExpDesadvTable;
 	}
 
@@ -191,7 +197,7 @@ public class EDI_Desadv_StepDef
 		assertThat(childNode.getNodeType()).isEqualTo(Node.ELEMENT_NODE);
 
 		return (Element)childNode;
-	}
+		}
 
 	private void validateExportStatus(
 			final int timeoutSec,
@@ -247,5 +253,36 @@ public class EDI_Desadv_StepDef
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);
+	}
+
+	@Then("validate created edi desadv")
+	public void validate_edi_desadv(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validateEdiDesadv(tableRow);
+		}
+	}
+
+	private void validateEdiDesadv(@NonNull final Map<String, String> tableRow)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final de.metas.edi.model.I_C_Order orderRecord = InterfaceWrapperHelper.create(
+				CoalesceUtil.coalesceSuppliers(
+						() -> orderTable.get(orderIdentifier),
+						() -> InterfaceWrapperHelper.load(StringUtils.toIntegerOrZero(orderIdentifier), I_C_Order.class)), de.metas.edi.model.I_C_Order.class);
+
+		final I_EDI_Desadv ediDesadvRecord = InterfaceWrapperHelper.load(orderRecord.getEDI_Desadv_ID(), I_EDI_Desadv.class);
+
+		final BigDecimal sumDeliveredInStockingUOM = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM);
+		final BigDecimal sumOrderedInStockingUOM = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_SumOrderedInStockingUOM);
+
+		assertThat(ediDesadvRecord.getSumDeliveredInStockingUOM()).isEqualByComparingTo(sumDeliveredInStockingUOM);
+		assertThat(ediDesadvRecord.getSumOrderedInStockingUOM()).isEqualByComparingTo(sumOrderedInStockingUOM);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "EDI_Desadv");
+		ediDesadvTable.put(recordIdentifier, ediDesadvRecord);
 	}
 }

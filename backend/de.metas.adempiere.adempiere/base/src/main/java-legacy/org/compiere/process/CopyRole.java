@@ -93,7 +93,7 @@ public class CopyRole extends JavaProcess
 			String keycolumn = keycolumns[i];
 
 			String sql = "DELETE FROM " + table + " WHERE AD_Role_ID = " + m_AD_Role_ID_To;
-			int no = DB.executeUpdateEx(sql, get_TrxName());
+			int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			addLog(action++, null, BigDecimal.valueOf(no), "Old records deleted from " + table);
 
 			final boolean column_IsReadWrite =
@@ -124,7 +124,7 @@ public class CopyRole extends JavaProcess
 				sql += ", isReadWrite ";
 			sql += "FROM " + table + " WHERE AD_Role_ID = " + m_AD_Role_ID_From;
 
-			no = DB.executeUpdateEx(sql, get_TrxName());
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 
 			addLog(action++, null, new BigDecimal(no), "New records inserted into " + table);
 		}

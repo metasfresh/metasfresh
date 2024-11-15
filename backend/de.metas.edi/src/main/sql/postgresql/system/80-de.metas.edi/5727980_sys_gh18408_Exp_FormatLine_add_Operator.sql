@@ -65,7 +65,7 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-07-05 13:05:13.2
 -- Field: Export Format(53025,EE05) -> Export Format Line(53086,EE05) -> Filter Operator
 -- Column: EXP_FormatLine.FilterOperator
 -- 2024-07-05T13:06:50.265Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588691,729035,0,53086,0,TO_TIMESTAMP('2024-07-05 13:06:50.078000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.replication',0,'Y','Y','Y','N','N','N','N','Y','Filter Operator',0,185,0,1,1,TO_TIMESTAMP('2024-07-05 13:06:50.078000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588691,729035,0,53086,0,TO_TIMESTAMP('2024-07-05 13:06:50.078000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.replication',0,0,'Y','Y','Y','N','N','N','N','N','Y',0,'Filter Operator',0,0,185,0,1,1,TO_TIMESTAMP('2024-07-05 13:06:50.078000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2024-07-05T13:06:50.270Z
@@ -105,28 +105,6 @@ UPDATE EXP_FormatLine SET FilterOperator='L', Help='FilterOperator="Like", so th
 ;
 
 COMMIT;
-
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- 2024-07-05T13:05:13.851Z
 INSERT INTO t_alter_column values('exp_formatline','FilterOperator','CHAR(1)',null,'E')

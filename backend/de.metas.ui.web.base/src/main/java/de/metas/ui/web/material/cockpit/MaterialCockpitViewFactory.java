@@ -32,6 +32,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -59,6 +60,7 @@ import java.util.List;
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory implements IViewFactory
 {
+	public static final String SYSCFG_Layout = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout";
 	/**
 	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
 	 */
@@ -104,6 +106,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_SetProcurementStatus.class))
 				.build();
 	}
 
@@ -143,6 +146,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
 						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
+		final String commaSeparatedFieldNames = sysConfigBL.getValue(SYSCFG_Layout, (String)null);
 		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);
 
 		final ViewLayout.Builder viewlayOutBuilder = ViewLayout.builder()
@@ -151,7 +155,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.setAllowOpeningRowDetails(false)
-				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
+				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType, commaSeparatedFieldNames)
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();

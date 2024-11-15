@@ -92,7 +92,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
 		Check.assumeNotNull(line.getC_Invoice(), "Parameter line has a not-null C_Invoice; line={}", line);
 
-		final I_C_BP_BankAccount bpBankAccount = create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 
@@ -146,7 +146,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
 		if (bankId == null)
 		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, new Object[] { bpBankAccount.toString() });
+			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, bpBankAccount.toString());
 		}
 
 		// Set corresponding data
@@ -158,14 +158,14 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(sepaProtocol) && Check.isBlank(bpBankAccount.getSEPA_CreditorIdentifier()))
 		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet, new Object[] { bpBankAccount.toString() });
+			throw new AdempiereException(ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet, bpBankAccount.toString());
 		}
 		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
 
 		final Bank bank = bankRepo.getById(bankId); 
 		if (Check.isBlank(bank.getSwiftCode()))
 		{
-			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, new Object[] { bank.getBankName() });
+			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, bank.getBankName());
 		}
 		header.setSwiftCode(bank.getSwiftCode());
 

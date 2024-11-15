@@ -15,11 +15,11 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
@@ -161,7 +161,7 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+	LookupValuesPage getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
 
 	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
 
@@ -220,6 +220,11 @@ public interface IView
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
 	 */
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
+
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
 
 	/**
 	 * Notify the view that given record(s) has changed.

@@ -311,6 +311,9 @@ public class StockQtyAndUOMQtys
 		}
 	}
 
+	/**
+	 * @return the argument with the smaller UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty minUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)
@@ -328,6 +331,9 @@ public class StockQtyAndUOMQtys
 		return uomQty1.compareTo(uomQty2) <= 0 ? qtysToCompare1 : qtysToCompare2;
 	}
 
+	/**
+	 * @return The argument with the bigger UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty maxUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)

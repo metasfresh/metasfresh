@@ -60,7 +60,7 @@ const ApplicationRoot = () => {
     if (isLoggedIn) {
       api
         .getSettings()
-        .then(handleSettingsResponse)
+        .then((map) => dispatch(putSettingsAction(map)))
         .catch((axiosError) => console.log('Failed to fetch settings', { axiosError }));
     }
   }, [isLoggedIn]);

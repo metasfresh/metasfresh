@@ -103,7 +103,7 @@ public class SQLStatementMigrationStepExecutor extends AbstractMigrationStepExec
 			if (X_AD_MigrationStep.DBTYPE_AllDatabaseTypes.equals(step.getDBType()))
 			{
 				// Execute script using our conversion layer
-				DB.executeUpdateEx(sql, trxName);
+				DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 			}
 			else
 			{

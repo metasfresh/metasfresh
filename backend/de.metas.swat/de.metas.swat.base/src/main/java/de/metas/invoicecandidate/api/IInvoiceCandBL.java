@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.AsyncBatchId;
@@ -182,6 +183,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
+	@VisibleForTesting
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
@@ -355,6 +357,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
 	/**
 	 * Iterate the candidates to close and close them one by one.
 	 */
@@ -417,8 +423,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
-
-	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 
 	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
 

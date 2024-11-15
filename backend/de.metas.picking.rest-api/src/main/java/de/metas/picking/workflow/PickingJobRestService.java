@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepositor
 import de.metas.handlingunits.picking.config.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -48,7 +49,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -161,6 +161,10 @@ public class PickingJobRestService
 		return pickingJobService.getQtyRejectedReasons();
 	}
 
+	public ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
 	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
 	{
 		return pickingJobService.getLUAvailableTargets(pickingJob);

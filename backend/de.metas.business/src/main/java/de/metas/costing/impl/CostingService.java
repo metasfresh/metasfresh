@@ -36,6 +36,7 @@ import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -130,6 +131,12 @@ public class CostingService implements ICostingService
 	@Override
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
+		return createCostDetailOrEmpty(request).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
 		final ImmutableList<CostDetailCreateResult> costElementResults = Stream.of(request)
 				.flatMap(this::explodeAcctSchemas)
 				.map(this::convertToAcctSchemaCurrency)
@@ -139,10 +146,12 @@ public class CostingService implements ICostingService
 
 		if (costElementResults.isEmpty())
 		{
-			throw new AdempiereException("No costs created for " + request);
+			return ExplainedOptional.emptyBecause("No costs created for " + request);
 		}
-
-		return toAggregatedCostAmount(costElementResults);
+		else
+		{
+			return ExplainedOptional.of(toAggregatedCostAmount(costElementResults));
+		}
 	}
 
 	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
@@ -380,6 +389,12 @@ public class CostingService implements ICostingService
 	@Override
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
+		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
+	{
 		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
 		{
@@ -413,10 +428,10 @@ public class CostingService implements ICostingService
 
 		if (costDetailCreateResults.isEmpty())
 		{
-			throw new AdempiereException("No costs created for " + reversalRequest);
+			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
 		}
 
-		return toAggregatedCostAmount(costDetailCreateResults);
+		return ExplainedOptional.of(toAggregatedCostAmount(costDetailCreateResults));
 	}
 
 	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(

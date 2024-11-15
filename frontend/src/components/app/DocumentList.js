@@ -25,6 +25,10 @@ import {
 } from '../ppOrderCandidate/PPOrderCandidateViewHeader';
 import { connect } from 'react-redux';
 import { getSettingFromStateAsBoolean } from '../../utils/settings';
+import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
 
 /**
  * @file Class based component.
@@ -235,6 +239,15 @@ class DocumentList extends Component {
                 </button>
               )}
 
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
               {layout.filters && (
                 <Filters
                   {...{
@@ -245,7 +258,6 @@ class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
-
               {staticFilters && (
                 <FiltersStatic
                   {...{

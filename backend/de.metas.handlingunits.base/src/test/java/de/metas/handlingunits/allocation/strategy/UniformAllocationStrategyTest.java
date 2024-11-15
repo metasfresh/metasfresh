@@ -48,6 +48,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -359,9 +360,9 @@ public class UniformAllocationStrategyTest
 			//helper.commitAndDumpHU(lu);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			Assert.assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("52")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("104")));
+			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("52")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("104")));
 		}
 
 		@Test
@@ -370,8 +371,60 @@ public class UniformAllocationStrategyTest
 			subtractQty(lu, "104", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
+		}
+	}
+
+	@Nested
+	@DisplayName("1 LU: [50 x TU x 10kg aggregated]")
+	public class preventOverallocation
+	{
+		private I_M_HU lu;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
+
+			final Quantity ten = Quantity.of("10", helper.uomEach);
+			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
+			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
+					BigDecimal.ONE,
+					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+					true);
+			lu = lus.get(0);
+			for (int i = 0; i < 49; i++)
+			{
+				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
+				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+			}
+
+			// dumpHU("initial", lu);
+
+			final Node luXml = HUXmlConverter.toXml(lu);
+			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("50")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("500")));
+		}
+
+		@Test
+		public void add80()
+		{
+			addQty(lu, "80", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
+			// dumpHU("initial", lu);
+			final Node luXml = HUXmlConverter.toXml(lu);
+			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("50")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
+			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("580")));
+
+			for (int i = 1; i <= 50; i++)
+			{
+				final String expectedQty = i <= 40 ? "12" : "10";
+				assertThat(luXml, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/Storage/@Qty)", is(expectedQty)));
+				assertThat(luXml, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/@HUStatus)", is("A")));
+			}
 		}
 	}
 

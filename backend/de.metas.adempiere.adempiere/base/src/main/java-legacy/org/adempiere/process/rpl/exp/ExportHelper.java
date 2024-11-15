@@ -138,13 +138,18 @@ public class ExportHelper
 	 */
 	private Document outDocument = null;
 
-	/** Client */
-	private final int m_AD_Client_ID;
+	/** Custom Date Format */
+	// private SimpleDateFormat m_customDateFormat = null;
+
+	/**
+	 * Client
+	 */
+	private int m_AD_Client_ID = -1;
 
 	/**
 	 * Replication Strategy
 	 */
-	private final I_AD_ReplicationStrategy m_rplStrategy;
+	private I_AD_ReplicationStrategy m_rplStrategy = null;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
 	{

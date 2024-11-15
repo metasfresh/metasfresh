@@ -1749,6 +1749,7 @@ public class GridField
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTemplateTabId(templateTabId)
 				.setTabReadOnly(false)
+				.setTabIncludeFiltersStrategy(TabIncludeFiltersStrategy.Auto)
 				.load();
 
 		//

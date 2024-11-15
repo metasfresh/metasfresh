@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 
@@ -80,12 +79,11 @@ public class AppConfiguration
 			public void beforeApplicationStart(final CamelContext camelContext)
 			{
 				camelContext.setAutoStartup(false);
-
 				final Environment env = context.getEnvironment();
 
 				logger.log(Level.INFO, "Configured RabbitMQ hostname:port is  {}:{}", env.getProperty("camel.component.rabbitmq.hostname"), env.getProperty("camel.component.rabbitmq.port-number"));
 
-				final String metasfreshAPIBaseURL = env.getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+				final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
 
 				if (Check.isBlank(metasfreshAPIBaseURL))
 				{

@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -113,7 +114,7 @@ public class AveragePOCostingMethodHandlerTest
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
 
-		costElementRepo = new CostElementRepository();
+		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
 		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
@@ -177,8 +178,7 @@ public class AveragePOCostingMethodHandlerTest
 		acctSchemaDefault.setUnrealizedLoss_Acct(1);
 		saveRecord(acctSchemaDefault);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
-		return acctSchemaId;
+		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 	}
 
 	private ProductId createProduct()

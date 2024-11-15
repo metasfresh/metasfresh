@@ -64,7 +64,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
@@ -454,7 +454,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
 
 		final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + targetProcessParaId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
@@ -463,7 +463,7 @@ public class ADProcessDAO implements IADProcessDAO
 				" SELECT " + targetProcessParaId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + sourceProcessParaId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl inserted: {}", countInsert);
 	}
 
@@ -618,7 +618,7 @@ public class ADProcessDAO implements IADProcessDAO
 			@Nullable final String newColumnName)
 	{
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);

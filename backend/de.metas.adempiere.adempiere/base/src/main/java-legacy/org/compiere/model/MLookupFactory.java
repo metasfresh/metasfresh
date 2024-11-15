@@ -23,6 +23,7 @@ package org.compiere.model;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import de.metas.ad_reference.TableRefTable;
 import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
@@ -35,7 +36,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
-import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -265,8 +265,8 @@ public class MLookupFactory
 		// Account
 		else if (AD_Reference_ID == DisplayType.Account)
 		{
-			final TableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
-			info = getLookupInfo(WindowNo, accountTableRefInfo);
+			final TableRefTable accountTableRefTable = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
+			info = getLookupInfo(WindowNo, accountTableRefTable);
 		}
 		else if (AD_Reference_ID == DisplayType.Location)
 		{
@@ -460,7 +460,7 @@ public class MLookupFactory
 		return sql;
 	}    // getLookup_ListEmbed
 
-	private static ArrayKey createCacheKey(final TableRefInfo tableRef)
+	private static ArrayKey createCacheKey(final TableRefTable tableRef)
 	{
 		return new ArrayKey(tableRef);
 	}
@@ -476,13 +476,13 @@ public class MLookupFactory
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_Table(final int WindowNo, final int AD_Reference_Value_ID)
 	{
-		final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
-		if (tableRefInfo == null)
+		final TableRefTable tableRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
+		if (tableRefTable == null)
 		{
 			return null;
 		}
 
-		return getLookupInfo(WindowNo, tableRefInfo);
+		return getLookupInfo(WindowNo, tableRefTable);
 	}    // getLookup_Table
 
 	/**
@@ -514,23 +514,23 @@ public class MLookupFactory
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_TableDir(final int WindowNo, final String ColumnName)
 	{
-		final TableRefInfo tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
+		final TableRefTable tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
 		return getLookupInfo(WindowNo, tableRef);
 	}
 
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
+	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final TableRefTable tableRefTable)
 	{
-		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
-		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefInfo));
+		final ArrayKey cacheKey = createCacheKey(tableRefTable);
+		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefTable));
 		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 	}
 
 	@Nullable
-	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
+	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final TableRefTable tableRefTable)
 	{
 
-		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
+		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefTable);
 		if (lookupDisplayInfo == null)
 		{
 			return null;
@@ -545,8 +545,8 @@ public class MLookupFactory
 			return null;
 		}
 
-		final String tableName = tableRefInfo.getTableName();
-		final String keyColumn = tableRefInfo.getKeyColumn();
+		final String tableName = tableRefTable.getTableName();
+		final String keyColumn = tableRefTable.getKeyColumn();
 
 		final String keyColumnFQ = tableName + "." + keyColumn;
 
@@ -643,9 +643,9 @@ public class MLookupFactory
 		// SQL Where Clause
 		final String sqlWhereClauseStatic;
 		final String sqlWhereClauseDynamic;
-		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
+		if (!Check.isEmpty(tableRefTable.getWhereClause(), true))
 		{
-			final String whereClause = tableRefInfo.getWhereClause();
+			final String whereClause = tableRefTable.getWhereClause();
 			if (whereClause.indexOf('@') != -1)
 			{
 				sqlWhereClauseStatic = null;
@@ -694,7 +694,7 @@ public class MLookupFactory
 		// Order By qualified term or by Name
 		final String sqlOrderBy;
 		{
-			final String OrderByClause = tableRefInfo.getOrderByClause();
+			final String OrderByClause = tableRefTable.getOrderByClause();
 			if (!Check.isEmpty(OrderByClause, true))
 			{
 				sqlOrderBy = OrderByClause;
@@ -723,19 +723,19 @@ public class MLookupFactory
 
 		//
 		// Zoom AD_Window_IDs
-		AdWindowId zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
+		AdWindowId zoomSO_Window_ID = tableRefTable.getZoomSO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindow() != null)
 		{
 			zoomSO_Window_ID = lookupDisplayInfo.getZoomWindow();
 		}
 
-		AdWindowId zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
+		AdWindowId zoomPO_Window_ID = tableRefTable.getZoomPO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindowPO() != null)
 		{
 			zoomPO_Window_ID = lookupDisplayInfo.getZoomWindowPO();
 		}
 
-		final AdWindowId zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
+		final AdWindowId zoomAD_Window_ID_Override = tableRefTable.getZoomAD_Window_ID_Override();
 		if (zoomAD_Window_ID_Override != null)
 		{
 			zoomSO_Window_ID = zoomAD_Window_ID_Override;
@@ -766,10 +766,10 @@ public class MLookupFactory
 		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
-		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
+		lookupInfo.setAutoComplete(tableRefTable.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
-		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
-		lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
+		lookupInfo.setShowInactiveValues(tableRefTable.isShowInactiveValues());
+		lookupInfo.setTooltipType(tableRefTable.getTooltipType());
 
 		return lookupInfo;
 	}

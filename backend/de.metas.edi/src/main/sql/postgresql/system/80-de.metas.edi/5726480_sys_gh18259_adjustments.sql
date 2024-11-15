@@ -79,7 +79,7 @@ DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=543696
 -- Value: EDI_Desadv_InOut_EnqueueForExport
 -- Classname: de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport
 -- 2024-06-18T08:21:11.704Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585400,'Y','de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport','N',TO_TIMESTAMP('2024-06-18 08:21:11.197000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Enqueue Shipment-Desadv for export','json','N','N','xls','Java',TO_TIMESTAMP('2024-06-18 08:21:11.197000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EDI_Desadv_InOut_EnqueueForExport')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585400,'Y','de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport','N',TO_TIMESTAMP('2024-06-18 08:21:11.197000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Enqueue Shipment-Desadv for export','json','N','N','xls','Java',TO_TIMESTAMP('2024-06-18 08:21:11.197000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EDI_Desadv_InOut_EnqueueForExport')
 ;
 
 -- 2024-06-18T08:21:11.721Z
@@ -91,7 +91,7 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 -- Field: EDI Lieferavis (DESADV)(540256,de.metas.esb.edi) -> Zugeordnete Lieferungen(540664,de.metas.esb.edi) -> EDI-Sendestatus
 -- Column: M_InOut.EDI_ExportStatus
 -- 2024-06-18T08:28:00.613Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549871,728999,0,540664,0,TO_TIMESTAMP('2024-06-18 08:28:00.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.esb.edi',0,'Y','Y','Y','N','N','N','Y','N','EDI-Sendestatus',0,110,0,1,1,TO_TIMESTAMP('2024-06-18 08:28:00.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549871,728999,0,540664,0,TO_TIMESTAMP('2024-06-18 08:28:00.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.esb.edi',0,0,'Y','Y','Y','N','N','N','N','Y','N',0,'EDI-Sendestatus',0,0,110,0,1,1,TO_TIMESTAMP('2024-06-18 08:28:00.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2024-06-18T08:28:00.619Z
@@ -146,28 +146,6 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 -- 2024-06-18T09:00:12.967Z
 UPDATE AD_Column SET AD_Reference_ID=13, IsUpdateable='N',Updated=TO_TIMESTAMP('2024-06-18 09:00:12.967000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=588376
 ;
-
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- Column: M_InOut_DesadvLine_V.M_InOut_Desadv_ID
 -- Column: M_InOut_DesadvLine_V.M_InOut_Desadv_ID

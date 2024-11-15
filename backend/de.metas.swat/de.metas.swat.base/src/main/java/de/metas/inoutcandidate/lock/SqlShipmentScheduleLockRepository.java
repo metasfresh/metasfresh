@@ -165,7 +165,7 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		final String sql = "DELETE FROM " + I_M_ShipmentSchedule_Lock.Table_Name
 				+ " WHERE " + DB.buildSqlList(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds, sqlParams);
 
-		DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 
 		fireShipmentSchedulesChanged(shipmentScheduleIds);
 	}

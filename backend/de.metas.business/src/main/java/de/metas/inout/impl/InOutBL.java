@@ -661,6 +661,13 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InOutId inOutId)
+	{
+		return getById(inOutId).getPOReference();
+	}
+
+	@Override
 	public void updateDescriptionAndDescriptionBottomFromDocType(@NonNull final I_M_InOut inOut)
 	{
 

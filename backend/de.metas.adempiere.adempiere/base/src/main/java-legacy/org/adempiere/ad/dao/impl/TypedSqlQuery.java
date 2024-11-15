@@ -1567,7 +1567,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateEx(sql, params, trxName);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
 	@Nullable
@@ -1599,7 +1599,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateEx(sql, params, trxName);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
 	@Override
@@ -1698,7 +1698,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
-		return DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 	}
 
 	/**
@@ -1756,7 +1756,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute
-		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), getTrxName());
 	}
 
 	@Override
@@ -1850,7 +1850,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute the INSERT and return how many records were inserted
-		final int countInsert = DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

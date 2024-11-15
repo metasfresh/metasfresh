@@ -22,16 +22,19 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterVO;
+import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.util.Services;
@@ -95,12 +98,25 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
+		final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+		{
+			quantitiesRecords = QtyDemandSupplyFilters
+					.createQuantitiesQueryFor(filters)
+					.list();
+		}
+		else
+		{
+			quantitiesRecords = ImmutableList.of();
+		}
+		
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
 				.date(date)
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
+				.quantitiesRecords(quantitiesRecords)
 				.includePerPlantDetailRows(includePerPlantDetailRows)
 				.build();
 		return materialCockpitRowFactory.createRows(request);

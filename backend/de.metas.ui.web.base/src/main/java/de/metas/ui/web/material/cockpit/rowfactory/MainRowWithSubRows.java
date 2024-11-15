@@ -5,13 +5,17 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.product.IProductBL;
+import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.Services;
+import de.metas.util.MFColor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -20,6 +24,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,14 +69,23 @@ public class MainRowWithSubRows
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 
-	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
-	{
-		return new MainRowWithSubRows(productIdAndDate);
-	}
+	@NonNull private final MainRowBucketId productIdAndDate;
+	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
+	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
+	@NonNull private final LinkedHashMap<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
-	private MainRowWithSubRows(@NonNull final MainRowBucketId productIdAndDate)
+	@Builder
+	private MainRowWithSubRows(
+			@NonNull final IWarehouseDAO warehouseDAO,
+			@NonNull final MainRowBucketId productIdAndDate,
+			@Nullable final MFColor procurementStatusColor,
+			@Nullable final Money maxPurchasePrice)
 	{
+		this.warehouseDAO = warehouseDAO;
+
 		this.productIdAndDate = productIdAndDate;
+		this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
+		this.mainRow.setHighestPurchasePrice_AtDate(maxPurchasePrice);
 	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
@@ -79,9 +93,9 @@ public class MainRowWithSubRows
 		dimensionGroupSubRows.computeIfAbsent(dimensionSpecGroup, DimensionGroupSubRowBucket::create);
 	}
 
-	public void addEmptyCountingSubrowBucket(final int plantId)
+	public void addEmptyCountingSubrowBucket(final ResourceId plantId)
 	{
-		countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
+		countingSubRows.computeIfAbsent(plantId.getRepoId(), CountingSubRowBucket::create);
 	}
 
 	public void addCockpitRecord(
@@ -92,13 +106,13 @@ public class MainRowWithSubRows
 		boolean addedToAtLeastOneBucket = false;
 
 		int ppPlantId = 0;
-		if (cockpitRecord.getM_Warehouse_ID() > 0)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(cockpitRecord.getM_Warehouse_ID());
+		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(cockpitRecord.getM_Warehouse_ID()));
-			ppPlantId = warehouse.getPP_Plant_ID();
+			ppPlantId = getPlantId(warehouseId);
 		}
 
-		if (cockpitRecord.getQtyStockEstimateCount().signum() != 0 || ppPlantId > 0)
+		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0)
 		{
 			if (includePerPlantDetailRows)
 			{
@@ -126,6 +140,12 @@ public class MainRowWithSubRows
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
+	private void addQuantitiesRecordToCounting(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord, final int ppPlantId)
+	{
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(ppPlantId, CountingSubRowBucket::create);
+		countingSubRow.addQuantitiesRecord(quantitiesRecord);
+	}
+
 	/**
 	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
 	 */
@@ -138,6 +158,19 @@ public class MainRowWithSubRows
 		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addCockpitRecord(dataRecord));
+		return !subRowBuckets.isEmpty();
+	}
+
+	/**
+	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given quantitiesRecord could be added.
+	 */
+	private boolean addQuantitiesRecordToDimensionGroups(
+			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final DimensionSpec dimensionSpec)
+	{
+		final AttributesKey attributesKey = AttributesKey.ofString(quantitiesRecord.getAttributesKey());
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
+		subRowBuckets.forEach(bucket -> bucket.addQuantitiesRecord(quantitiesRecord));
 		return !subRowBuckets.isEmpty();
 	}
 
@@ -214,12 +247,54 @@ public class MainRowWithSubRows
 		mainRow.addStockRecord(stockRecord);
 	}
 
+	public void addQuantitiesRecord(
+			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final DimensionSpec dimensionSpec,
+			final boolean includePerPlantDetailRows)
+	{
+		boolean addedToAtLeastOneBucket = false;
+
+		int ppPlantId = 0;
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(quantitiesRecord.getM_Warehouse_ID());
+		if (warehouseId != null)
+		{
+			ppPlantId = getPlantId(warehouseId);
+		}
+
+		if (ppPlantId > 0)
+		{
+			if (includePerPlantDetailRows)
+			{
+				addQuantitiesRecordToCounting(quantitiesRecord, ppPlantId);
+				addedToAtLeastOneBucket = true;
+			}
+		}
+		else
+		{
+			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(quantitiesRecord, dimensionSpec);
+		}
+
+		if (!addedToAtLeastOneBucket)
+		{
+			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
+			fallbackBucket.addQuantitiesRecord(quantitiesRecord);
+		}
+
+		mainRow.addQuantitiesRecord(quantitiesRecord);
+	}
+
 	private void addStockRecordToCounting(@NonNull final I_MD_Stock stockRecord)
 	{
-		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()));
-		final int plantId = warehouseRecord.getPP_Plant_ID();
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
+		final int plantId = getPlantId(warehouseId);
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
 		countingSubRow.addStockRecord(stockRecord);
+	}
+
+	private int getPlantId(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
+		return warehouseRecord.getPP_Plant_ID();
 	}
 
 	/**
@@ -242,26 +317,35 @@ public class MainRowWithSubRows
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())
-				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
-				.qtyDemandPPOrder(mainRow.getQtyDemandPPOrder())
-				.qtyStockCurrent(mainRow.getQtyStockCurrent())
+				.qtyMaterialentnahmeAtDate(mainRow.getQtyMaterialentnahmeAtDate())
+				.qtyDemandPPOrderAtDate(mainRow.getQtyDemandPPOrderAtDate())
+				.qtyStockCurrentAtDate(mainRow.getQtyStockCurrentAtDate())
 				.qtyOnHandStock(mainRow.getQtyOnHand())
-				.qtySupplyPPOrder(mainRow.getQtySupplyPPOrder())
+				.qtySupplyPPOrderAtDate(mainRow.getQtySupplyPPOrderAtDate())
+				.qtySupplyPurchaseOrderAtDate(mainRow.getQtySupplyPurchaseOrderAtDate())
 				.qtySupplyPurchaseOrder(mainRow.getQtySupplyPurchaseOrder())
-				.qtySupplyDDOrder(mainRow.getQtySupplyDDOrder())
-				.qtySupplySum(mainRow.getQtySupplySum())
-				.qtySupplyRequired(mainRow.getQtySupplyRequired())
-				.qtySupplyToSchedule(mainRow.getQtySupplyToSchedule())
-				.qtyExpectedSurplus(mainRow.getQtyExpectedSurplus())
+				.qtySupplyDDOrderAtDate(mainRow.getQtySupplyDDOrderAtDate())
+				.qtySupplySumAtDate(mainRow.getQtySupplySumAtDate())
+				.qtySupplyRequiredAtDate(mainRow.getQtySupplyRequiredAtDate())
+				.qtySupplyToScheduleAtDate(mainRow.getQtySupplyToScheduleAtDate())
+				.qtyExpectedSurplusAtDate(mainRow.getQtyExpectedSurplusAtDate())
+				.qtyDemandSalesOrderAtDate(mainRow.getQtyDemandSalesOrderAtDate())
 				.qtyDemandSalesOrder(mainRow.getQtyDemandSalesOrder())
-				.qtyDemandDDOrder(mainRow.getQtyDemandDDOrder())
-				.qtyDemandSum(mainRow.getQtyDemandSum())
-				.qtyInventoryCount(mainRow.getQtyInventoryCount())
-				.qtyInventoryTime(mainRow.getQtyInventoryTime())
-				.qtyStockEstimateCount(mainRow.getQtyStockEstimateCount())
-				.qtyStockEstimateTime(mainRow.getQtyStockEstimateTime())
-				.qtyStockEstimateSeqNo(mainRow.getQtyStockEstimateSeqNo())
-				.pmmQtyPromised(mainRow.getPmmQtyPromised())
+				.qtyDemandDDOrderAtDate(mainRow.getQtyDemandDDOrderAtDate())
+				.qtyDemandSumAtDate(mainRow.getQtyDemandSumAtDate())
+				.qtyInventoryCountAtDate(mainRow.getQtyInventoryCountAtDate())
+				.qtyInventoryTimeAtDate(mainRow.getQtyInventoryTimeAtDate())
+				.qtyStockEstimateCountAtDate(mainRow.getQtyStockEstimateCountAtDate())
+				.qtyStockEstimateTimeAtDate(mainRow.getQtyStockEstimateTimeAtDate())
+				.qtyStockEstimateSeqNoAtDate(mainRow.getQtyStockEstimateSeqNoAtDate())
+				.pmmQtyPromisedAtDate(mainRow.getPmmQtyPromisedAtDate())
+				.procurementStatus(mainRow.getProcurementStatus())
+				.highestPurchasePrice_AtDate(mainRow.getHighestPurchasePrice_AtDate())
+				.qtyOrdered_PurchaseOrder_AtDate(mainRow.getQtyOrdered_PurchaseOrder_AtDate())
+				.qtyOrdered_SalesOrder_AtDate(mainRow.getQtyOrdered_SalesOrder_AtDate())
+				.availableQty_AtDate(mainRow.getAvailableQty_AtDate())
+				.remainingStock_AtDate(mainRow.getRemainingStock_AtDate())
+				.pmm_QtyPromised_NextDay(mainRow.getPmm_QtyPromised_NextDay())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds())
 				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate));

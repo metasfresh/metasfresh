@@ -144,7 +144,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
 
 		final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 

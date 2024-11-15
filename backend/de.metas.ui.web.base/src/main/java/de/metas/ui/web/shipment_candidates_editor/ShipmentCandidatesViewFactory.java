@@ -1,8 +1,7 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import java.util.Set;
-
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -16,6 +15,8 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.Set;
 
 /*
  * #%L
