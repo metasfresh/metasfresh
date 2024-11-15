@@ -1226,6 +1226,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=588565
 ;
 
+DELETE FROM exp_formatline WHERE AD_Column_ID=588565;
+
 -- 2024-11-15T08:54:39.424Z
 DELETE FROM AD_Column WHERE AD_Column_ID=588565
 ;
