@@ -79,7 +79,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-	
+
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -99,6 +99,14 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable

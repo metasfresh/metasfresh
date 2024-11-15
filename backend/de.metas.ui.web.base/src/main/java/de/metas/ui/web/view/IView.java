@@ -232,11 +232,6 @@ public interface IView
 	 */
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
-	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
-	{
-		return streamByIds(rowIds);
-	}
-
 	/**
 	 * Notify the view that given record(s) has changed.
 	 */

@@ -357,36 +357,6 @@ public class AdempiereTestHelper
 		};
 	}
 
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
-	{
-		final CleanupTask task = new CleanupTask(name, runnable);
-		cleanupTasks.add(task);
-		log("onCleanup", "Scheduled task: " + task.getName());
-	}
-
-	private void runCleanupTasks()
-	{
-		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
-		{
-			final CleanupTask task = it.next();
-
-			task.run();
-			log("runCleanupTasks", "Executed task: " + task.getName());
-
-			it.remove();
-		}
-	}
-
-	@AllArgsConstructor
-	@ToString(of = "name")
-	private static class CleanupTask
-	{
-		@Getter @NonNull private final String name;
-		@NonNull private final Runnable runnable;
-
-		public void run() {runnable.run();}
-	}
-
 	private void staticInit0()
 	{
 		Adempiere.enableUnitTestMode();

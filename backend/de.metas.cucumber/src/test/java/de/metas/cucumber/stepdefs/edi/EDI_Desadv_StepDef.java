@@ -22,14 +22,14 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EDI_Desadv_StepDef
 {
@@ -77,19 +77,16 @@ public class EDI_Desadv_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
-	private final Edi_Desadv_StepDefData ediDesadvTable;
 
 	public EDI_Desadv_StepDef(
 			@NonNull final EDI_Desadv_StepDefData desadvTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final Edi_Desadv_StepDefData ediDesadvTable,
 			@NonNull final EDI_Exp_Desadv_StepDefData ediExpDesadvTable)
 	{
 		this.desadvTable = desadvTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
-		this.ediDesadvTable = ediDesadvTable;
 		this.ediExpDesadvTable = ediExpDesadvTable;
 	}
 
@@ -243,10 +240,7 @@ public class EDI_Desadv_StepDef
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
-		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
-																						 .poReference(order.getPOReference())
-																						 .ctxAware(InterfaceWrapperHelper.getContextAware(order))
-																						 .build());
+		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), BPartnerId.ofRepoId(order.getC_BPartner_ID()), InterfaceWrapperHelper.getContextAware(order));
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
@@ -283,6 +277,6 @@ public class EDI_Desadv_StepDef
 		assertThat(ediDesadvRecord.getSumOrderedInStockingUOM()).isEqualByComparingTo(sumOrderedInStockingUOM);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "EDI_Desadv");
-		ediDesadvTable.put(recordIdentifier, ediDesadvRecord);
+		desadvTable.put(recordIdentifier, ediDesadvRecord);
 	}
 }

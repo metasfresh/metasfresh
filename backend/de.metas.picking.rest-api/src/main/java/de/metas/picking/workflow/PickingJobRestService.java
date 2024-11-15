@@ -23,6 +23,7 @@
 package de.metas.picking.workflow;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -31,7 +32,6 @@ import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepositor
 import de.metas.handlingunits.picking.config.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
-import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -154,11 +154,6 @@ public class PickingJobRestService
 		return pickingJobService.prepareToComplete(pickingJob)
 				.createShipmentPolicy(profile.getCreateShipmentPolicy())
 				.execute();
-	}
-
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
-	{
-		return pickingJobService.getQtyRejectedReasons();
 	}
 
 	public ADRefList getQtyRejectedReasons()

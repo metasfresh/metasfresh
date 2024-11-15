@@ -91,7 +91,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
@@ -343,18 +343,6 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				logger.info("Order {} was completed", order);
-				break;
-			case closed:
-				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
-				break;
-			case voided:
-				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-				break;
-			case reversed:
-				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case closed:
 				order.setDocAction(IDocument.ACTION_Complete);

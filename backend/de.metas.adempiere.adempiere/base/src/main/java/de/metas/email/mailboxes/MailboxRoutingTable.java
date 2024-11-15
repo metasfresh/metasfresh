@@ -75,13 +75,13 @@ class MailboxRoutingTable
 
 	private static boolean isMatching_DocBaseType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final String routingDocBaseType = routing.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(routing.getDocBaseAndSubType().getDocBaseType()) : null;
+		final String routingDocBaseType = routing.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(routing.getDocBaseType()) : null;
 		if (routingDocBaseType == null)
 		{
 			return true;
 		}
 
-		final String queryDocBaseType = query.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(query.getDocBaseAndSubType().getDocBaseType()) : null;
+		final String queryDocBaseType = query.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(query.getDocBaseAndSubType().getDocBaseType().getCode()) : null;
 		return Objects.equals(routingDocBaseType, queryDocBaseType);
 	}
 

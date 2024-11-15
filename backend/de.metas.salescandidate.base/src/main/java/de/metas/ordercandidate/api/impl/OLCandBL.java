@@ -506,7 +506,7 @@ public class OLCandBL implements IOLCandBL
 		final DeliveryRule deliveryRule = getDeliveryRule(olCandRecord, params, orderDefaults);
 		final DeliveryViaRule deliveryViaRule = getDeliveryViaRule(olCandRecord, params, orderDefaults);
 		final FreightCostRule freightCostRule = getFreightCostRule(params, orderDefaults);
-		final InvoiceRule invoiceRule = getInvoiceRule(params, orderDefaults);
+		final InvoiceRule invoiceRule = getInvoiceRule(olCandRecord, params, orderDefaults);
 		final PaymentRule paymentRule = getPaymentRule(params, orderDefaults, olCandRecord);
 		final PaymentTermId paymentTermId = getPaymentTermId(params, orderDefaults, olCandRecord);
 		final PricingSystemId pricingSystemId = getPricingSystemId(olCandRecord, params, orderDefaults);

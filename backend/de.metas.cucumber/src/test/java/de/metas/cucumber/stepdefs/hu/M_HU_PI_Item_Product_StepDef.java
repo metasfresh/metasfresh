@@ -28,13 +28,11 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -127,8 +125,6 @@ public class M_HU_PI_Item_Product_StepDef
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_Product_ID, mhupiItemProductID)
 					.create()
 					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
-
 		}
 		else
 		{

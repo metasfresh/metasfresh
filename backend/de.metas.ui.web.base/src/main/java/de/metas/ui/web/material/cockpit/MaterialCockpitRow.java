@@ -13,7 +13,9 @@ import de.metas.money.Money;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -38,11 +40,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -100,7 +102,7 @@ public class MaterialCockpitRow implements IViewRow
 	private final LocalDate date;
 
 	@Getter
-	private final int productId;
+	private final ProductId productId;
 
 	public static final String FIELDNAME_QtyStockEstimateSeqNoAtDate = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate;
 	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNoAtDate, //
@@ -410,6 +412,8 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowCache cache,
+			@NonNull final MaterialCockpitRowLookups lookups,
 			final Quantity qtyDemandSalesOrderAtDate,
 			final Quantity qtyDemandSalesOrder,
 			final Quantity qtyDemandPPOrderAtDate,
@@ -452,7 +456,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = productId.getRepoId();
+		this.productId = productId;
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
@@ -561,14 +565,14 @@ public class MaterialCockpitRow implements IViewRow
 		return CollectionUtils.extractSingleElement(includedRows, row -> row.date);
 	}
 
-	private static int extractProductId(@NonNull final List<MaterialCockpitRow> includedRows)
+	private static ProductId extractProductId(@NonNull final List<MaterialCockpitRow> includedRows)
 	{
 		return CollectionUtils.extractSingleElement(includedRows, MaterialCockpitRow::getProductId);
 	}
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
-			final int productId,
+			final ProductId productId,
 			final LocalDate date,
 			@NonNull final DimensionSpecGroup dimensionGroup,
 			final Quantity pmmQtyPromisedAtDate,
@@ -682,9 +686,10 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
-			final int productId,
+			@NonNull final MaterialCockpitRowCache cache,
+			final ProductId productId,
 			final LocalDate date,
-			final int plantId,
+			@NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier,
 			@Nullable final Quantity qtyDemandSalesOrder,
 			@Nullable final Quantity qtySupplyPurchaseOrder,
 			@Nullable final Quantity qtyStockEstimateCountAtDate,
@@ -702,22 +707,47 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.dimensionGroupOrNull = null;
 
-		final String plantName;
-		if (plantId > 0)
+		final String aggregatorName;
+		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = detailsRowAggregationIdentifier.getDetailsRowAggregation();
+
+		if (detailsRowAggregation.isPlant())
 		{
-			final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
-			plantName = plant.getName();
+
+			final ResourceId plantId = ResourceId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
+
+			if (plantId != null)
+			{
+				aggregatorName = ResourceService.Legacy.getResourceName(plantId);
+			}
+			else
+			{
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
+			}
+		}
+		else if (detailsRowAggregation.isWarehouse())
+		{
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
+			if (warehouseId != null)
+			{
+				aggregatorName = cache.getWarehouseById(warehouseId).getName();
+			}
+			else
+			{
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Warehouse_Info");
+			}
 		}
 		else
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			plantName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
+			aggregatorName = "";
 		}
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"countingRow",
 				date,
 				productId,
-				plantName));
+				aggregatorName));
 
 		this.documentPath = DocumentPath.rootDocumentPath(
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
@@ -728,7 +758,7 @@ public class MaterialCockpitRow implements IViewRow
 		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
 		this.productValue = productRecord.getValue();
 		this.productName = productRecord.getName();
-		this.productCategoryOrSubRowName = plantName;
+		this.productCategoryOrSubRowName = aggregatorName;
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 

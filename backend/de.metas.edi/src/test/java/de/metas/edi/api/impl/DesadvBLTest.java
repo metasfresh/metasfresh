@@ -2,7 +2,7 @@ package de.metas.edi.api.impl;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -30,7 +30,7 @@ import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInS
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DesadvBLTest
 {
@@ -46,9 +46,8 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final HURepository huRepository = new HURepository();
-		EDIDesadvPackService = new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository());
-		desadvBL = new DesadvBL(EDIDesadvPackService, huRepository, new EDIDesadvInOutLineDAO());
+		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository());
+		desadvBL = new DesadvBL(EDIDesadvPackService, new EDIDesadvInOutLineDAO());
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", 2, X12DE355.COLI).getC_UOM_ID());
@@ -70,11 +69,10 @@ class DesadvBLTest
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
-				.line(10)
 				.qtyItemCapacity(new BigDecimal("9"))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
@@ -100,7 +98,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("9"));
@@ -115,11 +113,10 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_noPicking()
 	{
-		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
-				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
@@ -143,7 +140,7 @@ class DesadvBLTest
 				BigDecimal.valueOf(0.25));
 
 		// then
-		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -157,11 +154,10 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_withPicking()
 	{
-		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
-				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
@@ -186,7 +182,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));

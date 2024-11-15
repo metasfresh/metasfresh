@@ -3,6 +3,7 @@ package de.metas.ui.web.material.cockpit.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -58,7 +59,7 @@ public abstract class MaterialCockpitViewBasedProcess extends ViewBasedProcessTe
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	protected Set<Integer> getSelectedProductIdsRecursively()
+	protected Set<ProductId> getSelectedProductIdsRecursively()
 	{
 		final MaterialCockpitView materialCockpitView = getView();
 

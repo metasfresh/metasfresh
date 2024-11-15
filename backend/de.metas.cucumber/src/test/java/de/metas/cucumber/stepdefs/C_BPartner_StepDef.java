@@ -121,24 +121,6 @@ public class C_BPartner_StepDef
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
-	public C_BPartner_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_Aggregation_StepDefData aggregationTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.pricingSystemTable = pricingSystemTable;
-		this.productTable = productTable;
-		this.discountSchemaTable = discountSchemaTable;
-		this.orgTable = orgTable;
-		this.aggregationTable = aggregationTable;
-	}
-
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
 	{
@@ -221,7 +203,7 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
+	private void createC_BPartner(@NonNull final DataTableRow row, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
@@ -329,11 +311,6 @@ public class C_BPartner_StepDef
 				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
-		final boolean isEdiDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiDesadvRecipient, false);
-		final boolean isEdiInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiInvoicRecipient, false);
-
-		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
-		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
 
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 

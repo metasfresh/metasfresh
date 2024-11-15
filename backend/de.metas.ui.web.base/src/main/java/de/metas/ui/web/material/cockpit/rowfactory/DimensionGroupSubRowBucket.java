@@ -1,20 +1,22 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.dimension.DimensionSpecGroup;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
@@ -52,6 +54,7 @@ import static de.metas.util.Check.assumeNotNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Data
+@RequiredArgsConstructor
 public class DimensionGroupSubRowBucket
 {
 	@Getter(AccessLevel.NONE)
@@ -60,12 +63,9 @@ public class DimensionGroupSubRowBucket
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 
-	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
-	{
-		return new DimensionGroupSubRowBucket(dimensionSpecGroup);
-	}
-
-	private final DimensionSpecGroup dimensionSpecGroup;
+	@NonNull private final MaterialCockpitRowLookups rowLookups;
+	@NonNull private final DimensionSpecGroup dimensionSpecGroup;
+	@NonNull private final MaterialCockpitRowCache cache;
 
 	// Zusage Lieferant
 	private Quantity pmmQtyPromisedAtDate;
@@ -105,11 +105,6 @@ public class DimensionGroupSubRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
-	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
-	{
-		this.dimensionSpecGroup = dimensionSpecGroup;
-	}
-
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
@@ -134,9 +129,9 @@ public class DimensionGroupSubRowBucket
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
@@ -159,7 +154,7 @@ public class DimensionGroupSubRowBucket
 
 		return MaterialCockpitRow.attributeSubRowBuilder()
 				.date(productIdAndDate.getDate())
-				.productId(productIdAndDate.getProductId().getRepoId())
+				.productId(productIdAndDate.getProductId())
 
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromisedAtDate(getPmmQtyPromisedAtDate())

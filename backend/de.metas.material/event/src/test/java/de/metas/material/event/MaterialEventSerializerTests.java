@@ -3,6 +3,7 @@ package de.metas.material.event;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
+import de.metas.event.Event;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.AttributesKey;
@@ -17,6 +18,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -61,11 +63,13 @@ import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.JSONObjectMapper;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -74,13 +78,13 @@ import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.assertEventEqualAfterSerializeDeserialize;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

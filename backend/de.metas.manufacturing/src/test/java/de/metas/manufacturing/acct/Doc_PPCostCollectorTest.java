@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
@@ -70,7 +71,7 @@ class Post_CostCollectors_Now_ManualTest
 	@NonNull
 	private static CostingService newCostingService(final CurrencyRepository currenciesRepo)
 	{
-		final CostElementRepository costElementRepo = new CostElementRepository();
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		final CostDetailService costDetailsService = new CostDetailService(new CostDetailRepository(), costElementRepo);
 		final CurrentCostsRepository currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		final CostingMethodHandlerUtils costingMethodHandlerUtils = new CostingMethodHandlerUtils(

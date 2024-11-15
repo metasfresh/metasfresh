@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EDI_Desadv_Pack_Item_StepDef
 {
@@ -301,6 +301,6 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private void truncateEDIDesadvPackItem()
 	{
-		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
 	}
 }

@@ -56,7 +56,7 @@ public class DocTypeNotFoundException extends AdempiereException
 		{
 		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType);
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType.getCode());
 			builder.append(" - ")
 					.appendADElement("DocBaseType")
 					.append(": ")
@@ -75,9 +75,11 @@ public class DocTypeNotFoundException extends AdempiereException
 	{
 		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 		builder.appendADMessage(AdMessageKey.of("NotFound")).append(" ").appendADElement("C_DocType_ID");
-		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType());
-
 		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType().getCode());
+
+
 		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(docBaseTypeName);
 		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType());
 		builder.append(", ").appendADElement("AD_Client_ID").append(": ").append(query.getAdClientId());

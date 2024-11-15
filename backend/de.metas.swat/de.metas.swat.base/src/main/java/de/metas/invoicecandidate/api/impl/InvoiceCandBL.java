@@ -2269,17 +2269,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							}
 						}
 
-						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
-						if (aggregationId != null)
-						{
-							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
-							if (aggregation.hasInvoicePerShipmentAttribute())
-							{
-								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
-								continue;
-							}
-						}
-
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",

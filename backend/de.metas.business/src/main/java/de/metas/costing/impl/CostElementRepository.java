@@ -123,7 +123,7 @@ public class CostElementRepository implements ICostElementRepository
 		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
 		String name = adReferenceService.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
-		if (Check.isBlank(name, true))
+		if (Check.isBlank(name))
 		{
 			name = costingMethod.name();
 		}
@@ -164,16 +164,7 @@ public class CostElementRepository implements ICostElementRepository
 	{
 		return getIndexedCostElements()
 				.streamForClientId(clientId)
-				.filter(CostElement::isMaterialCostingMethod)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public List<CostElement> getNonCostingMethods(final ClientId clientId)
-	{
-		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() == null)
+				.filter(CostElement::isMaterial)
 				.collect(ImmutableList.toImmutableList());
 	}
 

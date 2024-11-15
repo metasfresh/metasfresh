@@ -23,8 +23,12 @@
 package de.metas.edi.api.impl.pack;
 
 import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIDesadvPackItemId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,6 +36,8 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Value
@@ -44,14 +50,13 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
-	@NonNull
-	Integer seqNo;
+	int line;
 	
 	@NonNull
 	String sscc18;
 
-	/** 
-	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute. 
+	/**
+	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute.
 	 */
 	@NonNull
 	Boolean isManualIpaSSCC;
@@ -60,13 +65,62 @@ public class CreateEDIDesadvPackRequest
 	HuId huId;
 
 	@Nullable
-	PackagingCodeId huPackagingCodeID;
+	PackagingCodeId huPackagingCodeLUID;
 
 	@Nullable
-	String gtinPackingMaterial;
+	String gtinLUPackingMaterial;
 
 	@NonNull
 	@Singular
 	List<CreateEDIDesadvPackItemRequest> createEDIDesadvPackItemRequests;
 
+	@Value
+	@Builder
+	public static class CreateEDIDesadvPackItemRequest
+	{
+		@Nullable
+		EDIDesadvPackItemId ediDesadvPackItemId;
+
+		@NonNull
+		EDIDesadvLineId ediDesadvLineId;
+
+		@NonNull
+		BigDecimal movementQtyInStockUOM;
+
+		@Nullable
+		InOutId inOutId;
+
+		@Nullable
+		InOutLineId inOutLineId;
+
+		@Nullable
+		BigDecimal qtyItemCapacity;
+
+		@Nullable
+		Integer qtyTu;
+
+		@Nullable
+		BigDecimal qtyCUsPerTU;
+
+		@Nullable
+		BigDecimal qtyCUPerTUinInvoiceUOM;
+
+		@Nullable
+		BigDecimal qtyCUsPerLU;
+
+		@Nullable
+		BigDecimal qtyCUsPerLUinInvoiceUOM;
+
+		@Nullable
+		Timestamp bestBeforeDate;
+
+		@Nullable
+		String lotNumber;
+
+		@Nullable
+		PackagingCodeId huPackagingCodeTUID;
+
+		@Nullable
+		String gtinTUPackingMaterial;
+	}
 }

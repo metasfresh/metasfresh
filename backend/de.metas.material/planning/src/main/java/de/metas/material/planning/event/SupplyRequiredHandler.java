@@ -102,11 +102,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				events.addAll(advisor.createAdvisedEvents(descriptor, context));
 			}
 
-		final List<MaterialEvent> events = new ArrayList<>();
-
-		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
-
 		events.forEach(postMaterialEventService::enqueueEventNow);
 		}
 

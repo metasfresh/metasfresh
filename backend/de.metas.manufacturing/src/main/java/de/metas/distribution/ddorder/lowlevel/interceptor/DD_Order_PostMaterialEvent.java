@@ -1,19 +1,47 @@
 package de.metas.distribution.ddorder.lowlevel.interceptor;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.engine.DocStatus;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
+import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfo;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.validator.PP_Order;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
@@ -26,12 +54,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DD_Order_PostMaterialEvent
 {
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull final private final DDOrderLowLevelService ddOrderLowLevelService;
-	@NonNull final private final ReplenishInfoRepository replenishInfoRepository;
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull final private DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull final private ReplenishInfoRepository replenishInfoRepository;
 	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
-
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void fireMaterialEvent(@NonNull final I_DD_Order ddOrder)
@@ -47,34 +74,36 @@ public class DD_Order_PostMaterialEvent
 	}
 
 	@NonNull
-	public static DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
+	public static DDOrder.DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
 	{
 		return DDOrder.builder()
 				.datePromised(TimeUtil.asInstantNonNull(ddOrderRecord.getDatePromised()))
 				.ddOrderId(ddOrderRecord.getDD_Order_ID())
-				.docStatus(ddOrderRecord.getDocStatus())
-				.orgId(OrgId.ofRepoId(ddOrderRecord.getAD_Org_ID()))
-				.plantId(ddOrderRecord.getPP_Plant_ID())
-				.productPlanningId(ddOrderRecord.getPP_Product_Planning_ID())
-				.shipperId(ddOrderRecord.getM_Shipper_ID())
+				.docStatus(DocStatus.ofCode(ddOrderRecord.getDocStatus()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ddOrderRecord.getAD_Client_ID(), ddOrderRecord.getAD_Org_ID()))
+				.plantId(ResourceId.ofRepoId(ddOrderRecord.getPP_Plant_ID()))
+				.productPlanningId(ProductPlanningId.ofRepoId(ddOrderRecord.getPP_Product_Planning_ID()))
+				.shipperId(ShipperId.ofRepoId(ddOrderRecord.getM_Shipper_ID()))
 				.simulated(ddOrderRecord.isSimulated());
 	}
 
 	@NonNull
 	private List<DDOrderCreatedEvent> createEvents(@NonNull final I_DD_Order ddOrderRecord)
 	{
-		final DDOrderBuilder ddOrderPojoBuilder = createAndInitPPOrderPojoBuilder(ddOrderRecord);
+		final DDOrder.DDOrderBuilder ddOrderPojoBuilder = createAndInitPPOrderPojoBuilder(ddOrderRecord);
 
 		final List<DDOrderCreatedEvent> events = new ArrayList<>();
 
-		final MaterialDispoGroupId groupIdFromDDOrderRequestedEvent = DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrderRecord);
+		final MaterialDispoGroupId groupIdFromDDOrderRequestedEvent = DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrderRecord);
 		ddOrderPojoBuilder.materialDispoGroupId(groupIdFromDDOrderRequestedEvent);
 
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderLowLevelService.retrieveLines(ddOrderRecord);
+		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrderRecord.getPP_Product_Planning_ID());
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
+			final DistributionNetworkAndLineId networkAndLineId = DistributionNetworkAndLineId.ofRepoIds(ddOrderLine.getDD_NetworkDistribution_ID(), ddOrderLine.getDD_NetworkDistributionLine_ID());
 			final int durationDays = DDOrderUtil.calculateDurationDays(
-					ddOrderRecord.getPP_Product_Planning(), ddOrderLine.getDD_NetworkDistributionLine());
+					productPlanningDAO.getById(productPlanningId), distributionNetworkRepository.getLineById(networkAndLineId));
 
 			ddOrderPojoBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, ddOrderLine, ddOrderRecord, durationDays)));
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ddOrderRecord.getAD_Client_ID(), ddOrderRecord.getAD_Org_ID());
@@ -84,8 +113,6 @@ public class DD_Order_PostMaterialEvent
 			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, getDDOrderRequestedEventTrace(ddOrderRecord)))
 					.ddOrder(ddOrder)
-					.fromWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID()))
-					.toWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID()))
 					.build();
 
 			events.add(event);
@@ -109,13 +136,13 @@ public class DD_Order_PostMaterialEvent
 
 		return DDOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ddOrderLine))
-				.bPartnerId(bPartnerId)
+				.bpartnerId(BPartnerId.ofRepoId(bPartnerId))
 				.ddOrderLineId(ddOrderLine.getDD_OrderLine_ID())
-				.qty(ddOrderLine.getQtyDelivered())
-				.qtyPending(ddOrderLine.getQtyOrdered().subtract(ddOrderLine.getQtyDelivered()))
-				.networkDistributionLineId(ddOrderLine.getDD_NetworkDistributionLine_ID())
+				.qtyMoved(ddOrderLine.getQtyDelivered())
+				.qtyToMove(ddOrderLine.getQtyOrdered().subtract(ddOrderLine.getQtyDelivered()))
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(ddOrderLine.getDD_NetworkDistribution_ID(), ddOrderLine.getDD_NetworkDistributionLine_ID()))
 				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
-				.durationDays(durationDays)
+				.demandDate(ddOrder.getDatePromised().toInstant())
 				.fromWarehouseMinMaxDescriptor(replenishInfo.toMinMaxDescriptor())
 				.build();
 	}
@@ -127,13 +154,13 @@ public class DD_Order_PostMaterialEvent
 				DDOrderDocStatusChangedEvent.builder()
 						.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 						.ddOrderId(ddOrder.getDD_Order_ID())
-				.newDocStatus(DocStatus.ofCode(ddOrder.getDocStatus()))
-				.build());
+						.newDocStatus(DocStatus.ofCode(ddOrder.getDocStatus()))
+						.build());
 	}
 
 	@NonNull
 	private static String getDDOrderRequestedEventTrace(@NonNull final I_DD_Order ddOrderRecord)
 	{
-		return DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.getValue(ddOrderRecord);
+		return DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.getValue(ddOrderRecord);
 	}
 }

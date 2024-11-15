@@ -55,12 +55,12 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_PackingMaterial;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_LU_PackingMaterial;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IsManual_IPA_SSCC18;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_Line;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_PackagingCode_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_SeqNo;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_PackagingCode_LU_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class EDI_Desadv_Pack_StepDef
@@ -136,7 +136,7 @@ public class EDI_Desadv_Pack_StepDef
 
 	private void deleteAllFromEDIDesadvPack()
 	{
-		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
 	}
 
 	private void packIsFound(
@@ -153,17 +153,14 @@ public class EDI_Desadv_Pack_StepDef
 		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID)
 				.ifPresent(huIdentifier -> queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, getHuId(huIdentifier)));
 
-		row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PackagingCode_ID)
-				.ifPresent(huPackagingCodeLuIdentifier -> queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PackagingCode_ID, getHuPackagingCodeId(huPackagingCodeLuIdentifier)));
+		row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PackagingCode_LU_ID)
+				.ifPresent(huPackagingCodeLuIdentifier -> queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PackagingCode_LU_ID, getHuPackagingCodeId(huPackagingCodeLuIdentifier)));
 
-		row.getAsOptionalString(COLUMNNAME_GTIN_PackingMaterial)
-				.ifPresent(gtinLuPackingMaterial -> queryBuilder.addEqualsFilter(COLUMNNAME_GTIN_PackingMaterial, DataTableUtil.nullToken2Null(gtinLuPackingMaterial)));
+		row.getAsOptionalString(COLUMNNAME_GTIN_LU_PackingMaterial)
+				.ifPresent(gtinLuPackingMaterial -> queryBuilder.addEqualsFilter(COLUMNNAME_GTIN_LU_PackingMaterial, DataTableUtil.nullToken2Null(gtinLuPackingMaterial)));
 
-		row.getAsOptionalInt(COLUMNNAME_SeqNo)
-				.ifPresent(line -> queryBuilder.addEqualsFilter(COLUMNNAME_SeqNo, line));
-
-		row.getAsOptionalString(COLUMNNAME_IPA_SSCC18)
-				.ifPresent(sscc -> queryBuilder.addEqualsFilter(COLUMNNAME_IPA_SSCC18, sscc));
+		row.getAsOptionalInt(COLUMNNAME_Line)
+				.ifPresent(line -> queryBuilder.addEqualsFilter(COLUMNNAME_Line, line));
 		
 		final I_EDI_Desadv_Pack desadvPack = StepDefUtil.tryAndWaitForItem(
 				timeoutSec,
@@ -220,16 +217,15 @@ public class EDI_Desadv_Pack_StepDef
 		row.put("Identifier", toCell(EDIDesadvPackId.ofRepoIdOrNull(record.getEDI_Desadv_Pack_ID()), ediDesadvPackTable));
 		row.put(COLUMNNAME_IsManual_IPA_SSCC18, record.isManual_IPA_SSCC18());
 		row.put(COLUMNNAME_M_HU_ID, toCell(HuId.ofRepoIdOrNull(record.getM_HU_ID()), huTable));
-		row.put(COLUMNNAME_M_HU_PackagingCode_ID, record.getM_HU_PackagingCode_ID());
-		row.put(COLUMNNAME_GTIN_PackingMaterial, record.getGTIN_PackingMaterial());
-		row.put(COLUMNNAME_SeqNo, record.getSeqNo());
-		row.put(COLUMNNAME_IPA_SSCC18, record.getIPA_SSCC18());
+		row.put(COLUMNNAME_M_HU_PackagingCode_LU_ID, record.getM_HU_PackagingCode_LU_ID());
+		row.put(COLUMNNAME_GTIN_LU_PackingMaterial, record.getGTIN_LU_PackingMaterial());
+		row.put(COLUMNNAME_Line, record.getLine());
 		return row;
 	}
 
 	private static <T extends RepoIdAware> Cell toCell(
 			@Nullable final T id,
-			@NonNull final StepDefDataGetIdAware<T, ?> lookupTable)
+			@NonNull StepDefDataGetIdAware<T, ?> lookupTable)
 	{
 		if (id == null)
 		{

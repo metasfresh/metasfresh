@@ -73,7 +73,6 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -275,8 +274,6 @@ public class M_Inventory_StepDef
 		inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
 		inventoryLineRecord.setQtyBook(row.getAsBigDecimal("QtyBook"));
 		inventoryLineRecord.setQtyCount(row.getAsBigDecimal("QtyCount"));
-
-		inventoryLineRecord.setM_Inventory_ID(mInventory.getM_Inventory_ID());
 
 		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier("M_Product_ID");
 		ProductId productId = productTable.getIdOptional(productIdentifier).orElse(null);

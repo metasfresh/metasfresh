@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -98,7 +99,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
@@ -565,24 +566,6 @@ public class M_InOut_StepDef
 		{
 			findCustomerReturn(timeoutSec, row);
 		}
-	}
-
-	@NonNull
-	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
-	{
-		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
-				.map(shipmentTable::get)
-				.map(I_M_InOut::getM_InOut_ID)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentIds)
-				.create()
-				.stream()
-				.map(I_M_InOutLine::getM_InOutLine_ID)
-				.map(InOutLineId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private void findCustomerReturn(

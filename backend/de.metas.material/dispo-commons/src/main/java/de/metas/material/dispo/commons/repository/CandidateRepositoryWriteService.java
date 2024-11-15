@@ -84,21 +84,19 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static de.metas.common.util.IdConstants.toRepoId;
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 @RequiredArgsConstructor
@@ -628,32 +626,7 @@ public class CandidateRepositoryWriteService
 				.build();
 	}
 
-	@NonNull
-	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
-	{
-		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
-		final DeleteResult deleteResult = new DeleteResult(candidateId,
-				DateAndSeqNo.builder()
-						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-						.seqNo(candidateRecord.getSeqNo())
-						.build(),
-				candidateRecord.getQty());
-		deleteRelatedRecordsForCandidate(candidateRecord);
 
-		deleteRecord(candidateRecord);
-		return deleteResult;
-	}
-
-	private I_MD_Candidate retrieveRecordById(final @NonNull CandidateId candidateId)
-	{
-		return load(candidateId, I_MD_Candidate.class);
-	}
-
-	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
-	{
-		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
-		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
-	}
 
 	/**
 	 * @return DeleteResult for STOCK candidate
@@ -780,83 +753,6 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
-	private void deleteRelatedRecordsForId(
-			@NonNull final I_MD_Candidate candidate,
-			@NonNull final Set<CandidateId> alreadySeenIds)
-	{
-		final CandidateId parentCandidateId = CandidateId.ofRepoIdOrNull(candidate.getMD_Candidate_Parent_ID());
-
-		if (parentCandidateId != null
-				&& parentCandidateId.getRepoId() != candidate.getMD_Candidate_ID()
-				&& !alreadySeenIds.contains(parentCandidateId))
-		{
-			// remove parent link
-			candidate.setMD_Candidate_Parent_ID(-1);
-			saveRecord(candidate);
-
-			deleteCandidateById(parentCandidateId, alreadySeenIds);
-		}
-
-		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
-
-		deleteChildCandidates(candidateId, alreadySeenIds);
-
-		deleteDemandDetailsRecords(candidateId);
-		deleteDistDetailsRecords(candidateId);
-		deleteProdDetailsRecords(candidateId);
-		deletePurchaseDetailsRecords(candidateId);
-		deleteStockChangeDetailsRecords(candidateId);
-		deleteTransactionDetailsRecords(candidateId);
-	}
-
-	private void deleteDemandDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
-				.create()
-				.delete();
-	}
-
-	private void deleteDistDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateId)
-				.create()
-				.delete();
-	}
-
-	private void deleteProdDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
-				.create()
-				.delete();
-	}
-
-	private void deletePurchaseDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_Purchase_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
-				.create()
-				.delete();
-	}
-
-	private void deleteStockChangeDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
-				.create()
-				.delete();
-	}
-
-	private void deleteTransactionDetailsRecords(@NonNull final CandidateId candidateId)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
-				.create()
-				.delete();
-	}
-
 	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
 	{
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
@@ -876,6 +772,20 @@ public class CandidateRepositoryWriteService
 				.updateDirectly()
 				.addSetColumnValue(I_MD_Candidate.COLUMNNAME_IsActive, false)
 				.execute();
+	}
+
+	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
+	{
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+
+		for (final Candidate candidate : candidates)
+		{
+			final Candidate changedCandidate = updater.apply(candidate);
+			if (!Objects.equals(candidate, changedCandidate))
+			{
+				updateCandidateById(changedCandidate);
+			}
+		}
 	}
 
 	private void deleteRelatedRecordsForId(

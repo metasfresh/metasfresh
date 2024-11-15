@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;

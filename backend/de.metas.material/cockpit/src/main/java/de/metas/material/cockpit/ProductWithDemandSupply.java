@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.cucumber
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,27 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.edi;
+package de.metas.material.cockpit;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class Edi_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class ProductWithDemandSupply
 {
-	public Edi_Desadv_StepDefData()
-	{
-		super(I_EDI_Desadv.class);
-	}
+	@NonNull AttributesKey attributesKey;
+	@NonNull UomId uomId;
+	@NonNull ProductId productId;
+	@NonNull BigDecimal qtyReserved;
+	@NonNull BigDecimal qtyToMove;
+	@Nullable WarehouseId warehouseId;
 }

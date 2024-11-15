@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.async.AsyncBatchId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
@@ -28,10 +29,12 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -75,8 +78,6 @@ public class OLCandsProcessorExecutor
 	private final PInstanceId selectionId;
 	private final AsyncBatchId asyncBatchId;
 	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
-
-	private final OLCandSource candidatesSource;
 
 	@Builder
 	private OLCandsProcessorExecutor(

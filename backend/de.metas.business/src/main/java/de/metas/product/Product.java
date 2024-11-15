@@ -96,4 +96,5 @@ public class Product
 
 	@Nullable
 	CommodityNumberId commodityNumberId;
+	@Nullable String procurementStatus;
 }

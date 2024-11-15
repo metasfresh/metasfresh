@@ -138,7 +138,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();

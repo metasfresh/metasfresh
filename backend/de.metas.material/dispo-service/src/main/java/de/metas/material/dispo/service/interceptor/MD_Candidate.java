@@ -110,7 +110,8 @@ public class MD_Candidate
 					.materialDescriptor(getMaterialDescriptor(candidate))
 					.build();
 
-		materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled)
@@ -172,7 +173,7 @@ public class MD_Candidate
 	private static MaterialDescriptor.MaterialDescriptorBuilder getMaterialDescriptorBuilder(@NonNull final I_MD_Candidate candidate)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(candidate.getM_Product_ID(),
-																							  AttributesKey.ofString(candidate.getStorageAttributesKey()));
+				AttributesKey.ofString(candidate.getStorageAttributesKey()));
 
 		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(candidate.getDateProjected()))
@@ -206,9 +207,9 @@ public class MD_Candidate
 				.customer(BPartnerClassifier.specificOrAny(BPartnerId.ofRepoIdOrNull(oldCandidateRecord.getC_BPartner_Customer_ID())))
 				.customerIdOperator(MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_ONLY)
 				.timeRangeEnd(DateAndSeqNo.builder()
-									  .date(endOfTheDay)
-									  .operator(DateAndSeqNo.Operator.EXCLUSIVE)
-									  .build())
+						.date(endOfTheDay)
+						.operator(DateAndSeqNo.Operator.EXCLUSIVE)
+						.build())
 				.build();
 	}
 

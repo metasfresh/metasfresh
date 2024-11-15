@@ -76,8 +76,8 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
@@ -95,6 +95,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -104,6 +105,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -129,7 +131,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -160,7 +162,6 @@ public class M_HU_StepDef
 	private final TestContext restTestContext;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final TestContext testContext;
 

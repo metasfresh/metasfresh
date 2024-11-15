@@ -125,8 +125,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@VisibleForTesting
 	static final String NOTPROVIDED_GENERAL = "NOTPROVIDED";
 
-	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
-
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
 	 */
@@ -658,8 +656,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
-
-				final String otherAccountIdentification = line.getOtherAccountIdentification();
 				if (Check.isNotBlank(otherAccountIdentification))
 				{
 					// task 07789
@@ -667,7 +663,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				}
 				else
 				{
-					othr.setId(bankAccount.getAccountNo());
+					othr.setId(accountNo);
 				}
 			}
 		}

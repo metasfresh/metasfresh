@@ -30,7 +30,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailText;
-import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;

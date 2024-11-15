@@ -9,7 +9,6 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.util.Env;
 import org.slf4j.Logger;

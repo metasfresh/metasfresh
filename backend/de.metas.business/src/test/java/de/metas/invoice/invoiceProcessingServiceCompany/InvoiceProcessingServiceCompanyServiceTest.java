@@ -97,7 +97,7 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 

@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.fail;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 

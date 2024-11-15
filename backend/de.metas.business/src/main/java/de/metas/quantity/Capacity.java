@@ -26,7 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
- import lombok.Getter;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -43,38 +43,6 @@ import java.util.Optional;
 @EqualsAndHashCode(exclude = "uom", doNotUseGetters = true)
 public final class Capacity
 {
-
-	public static Capacity createInfiniteCapacity(
-			@NonNull final ProductId productId,
-			@NonNull final I_C_UOM uom)
-	{
-		return new Capacity(productId, uom);
-	}
-
-	public static Capacity createZeroCapacity(
-			@NonNull final ProductId productId,
-			@NonNull final I_C_UOM uom,
-			final boolean allowNegativeCapacity)
-	{
-		return new Capacity(BigDecimal.ZERO, productId, uom, allowNegativeCapacity);
-	}
-
-	public static Capacity createCapacity(
-			@NonNull final BigDecimal qty,
-			@NonNull final ProductId productId,
-			@NonNull final I_C_UOM uom,
-			final boolean allowNegativeCapacity)
-	{
-		return new Capacity(qty, productId, uom, allowNegativeCapacity);
-	}
-
-	public static Capacity createCapacity(
-			@NonNull final Quantity qty,
-			@NonNull final ProductId productId)
-	{
-		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
-	}
-
 	@Getter private final ProductId productId;
 	private final UomId uomId;
 	private final I_C_UOM uom;
@@ -245,7 +213,6 @@ public final class Capacity
 	 *
 	 * @param qty
 	 * @param targetUom   quantity's unit of measure
-	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
 	public Optional<QuantityTU> calculateQtyTU(

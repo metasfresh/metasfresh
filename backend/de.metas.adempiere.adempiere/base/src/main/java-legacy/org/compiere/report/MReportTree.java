@@ -16,15 +16,12 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
@@ -33,14 +30,15 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Objects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  *	Report Tree Model
@@ -87,7 +85,7 @@ public class MReportTree
 	 * 	Get Child IDs
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchie
-	 *	@param ElementType Account Schema Element Type
+	 *	@param elementType Account Schema Element Type
 	 *	@param ID id
 	 *	@return array of IDs
 	 */
@@ -120,7 +118,7 @@ public class MReportTree
 	 * 	Report Tree
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchy
-	 *	@param ElementType Account Schema Element Type
+	 *	@param elementType Account Schema Element Type
 	 */
 	public MReportTree (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType)
 	{

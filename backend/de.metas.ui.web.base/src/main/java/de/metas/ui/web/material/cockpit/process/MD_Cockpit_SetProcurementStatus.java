@@ -25,6 +25,7 @@ package de.metas.ui.web.material.cockpit.process;
 import de.metas.cache.CacheMgt;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -77,7 +78,7 @@ public class MD_Cockpit_SetProcurementStatus extends MaterialCockpitViewBasedPro
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Set<Integer> productIds = getSelectedProductIdsRecursively();
+		final Set<ProductId> productIds = getSelectedProductIdsRecursively();
 
 		final ICompositeQueryUpdater<I_M_Product> updater = queryBL.createCompositeQueryUpdater(I_M_Product.class)
 				.addSetColumnValue(X_M_Product.COLUMNNAME_ProcurementStatus, procurementStatus);
@@ -94,9 +95,9 @@ public class MD_Cockpit_SetProcurementStatus extends MaterialCockpitViewBasedPro
 		return MSG_OK;
 	}
 
-	private void cacheResetProduct(final int productId)
+	private void cacheResetProduct(final ProductId productId)
 	{
-		CacheMgt.get().reset(I_M_Product.Table_Name, productId);
+		CacheMgt.get().reset(I_M_Product.Table_Name, productId.getRepoId());
 	}
 
 

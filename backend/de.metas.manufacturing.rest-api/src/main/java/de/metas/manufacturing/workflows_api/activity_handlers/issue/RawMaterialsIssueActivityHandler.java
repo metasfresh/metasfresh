@@ -15,7 +15,6 @@ import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonSca
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -43,12 +42,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private final ProductHazardSymbolService productHazardSymbolService;
 	private final ProductAllergensService productAllergensService;
 	private final ADReferenceService adReferenceService;
-
-	public RawMaterialsIssueActivityHandler(
-			@NonNull final ManufacturingJobService manufacturingJobService)
-	{
-		this.manufacturingJobService = manufacturingJobService;
-	}
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}

@@ -72,7 +72,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
-import java.time.Duration;
 import java.util.Map;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
@@ -83,8 +82,6 @@ public class WorkflowRestController
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-
-	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 

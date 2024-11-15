@@ -22,6 +22,7 @@ package de.metas.document.archive.api;
  * #L%
  */
 
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;

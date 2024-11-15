@@ -995,7 +995,7 @@ public class MOrderLine extends X_C_OrderLine
 			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)
 			{
-				new AdempiereException("Updating TotalLines failed for C_Order_ID=" + orderId);
+				new AdempiereException("Updating TotalLines failed for C_Order_IDs=" + orderIds);
 			}
 		}
 		// Update Order Header: GrandTotal
@@ -1009,7 +1009,7 @@ public class MOrderLine extends X_C_OrderLine
 			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)
 			{
-				new AdempiereException("Updating GrandTotal failed for C_Order_ID=" + orderId);
+				new AdempiereException("Updating GrandTotal failed for C_Order_IDs=" + orderIds);
 			}
 		}
 	}
