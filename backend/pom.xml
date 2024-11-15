@@ -207,7 +207,6 @@
         <module>de-metas-salesorder</module>
         <!-- <module>extensionsupport</module> -->
 
-        <module>de-metas-salesorder</module>
     </modules>
 
     <dependencyManagement>
