@@ -17,6 +17,10 @@ PAGE=1
 PAGE_SIZE=100
 
 while : ; do
+  
+  # Initialize the deletion flag
+  DELETED_ANY_TAGS=false
+  
   # Fetch a page of tags from DockerHub
   TAGS=$(curl -s -H "Authorization: JWT $DOCKERHUB_TOKEN" "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}/tags/?page_size=${PAGE_SIZE}&page=${PAGE}")
   #echo $TAGS
@@ -45,14 +49,23 @@ while : ; do
       DELETE_RESPONSE=$(curl -s -X DELETE -H "Authorization: JWT $DOCKERHUB_TOKEN" "${DELETE_URL}")
       #echo "Response: ${DELETE_RESPONSE}"
       
+      DELETED_ANY_TAGS=true
+      
     else
       echo "LAST_UPDATED=${LAST_UPDATED} => retain ${TAG_NAME}"
     fi
   done
   
-  # Go to the next page
-  PAGE=$((PAGE + 1))
-  echo "Next page=$PAGE"
+  # If no tags were deleted on this page, get the next one
+  if [ "$DELETED_ANY_TAGS" = false ]; then
+      # Go to the next page
+      echo "Nothing deleted from page $PAGE => fetch next page"
+      PAGE=$((PAGE + 1))
+  else
+    echo "Some tags were deleted; fetch same page again"
+  fi
+  
 done
 
+echo $(date)
 echo "Process completed."
