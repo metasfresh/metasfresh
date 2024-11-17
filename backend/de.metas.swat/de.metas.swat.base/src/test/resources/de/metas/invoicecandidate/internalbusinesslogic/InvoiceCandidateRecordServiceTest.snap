@@ -110,7 +110,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     "soTrx" : "SALES",
     "product" : {
       "id" : 300000,
-      "stocked" : false
+      "itemType" : true
     },
     "uomId" : 110000,
     "orderedData" : {

@@ -43,7 +43,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -84,32 +83,6 @@ public class ResourceRepository
 		return resourceRecord;
 	}
 
-	public ImmutableList<Resource> getAllActive()
-	{
-		return getResourcesMap().getAllActive();
-	}
-
-	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
-	{
-		return getResourcesMap().getActiveResourceIdsByResourceTypeId(resourceTypeId);
-	}
-
-	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
-	{
-		return getResourcesMap().getResourceIdsByUserId(userId);
-	}
-
-	@NonNull
-	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
-	{
-		return queryBL.createQueryBuilder(I_S_Resource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_Value, value)
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_Org_ID, orgId)
-				.create()
-				.firstIdOnlyOptional(ResourceId::ofRepoId);
-	}
-
 	private ResourcesMap getResourcesMap()
 	{
 		return cache.getOrLoad(0, this::retrieveResourcesMap);
@@ -146,25 +119,6 @@ public class ResourceRepository
 				.build();
 	}
 
-	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
-	{
-		return getResourcesMap().getById(resourceId).getResourceTypeId();
-	}
-
-	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(final ImmutableSet<ResourceTypeId> resourceTypeIds)
-	{
-		if (resourceTypeIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return getResourcesMap()
-				.streamAllActive()
-				.filter(resource -> resourceTypeIds.contains(resource.getResourceTypeId()))
-				.map(Resource::getResourceId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	public ImmutableSet<ResourceId> getActivePlantIds()
 	{
 		return getResourcesMap().getActivePlantIds();
@@ -197,14 +151,6 @@ public class ResourceRepository
 			return resource;
 		}
 
-		public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
-		{
-			return streamAllActive()
-					.filter(resource -> ResourceTypeId.equals(resource.getResourceTypeId(), resourceTypeId))
-					.map(Resource::getResourceId)
-					.collect(ImmutableSet.toImmutableSet());
-		}
-
 		public Stream<Resource> streamAllActive()
 		{
 			return allActive.stream();
@@ -216,14 +162,6 @@ public class ResourceRepository
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
-		}
-
-		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
-		{
-			return streamAllActive()
-					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
-					.map(Resource::getResourceId)
-					.collect(ImmutableSet.toImmutableSet());
 		}
 
 		public ImmutableSet<ResourceId> getActivePlantIds()
