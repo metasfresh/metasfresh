@@ -179,29 +179,6 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
-	public de.metas.esb.edi.model.I_M_InOut_DesadvLine_V getM_InOut_DesadvLine_V()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_InOut_DesadvLine_V_ID, de.metas.esb.edi.model.I_M_InOut_DesadvLine_V.class);
-	}
-
-	@Override
-	public void setM_InOut_DesadvLine_V(final de.metas.esb.edi.model.I_M_InOut_DesadvLine_V M_InOut_DesadvLine_V)
-	{
-		set_ValueFromPO(COLUMNNAME_M_InOut_DesadvLine_V_ID, de.metas.esb.edi.model.I_M_InOut_DesadvLine_V.class, M_InOut_DesadvLine_V);
-	}
-
-	@Override
-	public void setM_InOut_DesadvLine_V_ID (final int M_InOut_DesadvLine_V_ID)
-	{
-		throw new IllegalArgumentException ("M_InOut_DesadvLine_V_ID is virtual column");	}
-
-	@Override
-	public int getM_InOut_DesadvLine_V_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_InOut_DesadvLine_V_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
