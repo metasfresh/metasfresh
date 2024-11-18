@@ -27,6 +27,7 @@ while : ; do
 
   ## Check if there are no more tags
   if [[ "$(echo "${TAGS}" | jq '.results | length')" -eq "0" ]]; then
+    echo "Page $PAGE is empty => nothing more to do"
     break
   fi
   
@@ -58,11 +59,11 @@ while : ; do
   
   # If no tags were deleted on this page, get the next one
   if [ "$DELETED_ANY_TAGS" = false ]; then
-      # Go to the next page
-      echo "Nothing deleted from page $PAGE => fetch next page"
-      PAGE=$((PAGE + 1))
+    # Go to the next page
+    echo "Nothing deleted from page $PAGE => fetch next page"
+    PAGE=$((PAGE + 1))
   else
-    echo "Some tags were deleted; fetch same page again"
+    echo "Some tags were deleted => fetch page $PAGE again"
   fi
   
 done
