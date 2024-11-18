@@ -22,31 +22,40 @@
 
 package de.metas.ui.web.ordercandidate.process;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
-import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.Services;
-import lombok.NonNull;
 
-public class OLCandDeleteSelectedRecords extends JavaProcess implements IProcessPrecondition
+public class OLCandDeleteSelectedRecords extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+	private static final AdMessageKey PROCESSED_RECORDS_CANNOT_BE_DELETED = AdMessageKey.of("de.metas.ui.web.ordercandidate.process.PROCESSED_RECORDS_CANNOT_BE_DELETED");
+	private static final AdMessageKey DELETE_ALL_RECORDS = AdMessageKey.of("de.metas.ui.web.ordercandidate.process.DELETE_ALL_RECORDS");
+
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (context.isNoSelection())
+		if (getSelectedRowIds().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean isProcessedRecordSelected = candDAO.isProcessed(context.getQueryFilter(I_C_OLCand.class));
+		if (getSelectedRowIds().isAll())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DELETE_ALL_RECORDS));
+		}
+
+		final boolean isProcessedRecordSelected = candDAO.isAnyRecordProcessed(getSelectedRowIds().toIds(OLCandId::ofRepoId));
 		if (isProcessedRecordSelected)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Already processed records cannot be deleted!");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PROCESSED_RECORDS_CANNOT_BE_DELETED));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -55,8 +64,14 @@ public class OLCandDeleteSelectedRecords extends JavaProcess implements IProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int count = candDAO.deleteSelectedRecords(getProcessInfo().getQueryFilterOrElseFalse());
+		final int count = candDAO.deleteRecords(getSelectedRowIds().toIds(OLCandId::ofRepoId));
 
 		return "@Deleted@ #" + count;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		invalidateView();
 	}
 }
