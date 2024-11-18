@@ -238,7 +238,6 @@ public class OLCandDAO implements IOLCandDAO
 				));
 	}
 
-	@NonNull
 	public boolean isAnyRecordProcessed(@NonNull final Set<OLCandId> olCandIds)
 	{
 		return queryBL.createQueryBuilder(I_C_OLCand.class)
@@ -248,7 +247,6 @@ public class OLCandDAO implements IOLCandDAO
 				.anyMatch();
 	}
 
-	@NonNull
 	public int deleteRecords(@NonNull final Set<OLCandId> olCandIds)
 	{
 		return queryBL.createQueryBuilder(I_C_OLCand.class)
