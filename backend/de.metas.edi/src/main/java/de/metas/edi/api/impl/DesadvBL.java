@@ -251,8 +251,8 @@ public class DesadvBL implements IDesadvBL
 		if (materialItemProduct != null)
 		{
 			newDesadvLine.setGTIN_CU(materialItemProduct.getGTIN());
-		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
-		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
+			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
+			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 		}
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
@@ -366,7 +366,6 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
-
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
@@ -379,7 +378,7 @@ public class DesadvBL implements IDesadvBL
 		if (desadvLineId == null)
 		{
 			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-						 orderLineRecord.getC_OrderLine_ID());
+					orderLineRecord.getC_OrderLine_ID());
 
 			return;
 		}
@@ -391,10 +390,10 @@ public class DesadvBL implements IDesadvBL
 
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
 		addOrSubtractInOutLineQty(desadvLineRecord,
-								  inOutLineQty,
-								  InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
-								  orderLineRecord,
-								  true/* add */);
+				inOutLineQty,
+				InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
+				orderLineRecord,
+				true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
@@ -438,10 +437,10 @@ public class DesadvBL implements IDesadvBL
 				InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn()));
 
 		addOrSubtractInOutLineQty(desadvLineRecord,
-								  inOutLineQty,
-								  InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
-								  null/*orderLine*/,
-								  false/* add=false, i.e. subtract */);
+				inOutLineQty,
+				InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
+				null/*orderLine*/,
+				false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
@@ -721,8 +720,8 @@ public class DesadvBL implements IDesadvBL
 	public boolean isMatchUsingOrderId(@NonNull final ClientId clientId)
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID,
-										   false,
-										   clientId.getRepoId());
+				false,
+				clientId.getRepoId());
 	}
 
 	private Optional<ITranslatableString> createSingleMsg(
@@ -832,9 +831,9 @@ public class DesadvBL implements IDesadvBL
 						.desadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
 						.shipmentLineId(shipmentLineId)
 						.qtyEnteredInBPartnerUOM(Optional.of(desadvLineRecord.getC_UOM_BPartner_ID())
-														 .map(UomId::ofRepoIdOrNull)
-														 .map(bpartnerUOMId -> Quantitys.create(ZERO, bpartnerUOMId))
-														 .orElse(null)));
+								.map(UomId::ofRepoIdOrNull)
+								.map(bpartnerUOMId -> Quantitys.create(ZERO, bpartnerUOMId))
+								.orElse(null)));
 
 		final Quantity inOutLineStockQty = inOutLineQty.getStockQty();
 		desadvInOutLineBuilder.qtyDeliveredInStockingUOM(inOutLineStockQty);
