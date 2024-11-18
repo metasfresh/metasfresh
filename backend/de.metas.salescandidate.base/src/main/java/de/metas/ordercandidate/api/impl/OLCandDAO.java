@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -238,6 +239,25 @@ public class OLCandDAO implements IOLCandDAO
 				));
 	}
 
+	@NonNull
+	public boolean isProcessed(@NonNull final IQueryFilter<I_C_OLCand> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.filter(queryFilter)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, true)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	public int deleteSelectedRecords(@NonNull final IQueryFilter<I_C_OLCand> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.filter(queryFilter)
+				.create()
+				.delete();
+	}
+	
 	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds,@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
