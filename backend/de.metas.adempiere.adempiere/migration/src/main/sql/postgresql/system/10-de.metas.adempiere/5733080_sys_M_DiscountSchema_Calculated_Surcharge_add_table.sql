@@ -9,7 +9,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-12T06:21:47.269Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556364,TO_TIMESTAMP('2024-09-12 06:21:47.188000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,'Table M_DiscountSchema_Calculated_Surcharge',1,'Y','N','Y','Y','M_DiscountSchema_Calculated_Surcharge','N',1000000,TO_TIMESTAMP('2024-09-12 06:21:47.188000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556364,TO_TIMESTAMP('2024-09-12 06:21:47.188000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,'Table M_DiscountSchema_Calculated_Surcharge',1,'Y','N','Y','Y','M_DiscountSchema_Calculated_Surcharge',1000000,TO_TIMESTAMP('2024-09-12 06:21:47.188000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2024-09-12T06:21:47.281Z
