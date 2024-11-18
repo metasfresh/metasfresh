@@ -34,13 +34,15 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
-import org.adempiere.ad.dao.IQueryFilter;
+ import org.adempiere.ad.dao.IQueryBuilder;
+ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.model.util.Model2IdFunction;
+ import org.adempiere.ad.dao.impl.TypedSqlQuery;
+ import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
@@ -102,6 +104,8 @@ public interface IQuery<T>
 	Class<T> getModelClass();
 
 	String getTableName();
+
+	IQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value);
 
 	List<T> list() throws DBException;
 
