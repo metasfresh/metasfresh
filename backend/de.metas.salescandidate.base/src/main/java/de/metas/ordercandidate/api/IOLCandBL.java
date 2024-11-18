@@ -114,7 +114,5 @@ public interface IOLCandBL extends ISingletonService
 
 	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
 
-	OLCand toOLCand(@NonNull I_C_OLCand olCandRecord, @NonNull OLCandOrderDefaults orderDefaults);
-
 	void saveCandidate(@NonNull final OLCand cand);
 }

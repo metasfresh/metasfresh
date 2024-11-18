@@ -23,8 +23,6 @@ import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
-import de.metas.order.OrderLineGroup;
-import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -46,7 +44,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.process.PInstanceId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -74,7 +71,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -494,64 +490,6 @@ public class OLCandBL implements IOLCandBL
 		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID(), issueId);
 
 		saveCandidate(olCand);
-	}
-
-	@NonNull
-	public OLCand toOLCand(
-			@NonNull final I_C_OLCand olCandRecord,
-			@NonNull final OLCandOrderDefaults orderDefaults)
-	{
-		final BPartnerOrderParams params = getBPartnerOrderParams(olCandRecord);
-
-		final DeliveryRule deliveryRule = getDeliveryRule(olCandRecord, params, orderDefaults);
-		final DeliveryViaRule deliveryViaRule = getDeliveryViaRule(olCandRecord, params, orderDefaults);
-		final FreightCostRule freightCostRule = getFreightCostRule(params, orderDefaults);
-		final InvoiceRule invoiceRule = getInvoiceRule(olCandRecord, params, orderDefaults);
-		final PaymentRule paymentRule = getPaymentRule(params, orderDefaults, olCandRecord);
-		final PaymentTermId paymentTermId = getPaymentTermId(params, orderDefaults, olCandRecord);
-		final PricingSystemId pricingSystemId = getPricingSystemId(olCandRecord, params, orderDefaults);
-		final ShipperId shipperId = getShipperId(params, orderDefaults, olCandRecord);
-		final DocTypeId orderDocTypeId = getOrderDocTypeId(orderDefaults, olCandRecord);
-		final Quantity qtyItemCapacity = effectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
-		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
-		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
-
-		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
-				? null
-				: OrderLineGroup.builder()
-				.groupKey(Objects.requireNonNull(olCandRecord.getCompensationGroupKey()))
-				.isGroupMainItem(olCandRecord.isGroupCompensationLine())
-				.isGroupingError(olCandRecord.isGroupingError())
-				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
-				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
-				.build();
-
-		return OLCand.builder()
-				.olCandEffectiveValuesBL(effectiveValuesBL)
-				.olCandRecord(olCandRecord)
-
-				.deliveryRule(deliveryRule)
-				.deliveryViaRule(deliveryViaRule)
-				.freightCostRule(freightCostRule)
-				.invoiceRule(invoiceRule)
-				.paymentRule(paymentRule)
-				.paymentTermId(paymentTermId)
-				.pricingSystemId(pricingSystemId)
-				.shipperId(shipperId)
-				.orderDocTypeId(orderDocTypeId)
-				.salesRepId(salesRepId)
-				.orderLineGroup(orderLineGroup)
-				.salesRepInternalId(salesRepInternalId)
-				.assignSalesRepRule(assignSalesRepRule)
-				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
-				.qtyItemCapacityEff(qtyItemCapacity)
-				.bpartnerName(olCandRecord.getBPartnerName())
-				.email(olCandRecord.getEMail())
-				.phone(olCandRecord.getPhone())
-				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
-				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
-				.build();
 	}
 
 	public void saveCandidate(@NonNull final OLCand cand)

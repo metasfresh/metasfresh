@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -219,7 +220,7 @@ public final class OLCand implements IProductPriceAware
 
 		this.qty = Quantitys.create(
 				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
-				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
+				Objects.requireNonNull(this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord)));
 
 		this.manualQtyInPriceUOM = olCandEffectiveValuesBL.getManualQtyInPriceUOM(olCandRecord).orElse(null);
 
@@ -298,11 +299,13 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
+	@Nullable
 	public WarehouseId getWarehouseId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
 	}
 
+	@Nullable
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());
@@ -333,6 +336,7 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getC_Currency_ID();
 	}
 
+	@Nullable
 	public String getProductDescription()
 	{
 		return olCandRecord.getProductDescription();
@@ -373,6 +377,7 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setAD_Issue_ID(AdIssueId.toRepoId(adIssueId));
 	}
 
+	@Nullable
 	public String getPOReference()
 	{
 		return olCandRecord.getPOReference();
@@ -400,6 +405,7 @@ public final class OLCand implements IProductPriceAware
 	}
 
 	// FIXME hardcoded (08691)
+	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
 	{
 		final String olCandColumnName = column.getColumnName();

@@ -85,6 +85,9 @@ public class CreateEDIDesadvPackRequest
 		EDIDesadvLineId ediDesadvLineId;
 
 		@NonNull
+		Integer line;
+
+		@NonNull
 		BigDecimal movementQtyInStockUOM;
 
 		@Nullable

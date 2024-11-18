@@ -4,11 +4,12 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
-import de.metas.freighcost.FreightCostRule;
-import de.metas.order.*;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -53,7 +54,7 @@ import java.util.Objects;
  */
 
 @ToString
-final class OLCandFactory
+public final class OLCandFactory
 {
     public static final String SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED = "de.metas.ordercandidate.Use_DateCandidate_As_DateOrdered";
     private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);

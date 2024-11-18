@@ -87,6 +87,7 @@ public class EDIDesadvPackRepository
 
 			ediDesadvPackItemRecord.setEDI_Desadv_Pack_ID(desadvPackRecord.getEDI_Desadv_Pack_ID());
 			ediDesadvPackItemRecord.setEDI_DesadvLine_ID(EDIDesadvLineId.toRepoId(createEDIDesadvPackItemRequest.getEdiDesadvLineId()));
+			ediDesadvPackItemRecord.setLine(createEDIDesadvPackItemRequest.getLine());
 			ediDesadvPackItemRecord.setM_InOut_ID(InOutId.toRepoId(createEDIDesadvPackItemRequest.getInOutId()));
 			ediDesadvPackItemRecord.setM_InOutLine_ID(InOutLineId.toRepoId(createEDIDesadvPackItemRequest.getInOutLineId()));
 			ediDesadvPackItemRecord.setQtyItemCapacity(createEDIDesadvPackItemRequest.getQtyItemCapacity());

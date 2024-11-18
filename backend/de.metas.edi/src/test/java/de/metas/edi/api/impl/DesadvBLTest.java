@@ -71,6 +71,7 @@ class DesadvBLTest
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
 				.qtyItemCapacity(new BigDecimal("9"))
@@ -115,6 +116,7 @@ class DesadvBLTest
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
 				.qtyTu(BigDecimal.ZERO.intValue())
@@ -156,6 +158,7 @@ class DesadvBLTest
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
 				.qtyTu(BigDecimal.ZERO.intValue())

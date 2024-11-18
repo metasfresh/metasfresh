@@ -63,7 +63,7 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | schedule_SO_S0156_600            | 24                        |
 
-    Then 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_600            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -118,7 +118,7 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | schedule_SO_S0156_700            | 24                        |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_700            | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -205,7 +205,7 @@ Feature: Sales order
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO_S0156_800          | order_SO_S0156_800        | orderLine_SO_S0156_800        | 0            | 26             | 0                | false                |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_800            | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -259,7 +259,7 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | schedule_SO_S0156_900            | 24                        |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_900            | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -284,7 +284,7 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | schedule_SO_S0156_900            | 2                         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_900            | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -341,7 +341,7 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | schedule_SO_S0156_1000           | 28                        |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_1000           | D            | true                | false       |
     Then after not more than 30s, M_InOut is found:

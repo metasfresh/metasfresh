@@ -272,6 +272,7 @@ public class DesadvLineSSCC18Generator
 
 		return CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
+				.line(desadvLine.getLine())
 				.qtyCUsPerTU(qtyCUsPerTU.toBigDecimal())
 				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
 				.qtyCUsPerLU(qtyCUsPerLU.toBigDecimal())

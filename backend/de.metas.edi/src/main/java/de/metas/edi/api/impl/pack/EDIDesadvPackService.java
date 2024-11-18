@@ -290,6 +290,7 @@ public class EDIDesadvPackService
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
 					CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 							.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
+							.line(desadvLineRecord.getLine())
 							.qtyItemCapacity(lutuConfigurationInStockUOM.getQtyCUsPerTU())
 							.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
 							.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()));
@@ -489,6 +490,7 @@ public class EDIDesadvPackService
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
 				CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
+						.line(desadvLineRecord.getLine())
 						.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
 						.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()))
 						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
