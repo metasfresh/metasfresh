@@ -96,6 +96,29 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_Amt = "Amt";
 
 	/**
+	 * Set Source Amount.
+	 * Amount Balance in Source Currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAmtSource (@Nullable BigDecimal AmtSource);
+
+	/**
+	 * Get Source Amount.
+	 * Amount Balance in Source Currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAmtSource();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_AmtSource = new ModelColumn<>(I_DATEV_ExportLine.class, "AmtSource", null);
+	String COLUMNNAME_AmtSource = "AmtSource";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -138,6 +161,33 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_BPValue = "BPValue";
 
 	/**
+	 * Set Accounting Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_AcctSchema_ID (int C_AcctSchema_ID);
+
+	/**
+	 * Get Accounting Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_AcctSchema_ID();
+
+	@Nullable org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+
+	void setC_AcctSchema(@Nullable org.compiere.model.I_C_AcctSchema C_AcctSchema);
+
+	ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -178,6 +228,28 @@ public interface I_DATEV_ExportLine
 	int getC_BPartner_ID();
 
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_ID();
+
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Name der Belegart.
@@ -274,6 +346,28 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
 	 * Set Steuersatz.
 	 *
 	 * <br>Type: Number
@@ -341,6 +435,29 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
+	 * Set Date.
+	 * Transaction Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+
+	/**
+	 * Get Date.
+	 * Transaction Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateTrx();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DateTrx = new ModelColumn<>(I_DATEV_ExportLine.class, "DateTrx", null);
+	String COLUMNNAME_DateTrx = "DateTrx";
+
+	/**
 	 * Set DATEV Export.
 	 *
 	 * <br>Type: Search
@@ -385,27 +502,6 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DATEV_ExportLine_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "DATEV_ExportLine_ID", null);
 	String COLUMNNAME_DATEV_ExportLine_ID = "DATEV_ExportLine_ID";
-
-	/**
-	 * Set Debit/Credit Indicator.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDebitOrCreditIndicator (boolean DebitOrCreditIndicator);
-
-	/**
-	 * Get Debit/Credit Indicator.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isDebitOrCreditIndicator();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DebitOrCreditIndicator = new ModelColumn<>(I_DATEV_ExportLine.class, "DebitOrCreditIndicator", null);
-	String COLUMNNAME_DebitOrCreditIndicator = "DebitOrCreditIndicator";
 
 	/**
 	 * Set Description.
@@ -519,54 +615,6 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_DueDate = "DueDate";
 
 	/**
-	 * Set Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFact_Acct_ID (int Fact_Acct_ID);
-
-	/**
-	 * Get Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFact_Acct_ID();
-
-	@Nullable org.compiere.model.I_Fact_Acct getFact_Acct();
-
-	void setFact_Acct(@Nullable org.compiere.model.I_Fact_Acct Fact_Acct);
-
-	ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_Fact_Acct> COLUMN_Fact_Acct_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
-	String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
-
-	/**
-	 * Set Grand Total.
-	 * Total amount of document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setGrandTotal (@Nullable BigDecimal GrandTotal);
-
-	/**
-	 * Get Grand Total.
-	 * Total amount of document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getGrandTotal();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_GrandTotal = new ModelColumn<>(I_DATEV_ExportLine.class, "GrandTotal", null);
-	String COLUMNNAME_GrandTotal = "GrandTotal";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -588,6 +636,306 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsActive = new ModelColumn<>(I_DATEV_ExportLine.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (@Nullable java.lang.String IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsSOTrx();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DATEV_ExportLine.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_POReference = new ModelColumn<>(I_DATEV_ExportLine.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Posting Type.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostingType (@Nullable java.lang.String PostingType);
+
+	/**
+	 * Get Posting Type.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPostingType();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_PostingType = new ModelColumn<>(I_DATEV_ExportLine.class, "PostingType", null);
+	String COLUMNNAME_PostingType = "PostingType";
+
+	/**
+	 * Set sv178_datev_betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_betrag (@Nullable BigDecimal sv178_datev_betrag);
+
+	/**
+	 * Get sv178_datev_betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getsv178_datev_betrag();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_betrag = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_betrag", null);
+	String COLUMNNAME_sv178_datev_betrag = "sv178_datev_betrag";
+
+	/**
+	 * Set buchcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_buchcode (@Nullable java.lang.String sv178_datev_buchcode);
+
+	/**
+	 * Get buchcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_buchcode();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_buchcode = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_buchcode", null);
+	String COLUMNNAME_sv178_datev_buchcode = "sv178_datev_buchcode";
+
+	/**
+	 * Set buchsymbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_buchsymbol (@Nullable java.lang.String sv178_datev_buchsymbol);
+
+	/**
+	 * Get buchsymbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_buchsymbol();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_buchsymbol = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_buchsymbol", null);
+	String COLUMNNAME_sv178_datev_buchsymbol = "sv178_datev_buchsymbol";
+
+	/**
+	 * Set Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_documentno (@Nullable java.lang.String sv178_datev_documentno);
+
+	/**
+	 * Get Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_documentno();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_documentno = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_documentno", null);
+	String COLUMNNAME_sv178_datev_documentno = "sv178_datev_documentno";
+
+	/**
+	 * Set filiale.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_filiale (@Nullable java.lang.String sv178_datev_filiale);
+
+	/**
+	 * Get filiale.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_filiale();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_filiale = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_filiale", null);
+	String COLUMNNAME_sv178_datev_filiale = "sv178_datev_filiale";
+
+	/**
+	 * Set sv178 Grand Total.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_grandtotal (@Nullable BigDecimal sv178_datev_grandtotal);
+
+	/**
+	 * Get sv178 Grand Total.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getsv178_datev_grandtotal();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_grandtotal = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_grandtotal", null);
+	String COLUMNNAME_sv178_datev_grandtotal = "sv178_datev_grandtotal";
+
+	/**
+	 * Set kost.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_kost (@Nullable java.lang.String sv178_datev_kost);
+
+	/**
+	 * Get kost.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_kost();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_kost = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_kost", null);
+	String COLUMNNAME_sv178_datev_kost = "sv178_datev_kost";
+
+	/**
+	 * Set satzart.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_satzart (@Nullable java.lang.String sv178_datev_satzart);
+
+	/**
+	 * Get satzart.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_satzart();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_satzart = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_satzart", null);
+	String COLUMNNAME_sv178_datev_satzart = "sv178_datev_satzart";
+
+	/**
+	 * Set steuer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_steuer (@Nullable java.lang.String sv178_datev_steuer);
+
+	/**
+	 * Get steuer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_steuer();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_steuer = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_steuer", null);
+	String COLUMNNAME_sv178_datev_steuer = "sv178_datev_steuer";
+
+	/**
+	 * Set steuercode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_steuercode (@Nullable java.lang.String sv178_datev_steuercode);
+
+	/**
+	 * Get steuercode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getsv178_datev_steuercode();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_steuercode = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_steuercode", null);
+	String COLUMNNAME_sv178_datev_steuercode = "sv178_datev_steuercode";
+
+	/**
+	 * Set sv178_datev_steuer.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setsv178_datev_taxamt (@Nullable BigDecimal sv178_datev_taxamt);
+
+	/**
+	 * Get sv178_datev_steuer.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getsv178_datev_taxamt();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_taxamt = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_taxamt", null);
+	String COLUMNNAME_sv178_datev_taxamt = "sv178_datev_taxamt";
 
 	/**
 	 * Set Tax Amount.
@@ -613,6 +961,29 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_TaxAmt = "TaxAmt";
 
 	/**
+	 * Set Tax Amount Source.
+	 * Tax Amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTaxAmtSource (@Nullable BigDecimal TaxAmtSource);
+
+	/**
+	 * Get Tax Amount Source.
+	 * Tax Amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTaxAmtSource();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_TaxAmtSource = new ModelColumn<>(I_DATEV_ExportLine.class, "TaxAmtSource", null);
+	String COLUMNNAME_TaxAmtSource = "TaxAmtSource";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -636,4 +1007,25 @@ public interface I_DATEV_ExportLine
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATCode (@Nullable java.lang.String VATCode);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVATCode();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_VATCode = new ModelColumn<>(I_DATEV_ExportLine.class, "VATCode", null);
+	String COLUMNNAME_VATCode = "VATCode";
 }
