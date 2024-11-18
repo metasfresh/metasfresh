@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1000593921L;
+	private static final long serialVersionUID = 1763764501L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -423,19 +423,6 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setsv178_datev_betrag (final @Nullable BigDecimal sv178_datev_betrag)
-	{
-		set_Value (COLUMNNAME_sv178_datev_betrag, sv178_datev_betrag);
-	}
-
-	@Override
-	public BigDecimal getsv178_datev_betrag() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_betrag);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setsv178_datev_buchcode (final @Nullable java.lang.String sv178_datev_buchcode)
 	{
 		set_Value (COLUMNNAME_sv178_datev_buchcode, sv178_datev_buchcode);
@@ -484,19 +471,6 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setsv178_datev_grandtotal (final @Nullable BigDecimal sv178_datev_grandtotal)
-	{
-		set_Value (COLUMNNAME_sv178_datev_grandtotal, sv178_datev_grandtotal);
-	}
-
-	@Override
-	public BigDecimal getsv178_datev_grandtotal() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_grandtotal);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setsv178_datev_kost (final @Nullable java.lang.String sv178_datev_kost)
 	{
 		set_Value (COLUMNNAME_sv178_datev_kost, sv178_datev_kost);
@@ -518,18 +492,6 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getsv178_datev_satzart() 
 	{
 		return get_ValueAsString(COLUMNNAME_sv178_datev_satzart);
-	}
-
-	@Override
-	public void setsv178_datev_steuer (final @Nullable java.lang.String sv178_datev_steuer)
-	{
-		set_Value (COLUMNNAME_sv178_datev_steuer, sv178_datev_steuer);
-	}
-
-	@Override
-	public java.lang.String getsv178_datev_steuer() 
-	{
-		return get_ValueAsString(COLUMNNAME_sv178_datev_steuer);
 	}
 
 	@Override
@@ -558,15 +520,15 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setTaxAmt (final @Nullable BigDecimal TaxAmt)
+	public void setsv178_datev_tax_rate (final @Nullable BigDecimal sv178_datev_tax_rate)
 	{
-		set_Value (COLUMNNAME_TaxAmt, TaxAmt);
+		set_Value (COLUMNNAME_sv178_datev_tax_rate, sv178_datev_tax_rate);
 	}
 
 	@Override
-	public BigDecimal getTaxAmt() 
+	public BigDecimal getsv178_datev_tax_rate() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_tax_rate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1921071202L;
+	private static final long serialVersionUID = -277796288L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -479,18 +479,6 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setsv178_datev_betrag (final @Nullable BigDecimal sv178_datev_betrag)
-	{
-		throw new IllegalArgumentException ("sv178_datev_betrag is virtual column");	}
-
-	@Override
-	public BigDecimal getsv178_datev_betrag() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_betrag);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setsv178_datev_buchcode (final @Nullable java.lang.String sv178_datev_buchcode)
 	{
 		throw new IllegalArgumentException ("sv178_datev_buchcode is virtual column");	}
@@ -535,18 +523,6 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setsv178_datev_grandtotal (final @Nullable BigDecimal sv178_datev_grandtotal)
-	{
-		throw new IllegalArgumentException ("sv178_datev_grandtotal is virtual column");	}
-
-	@Override
-	public BigDecimal getsv178_datev_grandtotal() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_grandtotal);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setsv178_datev_kost (final @Nullable java.lang.String sv178_datev_kost)
 	{
 		throw new IllegalArgumentException ("sv178_datev_kost is virtual column");	}
@@ -566,17 +542,6 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public java.lang.String getsv178_datev_satzart() 
 	{
 		return get_ValueAsString(COLUMNNAME_sv178_datev_satzart);
-	}
-
-	@Override
-	public void setsv178_datev_steuer (final @Nullable java.lang.String sv178_datev_steuer)
-	{
-		throw new IllegalArgumentException ("sv178_datev_steuer is virtual column");	}
-
-	@Override
-	public java.lang.String getsv178_datev_steuer() 
-	{
-		return get_ValueAsString(COLUMNNAME_sv178_datev_steuer);
 	}
 
 	@Override
@@ -603,15 +568,14 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setTaxAmt (final @Nullable BigDecimal TaxAmt)
+	public void setsv178_datev_tax_rate (final @Nullable BigDecimal sv178_datev_tax_rate)
 	{
-		set_ValueNoCheck (COLUMNNAME_TaxAmt, TaxAmt);
-	}
+		throw new IllegalArgumentException ("sv178_datev_tax_rate is virtual column");	}
 
 	@Override
-	public BigDecimal getTaxAmt() 
+	public BigDecimal getsv178_datev_tax_rate() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_sv178_datev_tax_rate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

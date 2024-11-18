@@ -705,27 +705,6 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_PostingType = "PostingType";
 
 	/**
-	 * Set sv178_datev_betrag.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setsv178_datev_betrag (@Nullable BigDecimal sv178_datev_betrag);
-
-	/**
-	 * Get sv178_datev_betrag.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getsv178_datev_betrag();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_betrag = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_betrag", null);
-	String COLUMNNAME_sv178_datev_betrag = "sv178_datev_betrag";
-
-	/**
 	 * Set buchcode.
 	 *
 	 * <br>Type: String
@@ -812,27 +791,6 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_sv178_datev_filiale = "sv178_datev_filiale";
 
 	/**
-	 * Set sv178 Grand Total.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setsv178_datev_grandtotal (@Nullable BigDecimal sv178_datev_grandtotal);
-
-	/**
-	 * Get sv178 Grand Total.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getsv178_datev_grandtotal();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_grandtotal = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_grandtotal", null);
-	String COLUMNNAME_sv178_datev_grandtotal = "sv178_datev_grandtotal";
-
-	/**
 	 * Set kost.
 	 *
 	 * <br>Type: String
@@ -873,27 +831,6 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_satzart = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_satzart", null);
 	String COLUMNNAME_sv178_datev_satzart = "sv178_datev_satzart";
-
-	/**
-	 * Set steuer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setsv178_datev_steuer (@Nullable java.lang.String sv178_datev_steuer);
-
-	/**
-	 * Get steuer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getsv178_datev_steuer();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_steuer = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_steuer", null);
-	String COLUMNNAME_sv178_datev_steuer = "sv178_datev_steuer";
 
 	/**
 	 * Set steuercode.
@@ -938,27 +875,25 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_sv178_datev_taxamt = "sv178_datev_taxamt";
 
 	/**
-	 * Set Tax Amount.
-	 * Tax Amount for Credit Card transaction
+	 * Set Tax Rate (DATEV).
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTaxAmt (@Nullable BigDecimal TaxAmt);
+	void setsv178_datev_tax_rate (@Nullable BigDecimal sv178_datev_tax_rate);
 
 	/**
-	 * Get Tax Amount.
-	 * Tax Amount for Credit Card transaction
+	 * Get Tax Rate (DATEV).
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getTaxAmt();
+	BigDecimal getsv178_datev_tax_rate();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_TaxAmt = new ModelColumn<>(I_DATEV_ExportLine.class, "TaxAmt", null);
-	String COLUMNNAME_TaxAmt = "TaxAmt";
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_sv178_datev_tax_rate = new ModelColumn<>(I_DATEV_ExportLine.class, "sv178_datev_tax_rate", null);
+	String COLUMNNAME_sv178_datev_tax_rate = "sv178_datev_tax_rate";
 
 	/**
 	 * Set Tax Amount Source.
