@@ -302,6 +302,37 @@ public interface I_EDI_Desadv_Pack_Item
 	String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
 
 	/**
+	 * Set M_InOut_DesadvLine_V.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_InOut_DesadvLine_V_ID (int M_InOut_DesadvLine_V_ID);
+
+	/**
+	 * Get M_InOut_DesadvLine_V.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_InOut_DesadvLine_V_ID();
+
+	@Deprecated
+	@Nullable de.metas.esb.edi.model.I_M_InOut_DesadvLine_V getM_InOut_DesadvLine_V();
+
+	@Deprecated
+	void setM_InOut_DesadvLine_V(@Nullable de.metas.esb.edi.model.I_M_InOut_DesadvLine_V M_InOut_DesadvLine_V);
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, de.metas.esb.edi.model.I_M_InOut_DesadvLine_V> COLUMN_M_InOut_DesadvLine_V_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "M_InOut_DesadvLine_V_ID", de.metas.esb.edi.model.I_M_InOut_DesadvLine_V.class);
+	String COLUMNNAME_M_InOut_DesadvLine_V_ID = "M_InOut_DesadvLine_V_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *

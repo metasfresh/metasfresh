@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_EDI_Desadv_Pack_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -216519610L;
+	private static final long serialVersionUID = 1014721542L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack_Item (final Properties ctx, final int EDI_Desadv_Pack_Item_ID, @Nullable final String trxName)
@@ -176,6 +176,29 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	public java.lang.String getM_HU_PackagingCode_TU_Text() 
 	{
 		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_TU_Text);
+	}
+
+	@Override
+	public de.metas.esb.edi.model.I_M_InOut_DesadvLine_V getM_InOut_DesadvLine_V()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_DesadvLine_V_ID, de.metas.esb.edi.model.I_M_InOut_DesadvLine_V.class);
+	}
+
+	@Override
+	public void setM_InOut_DesadvLine_V(final de.metas.esb.edi.model.I_M_InOut_DesadvLine_V M_InOut_DesadvLine_V)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_DesadvLine_V_ID, de.metas.esb.edi.model.I_M_InOut_DesadvLine_V.class, M_InOut_DesadvLine_V);
+	}
+
+	@Override
+	public void setM_InOut_DesadvLine_V_ID (final int M_InOut_DesadvLine_V_ID)
+	{
+		throw new IllegalArgumentException ("M_InOut_DesadvLine_V_ID is virtual column");	}
+
+	@Override
+	public int getM_InOut_DesadvLine_V_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_DesadvLine_V_ID);
 	}
 
 	@Override

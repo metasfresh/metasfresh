@@ -283,7 +283,7 @@ public class EDIDesadvPackService
 		for (int i = 0; i < requiredLUCount; i++)
 		{
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
-					.line(packLineSequence.next())
+					.seqNo(packLineSequence.next())
 					.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
 					.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
 
@@ -474,7 +474,7 @@ public class EDIDesadvPackService
 			@NonNull final SimpleSequence packLineSequence)
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
-				.line(packLineSequence.next())
+				.seqNo(packLineSequence.next())
 				.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()))
 				.huId(rootHU.getId());

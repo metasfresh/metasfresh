@@ -211,7 +211,7 @@ public class DesadvLineSSCC18Generator
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.line(10)
+				.seqNo(10)
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)

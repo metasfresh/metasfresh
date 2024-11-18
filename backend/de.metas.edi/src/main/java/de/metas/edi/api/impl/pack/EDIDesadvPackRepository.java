@@ -70,12 +70,12 @@ public class EDIDesadvPackRepository
 
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));
-		desadvPackRecord.setLine(createEDIDesadvPackRequest.getLine());
+		desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
 		desadvPackRecord.setM_HU_ID(HuId.toRepoId(createEDIDesadvPackRequest.getHuId()));
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
-		desadvPackRecord.setM_HU_PackagingCode_LU_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeLUID()));
-		desadvPackRecord.setGTIN_LU_PackingMaterial(createEDIDesadvPackRequest.getGtinLUPackingMaterial());
+		desadvPackRecord.setM_HU_PackagingCode_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeLUID()));
+		desadvPackRecord.setGTIN_PackingMaterial(createEDIDesadvPackRequest.getGtinLUPackingMaterial());
 
 		saveRecord(desadvPackRecord);
 
@@ -228,8 +228,8 @@ public class EDIDesadvPackRepository
 		ediDesadvPackBuilder.sscc18(desadvPackRecord.getIPA_SSCC18());
 		ediDesadvPackBuilder.isManualIpaSscc(desadvPackRecord.isManual_IPA_SSCC18());
 		ediDesadvPackBuilder.huId(HuId.ofRepoIdOrNull(desadvPackRecord.getM_HU_ID()));
-		ediDesadvPackBuilder.huPackagingCodeLuId(PackagingCodeId.ofRepoIdOrNull(desadvPackRecord.getM_HU_PackagingCode_LU_ID()));
-		ediDesadvPackBuilder.gtinLuPackingMaterial(desadvPackRecord.getGTIN_LU_PackingMaterial());
+		ediDesadvPackBuilder.huPackagingCodeLuId(PackagingCodeId.ofRepoIdOrNull(desadvPackRecord.getM_HU_PackagingCode_ID()));
+		ediDesadvPackBuilder.gtinLuPackingMaterial(desadvPackRecord.getGTIN_PackingMaterial());
 
 		for (final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord : ediDesadvPackItemRecords)
 		{

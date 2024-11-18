@@ -145,7 +145,7 @@ public class DesadvDAO implements IDesadvDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
-				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_Line);
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
 	}
 
 	@Override

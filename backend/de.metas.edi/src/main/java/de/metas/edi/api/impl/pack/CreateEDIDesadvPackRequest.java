@@ -50,7 +50,7 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
-	int line;
+	int seqNo;
 	
 	@NonNull
 	String sscc18;
