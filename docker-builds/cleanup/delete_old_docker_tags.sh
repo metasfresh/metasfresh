@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# 
+# Gets all docker-tags from a given repository and deletes the ones that are older than a certain RETENTION_DATE.
+#
+# Dev Note 1: I considered if it would be nicer if we downloaded a list of all tags into a file. 
+# That way, we wouldn't need to over and over iterate the same page with maybe plenty of not-yet-deletable tags.
+# However, this version does the job **and** it has no problem even with really large sets of tags to be deleted
+#
+# Dev Note 2: for repos from which we deploy artifacts permanently, 
+# we might want to load a white-list of tags that shall not be deleted in future.
+#
+
 DOCKERHUB_USERNAME="$1"
 DOCKERHUB_REPO="$2"
 DOCKERHUB_TOKEN="${DOCKERHUB_TOKEN}"
