@@ -1,8 +1,8 @@
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
+;
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_PerTax
 ;
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_All
-;
-DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
 ;
 
 
