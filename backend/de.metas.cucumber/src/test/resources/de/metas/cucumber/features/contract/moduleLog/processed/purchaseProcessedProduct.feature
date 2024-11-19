@@ -382,14 +382,14 @@ Feature: Modular contract log from purchase order for processed product
       | candidate_storageCost                  | 0                |
 
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier      | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_receipt                      | 0            | 1000           | 1000             | I               | 0               | 0                   | 0                  | Y             |
-      | candidate_salesOnProcessedProduct      | 0            | 1000           | 1000             | I               | 20              | 0                   | 20000              | Y             |
-      | candidate_addValueOnProcessedProduct_1 | 0            | 1000           | 1000             | I               | 8               | 0                   | 8000               | Y             |
-      | candidate_addValueOnProcessedProduct_2 | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             |
-      | candidate_addValueOnInterim            | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
-      | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 18.96           | 0                   | 18.96              | Y             |
-      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1890           | 0                   | -1890              | Y             |
+      | C_Invoice_Candidate_ID.Identifier      | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed | OPT.IsHidePriceAndAmountOnPrint |
+      | candidate_receipt                      | 0            | 1000           | 1000             | I               | 0               | 0                   | 0                  | Y             | Y                               |
+      | candidate_salesOnProcessedProduct      | 0            | 1000           | 1000             | I               | 20              | 0                   | 20000              | Y             | N                               |
+      | candidate_addValueOnProcessedProduct_1 | 0            | 1000           | 1000             | I               | 8               | 0                   | 8000               | Y             | N                               |
+      | candidate_addValueOnProcessedProduct_2 | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             | N                               |
+      | candidate_addValueOnInterim            | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             | N                               |
+      | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 18.96           | 0                   | 18.96              | Y             | N                               |
+      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1890           | 0                   | -1890              | Y             | N                               |
 
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
@@ -400,14 +400,14 @@ Feature: Modular contract log from purchase order for processed product
       | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 23905.86       | final                       |
 
     And validate created modular invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier        | ProductName                           | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_1_1             | invoice_1               | rawProduct                     | receipt_06062024_1                    | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
-      | invoiceLine_1_2             | invoice_1               | processedProduct               | salesOnProcessedProduct_06062024_1    | 1000        | true      | 20               | 20              | 20000          | PCE                   | PCE                       |
-      | invoiceLine_1_3             | invoice_1               | addValueOnProcessed_PO         | addValueOnProcessedProduct_06062024_1 | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       |
-      | invoiceLine_1_4             | invoice_1               | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_06062024_2 | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
-      | invoiceLine_1_5             | invoice_1               | addValueOnInterim              | addValueOnInterim_06062024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
-      | invoiceLine_1_6             | invoice_1               | subValueOnInterim              | subValueOnInterim_06062024_1          | 1           | true      | 18.96            | 18.96           | 18.96          | PCE                   | PCE                       |
-      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1890            | -1890           | -1890          | PCE                   | PCE                       |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier        | ProductName                           | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsHidePriceAndAmountOnPrint |
+      | invoiceLine_1_1             | invoice_1               | rawProduct                     | receipt_06062024_1                    | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       | Y                               |
+      | invoiceLine_1_2             | invoice_1               | processedProduct               | salesOnProcessedProduct_06062024_1    | 1000        | true      | 20               | 20              | 20000          | PCE                   | PCE                       | N                               |
+      | invoiceLine_1_3             | invoice_1               | addValueOnProcessed_PO         | addValueOnProcessedProduct_06062024_1 | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       | N                               |
+      | invoiceLine_1_4             | invoice_1               | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_06062024_2 | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       | N                               |
+      | invoiceLine_1_5             | invoice_1               | addValueOnInterim              | addValueOnInterim_06062024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       | N                               |
+      | invoiceLine_1_6             | invoice_1               | subValueOnInterim              | subValueOnInterim_06062024_1          | 1           | true      | 18.96            | 18.96           | 18.96          | PCE                   | PCE                       | N                               |
+      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1890            | -1890           | -1890          | PCE                   | PCE                       | N                               |
 
     And create definitive invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
