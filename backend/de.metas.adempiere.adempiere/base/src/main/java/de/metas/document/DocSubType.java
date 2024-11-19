@@ -128,6 +128,7 @@ public enum DocSubType implements ReferenceListAwareEnum
 	public boolean isInternalVendorInvoice() { return InternalVendorInvoice.equals(this); }
 	public boolean isDeliveryInstruction() { return DeliveryInstruction.equals(this); }
 	public boolean isCallOrder() { return CallOrder.equals(this); }
+	public boolean isFrameAgreement() { return FrameAgrement.equals(this); }
 	public boolean isMediated() { return Mediated.equals(this); }
 	public boolean isRequisition() { return Requisition.equals(this); }
 }

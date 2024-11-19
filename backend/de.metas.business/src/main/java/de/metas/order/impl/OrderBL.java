@@ -34,6 +34,9 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveCont
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -75,6 +78,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -167,6 +171,7 @@ public class OrderBL implements IOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
 	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
 	{
@@ -189,7 +194,6 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.getOrderLineById(orderLineId);
 	}
-
 
 	@Override
 	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
@@ -736,9 +740,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -785,11 +789,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -1077,6 +1081,13 @@ public class OrderBL implements IOrderBL
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isCallOrder(docTypeId);
+	}
+
+	@Override
+	public boolean isFrameAgreement(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isFrameAgreement(docTypeId);
 	}
 
 	@Override
@@ -1423,5 +1434,32 @@ public class OrderBL implements IOrderBL
 				InOutUserNotificationsProducer.newInstance(),
 				warehouseBL
 		);
+	}
+
+	@Override
+	@Nullable
+	public YearId getSuitableHarvestingYearId(@NonNull final I_C_Order orderRecord)
+	{
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(orderRecord.getC_DocTypeTarget_ID());
+
+		if (docTypeTargetId == null)
+		{
+			return null;
+		}
+
+		if (isCallOrder(orderRecord) || isFrameAgreement(orderRecord))
+		{
+			return null;
+		}
+
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(orderRecord.getC_Harvesting_Calendar_ID());
+		if (harvestingCalendarId == null)
+		{
+			return null;
+		}
+
+		final LocalDateAndOrgId dateOrdered = LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(), OrgId.ofRepoId(orderRecord.getAD_Org_ID()), orgDAO::getTimeZone);
+
+		return calendarDAO.findYearByCalendarAndDate(dateOrdered, harvestingCalendarId);
 	}
 }
