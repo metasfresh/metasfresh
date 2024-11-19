@@ -56,7 +56,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_InvoiceLine','ALTER TABLE public.C_InvoiceLine ADD COLUMN IsHidePriceAndAmountOnPrint CHAR(1) DEFAULT ''N'' CHECK (IsHidePriceAndAmountOnPrint IN (''Y'',''N'')) NOT NULL')
 ;
 
--- Field: Rechnung_OLD(167,D) -> Rechnungsposition(270,D) -> Preis und Betrag bei Druck ausblenden
+-- Field: Rechnung(167,D) -> Rechnungsposition(270,D) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T13:47:49.071Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589388,733827,0,270,TO_TIMESTAMP('2024-11-14 14:47:47.883','YYYY-MM-DD HH24:MI:SS.US'),100,1,'D','Y','N','N','N','N','N','N','N','Preis und Betrag bei Druck ausblenden',TO_TIMESTAMP('2024-11-14 14:47:47.883','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -78,19 +78,19 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=733827
 /* DDL */ select AD_Element_Link_Create_Missing_Field(733827)
 ;
 
--- Field: Rechnung_OLD(167,D) -> Rechnungsposition(270,D) -> Preis und Betrag bei Druck ausblenden
+-- Field: Rechnung(167,D) -> Rechnungsposition(270,D) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T13:48:04.726Z
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-11-14 14:48:04.726','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=733827
 ;
 
--- UI Element: Rechnung_OLD(167,D) -> Rechnungsposition(270,D) -> main -> 10 -> default.Preis und Betrag bei Druck ausblenden
+-- UI Element: Rechnung(167,D) -> Rechnungsposition(270,D) -> main -> 10 -> default.Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T14:00:01.876Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,733827,0,270,540023,627179,'F',TO_TIMESTAMP('2024-11-14 15:00:01.744','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Preis und Betrag bei Druck ausblenden',260,0,0,TO_TIMESTAMP('2024-11-14 15:00:01.744','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- Field: Eingangsrechnung_OLD(183,D) -> Rechnungsposition(291,D) -> Preis und Betrag bei Druck ausblenden
+-- Field: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T13:51:49.802Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589388,733828,0,291,TO_TIMESTAMP('2024-11-14 14:51:49.678','YYYY-MM-DD HH24:MI:SS.US'),100,1,'D','Y','N','N','N','N','N','N','N','Preis und Betrag bei Druck ausblenden',TO_TIMESTAMP('2024-11-14 14:51:49.678','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -112,13 +112,13 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=733828
 /* DDL */ select AD_Element_Link_Create_Missing_Field(733828)
 ;
 
--- Field: Eingangsrechnung_OLD(183,D) -> Rechnungsposition(291,D) -> Preis und Betrag bei Druck ausblenden
+-- Field: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T13:52:41.659Z
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-11-14 14:52:41.659','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=733828
 ;
 
--- UI Element: Eingangsrechnung_OLD(183,D) -> Rechnungsposition(291,D) -> main -> 10 -> default.Preis und Betrag bei Druck ausblenden
+-- UI Element: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> main -> 10 -> default.Preis und Betrag bei Druck ausblenden
 -- Column: C_InvoiceLine.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T13:53:10.395Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,733828,0,291,540219,627178,'F',TO_TIMESTAMP('2024-11-14 14:53:10.257','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Preis und Betrag bei Druck ausblenden',170,0,0,TO_TIMESTAMP('2024-11-14 14:53:10.257','YYYY-MM-DD HH24:MI:SS.US'),100)

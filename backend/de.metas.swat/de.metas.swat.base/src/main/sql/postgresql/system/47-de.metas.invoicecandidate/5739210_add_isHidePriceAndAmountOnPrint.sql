@@ -15,7 +15,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN IsHidePriceAndAmountOnPrint CHAR(1) DEFAULT ''N'' CHECK (IsHidePriceAndAmountOnPrint IN (''Y'',''N'')) NOT NULL')
 ;
 
--- Field: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_Invoice_Candidate.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T11:42:31.071Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589386,733823,0,540279,TO_TIMESTAMP('2024-11-14 12:42:30.751','YYYY-MM-DD HH24:MI:SS.US'),100,1,'de.metas.invoicecandidate','Y','N','N','N','N','N','N','N','Preis und Betrag bei Druck ausblenden',TO_TIMESTAMP('2024-11-14 12:42:30.751','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -37,19 +37,19 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=733823
 /* DDL */ select AD_Element_Link_Create_Missing_Field(733823)
 ;
 
--- UI Element: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Preis und Betrag bei Druck ausblenden
+-- UI Element: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Preis und Betrag bei Druck ausblenden
 -- Column: C_Invoice_Candidate.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T11:43:19.326Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,733823,0,540279,540056,627173,'F',TO_TIMESTAMP('2024-11-14 12:43:19.17','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Preis und Betrag bei Druck ausblenden',1085,0,0,TO_TIMESTAMP('2024-11-14 12:43:19.17','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- Field: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_Invoice_Candidate.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T11:43:42.848Z
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-11-14 12:43:42.848','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=733823
 ;
 
--- Field: Rechnungsdisposition Einkauf_OLD(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> Preis und Betrag bei Druck ausblenden
 -- Column: C_Invoice_Candidate.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T11:45:52.529Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589386,733824,0,543052,TO_TIMESTAMP('2024-11-14 12:45:52.403','YYYY-MM-DD HH24:MI:SS.US'),100,1,'de.metas.invoicecandidate','Y','N','N','N','N','N','N','N','Preis und Betrag bei Druck ausblenden',TO_TIMESTAMP('2024-11-14 12:45:52.403','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -71,13 +71,13 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=733824
 /* DDL */ select AD_Element_Link_Create_Missing_Field(733824)
 ;
 
--- Field: Rechnungsdisposition Einkauf_OLD(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> Einstellungen für modulare Verträge
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> Einstellungen für modulare Verträge
 -- Column: C_Invoice_Candidate.ModCntr_Settings_ID
 -- 2024-11-14T11:46:10.496Z
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-11-14 12:46:10.496','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=731889
 ;
 
--- UI Element: Rechnungsdisposition Einkauf_OLD(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Preis und Betrag bei Druck ausblenden
+-- UI Element: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Preis und Betrag bei Druck ausblenden
 -- Column: C_Invoice_Candidate.IsHidePriceAndAmountOnPrint
 -- 2024-11-14T11:47:05.751Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,733824,0,543052,544370,627174,'F',TO_TIMESTAMP('2024-11-14 12:47:05.627','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Preis und Betrag bei Druck ausblenden',1060,0,0,TO_TIMESTAMP('2024-11-14 12:47:05.627','YYYY-MM-DD HH24:MI:SS.US'),100)
