@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -251,6 +252,15 @@ public class OLCandDAO implements IOLCandDAO
 	{
 		return queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.delete();
+	}
+
+	public int deleteUnprocessedRecords(@NonNull final IQueryFilter<I_C_OLCand> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
+				.filter(queryFilter)
 				.create()
 				.delete();
 	}

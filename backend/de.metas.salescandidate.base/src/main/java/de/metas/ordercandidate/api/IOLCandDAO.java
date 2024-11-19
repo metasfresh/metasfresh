@@ -32,6 +32,7 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.LocalDateInterval;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,8 @@ public interface IOLCandDAO extends ISingletonService
 	boolean isAnyRecordProcessed(@NonNull Set<OLCandId> olCandIds);
 
 	int deleteRecords(@NonNull Set<OLCandId> olCandIds);
+
+	int deleteUnprocessedRecords(@NonNull IQueryFilter<I_C_OLCand> queryFilter);
 
 	void assignAsyncBatchId(Set<OLCandId> olCandIds, AsyncBatchId asyncBatchId);
 }
