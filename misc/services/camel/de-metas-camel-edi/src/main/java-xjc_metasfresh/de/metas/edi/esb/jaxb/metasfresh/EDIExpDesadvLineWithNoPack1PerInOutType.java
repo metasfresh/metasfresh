@@ -12,19 +12,20 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.math.BigInteger;
 
 
 /**
- * <p>Java class for EDI_AD_Org_Lookup_BPL_GLN_vType complex type.
+ * <p>Java class for EDI_Exp_DesadvLineWithNoPack_1PerInOutType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="EDI_AD_Org_Lookup_BPL_GLN_vType"&gt;
+ * &lt;complexType name="EDI_Exp_DesadvLineWithNoPack_1PerInOutType"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="GLN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Line" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -34,36 +35,36 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EDI_AD_Org_Lookup_BPL_GLN_vType", propOrder = {
-    "gln"
+@XmlType(name = "EDI_Exp_DesadvLineWithNoPack_1PerInOutType", propOrder = {
+    "line"
 })
-public class EDIADOrgLookupBPLGLNVType {
+public class EDIExpDesadvLineWithNoPack1PerInOutType {
 
-    @XmlElement(name = "GLN")
-    protected String gln;
+    @XmlElement(name = "Line")
+    protected BigInteger line;
 
     /**
-     * Gets the value of the gln property.
+     * Gets the value of the line property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public String getGLN() {
-        return gln;
+    public BigInteger getLine() {
+        return line;
     }
 
     /**
-     * Sets the value of the gln property.
+     * Sets the value of the line property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public void setGLN(String value) {
-        this.gln = value;
+    public void setLine(BigInteger value) {
+        this.line = value;
     }
 
 }
