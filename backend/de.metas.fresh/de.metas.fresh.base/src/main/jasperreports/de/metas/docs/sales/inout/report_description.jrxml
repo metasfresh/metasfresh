@@ -49,10 +49,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 		<property name="com.jaspersoft.studio.field.name" value="customernoatvendor"/>
 		<property name="com.jaspersoft.studio.field.label" value="customernoatvendor"/>
 	</field>
-	<field name="customernoatvendor" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="customernoatvendor"/>
-		<property name="com.jaspersoft.studio.field.label" value="customernoatvendor"/>
-	</field>
 	<field name="cont_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="cont_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
