@@ -34,7 +34,6 @@ import de.metas.util.Services;
 public class OLCandDeleteSelectedRecords extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private static final AdMessageKey PROCESSED_RECORDS_CANNOT_BE_DELETED = AdMessageKey.of("de.metas.ui.web.ordercandidate.process.PROCESSED_RECORDS_CANNOT_BE_DELETED");
-	private static final AdMessageKey DELETE_ALL_RECORDS = AdMessageKey.of("de.metas.ui.web.ordercandidate.process.DELETE_ALL_RECORDS");
 
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -49,7 +48,7 @@ public class OLCandDeleteSelectedRecords extends ViewBasedProcessTemplate implem
 
 		if (getSelectedRowIds().isAll())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DELETE_ALL_RECORDS));
+			return ProcessPreconditionsResolution.accept();
 		}
 
 		final boolean isProcessedRecordSelected = candDAO.isAnyRecordProcessed(getSelectedRowIds().toIds(OLCandId::ofRepoId));
@@ -64,7 +63,9 @@ public class OLCandDeleteSelectedRecords extends ViewBasedProcessTemplate implem
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int count = candDAO.deleteRecords(getSelectedRowIds().toIds(OLCandId::ofRepoId));
+		final int count = getSelectedRowIds().isAll()
+				? candDAO.deleteUnprocessedRecords(getProcessInfo().getQueryFilterOrElseFalse())
+				: candDAO.deleteRecords(getSelectedRowIds().toIds(OLCandId::ofRepoId));
 
 		return "@Deleted@ #" + count;
 	}
