@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" jaxb:version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" jaxb:version="2.0">
     <xsd:attribute name="AD_Client_Value" type="xsd:string">
         <xsd:annotation>
             <xsd:appinfo>
@@ -332,8 +331,10 @@
     <xsd:element name="XLS_Imp_C_OLCand" type="XLS_Imp_C_OLCandType"/>
     <xsd:element name="EDI_Exp_Desadv_Pack_Item" type="EDI_Exp_Desadv_Pack_ItemType"/>
     <xsd:element name="EDI_Exp_Desadv_Pack" type="EDI_Exp_Desadv_PackType"/>
+    <xsd:element name="EDI_Exp_DesadvLineWithNoPack" type="EDI_Exp_DesadvLineWithNoPackType"/>
     <xsd:element name="EXP_M_InOut_DesadvLine_V" type="EXP_M_InOut_DesadvLine_VType"/>
-    <xsd:element name="EDI_ReplicationTrx_Update" type="EDI_ReplicationTrx_UpdateType"/>
+    <xsd:element name="M_InOut_Desadv_Pack_V" type="M_InOut_Desadv_Pack_VType"/>
+    <xsd:element name="EDI_Desadv_Pack_Item_1PerInOut" type="EDI_Desadv_Pack_Item_1PerInOutType"/>
     <xsd:complexType name="EDI_Exp_C_BPartner_Product_vType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="ProductNo" type="xsd:string"/>
@@ -440,6 +441,13 @@
             <xsd:element minOccurs="0" name="DiscountBaseAmt" type="xsd:decimal"/>
         </xsd:sequence>
     </xsd:complexType>
+    <xsd:complexType name="EDI_Exp_C_UOMType">
+        <xsd:sequence>
+            <xsd:element name="Name" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="UOMSymbol" type="xsd:string"/>
+            <xsd:element name="X12DE355" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_500_vType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="C_Invoice_ID" type="xsd:integer"/>
@@ -473,14 +481,14 @@
             <xsd:element minOccurs="0" name="GTIN" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
-            <xsd:element minOccurs="0" name="C_UOM_BPartner_ID" type="EDI_Exp_C_UOMType"/>
-            <xsd:element minOccurs="0" name="QtyEnteredInBPartnerUOM" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="ExternalSeqNo" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Buyer_GTIN_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Buyer_GTIN_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Buyer_EAN_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Supplier_GTIN_CU" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
+            <xsd:element minOccurs="0" name="C_UOM_BPartner_ID" type="EDI_Exp_C_UOMType"/>
+            <xsd:element minOccurs="0" name="QtyEnteredInBPartnerUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="ExternalSeqNo" type="xsd:integer"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_901_991_vType">
@@ -506,7 +514,6 @@
             <xsd:element minOccurs="0" name="CreditMemoReason" type="C_CreditMemo_ReasonEnum"/>
             <xsd:element minOccurs="0" name="DateInvoiced" type="xsd:date"/>
             <xsd:element minOccurs="0" name="DateOrdered" type="xsd:date"/>
-            <xsd:element minOccurs="0" name="DateAcct" type="xsd:date"/>
             <xsd:element minOccurs="0" name="eancom_doctype" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GrandTotal" type="xsd:decimal"/>
@@ -643,7 +650,6 @@
         <xsd:sequence>
             <xsd:element name="UPC" type="xsd:string"/>
             <xsd:element name="GLN" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="StoreGLN" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_Imp_C_OLCandType">
@@ -758,27 +764,6 @@
         <xsd:attribute ref="TrxName"/>
         <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
-    <xsd:complexType name="EDI_Exp_C_UOMType">
-        <xsd:sequence>
-            <xsd:element name="Name" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="UOMSymbol" type="xsd:string"/>
-            <xsd:element name="X12DE355" type="xsd:string"/>
-        </xsd:sequence>
-        <xsd:attribute ref="AD_Client_Value"/>
-        <xsd:attribute ref="ReplicationEvent"/>
-        <xsd:attribute ref="ReplicationMode"/>
-        <xsd:attribute ref="ReplicationType"/>
-        <xsd:attribute fixed="*" name="Version" type="xsd:string">
-            <xsd:annotation>
-                <xsd:appinfo>
-                    <jaxb:property name="VersionAttr"/>
-                </xsd:appinfo>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute ref="SequenceNo"/>
-        <xsd:attribute ref="TrxName"/>
-        <xsd:attribute ref="AD_Session_ID"/>
-    </xsd:complexType>
     <xsd:complexType name="EDI_Imp_C_BPartner_Lookup_RecipientGLNType">
         <xsd:sequence>
             <xsd:element name="EdiRecipientGLN" type="xsd:string"/>
@@ -829,12 +814,12 @@
             <xsd:element minOccurs="0" name="ProductDescription" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ProductNo" type="xsd:string"/>
             <xsd:element name="QtyEntered" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="UPC" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="UPC_CU" type="xsd:string"/>
             <xsd:element name="IsSubsequentDeliveryPlanned" type="YES-NO"/>
             <xsd:element minOccurs="0" name="EAN_CU" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="GTIN_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EAN_TU" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="GTIN" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="GTIN_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="PriceActual" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
             <xsd:element name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
@@ -847,8 +832,23 @@
             <xsd:element minOccurs="0" name="C_UOM_BPartner_ID" type="EDI_Exp_C_UOMType"/>
             <xsd:element minOccurs="0" name="QtyEnteredInBPartnerUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="BPartner_QtyItemCapacity" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="IsDeliveryClosed" type="YES-NO"/>
         </xsd:sequence>
+        <xsd:attribute ref="AD_Client_Value"/>
+        <xsd:attribute ref="ReplicationEvent"/>
+        <xsd:attribute ref="ReplicationMode"/>
+        <xsd:attribute ref="ReplicationType"/>
+        <xsd:attribute fixed="*" name="Version" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="VersionAttr"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute ref="SequenceNo"/>
+        <xsd:attribute ref="TrxName"/>
+        <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_Desadv_Pack_ItemType">
         <xsd:sequence>
@@ -862,28 +862,71 @@
             <xsd:element minOccurs="0" name="EDI_DesadvLine_ID" type="EDI_Exp_DesadvLineType"/>
             <xsd:element minOccurs="0" name="GTIN_TU_PackingMaterial" type="xsd:string"/>
             <xsd:element minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string"/>
+            <xsd:element name="Line" type="xsd:integer"/>
         </xsd:sequence>
+        <xsd:attribute ref="AD_Client_Value"/>
+        <xsd:attribute ref="ReplicationEvent"/>
+        <xsd:attribute ref="ReplicationMode"/>
+        <xsd:attribute ref="ReplicationType"/>
+        <xsd:attribute fixed="*" name="Version" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="VersionAttr"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute ref="SequenceNo"/>
+        <xsd:attribute ref="TrxName"/>
+        <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_Desadv_PackType">
         <xsd:sequence>
-            <xsd:element name="Line" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="GTIN_LU_PackingMaterial" type="xsd:string"/>
+            <xsd:element name="SeqNo" type="xsd:integer"/>
+            <xsd:element minOccurs="0" name="GTIN_PackingMaterial" type="xsd:string"/>
             <xsd:element minOccurs="0" name="IPA_SSCC18" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="M_HU_PackagingCode_Text" type="xsd:string"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_Desadv_Pack_Item" type="EDI_Exp_Desadv_Pack_ItemType"/>
         </xsd:sequence>
+        <xsd:attribute ref="AD_Client_Value"/>
+        <xsd:attribute ref="ReplicationEvent"/>
+        <xsd:attribute ref="ReplicationMode"/>
+        <xsd:attribute ref="ReplicationType"/>
+        <xsd:attribute fixed="*" name="Version" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="VersionAttr"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute ref="SequenceNo"/>
+        <xsd:attribute ref="TrxName"/>
+        <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_DesadvLineWithNoPackType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="EDI_DesadvLine_ID" type="EDI_Exp_DesadvLineType"/>
         </xsd:sequence>
+        <xsd:attribute ref="AD_Client_Value"/>
+        <xsd:attribute ref="ReplicationEvent"/>
+        <xsd:attribute ref="ReplicationMode"/>
+        <xsd:attribute ref="ReplicationType"/>
+        <xsd:attribute fixed="*" name="Version" type="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="VersionAttr"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute ref="SequenceNo"/>
+        <xsd:attribute ref="TrxName"/>
+        <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_DesadvType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="C_BPartner_ID" type="EDI_Exp_C_BPartnerType"/>
             <xsd:element minOccurs="0" name="C_BPartner_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
             <xsd:element minOccurs="0" name="DateOrdered" type="xsd:date"/>
-            <xsd:element name="DocumentNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DocumentNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ShipmentDocumentNo" type="xsd:string"/>
             <xsd:element name="EDI_Desadv_ID" type="xsd:integer"/>
             <xsd:element name="EDI_ExportStatus" type="EDI_ExportStatusEnum"/>
@@ -899,6 +942,7 @@
             <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
             <xsd:element minOccurs="0" name="DeliveryViaRule" type="C_Order_DeliveryViaRuleEnum"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_DesadvLineWithNoPack" type="EDI_Exp_DesadvLineWithNoPackType"/>
+            <xsd:element name="M_InOut_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="shipment_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DatePromised" type="xsd:date"/>
         </xsd:sequence>
@@ -987,44 +1031,6 @@
         <xsd:attribute ref="TrxName"/>
         <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
-    <xsd:element name="EDI_Exp_DesadvLineWithNoPack" type="EDI_Exp_DesadvLineWithNoPackType"/>
-    <xsd:complexType name="EDI_ReplicationTrx_UpdateType">
-        <xsd:sequence>
-            <xsd:element name="Name" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="IsReplicationTrxFinished" type="YES-NO"/>
-            <xsd:element minOccurs="0" name="IsError" type="YES-NO"/>
-            <xsd:element minOccurs="0" name="ErrorMsg" type="xsd:string"/>
-        </xsd:sequence>
-        <xsd:attribute ref="AD_Client_Value"/>
-        <xsd:attribute ref="ReplicationEvent"/>
-        <xsd:attribute ref="ReplicationMode"/>
-        <xsd:attribute ref="ReplicationType"/>
-        <xsd:attribute fixed="*" name="Version" type="xsd:string">
-            <xsd:annotation>
-                <xsd:appinfo>
-                    <jaxb:property name="VersionAttr"/>
-                </xsd:appinfo>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute ref="SequenceNo"/>
-        <xsd:attribute ref="TrxName"/>
-        <xsd:attribute ref="AD_Session_ID"/>
-    </xsd:complexType>
-    <xsd:complexType name="EXP_M_InOut_DesadvLine_Pack_VType">
-        <xsd:sequence>
-            <xsd:element minOccurs="0" name="BestBeforeDate" type="xsd:date"/>
-            <xsd:element minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType"/>
-            <xsd:element minOccurs="0" name="GTIN_LU_PackingMaterial" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="GTIN_TU_PackingMaterial" type="xsd:string"/>
-            <xsd:element name="IPA_SSCC18" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="LotNumber" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="QtyCU" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="QtyCUsPerLU" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="QtyTU" type="xsd:integer"/>
-        </xsd:sequence>
-    </xsd:complexType>
     <xsd:complexType name="EXP_M_InOut_DesadvLine_VType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="BPartner_QtyItemCapacity" type="xsd:decimal"/>
@@ -1034,9 +1040,7 @@
             <xsd:element minOccurs="0" name="EAN_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ExternalSeqNo" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="GTIN" type="xsd:string"/>
             <xsd:element name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
-            <xsd:element name="IsSubsequentDeliveryPlanned" type="YES-NO"/>
             <xsd:element minOccurs="0" name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="M_Product_ID" type="EDI_Exp_M_ProductType"/>
             <xsd:element minOccurs="0" name="OrderLine" type="xsd:integer"/>
@@ -1051,23 +1055,38 @@
             <xsd:element minOccurs="0" name="QtyItemCapacity" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="UPC_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
-            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_DesadvLine_Pack" type="EXP_M_InOut_DesadvLine_Pack_VType"/>
             <xsd:element name="IsDeliveryClosed" type="YES-NO"/>
+            <xsd:element minOccurs="0" name="GTIN_CU" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="GTIN_TU" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute ref="AD_Client_Value"/>
-        <xsd:attribute ref="ReplicationEvent"/>
-        <xsd:attribute ref="ReplicationMode"/>
-        <xsd:attribute ref="ReplicationType"/>
-        <xsd:attribute fixed="*" name="Version" type="xsd:string">
-            <xsd:annotation>
-                <xsd:appinfo>
-                    <jaxb:property name="VersionAttr"/>
-                </xsd:appinfo>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute ref="SequenceNo"/>
-        <xsd:attribute ref="TrxName"/>
-        <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
-    <xsd:element name="EXP_M_InOut_DesadvLine_Pack_V" type="EXP_M_InOut_DesadvLine_Pack_VType"/>
+    <xsd:complexType name="EDI_Desadv_Pack_Item_1PerInOutType">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="BestBeforeDate" type="xsd:date"/>
+            <xsd:element minOccurs="0" name="GTIN_TU_PackingMaterial" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="LotNumber" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="EDI_DesadvLine_ID" type="EXP_M_InOut_DesadvLine_VType"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerLU" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerLU_InInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerTU" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerTU_InInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyTU" type="xsd:integer"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="M_InOut_Desadv_Pack_VType">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="GTIN_PackingMaterial" type="xsd:string"/>
+            <xsd:element name="IPA_SSCC18" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="M_HU_PackagingCode_Text" type="xsd:string"/>
+            <xsd:element name="SeqNo" type="xsd:integer"/>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_Desadv_Pack_Item" type="EDI_Desadv_Pack_Item_1PerInOutType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="EDI_Exp_DesadvLineWithNoPack_1PerInOutType">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="Line" type="xsd:integer"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="EDI_Exp_DesadvLineWithNoPack_1PerInOut" type="EDI_Exp_DesadvLineWithNoPack_1PerInOutType"/>
 </xsd:schema>

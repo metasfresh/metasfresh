@@ -25,8 +25,7 @@ import Routes from '../routes';
 import { NO_CONNECTION_ERROR } from '../constants/Constants';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
-import NotificationHandler
-  from '../components/notifications/NotificationHandler';
+import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
 import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
