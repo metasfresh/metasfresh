@@ -50,6 +50,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -180,6 +181,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
+	public IQuery<T> setSqlFromParameter(final @NonNull String name, @Nullable final Object value)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public POJOQuery<T> copy()
 	{
 		final POJOQuery<T> queryNew = new POJOQuery<>(modelClass);
@@ -279,7 +286,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return resultCasted;
 	}
 
-	private static final <T> void mergeModelLists(final List<T> to, final List<T> from, final boolean distinct)
+	private static <T> void mergeModelLists(final List<T> to, final List<T> from, final boolean distinct)
 	{
 		// Case: from list is empty => nothing to do
 		if (from == null || from.isEmpty())
@@ -633,7 +640,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return result;
 	}
 
-	private static final <R> BiFunction<Object, Object, R> getSumOperator(final Class<R> type)
+	private static <R> BiFunction<Object, Object, R> getSumOperator(final Class<R> type)
 	{
 		if (BigDecimal.class.equals(type))
 		{
@@ -651,7 +658,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 	}
 
-	private static final <R> BiFunction<Object, Object, R> getMaxOperator(final Class<R> type)
+	private static <R> BiFunction<Object, Object, R> getMaxOperator(final Class<R> type)
 	{
 		if (BigDecimal.class.equals(type))
 		{
@@ -717,7 +724,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 	}
 
-	private static final BigDecimal toBigDecimal(final Object value)
+	private static BigDecimal toBigDecimal(final Object value)
 	{
 		if (value == null)
 		{

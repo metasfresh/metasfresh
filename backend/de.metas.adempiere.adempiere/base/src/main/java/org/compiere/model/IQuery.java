@@ -22,7 +22,7 @@
 
 package org.compiere.model;
 
- import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -102,6 +102,8 @@ public interface IQuery<T>
 	Class<T> getModelClass();
 
 	String getTableName();
+
+	IQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value);
 
 	List<T> list() throws DBException;
 
