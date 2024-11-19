@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Purchase order
 
   Background:
@@ -76,7 +77,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_100                | hu_S0156_100       | receiptSchedule_PO_S0156_100    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_100                | hu_S0156_100       | receiptSchedule_PO_S0156_100    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -136,7 +137,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_200                | hu_S0156_200       | receiptSchedule_PO_S0156_200    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_200                | hu_S0156_200       | receiptSchedule_PO_S0156_200    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -210,7 +211,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_300                | hu_S0156_300       | receiptSchedule_PO_S0156_300    | N               | 1     | N               | 3     | N               | 9     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_300                | hu_S0156_300       | receiptSchedule_PO_S0156_300    | N               | 1     | N               | 3     | N               | 9           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -256,7 +257,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_400_1              | hu_S0156_400_1     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_400_1              | hu_S0156_400_1     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -276,7 +277,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_400_2              | hu_S0156_400_2     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 1     | N               | 2     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_400_2              | hu_S0156_400_2     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 1     | N               | 2           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -322,7 +323,7 @@ Feature: Purchase order
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_500                | hu_S0156_500       | receiptSchedule_PO_S0156_500    | N               | 1     | N               | 3     | N               | 10    | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | huLuTuConfig_S0156_500                | hu_S0156_500       | receiptSchedule_PO_S0156_500    | N               | 1     | N               | 3     | N               | 10          | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |

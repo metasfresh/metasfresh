@@ -71,9 +71,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -97,6 +95,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 @RequiredArgsConstructor
@@ -146,12 +145,12 @@ public class CandidateRepositoryWriteService
 				candidate, false/*doesn't matter*/);
 	}
 
-	public void updateCandidateById(@NonNull final Candidate candidate)
+	public CandidateSaveResult updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
 
-		addOrUpdate(query, candidate, false);
+		return addOrUpdate(query, candidate, false);
 	}
 
 	private CandidateSaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
@@ -634,7 +633,7 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
-		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 
 		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
 
@@ -651,13 +650,21 @@ public class CandidateRepositoryWriteService
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			deleteRecord(candidateRecord);
-			deleteRecord(stockCandidate);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
 		}
 		else
 		{
-			deleteRecord(stockCandidate);
-			deleteRecord(candidateRecord);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
 		}
 
 		return deleteResult;
@@ -670,6 +677,10 @@ public class CandidateRepositoryWriteService
 	public DeleteResult deleteCandidateAndDetailsById(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		if (candidateRecord == null)
+		{
+			throw new AdempiereException("No candidate found with id " + candidateId);
+		}
 
 		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
 
@@ -700,6 +711,11 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
+	private I_MD_Candidate retrieveRecordById(final @NonNull CandidateId candidateId)
+	{
+		return load(candidateId, I_MD_Candidate.class);
+	}
+
 	@NonNull
 	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
@@ -723,6 +739,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		queryBuilder
+				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
@@ -736,7 +753,7 @@ public class CandidateRepositoryWriteService
 	{
 		alreadySeenIds.add(candidateId);
 
-		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
@@ -753,68 +770,26 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
-	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
-				.create()
-				.iterateAndStreamIds(CandidateId::ofRepoId)
-				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
-				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
-	}
-
-	public void deactivateSimulatedCandidates()
-	{
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_MD_Candidate.COLUMNNAME_IsActive, false)
-				.execute();
-	}
-
-	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
-	{
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-
-		for (final Candidate candidate : candidates)
-		{
-			final Candidate changedCandidate = updater.apply(candidate);
-			if (!Objects.equals(candidate, changedCandidate))
-			{
-				updateCandidateById(changedCandidate);
-			}
-		}
-	}
-
 	private void deleteRelatedRecordsForId(
 			@NonNull final I_MD_Candidate candidate,
 			@NonNull final Set<CandidateId> alreadySeenIds)
 	{
-		final IQueryFilter<I_MD_Candidate> stockQueryFilter;
+		final CandidateId parentCandidateId = CandidateId.ofRepoIdOrNull(candidate.getMD_Candidate_Parent_ID());
 
-		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		if (parentCandidateId != null
+				&& parentCandidateId.getRepoId() != candidate.getMD_Candidate_ID()
+				&& !alreadySeenIds.contains(parentCandidateId))
 		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.setJoinOr()
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID())
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_Parent_ID());
-		}
-		else
-		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID());
-		}
+			// remove parent link
+			candidate.setMD_Candidate_Parent_ID(-1);
+			saveRecord(candidate);
 
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.filter(stockQueryFilter)
-				.create()
-				.iterateAndStreamIds(CandidateId::ofRepoId)
-				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
-				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+			deleteCandidateById(parentCandidateId, alreadySeenIds);
+		}
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+
+		deleteChildCandidates(candidateId, alreadySeenIds);
 
 		deleteDemandDetailsRecords(candidateId);
 		deleteDistDetailsRecords(candidateId);
@@ -872,6 +847,27 @@ public class CandidateRepositoryWriteService
 				.delete();
 	}
 
+	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+	}
+
+	public void deactivateSimulatedCandidates()
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_MD_Candidate.COLUMNNAME_IsActive, false)
+				.execute();
+	}
+
 	@NonNull
 	private CandidateId getStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
 	{
@@ -896,10 +892,24 @@ public class CandidateRepositoryWriteService
 		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
 																 DateAndSeqNo
 																		 .builder()
-																		 .date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
+						.date(candidateRecord.getDateProjected().toInstant())
 																		 .seqNo(candidateRecord.getSeqNo())
 																		 .build(),
 																 candidateRecord.getQty());
+	}
+
+	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
+	{
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+
+		for (final Candidate candidate : candidates)
+		{
+			final Candidate changedCandidate = updater.apply(candidate);
+			if (!Objects.equals(candidate, changedCandidate))
+			{
+				updateCandidateById(changedCandidate);
+			}
+		}
 	}
 
 	@Value

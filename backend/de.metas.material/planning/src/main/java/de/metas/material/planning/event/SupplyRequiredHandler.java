@@ -90,7 +90,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		updateMainData(descriptor);
+		// updateMainData(descriptor);
 
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
@@ -102,7 +102,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				events.addAll(advisor.createAdvisedEvents(descriptor, context));
 			}
 
-		events.forEach(postMaterialEventService::enqueueEventNow);
 		}
 
 		if (events.isEmpty())

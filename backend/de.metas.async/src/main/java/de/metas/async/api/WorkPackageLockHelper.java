@@ -44,7 +44,7 @@ public class WorkPackageLockHelper
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Got exception while unlocking " + workPackage, e, workPackage);
+			logger.warn("Got exception while unlocking " + workPackage, e);
 			return false;
 		}
 	}
