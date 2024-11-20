@@ -305,6 +305,24 @@ Generated on: 2024.11.19 at 05:24:33 PM EET
             <jaxb:typesafeEnumClass ref="de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum"/>
                 
         </jaxb:bindings>
+
+        <jaxb:bindings if-exists="true" scd="~EDI_ReplicationTrx_UpdateType">
+
+            <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EDIReplicationTrxUpdateType"/>
+
+        </jaxb:bindings>
+
+        <jaxb:bindings if-exists="true" scd="~EDI_Exp_DesadvLineWithNoPackType">
+
+            <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineWithNoPackType"/>
+
+        </jaxb:bindings>
+
+        <jaxb:bindings if-exists="true" scd="~EXP_M_InOut_DesadvLine_Pack_VType">
+
+            <jaxb:class ref="de.metas.edi.esb.jaxb.metasfresh.EXPMInOutDesadvLinePackVType"/>
+
+        </jaxb:bindings>
           
     </jaxb:bindings>
     
