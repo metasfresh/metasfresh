@@ -1192,6 +1192,18 @@ UPDATE EXP_FormatLine SET EXP_EmbeddedFormat_ID=540433, Name='EDI_Exp_DesadvLine
 DELETE FROM EXP_FormatLine WHERE EXP_FormatLine_ID=550642
 ;
 
+-- Column: M_InOut_DesadvLine_V.GTIN
+-- Column: M_InOut_DesadvLine_V.GTIN
+-- 2024-11-15T08:54:39.413Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=588565
+;
+
+DELETE FROM exp_formatline WHERE AD_Column_ID=588565;
+
+-- 2024-11-15T08:54:39.424Z
+DELETE FROM AD_Column WHERE AD_Column_ID=588565
+;
+
 -- Column: M_InOut_DesadvLine_V.GTIN_TU
 -- Column: M_InOut_DesadvLine_V.GTIN_TU
 -- 2024-11-15T08:53:23.871Z
@@ -1218,18 +1230,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2024-11-15T08:53:34.745Z
 /* DDL */  select update_Column_Translation_From_AD_Element(583259)
-;
-
--- Column: M_InOut_DesadvLine_V.GTIN
--- Column: M_InOut_DesadvLine_V.GTIN
--- 2024-11-15T08:54:39.413Z
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=588565
-;
-
-DELETE FROM exp_formatline WHERE AD_Column_ID=588565;
-
--- 2024-11-15T08:54:39.424Z
-DELETE FROM AD_Column WHERE AD_Column_ID=588565
 ;
 
 -- 2024-11-15T08:55:08.428Z
