@@ -275,7 +275,10 @@ public final class AccountDimension
 			else
 			{
 				final String stringValue = StringUtils.asStringAndTrimBlankToNull(value);
-				segmentValues.put(segmentType, stringValue);
+				if(stringValue != null)
+				{
+					segmentValues.put(segmentType, stringValue);
+				}
 			}
 
 			return this;
@@ -479,13 +482,13 @@ public final class AccountDimension
 		}
 
 
-		public Builder setUserElementNumber1(final BigDecimal userElementNumber1)
+		public Builder setUserElementNumber1(@Nullable final BigDecimal userElementNumber1)
 		{
 			setSegmentValue(AcctSegmentType.UserElementNumber1, userElementNumber1);
 			return this;
 		}
 
-		public Builder setUserElementNumber2(final BigDecimal userElementNumber2)
+		public Builder setUserElementNumber2(@Nullable final BigDecimal userElementNumber2)
 		{
 			setSegmentValue(AcctSegmentType.UserElementNumber2, userElementNumber2);
 			return this;
