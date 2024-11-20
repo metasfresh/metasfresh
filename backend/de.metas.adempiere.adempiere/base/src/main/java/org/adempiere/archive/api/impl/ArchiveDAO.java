@@ -57,7 +57,7 @@ public class ArchiveDAO implements IArchiveDAO
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
 	@Override
-	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId id)
 	{
 		return load(id, I_AD_Archive.class);
 	}

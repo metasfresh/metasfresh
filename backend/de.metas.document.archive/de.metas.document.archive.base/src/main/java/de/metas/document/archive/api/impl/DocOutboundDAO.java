@@ -58,7 +58,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
-
+	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
+	
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
 	@Override

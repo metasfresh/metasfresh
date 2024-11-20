@@ -55,7 +55,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
@@ -71,7 +70,7 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public AdArchive getById(@NonNull final ArchiveId id)
 	{
-		return toAdArchive(archiveDAO.getArchiveRecordById(id));
+		return toAdArchive(archiveDAO.getRecordById(id));
 	}
 
 	@Override
@@ -352,13 +351,14 @@ public class ArchiveBL implements IArchiveBL
 		return archiveDAO.getRecordById(archiveId);
 	}
 
-	@Override
-	@Nullable
-	public DocTypeId getOverrideDocTypeId(@NotNull final ArchiveId archiveId)
-	{
-		final I_AD_Archive archive = getRecordById(archiveId);
-		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
-	}
+	// Discard this change when merging back to intensive_care_uat
+	// @Override
+	// @Nullable
+	// public DocTypeId getOverrideDocTypeId(@NotNull final ArchiveId archiveId)
+	// {
+	// 	final I_AD_Archive archive = getRecordById(archiveId);
+	// 	return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
+	// }
 
 	@Override
 	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
