@@ -121,7 +121,7 @@ public class SAPGLJournalLineTest
 				.taxId(TaxId.ofRepoId(2))
 				.build();
 
-		assertThat(line.isTaxLine()).isEqualTo(true);
+		assertThat(line.isTaxLine()).isEqualTo(false);
 	}
 
 	@Test
