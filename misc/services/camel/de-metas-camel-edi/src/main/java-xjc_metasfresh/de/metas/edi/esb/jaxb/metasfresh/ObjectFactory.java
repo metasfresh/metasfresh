@@ -70,6 +70,7 @@ public class ObjectFactory {
     private final static QName _MInOutDesadvPackV_QNAME = new QName("", "M_InOut_Desadv_Pack_V");
     private final static QName _EDIDesadvPackItem1PerInOut_QNAME = new QName("", "EDI_Desadv_Pack_Item_1PerInOut");
     private final static QName _EDIExpDesadvLineWithNoPack1PerInOut_QNAME = new QName("", "EDI_Exp_DesadvLineWithNoPack_1PerInOut");
+    private final static QName _EDIReplicationTrxUpdate_QNAME = new QName("", "EDI_ReplicationTrx_Update");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: de.metas.edi.esb.jaxb.metasfresh
