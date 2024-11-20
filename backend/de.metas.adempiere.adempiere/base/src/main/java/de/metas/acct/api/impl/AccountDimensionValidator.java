@@ -40,6 +40,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ValidCombination;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -170,12 +171,11 @@ import java.util.Set;
 	}
 
 	/**
-	 * @return segment's value (ID)
+	 * @return segment's value
 	 */
+	@Nullable
 	private Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
-		Check.assumeNotNull(elementType, "elementType not null");
-
 		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
 			return accountDimension.getAD_Org_ID();

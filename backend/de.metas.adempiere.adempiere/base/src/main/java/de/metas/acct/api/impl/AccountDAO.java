@@ -22,6 +22,7 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 /*
@@ -105,7 +106,7 @@ public class AccountDAO implements IAccountDAO
 
 			if(value instanceof String)
 			{
-				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
+				queryBuilder.addEqualsFilter(columnName, Objects.toString(value));
 			}
 
 			else if (value instanceof Integer)

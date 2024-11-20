@@ -53,6 +53,7 @@ import org.compiere.model.MInvoiceTax;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -326,8 +327,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	/**
 	 * Create facts for payments in the case when no invoice was involved.
 	 * The pay Amt will go to Credit for outgoing payments and to Debit for Incoming payments
-	 *
-	 * @param fact
 	 */
 	private void createFactLines_PaymentAllocation(final Fact fact)
 	{
@@ -724,15 +723,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	/**
 	 * Returns early payment discount account for given tax.
-	 *
-	 * @param taxId
-	 * @return
-	 */
-	private static final Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchema as)
+     */
+	@Nullable
+	private static Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchema as)
 	{
 		return getTaxDiscountAccount(taxId, isDiscountExpense, as.getId());
 	}
 
+	@Nullable
 	static Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchemaId acctSchemaId)
 	{
 		if (taxId <= 0)
@@ -757,7 +755,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// No account
 		if (Account_ID <= 0)
 		{
-			logger.error("NO account for C_Tax_ID=" + taxId);
+			logger.debug("NO account for C_Tax_ID=" + taxId);
 			return null;
 		}
 
