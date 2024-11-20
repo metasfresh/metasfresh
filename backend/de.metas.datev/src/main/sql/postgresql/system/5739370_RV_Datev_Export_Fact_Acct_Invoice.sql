@@ -1,5 +1,13 @@
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
 ;
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_PerTax
+;
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_All
+;
+
+
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
+;
 
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax char(1)
@@ -36,6 +44,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
                 postingtype                          char(1),
                 c_invoice_id                         numeric,
                 poreference                          varchar,
+                duedate                              timestamp with time zone,
                 ad_client_id                         numeric,
                 ad_org_id                            numeric,
                 c_activity_id                        numeric,
@@ -70,6 +79,7 @@ BEGIN
                         fa.postingtype,
                         fa.c_invoice_id,
                         i.poreference                                                                        AS poreference,
+                        paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
                         fa.ad_client_id,
                         fa.ad_org_id,
                         fa.c_activity_id,
