@@ -82,7 +82,7 @@ public final class StringUtils
 	@Nullable
 	public static String asStringAndTrimBlankToNull(@Nullable final Object value)
 	{
-		return trimBlankToNull(Objects.toString(value));
+		return trimBlankToNull(Objects.toString(value, null));
 	}
 
 	@NonNull

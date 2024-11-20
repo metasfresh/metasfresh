@@ -6,6 +6,7 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -22,7 +23,6 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 /*
@@ -106,7 +106,7 @@ public class AccountDAO implements IAccountDAO
 
 			if(value instanceof String)
 			{
-				queryBuilder.addEqualsFilter(columnName, Objects.toString(value));
+				queryBuilder.addEqualsFilter(columnName, StringUtils.asStringAndTrimBlankToNull(value));
 			}
 
 			else if (value instanceof Integer)
