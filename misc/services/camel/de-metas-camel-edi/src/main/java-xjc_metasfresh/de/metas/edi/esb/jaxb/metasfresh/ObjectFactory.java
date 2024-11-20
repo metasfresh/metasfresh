@@ -65,10 +65,12 @@ public class ObjectFactory {
     private final static QName _XLSImpCOLCand_QNAME = new QName("", "XLS_Imp_C_OLCand");
     private final static QName _EDIExpDesadvPackItem_QNAME = new QName("", "EDI_Exp_Desadv_Pack_Item");
     private final static QName _EDIExpDesadvPack_QNAME = new QName("", "EDI_Exp_Desadv_Pack");
-    private final static QName _EXPMInOutDesadvLineV_QNAME = new QName("", "EXP_M_InOut_DesadvLine_V");
-    private final static QName _EDIReplicationTrxUpdate_QNAME = new QName("", "EDI_ReplicationTrx_Update");
     private final static QName _EDIExpDesadvLineWithNoPack_QNAME = new QName("", "EDI_Exp_DesadvLineWithNoPack");
-    private final static QName _EXPMInOutDesadvLinePackV_QNAME = new QName("", "EXP_M_InOut_DesadvLine_Pack_V");
+    private final static QName _EXPMInOutDesadvLineV_QNAME = new QName("", "EXP_M_InOut_DesadvLine_V");
+    private final static QName _MInOutDesadvPackV_QNAME = new QName("", "M_InOut_Desadv_Pack_V");
+    private final static QName _EDIDesadvPackItem1PerInOut_QNAME = new QName("", "EDI_Desadv_Pack_Item_1PerInOut");
+    private final static QName _EDIExpDesadvLineWithNoPack1PerInOut_QNAME = new QName("", "EDI_Exp_DesadvLineWithNoPack_1PerInOut");
+    private final static QName _EDIReplicationTrxUpdate_QNAME = new QName("", "EDI_ReplicationTrx_Update");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: de.metas.edi.esb.jaxb.metasfresh
@@ -366,6 +368,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link EDIExpDesadvLineWithNoPackType }
+     * 
+     */
+    public EDIExpDesadvLineWithNoPackType createEDIExpDesadvLineWithNoPackType() {
+        return new EDIExpDesadvLineWithNoPackType();
+    }
+
+    /**
      * Create an instance of {@link EXPMInOutDesadvLineVType }
      * 
      */
@@ -374,12 +384,29 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link EDIReplicationTrxUpdateType }
+     * Create an instance of {@link MInOutDesadvPackVType }
      * 
      */
-    public EDIReplicationTrxUpdateType createEDIReplicationTrxUpdateType() {
-        return new EDIReplicationTrxUpdateType();
+    public MInOutDesadvPackVType createMInOutDesadvPackVType() {
+        return new MInOutDesadvPackVType();
     }
+
+    /**
+     * Create an instance of {@link EDIDesadvPackItem1PerInOutType }
+     * 
+     */
+    public EDIDesadvPackItem1PerInOutType createEDIDesadvPackItem1PerInOutType() {
+        return new EDIDesadvPackItem1PerInOutType();
+    }
+
+    /**
+     * Create an instance of {@link EDIExpDesadvLineWithNoPack1PerInOutType }
+     * 
+     */
+    public EDIExpDesadvLineWithNoPack1PerInOutType createEDIExpDesadvLineWithNoPack1PerInOutType() {
+        return new EDIExpDesadvLineWithNoPack1PerInOutType();
+    }
+
 
     /**
      * Create an instance of {@link EDIExpDesadvLineWithNoPackType }
@@ -840,6 +867,19 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EDIExpDesadvLineWithNoPackType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link EDIExpDesadvLineWithNoPackType }{@code >}
+     */
+    @XmlElementDecl(namespace = "", name = "EDI_Exp_DesadvLineWithNoPack")
+    public JAXBElement<EDIExpDesadvLineWithNoPackType> createEDIExpDesadvLineWithNoPack(EDIExpDesadvLineWithNoPackType value) {
+        return new JAXBElement<EDIExpDesadvLineWithNoPackType>(_EDIExpDesadvLineWithNoPack_QNAME, EDIExpDesadvLineWithNoPackType.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EXPMInOutDesadvLineVType }{@code >}
      * 
      * @param value
@@ -879,16 +919,41 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link EXPMInOutDesadvLinePackVType }{@code >}
+     * Create an instance of {@link JAXBElement }{@code <}{@link MInOutDesadvPackVType }{@code >}
      * 
      * @param value
      *     Java instance representing xml element's value.
      * @return
-     *     the new instance of {@link JAXBElement }{@code <}{@link EXPMInOutDesadvLinePackVType }{@code >}
+     *     the new instance of {@link JAXBElement }{@code <}{@link MInOutDesadvPackVType }{@code >}
      */
-    @XmlElementDecl(namespace = "", name = "EXP_M_InOut_DesadvLine_Pack_V")
-    public JAXBElement<EXPMInOutDesadvLinePackVType> createEXPMInOutDesadvLinePackV(EXPMInOutDesadvLinePackVType value) {
-        return new JAXBElement<EXPMInOutDesadvLinePackVType>(_EXPMInOutDesadvLinePackV_QNAME, EXPMInOutDesadvLinePackVType.class, null, value);
+    @XmlElementDecl(namespace = "", name = "M_InOut_Desadv_Pack_V")
+    public JAXBElement<MInOutDesadvPackVType> createMInOutDesadvPackV(MInOutDesadvPackVType value) {
+        return new JAXBElement<MInOutDesadvPackVType>(_MInOutDesadvPackV_QNAME, MInOutDesadvPackVType.class, null, value);
     }
 
+        /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EDIDesadvPackItem1PerInOutType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link EDIDesadvPackItem1PerInOutType }{@code >}
+     */
+    @XmlElementDecl(namespace = "", name = "EDI_Desadv_Pack_Item_1PerInOut")
+    public JAXBElement<EDIDesadvPackItem1PerInOutType> createEDIDesadvPackItem1PerInOut(EDIDesadvPackItem1PerInOutType value) {
+        return new JAXBElement<EDIDesadvPackItem1PerInOutType>(_EDIDesadvPackItem1PerInOut_QNAME, EDIDesadvPackItem1PerInOutType.class, null, value);
+    }
+
+        /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EDIExpDesadvLineWithNoPack1PerInOutType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link EDIExpDesadvLineWithNoPack1PerInOutType }{@code >}
+     */
+    @XmlElementDecl(namespace = "", name = "EDI_Exp_DesadvLineWithNoPack_1PerInOut")
+    public JAXBElement<EDIExpDesadvLineWithNoPack1PerInOutType> createEDIExpDesadvLineWithNoPack1PerInOut(EDIExpDesadvLineWithNoPack1PerInOutType value) {
+        return new JAXBElement<EDIExpDesadvLineWithNoPack1PerInOutType>(_EDIExpDesadvLineWithNoPack1PerInOut_QNAME, EDIExpDesadvLineWithNoPack1PerInOutType.class, null, value);
+    }
 }
