@@ -6,6 +6,7 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -115,15 +116,7 @@ public class AccountDAO implements IAccountDAO
 
 			if (value instanceof String)
 			{
-				final String valueStr = value.toString();
-				if (!valueStr.isEmpty())
-				{
-					queryBuilder.addEqualsFilter(columnName, valueStr);
-				}
-				else
-				{
-					queryBuilder.addEqualsFilter(columnName, null);
-				}
+				queryBuilder.addEqualsFilter(columnName, StringUtils.asStringAndTrimBlankToNull(value));
 			}
 			else if (value instanceof Integer)
 			{

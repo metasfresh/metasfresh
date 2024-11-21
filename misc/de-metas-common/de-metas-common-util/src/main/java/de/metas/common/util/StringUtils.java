@@ -25,6 +25,7 @@ package de.metas.common.util;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -38,6 +39,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +77,12 @@ public final class StringUtils
 		}
 
 		return strTrim;
+	}
+
+	@Nullable
+	public static String asStringAndTrimBlankToNull(@Nullable final Object value)
+	{
+		return trimBlankToNull(Objects.toString(value, null));
 	}
 
 	@NonNull
@@ -167,6 +175,7 @@ public final class StringUtils
 	 * </ul>
 	 */
 	@Nullable
+	@Contract("_, !null -> !null")
 	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
 	{
 		if (value == null)
@@ -209,8 +218,7 @@ public final class StringUtils
 	 */
 	public static boolean toBoolean(final Object value)
 	{
-		final Boolean defaultValue = Boolean.FALSE;
-		return toBoolean(value, defaultValue);
+		return toBoolean(value, false);
 	}
 
 	/**
@@ -420,7 +428,7 @@ public final class StringUtils
 		final StringBuilder sb = new StringBuilder();
 		for (final Object item : collection)
 		{
-			if (sb.length() > 0)
+			if (!sb.isEmpty())
 			{
 				sb.append(separator);
 			}

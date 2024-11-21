@@ -23,19 +23,19 @@ package de.metas.acct.api;
  */
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.sales_region.SalesRegionId;
+import de.metas.common.util.StringUtils;
 import de.metas.util.NumberUtils;
 import org.compiere.util.TimeUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import lombok.Getter;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,8 +55,8 @@ public final class AccountDimension
 		return new Builder();
 	}
 
-	private final String alias;
-	private final AcctSchemaId acctSchemaId;
+	@Getter private final String alias;
+	@Getter private final AcctSchemaId acctSchemaId;
 	private final ImmutableMap<AcctSegmentType, Object> segmentValues;
 
 	private AccountDimension(final Builder builder)
@@ -74,11 +74,6 @@ public final class AccountDimension
 				.add("acctSchemaId", acctSchemaId)
 				.addValue(segmentValues)
 				.toString();
-	}
-
-	public String getAlias()
-	{
-		return alias;
 	}
 
 	public Object getSegmentValue(final AcctSegmentType segmentType)
@@ -99,11 +94,6 @@ public final class AccountDimension
 	public int getAD_Org_ID()
 	{
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization), 0);
-	}
-
-	public AcctSchemaId getAcctSchemaId()
-	{
-		return acctSchemaId;
 	}
 
 	public int getC_ElementValue_ID()
@@ -201,39 +191,46 @@ public final class AccountDimension
 		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber2));
 	}
 
+	@Nullable
 	public String getUserElementString1()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString1));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString1));
 	}
 
+	@Nullable
 	public String getUserElementString2()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString2));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString2));
 	}
 
+	@Nullable
 	public String getUserElementString3()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString3));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString3));
 	}
 
+	@Nullable
 	public String getUserElementString4()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString4));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString4));
 	}
 
+	@Nullable
 	public String getUserElementString5()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString5));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString5));
 	}
 
+	@Nullable
 	public String getUserElementString6()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString6));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString6));
 	}
 
+	@Nullable
 	public String getUserElementString7()
 	{
-		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString7));
+		return StringUtils.asStringAndTrimBlankToNull(getSegmentValue(AcctSegmentType.UserElementString7));
 	}
 
 	@Nullable
@@ -261,9 +258,9 @@ public final class AccountDimension
 	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
-		private String alias = null;
-		private AcctSchemaId acctSchemaId;
-		private final HashMap<AcctSegmentType, Object> segmentValues = new HashMap<>();
+		@Nullable private String alias = null;
+		@Nullable private AcctSchemaId acctSchemaId;
+		@NonNull private final HashMap<AcctSegmentType, Object> segmentValues = new HashMap<>();
 
 		private Builder()
 		{
@@ -309,8 +306,11 @@ public final class AccountDimension
 			}
 			else
 			{
-				final String stringValue = String.valueOf(value);
-				segmentValues.put(segmentType, Strings.nullToEmpty(stringValue));
+				final String stringValue = StringUtils.asStringAndTrimBlankToNull(value);
+				if(stringValue != null)
+				{
+					segmentValues.put(segmentType, stringValue);
+				}
 			}
 
 			return this;
@@ -357,7 +357,7 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setAcctSchemaId(final AcctSchemaId acctSchemaId)
+		public Builder setAcctSchemaId(@Nullable final AcctSchemaId acctSchemaId)
 		{
 			this.acctSchemaId = acctSchemaId;
 			return this;
@@ -477,43 +477,43 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setUserElementString1(final String userElementString1)
+		public Builder setUserElementString1(@Nullable final String userElementString1)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString1, userElementString1);
 			return this;
 		}
 
-		public Builder setUserElementString2(final String userElementString2)
+		public Builder setUserElementString2(@Nullable final String userElementString2)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString2, userElementString2);
 			return this;
 		}
 
-		public Builder setUserElementString3(final String userElementString3)
+		public Builder setUserElementString3(@Nullable final String userElementString3)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString3, userElementString3);
 			return this;
 		}
 
-		public Builder setUserElementString4(final String userElementString4)
+		public Builder setUserElementString4(@Nullable final String userElementString4)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString4, userElementString4);
 			return this;
 		}
 
-		public Builder setUserElementString5(final String userElementString5)
+		public Builder setUserElementString5(@Nullable final String userElementString5)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString5, userElementString5);
 			return this;
 		}
 
-		public Builder setUserElementString6(final String userElementString6)
+		public Builder setUserElementString6(@Nullable final String userElementString6)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString6, userElementString6);
 			return this;
 		}
 
-		public Builder setUserElementString7(final String userElementString7)
+		public Builder setUserElementString7(@Nullable final String userElementString7)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString7, userElementString7);
 			return this;
@@ -532,13 +532,13 @@ public final class AccountDimension
 		}
 
 
-		public Builder setUserElementNumber1(final BigDecimal userElementNumber1)
+		public Builder setUserElementNumber1(@Nullable final BigDecimal userElementNumber1)
 		{
 			setSegmentValue(AcctSegmentType.UserElementNumber1, userElementNumber1);
 			return this;
 		}
 
-		public Builder setUserElementNumber2(final BigDecimal userElementNumber2)
+		public Builder setUserElementNumber2(@Nullable final BigDecimal userElementNumber2)
 		{
 			setSegmentValue(AcctSegmentType.UserElementNumber2, userElementNumber2);
 			return this;
