@@ -258,6 +258,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setM_PricingSystem_ID(PricingSystemId.toRepoId(createInvoiceCandidateRequest.getPricingSystemId()));
 		//
 		invoiceCandidate.setModCntr_Module_ID(moduleConfig.getModularContractModuleId().getRepoId());
+		invoiceCandidate.setIsHidePriceAndAmountOnPrint(computingResponse.isHidePriceAndAmountOnPrint());
 		invoiceCandBL.setPaymentTermIfMissing(invoiceCandidate);
 
 		setPriceAndQty(invoiceCandidate, computingResponse, createInvoiceCandidateRequest);
