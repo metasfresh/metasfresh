@@ -77,6 +77,10 @@ public interface IPaySelectionUpdater
 
 	IPaySelectionUpdater addPaySelectionLineToUpdate(int paySelectionLineId);
 
+	IPaySelectionUpdater setDateTrx(Timestamp DateTrx);
+
+	IPaySelectionUpdater setPOReference(String POReference);
+
 	/**
 	 * Adds {@link I_C_PaySelectionLine}s to be used.
 	 *

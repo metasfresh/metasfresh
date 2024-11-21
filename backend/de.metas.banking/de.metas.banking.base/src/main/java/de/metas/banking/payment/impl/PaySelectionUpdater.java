@@ -95,6 +95,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	 * BPartner Group
 	 */
 	private int _bpGroupId = 0;
+
+	private Timestamp _dateTrx;
+
+	private String _poReference;
+
 	/**
 	 * Payment Selection
 	 */
@@ -294,13 +299,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(paySelection.getAD_Client_ID());
 		}
 
-		// Only for Pay Selection's Organization (if set)
-		if (paySelection.getAD_Org_ID() > 0)
-		{
-			sql += " AND i.AD_Org_ID=? ";
-			sqlParams.add(paySelection.getAD_Org_ID());
-		}
-
 		//
 		// Exclude invoices from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
 		// or, Include only the pay selection lines that we were adviced to include.
@@ -381,6 +379,21 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
 					+ "WHERE bp.C_BPartner_ID=i.C_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
 			sqlParams.add(getC_BP_Group_ID());
+		}
+
+		// DateTrx
+		if (getDateTrx() != null)
+		{
+			final Timestamp dateTrx = getDateTrx();
+			sql += " AND i.DateTrx=?";
+			sqlParams.add(payDate);
+		}
+
+		// Reference
+		if (getPOReference() != null)
+		{
+			sql += " AND i.poreference=?";
+			sqlParams.add(getPOReference());
 		}
 
 		sql += buildSelectSQL_MatchRequirement();
@@ -723,6 +736,33 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		_bpGroupId = bpGroupId;
 		return this;
 	}
+
+	private Timestamp getDateTrx()
+	{
+		return _dateTrx;
+	}
+
+	@Override
+	public IPaySelectionUpdater setDateTrx(final Timestamp dateTrx)
+	{
+		assertConfigurable();
+		_dateTrx = TimeUtil.copyOf(dateTrx);
+		return this;
+	}
+
+	private String getPOReference()
+	{
+		return _poReference;
+	}
+
+	@Override
+	public IPaySelectionUpdater setPOReference(final String POReference)
+	{
+		assertConfigurable();
+		_poReference = POReference;
+		return this;
+	}
+
 
 	@Override
 	public IPaySelectionUpdater setC_PaySelection(@NonNull final I_C_PaySelection paySelection)
