@@ -22,8 +22,13 @@ package de.metas.data.export.api.impl;
  * #L%
  */
 
-import java.io.File;
-import java.io.FileOutputStream;
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -32,14 +37,6 @@ import java.io.Writer;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 public class CSVWriter implements IExportDataDestination
 {
@@ -53,12 +50,14 @@ public class CSVWriter implements IExportDataDestination
 	public static final String CONFIG_Encoding = "Encoding";
 	public static final String CONFIG_FieldDelimiter = "FieldDelimiter";
 	public static final String CONFIG_FieldQuote = "FieldQuote";
+	public static final String CONFIG_AllowMultilineFields = "AllowMultilineFields";
 
 	private String encoding = "UTF-8";
 	private String fieldDelimiter = ";";
 	private String fieldQuote = "\"";
 	private String lineEnding = "\n";
-	private DateFormat dateFormat;
+	private boolean allowMultilineFields = true;
+	private final DateFormat dateFormat;
 
 	private List<String> header;
 	private boolean headerAppended = false;
@@ -80,12 +79,6 @@ public class CSVWriter implements IExportDataDestination
 		this.writer = new OutputStreamWriter(out, encoding);
 	}
 
-	public CSVWriter(final File file, final Properties config) throws IOException
-	{
-		this(config);
-		writer = new OutputStreamWriter(new FileOutputStream(file, false), encoding);
-	}
-
 	private void applyConfig(final Properties config)
 	{
 		if (config == null)
@@ -102,30 +95,51 @@ public class CSVWriter implements IExportDataDestination
 		final String fieldDelimiter = config.getProperty(CONFIG_FieldDelimiter);
 		if (fieldDelimiter != null)
 		{
+			//noinspection resource
 			setFieldDelimiter(fieldDelimiter);
 		}
 
 		final String fieldQuote = config.getProperty(CONFIG_FieldQuote);
 		if (fieldQuote != null)
 		{
+			//noinspection resource
 			setFieldQuote(fieldQuote);
+		}
+		
+		final String allowMultilineFields = config.getProperty(CONFIG_AllowMultilineFields);
+		if(allowMultilineFields != null)
+		{
+			//noinspection resource
+			setAllowMultilineFields(StringUtils.toBoolean(allowMultilineFields));
 		}
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public CSVWriter setFieldDelimiter(String delimiter)
 	{
 		this.fieldDelimiter = delimiter;
 		return this;
 	}
 
-	public void setFieldQuote(String quote)
+	@SuppressWarnings("UnusedReturnValue")
+	public CSVWriter setFieldQuote(String quote)
 	{
 		this.fieldQuote = quote;
+		return this;
 	}
 
-	public void setLineEnding(String lineEnding)
+	@SuppressWarnings({ "UnusedReturnValue", "unused" })
+	public CSVWriter setLineEnding(String lineEnding)
 	{
 		this.lineEnding = lineEnding;
+		return this;
+	}
+
+	@SuppressWarnings("UnusedReturnValue")
+	public CSVWriter setAllowMultilineFields(final boolean allowMultilineFields)
+	{
+		this.allowMultilineFields = allowMultilineFields;
+		return this;
 	}
 
 	public void setHeader(final List<String> header)
@@ -150,13 +164,12 @@ public class CSVWriter implements IExportDataDestination
 
 		for (final String headerCol : header)
 		{
-			if (headerLine.length() > 0)
+			if (!headerLine.isEmpty())
 			{
 				headerLine.append(fieldDelimiter);
 			}
 
-			final String headerColQuoted = quoteCsvValue(headerCol);
-			headerLine.append(headerColQuoted);
+			headerLine.append(normalizeCsvValue(headerCol));
 		}
 
 		writer.append(headerLine.toString());
@@ -189,7 +202,7 @@ public class CSVWriter implements IExportDataDestination
 
 			final String csvValueQuoted = toCsvValue(csvValue);
 
-			if (line.length() > 0)
+			if (!line.isEmpty())
 			{
 				line.append(fieldDelimiter);
 			}
@@ -216,14 +229,37 @@ public class CSVWriter implements IExportDataDestination
 			valueStr = value.toString();
 		}
 
-		return quoteCsvValue(valueStr);
+		return normalizeCsvValue(valueStr);
+	}
+	
+	private String normalizeCsvValue(String valueStr)
+	{
+		return quoteCsvValue(applyAllowMultilineFields(valueStr));
 	}
 
 	private String quoteCsvValue(String valueStr)
 	{
 		return fieldQuote
-				+ valueStr.replace(fieldQuote, fieldQuote + fieldQuote)
+				+ (valueStr != null ? valueStr.replace(fieldQuote, fieldQuote + fieldQuote) : "")
 				+ fieldQuote;
+	}
+	
+	private String applyAllowMultilineFields(@Nullable final String valueStr)
+	{
+		if(allowMultilineFields)
+		{
+			return valueStr;
+		}
+		
+		if(valueStr == null || valueStr.isEmpty())
+		{
+			return valueStr;
+		}
+
+		return valueStr
+				.replace("\r\n", "\n")
+				.replace("\n", " ")
+				.trim();
 	}
 
 	@Override
@@ -239,19 +275,17 @@ public class CSVWriter implements IExportDataDestination
 		}
 		finally
 		{
-			if (writer != null)
+			try
 			{
-				try
-				{
-					writer.close();
-				}
-				catch (IOException e)
-				{
-					// shall not happen
-					e.printStackTrace(); // NOPMD by tsa on 3/13/13 1:46 PM
-				}
-				writer = null;
+				writer.close();
 			}
+			catch (IOException e)
+			{
+				// shall not happen
+				//noinspection CallToPrintStackTrace
+				e.printStackTrace();
+			}
+			writer = null;
 		}
 	}
 }
