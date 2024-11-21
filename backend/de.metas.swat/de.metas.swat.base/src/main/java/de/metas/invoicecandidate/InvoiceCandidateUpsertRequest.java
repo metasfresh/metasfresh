@@ -33,6 +33,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -127,6 +128,8 @@ public class InvoiceCandidateUpsertRequest
 	@Nullable
 	ContractSpecificPrice contractSpecificPrice;
 
+	@Nullable
+	PriceListVersionId priceListVersionId;
 
 
 	private InvoiceCandidateUpsertRequest(
@@ -164,7 +167,8 @@ public class InvoiceCandidateUpsertRequest
 			@NonNull final ILCandHandlerId handlerId,
 			final boolean isManual,
 			@Nullable final FlatrateTermId flatrateTermId,
-			@Nullable final ContractSpecificPrice contractSpecificPrice)
+			@Nullable final ContractSpecificPrice contractSpecificPrice,
+			@Nullable final PriceListVersionId priceListVersionId)
 	{
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.orgId = orgId;
@@ -201,6 +205,7 @@ public class InvoiceCandidateUpsertRequest
 		this.isManual = isManual;
 		this.flatrateTermId = flatrateTermId;
 		this.contractSpecificPrice = contractSpecificPrice;
+		this.priceListVersionId = priceListVersionId;
 		if (priceEnteredOverride != null)
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))

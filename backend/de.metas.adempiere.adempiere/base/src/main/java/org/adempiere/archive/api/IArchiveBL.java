@@ -22,7 +22,9 @@ package org.adempiere.archive.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.report.PrintCopies;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -69,4 +71,12 @@ public interface IArchiveBL extends ISingletonService
 	Optional<I_AD_Archive> getLastArchiveRecord(@NonNull TableRecordReference reference);
 
 	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+
+	I_AD_Archive getRecordById(@NonNull ArchiveId archiveId);
+
+	// Discard this change when merging back to intensive_care_uat
+	// @Nullable
+	// DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);
+
+	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 }

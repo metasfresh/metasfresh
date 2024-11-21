@@ -155,6 +155,7 @@ public class InvoiceCandidateRepository
 		icRecord.setDiscount_Override(discountOverride);
 		icRecord.setProcessed(ic.isProcessed());
 		icRecord.setIsActive(ic.isActive());
+		icRecord.setIsTaxIncluded(ic.isTaxIncluded());
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
@@ -204,6 +205,12 @@ public class InvoiceCandidateRepository
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
 
 		icRecord.setOrg_BP_Account_ID(BankAccountId.toRepoId(ic.getBankAccountId()));
+
+		// avoid bad Fallback based on random pick of conversion UOMs via autoAppliedValidationRule, if not set
+		if(UomId.ofRepoIdOrNull(icRecord.getPrice_UOM_ID()) == null && UomId.ofRepoIdOrNull(icRecord.getC_UOM_ID()) != null)
+		{
+			icRecord.setPrice_UOM_ID(icRecord.getC_UOM_ID());
+		}
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -351,6 +358,7 @@ public class InvoiceCandidateRepository
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
 		candidate.isActive(icRecord.isActive());
 		candidate.processed(icRecord.isProcessed());
+		candidate.taxIncluded(icRecord.isTaxIncluded());
 		return candidate.build();
 	}
 

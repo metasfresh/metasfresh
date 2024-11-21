@@ -1,6 +1,5 @@
 package org.adempiere.ad.table.api.impl;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -47,6 +46,7 @@ import java.util.Set;
  * #L%
  */
 
+@SuppressWarnings("unused")
 public class TableRecordIdDAO implements ITableRecordIdDAO
 {
 	private static final String DB_FUNCTION_RETRIEVE_DISTINCT_IDS = "table_record_reference_retrieve_distinct_ids";
@@ -125,7 +125,13 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 						continue;
 					}
 
-					result.add(TableRecordIdDescriptor.of(tableName, tableAndRecordIdColumnName));
+					result.add(
+							TableRecordIdDescriptor.builder()
+									.originTableName(tableName)
+									.recordIdColumnName(tableAndRecordIdColumnName.getColumnNameAsString())
+									.targetTableName(referencedPOInfo.getTableName())
+									.build()
+					);
 				}
 			}
 		}
@@ -138,23 +144,22 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	 * <p>
 	 * {@code SELECT DISTINCT(<p_id_columnname>) FROM <p_tablename> WHERE COALESCE(<p_id_columnname>,0)!=0}
 	 * <p>
-	 * ..just faster.
+	 * ...just faster.
 	 * <p>
 	 * See <a href="https://github.com/metasfresh/metasfresh/issues/3389">https://github.com/metasfresh/metasfresh/issues/3389</a>
 	 */
-	@VisibleForTesting
-	ImmutableSet<AdTableId> retrieveDistinctIds(
+	private ImmutableSet<AdTableId> retrieveDistinctIds(
 			@NonNull final String tableName,
 			@NonNull final String idColumnName)
 	{
 		final String sql = "SELECT " + DB_FUNCTION_RETRIEVE_DISTINCT_IDS + "(?,?)";
 		final Object[] sqlParams = new Object[] { tableName, idColumnName };
 
-		final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-
+		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, ImmutableList.of(tableName, idColumnName));
 			rs = pstmt.executeQuery();
 

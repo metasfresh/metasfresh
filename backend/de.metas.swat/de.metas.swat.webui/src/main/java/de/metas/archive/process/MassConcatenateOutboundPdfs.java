@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.document.archive.base
+ * de.metas.swat.webui
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,29 @@
  * #L%
  */
 
-package de.metas.document.archive.process;
+package de.metas.archive.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.BadPdfFormatException;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
+import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.io.File;
@@ -48,20 +50,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcessPrecondition
+public class MassConcatenateOutboundPdfs extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+
+	private static final int CHUNK_SIZE = 500;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (context.isNoSelection())
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
@@ -71,9 +77,7 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_Doc_Outbound_Log> queryFilter = getProcessInfo()
-				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-		final Stream<AdArchive> pdfStreams = streamArchivesForFilter(queryFilter);
+		final Stream<AdArchive> pdfStreams = streamArchivesForFilter();
 		final File reportFile = File.createTempFile("MassConcatenateOutboundPdfs_" + getPinstanceId().getRepoId(), ".pdf");
 		reportFile.deleteOnExit();
 		final Document document = new Document();
@@ -87,22 +91,49 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 			pdfStreams.forEach(adArchive -> appendCurrentPdf(copy, adArchive, printedIds, errorCount));
 			document.close();
 		}
-		archiveDAO.updatePrintedRecords(ImmutableSet.copyOf(printedIds), getUserId());
+		archiveBL.updatePrintedRecords(ImmutableSet.copyOf(printedIds), getUserId());
 
 		getResult().setReportData(reportFile);
 		return "OK/Error # " + printedIds.size() + "/" + errorCount.get();
 	}
 
-	private Stream<AdArchive> streamArchivesForFilter(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> outboundLogFilter)
+	@NonNull
+	private Stream<AdArchive> streamArchivesForFilter()
 	{
-		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(outboundLogFilter)
-				.create()
-				.iterateAndStream()
-				.map(this::getLastArchive)
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
+		{
+			// shall not happen
+			return Stream.empty();
+		}
+		else if (selectedRowIds.isAll())
+		{
+			final Stream<? extends IViewRow> rowIdsStream = getView().streamByIds(selectedRowIds, getViewOrderBys(), QueryLimit.NO_LIMIT);
+			return StreamUtils.dice(rowIdsStream, CHUNK_SIZE) // take CHUNK_SIZE Ids at one time and load their archives
+					.flatMap(this::streamArchivesForRows);
+		}
+		else
+		{
+			final ImmutableList<DocOutboundLogId> ids = selectedRowIds.toIdsList(DocOutboundLogId::ofRepoId);
+			return streamArchivesForLogIds(ids);
+		}
+	}
+
+	private Stream<AdArchive> streamArchivesForRows(final List<? extends IViewRow> rows)
+	{
+		final ImmutableList<DocOutboundLogId> logIds = rows.stream()
+				.map(row -> row.getId().toId(DocOutboundLogId::ofRepoId))
+				.collect(ImmutableList.toImmutableList());
+
+		return streamArchivesForLogIds(logIds);
+	}
+
+	private Stream<AdArchive> streamArchivesForLogIds(final ImmutableList<DocOutboundLogId> logIds)
+	{
+		return docOutboundDAO.streamByIdsInOrder(logIds)
+				.filter(I_C_Doc_Outbound_Log::isActive)
+				.map(log -> getLastArchive(log).orElse(null))
+				.filter(Objects::nonNull);
 	}
 
 	@NonNull
