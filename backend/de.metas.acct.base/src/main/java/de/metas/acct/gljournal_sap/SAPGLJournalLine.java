@@ -70,6 +70,9 @@ public class SAPGLJournalLine
 		return parentId != null && taxId != null;
 	}
 
+	/**
+	 * This logic expects, that tax lines always generated from an base account with tax set (included or not)
+	 */
 	public boolean isTaxLine()
 	{
 		return taxId != null && (determineTaxBaseSAP || parentId != null);

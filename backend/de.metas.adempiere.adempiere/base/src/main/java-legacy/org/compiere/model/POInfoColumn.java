@@ -49,7 +49,7 @@ public final class POInfoColumn implements Serializable
 			@Nullable final ReferenceId ad_Reference_Value_ID,
 			@Nullable final TableName AD_Reference_Value_TableName,
 			final int ad_Reference_Value_KeyColumn_DisplayType,
-			final AdValRuleId AD_Val_Rule_ID,
+			@Nullable final AdValRuleId AD_Val_Rule_ID,
 			final int fieldLength,
 			final String valueMin,
 			final String valueMax,
@@ -237,7 +237,7 @@ public final class POInfoColumn implements Serializable
 	 * Validation
 	 */
 	// public String ValidationCode;
-	final AdValRuleId AD_Val_Rule_ID;
+	@Getter final AdValRuleId AD_Val_Rule_ID;
 
 	/**
 	 * Field Length

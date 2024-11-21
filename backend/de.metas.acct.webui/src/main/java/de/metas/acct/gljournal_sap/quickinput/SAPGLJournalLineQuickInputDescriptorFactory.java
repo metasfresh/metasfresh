@@ -19,17 +19,19 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -41,6 +43,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 {
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
 	@NonNull private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	@VisibleForTesting
@@ -82,6 +85,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 		if (documentType.isWindow() && detailId != null)
 		{
 			final AdTabId adTabId = detailId.toAdTabId();
+			@SuppressWarnings("DataFlowIssue")
 			final QuickInputConfigLayout quickInputLayout = adWindowDAO.getQuickInputConfigLayout(adTabId).orElse(null);
 			if (quickInputLayout != null)
 			{
@@ -114,7 +118,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 				// GL_Account_ID
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
+						.setLookupDescriptorProvider(getAccountProvider())
 						.setWidgetSize(WidgetSize.Large))
 
 				// Amount
@@ -150,6 +154,20 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 				"AD_ReferenceValue_ID for SAP_GLJournalLine.PostingSign shall be set");
 
 		return lookupDescriptorProviders.listByAD_Reference_Value_ID(postingSignReferenceId);
+	}
+
+	@NonNull
+    private LookupDescriptorProvider getAccountProvider()
+	{
+		@SuppressWarnings("DataFlowIssue")
+		final AdValRuleId valueRuleId = POInfo.getPOInfo(I_SAP_GLJournalLine.Table_Name).getColumn(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID).getAD_Val_Rule_ID();
+		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(I_SAP_GLJournalLine.Table_Name)
+				.setCtxColumnName(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID)
+				.setDisplayType(DisplayType.Search)
+				.setAD_Val_Rule_ID(valueRuleId);
+
+		return descriptorProviderBuilder.build();
 	}
 
 	private DocumentFieldDescriptor.Builder prepareField(@NonNull final String fieldName, @NonNull final QuickInputConfigLayout layoutConfig)
