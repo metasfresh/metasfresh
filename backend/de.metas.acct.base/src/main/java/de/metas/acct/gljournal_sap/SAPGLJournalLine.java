@@ -71,7 +71,7 @@ public class SAPGLJournalLine
 	}
 
 	/**
-	This logic expects, that tax lines always generated from an base account with tax set (included or not)
+	 * This logic expects, that tax lines always generated from an base account with tax set (included or not)
 	 */
 	public boolean isTaxLine()
 	{
