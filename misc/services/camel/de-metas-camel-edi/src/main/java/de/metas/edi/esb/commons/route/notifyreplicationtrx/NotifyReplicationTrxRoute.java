@@ -75,7 +75,7 @@ public class NotifyReplicationTrxRoute extends RouteBuilder
 	{
 		final NotifyReplicationTrxRequest request = exchange.getIn().getBody(NotifyReplicationTrxRequest.class);
 
-		final EDIReplicationTrxUpdateType document = null; //FIXME factory.createEDIReplicationTrxUpdateType();
+		final EDIReplicationTrxUpdateType document = factory.createEDIReplicationTrxUpdateType();
 		document.setName(request.getTrxName());
 		document.setIsReplicationTrxFinished(StringUtils.ofBooleanNonNull(request.isFinished()));
 		document.setIsError(StringUtils.ofBooleanNonNull(request.isError()));
