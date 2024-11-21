@@ -6,29 +6,29 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                                                                                            ad_language character varying)
     RETURNS TABLE
             (
-                description      character varying,
-                documentno       character varying,
-                dateordered      timestamp WITHOUT TIME ZONE,
-                reference        text,
-                isoffer          character,
-                isprepay         character,
-                offervaliddate   timestamp WITHOUT TIME ZONE,
-                offervaliddays   numeric,
-                bp_value         character varying,
-                eori             character varying,
-                cont_name        text,
-                cont_phone       character varying,
-                cont_fax         character varying,
-                cont_email       character varying,
-                sr_name          text,
-                sr_phone         character varying,
-                sr_fax           character varying,
-                sr_email         character varying,
-                printname        character varying,
-                datepromised     timestamp WITH TIME ZONE,
-                dt_description   text,
-                offer_documentno character varying,
-                deliverytoaddress  character varying
+                description       character varying,
+                documentno        character varying,
+                dateordered       timestamp WITHOUT TIME ZONE,
+                reference         text,
+                isoffer           character,
+                isprepay          character,
+                offervaliddate    timestamp WITHOUT TIME ZONE,
+                offervaliddays    numeric,
+                bp_value          character varying,
+                eori              character varying,
+                cont_name         text,
+                cont_phone        character varying,
+                cont_fax          character varying,
+                cont_email        character varying,
+                sr_name           text,
+                sr_phone          character varying,
+                sr_fax            character varying,
+                sr_email          character varying,
+                printname         character varying,
+                datepromised      timestamp WITH TIME ZONE,
+                dt_description    text,
+                offer_documentno  character varying,
+                deliverytoaddress character varying
             )
     STABLE
     LANGUAGE sql
@@ -70,7 +70,10 @@ SELECT o.description                             AS description,
        o.datepromised,
        COALESCE(dtt.Description, dt.Description) AS dt_description,
        offer.documentno                          AS offer_documentno,
-       o.deliverytoaddress                       AS deliverytoaddress
+       REPLACE(
+               REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
+               E'\n', ' | '
+       )                                         AS deliverytoaddress
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
