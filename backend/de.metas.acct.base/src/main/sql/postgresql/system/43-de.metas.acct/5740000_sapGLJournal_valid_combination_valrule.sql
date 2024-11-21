@@ -10,6 +10,12 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,Crea
 UPDATE AD_Column SET AD_Val_Rule_ID=540695,Updated=TO_TIMESTAMP('2024-11-20 17:33:29.207','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=585392
 ;
 
+-- SysConfig Name: de.metas.acct.gljournal_sap.quickinput.SAPGLJournalLineQuickInputDescriptorFactory
+-- SysConfig Value: 540695
+-- 2024-11-21T08:41:35.532Z
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541747,'S',TO_TIMESTAMP('2024-11-21 09:41:35.331','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.acct','Y','de.metas.acct.gljournal_sap.quickinput.SAPGLJournalLineQuickInputDescriptorFactory.AccountValRuleId',TO_TIMESTAMP('2024-11-21 09:41:35.331','YYYY-MM-DD HH24:MI:SS.US'),100,'540695')
+;
+
 -- Field: SAP Buchführungs Journal(541656,de.metas.acct) -> SAP Buchführungs Journal Line(546731,de.metas.acct) -> Parent
 -- Column: SAP_GLJournalLine.Parent_ID
 -- 2024-11-20T16:23:51.820Z
