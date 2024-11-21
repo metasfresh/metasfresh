@@ -2,7 +2,7 @@ package de.metas.edi.api.impl;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -69,19 +69,19 @@ class DesadvBLTest
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
-				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyItemCapacity(new BigDecimal("9"))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("20.5", coliUomId))
+				.stockQty(Quantitys.of("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("20.5", coliUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -90,7 +90,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -99,7 +99,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("9"));
@@ -114,17 +114,17 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_noPicking()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
-				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -133,7 +133,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -142,7 +142,7 @@ class DesadvBLTest
 				BigDecimal.valueOf(0.25));
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -156,18 +156,18 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_withPicking()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
-				.line(10)
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("2.5", eachUomId))
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("2.5", eachUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -176,7 +176,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -185,7 +185,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -220,8 +220,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
@@ -255,8 +255,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);

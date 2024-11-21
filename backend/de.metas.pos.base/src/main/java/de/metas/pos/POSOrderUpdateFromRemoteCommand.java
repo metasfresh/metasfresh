@@ -133,14 +133,14 @@ class POSOrderUpdateFromRemoteCommand
 
 	private Quantity extractQty(@NonNull final RemotePOSOrderLine remoteOrderLine)
 	{
-		return Quantitys.create(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
+		return Quantitys.of(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
 	}
 
 	@Nullable
 	private Quantity extractCatchWeight(final @NonNull RemotePOSOrderLine remoteOrderLine)
 	{
 		return remoteOrderLine.getCatchWeight() != null && remoteOrderLine.getCatchWeightUomId() != null
-				? Quantitys.create(remoteOrderLine.getCatchWeight(), remoteOrderLine.getCatchWeightUomId())
+				? Quantitys.of(remoteOrderLine.getCatchWeight(), remoteOrderLine.getCatchWeightUomId())
 				: null;
 	}
 

@@ -22,15 +22,6 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -40,6 +31,13 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Quantity and Quality, i.e.
@@ -138,7 +136,7 @@ public final class ReceiptQty
 				.divide(Env.ONEHUNDRED, INTERNAL_PRECISION, QtyWithIssues_RoundingMode);
 
 		final StockQtyAndUOMQty qtyWithIssuesToAdd = StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(stockQtyWithIssuesToAdd, qty.getUomId()),
+				Quantitys.of(stockQtyWithIssuesToAdd, qty.getUomId()),
 				productId,
 				(Quantity)null/* uomQty */
 		);

@@ -146,7 +146,7 @@ public final class InvoiceCandidateWithInOutLine
 			}
 		}
 
-		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.create(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.of(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
 																					 productId,
 																					 icUomId);
 

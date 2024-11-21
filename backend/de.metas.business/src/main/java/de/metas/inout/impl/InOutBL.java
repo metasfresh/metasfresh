@@ -151,7 +151,7 @@ public class InOutBL implements IInOutBL
 				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
 				bpLocationId.getBpartnerId(),
-				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
+				Quantitys.of(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
 				soTrx);
 
 		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, soTrx);

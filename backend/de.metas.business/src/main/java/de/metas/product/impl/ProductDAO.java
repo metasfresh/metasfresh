@@ -718,7 +718,7 @@ public class ProductDAO implements IProductDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else

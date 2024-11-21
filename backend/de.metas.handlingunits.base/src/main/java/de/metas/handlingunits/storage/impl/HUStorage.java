@@ -145,7 +145,7 @@ import java.util.Set;
 	{
 		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		return storage != null
-				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
+				? Optional.of(Quantitys.of(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
 				: Optional.empty();
 	}
 

@@ -29,7 +29,7 @@ import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFi
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,8 +71,8 @@ class InvoiceCandidateTest
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
-				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
-				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -87,8 +87,8 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
-				.qtyPicked(Quantitys.create(BigDecimal.ZERO, STOCK_UOM_ID))
-				.qtyPickedInUOM(Quantitys.create(BigDecimal.ZERO, DELIVERY_UOM_ID))
+				.qtyPicked(Quantitys.of(BigDecimal.ZERO, STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(BigDecimal.ZERO, DELIVERY_UOM_ID))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()
@@ -118,14 +118,14 @@ class InvoiceCandidateTest
 	@Test
 	void sales_serialize_deserialize()
 	{
-		final Quantity shippedQtyInStockUom = Quantitys.create(TEN, STOCK_UOM_ID);
-		final Quantity shippedQtyNominal = Quantitys.create(new BigDecimal("40"), DELIVERY_UOM_ID);
-		final Quantity shippedQtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyInStockUom = Quantitys.of(TEN, STOCK_UOM_ID);
+		final Quantity shippedQtyNominal = Quantitys.of(new BigDecimal("40"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyCatch = Quantitys.of(new BigDecimal("43"), DELIVERY_UOM_ID);
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
-				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
-				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -144,8 +144,8 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
-				.qtyPicked(Quantitys.create(new BigDecimal("20"), STOCK_UOM_ID))
-				.qtyPickedInUOM(Quantitys.create(new BigDecimal("70"), DELIVERY_UOM_ID))
+				.qtyPicked(Quantitys.of(new BigDecimal("20"), STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(new BigDecimal("70"), DELIVERY_UOM_ID))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()

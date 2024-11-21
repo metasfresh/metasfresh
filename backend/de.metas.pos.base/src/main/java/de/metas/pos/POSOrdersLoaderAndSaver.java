@@ -362,7 +362,7 @@ class POSOrdersLoaderAndSaver
 				.scannedBarcode(record.getScannedBarcode())
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
-				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.catchWeight(extractCatchWeight(record))
 				.price(Money.of(record.getPrice(), currencyId))
 				.amount(Money.of(record.getAmount(), currencyId))
@@ -374,7 +374,7 @@ class POSOrdersLoaderAndSaver
 	private static Quantity extractCatchWeight(final I_C_POS_OrderLine record)
 	{
 		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(record.getCatch_UOM_ID());
-		return catchWeightUomId != null ? Quantitys.create(record.getCatchWeight(), catchWeightUomId) : null;
+		return catchWeightUomId != null ? Quantitys.of(record.getCatchWeight(), catchWeightUomId) : null;
 	}
 
 	private static void updateRecord(@NonNull final I_C_POS_OrderLine lineRecord, @NonNull final POSOrderLine line)

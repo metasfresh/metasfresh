@@ -311,7 +311,7 @@ public class DeliveredDataLoader
 					.completedOrClosed(inoutCompletedOrClosed);
 
 			final Quantity qtyInStockUom = Quantitys
-					.create(
+					.of(
 							icIolAssociationRecord.getQtyDelivered(),
 							stockUomId)
 					.negateIf(negateQtys);
@@ -319,7 +319,7 @@ public class DeliveredDataLoader
 
 			final UomId deliveryUomId = UomId.optionalOfRepoId(icIolAssociationRecord.getC_UOM_ID()).orElse(stockUomId);
 			final Quantity qtyNominal = Quantitys
-					.create(
+					.of(
 							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),
 							deliveryUomId)
 					.negateIf(negateQtys);
@@ -328,7 +328,7 @@ public class DeliveredDataLoader
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch))
 			{
 				final Quantity qtyCatch = Quantitys
-						.create(
+						.of(
 								icIolAssociationRecord.getQtyDeliveredInUOM_Catch(),
 								deliveryUomId)
 						.negateIf(negateQtys);
@@ -338,7 +338,7 @@ public class DeliveredDataLoader
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
 			{
 				final Quantity qtyOverride = Quantitys
-						.create(
+						.of(
 								icIolAssociationRecord.getQtyDeliveredInUOM_Override(),
 								deliveryUomId)
 						.negateIf(negateQtys);

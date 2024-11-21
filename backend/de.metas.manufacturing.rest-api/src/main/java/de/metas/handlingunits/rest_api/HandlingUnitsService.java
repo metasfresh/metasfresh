@@ -487,7 +487,7 @@ public class HandlingUnitsService
 			huQRCodeService.assertQRCodeAssignedToHU(qrCode, huId);
 		}
 
-		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
+		final Quantity qty = Quantitys.of(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
 		HuId huIdToUpdate = huId != null && isSplitOneIfAggregated
 				? huTransformService.extractToTopLevel(huId, qrCode)
