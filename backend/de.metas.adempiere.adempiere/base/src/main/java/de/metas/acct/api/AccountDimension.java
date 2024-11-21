@@ -26,19 +26,18 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.sales_region.SalesRegionId;
 import de.metas.common.util.StringUtils;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
-import org.compiere.util.TimeUtil;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Getter;
+import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -280,11 +279,7 @@ public final class AccountDimension
 
 		private Builder setSegmentValue(@NonNull final AcctSegmentType segmentType, @Nullable final Object value)
 		{
-			if (value == null)
-			{
-				segmentValues.put(segmentType, "");
-			}
-			else if (value instanceof RepoIdAware)
+			if (value instanceof RepoIdAware)
 			{
 				final int intValue = ((RepoIdAware)value).getRepoId();
 				segmentValues.put(segmentType, intValue);
