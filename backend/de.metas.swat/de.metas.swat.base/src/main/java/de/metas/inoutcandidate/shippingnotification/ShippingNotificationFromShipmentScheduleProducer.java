@@ -70,6 +70,11 @@ public class ShippingNotificationFromShipmentScheduleProducer
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
 		}
 
+		if(salesOrders.stream().anyMatch(orderBL::isProformaSO))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only non proforma sales orders");
+		}
+
 		if (!shipmentScheduleBL.anyMatchByOrderIds(salesOrderIds))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_M_Shipment_Notification_NoShipmentSchedule);
