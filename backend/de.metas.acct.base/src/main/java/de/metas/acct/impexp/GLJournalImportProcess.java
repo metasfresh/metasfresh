@@ -25,13 +25,11 @@
  */
 package de.metas.acct.impexp;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,16 +46,17 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.logging.LogManager;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
  *
- * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
+ * Import {@link I_I_GLJournal} records to {@link I_GL_Journal}.
  */
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
@@ -667,8 +666,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull IMutable<Object> state,
-			@NonNull I_I_GLJournal importRecord,
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_GLJournal importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
 
@@ -761,12 +760,12 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			context.journal.setClientOrg(importRecord.getAD_Client_ID(), importRecord.getAD_OrgDoc_ID());
 			//
 			String description = importRecord.getBatchDescription();
-			if (description == null || description.length() == 0)
+			if (description == null || description.isEmpty())
 			{
 				description = "(Import)";
 			}
 			context.journal.setDescription(description);
-			if (importRecord.getJournalDocumentNo() != null && importRecord.getJournalDocumentNo().length() > 0)
+			if (importRecord.getJournalDocumentNo() != null && !importRecord.getJournalDocumentNo().isEmpty())
 			{
 				context.journal.setDocumentNo(importRecord.getJournalDocumentNo());
 			}
@@ -811,7 +810,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
 		{
-			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
+			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 			{
@@ -832,7 +831,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationTo_ID() == 0)
 		{
-			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
+			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
 			{
@@ -874,27 +873,13 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private AccountDimension newAccountDimension(final I_I_GLJournal importRecord, final int accountId)
+	private AccountDimension newMinimalAccountDimension(final I_I_GLJournal importRecord, final int accountId)
 	{
 		return AccountDimension.builder()
 				.setAcctSchemaId(AcctSchemaId.ofRepoIdOrNull(importRecord.getC_AcctSchema_ID()))
 				.setAD_Client_ID(importRecord.getAD_Client_ID())
 				.setAD_Org_ID(importRecord.getAD_Org_ID())
 				.setC_ElementValue_ID(accountId)
-				//.setC_SubAcct_ID(importRecord.getC_SubAcct_ID())
-				.setM_Product_ID(importRecord.getM_Product_ID())
-				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
-				.setAD_OrgTrx_ID(importRecord.getAD_OrgTrx_ID())
-				.setC_LocFrom_ID(importRecord.getC_LocFrom_ID())
-				.setC_LocTo_ID(importRecord.getC_LocTo_ID())
-				.setC_SalesRegion_ID(importRecord.getC_SalesRegion_ID())
-				.setC_Project_ID(importRecord.getC_Project_ID())
-				.setC_Campaign_ID(importRecord.getC_Campaign_ID())
-				.setC_Activity_ID(importRecord.getC_Activity_ID())
-				.setUser1_ID(importRecord.getUser1_ID())
-				.setUser2_ID(importRecord.getUser2_ID())
-				//.setUserElement1_ID(importRecord.getUserElement1_ID())
-				//.setUserElement2_ID(importRecord.getUserElement2_ID())
 				.build();
 	}
 
