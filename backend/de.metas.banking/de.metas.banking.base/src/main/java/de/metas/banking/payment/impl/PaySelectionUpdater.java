@@ -97,7 +97,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	 */
 	private int _bpGroupId = 0;
 
-	private Timestamp _dateTrx;
+	private Timestamp _dateInvoiced;
 
 	private String _poReference;
 
@@ -391,11 +391,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		// DateTrx
-		if (getDateTrx() != null)
+		if (getDateInvoiced() != null)
 		{
-			final Timestamp dateTrx = getDateTrx();
-			sql += " AND i.DateTrx=?";
-			sqlParams.add(payDate);
+			sql += " AND i.DateAcct=?";
+			sqlParams.add(getDateInvoiced());
 		}
 
 		// Reference
@@ -746,16 +745,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	private Timestamp getDateTrx()
+	private Timestamp getDateInvoiced()
 	{
-		return _dateTrx;
+		return _dateInvoiced;
 	}
 
 	@Override
-	public IPaySelectionUpdater setDateTrx(final Timestamp dateTrx)
+	public IPaySelectionUpdater setDateInvoiced(final Timestamp dateAcct)
 	{
 		assertConfigurable();
-		_dateTrx = TimeUtil.copyOf(dateTrx);
+		_dateInvoiced = TimeUtil.copyOf(dateAcct);
 		return this;
 	}
 

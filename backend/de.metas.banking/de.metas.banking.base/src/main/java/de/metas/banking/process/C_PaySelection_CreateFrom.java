@@ -77,8 +77,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	@Param(parameterName = I_C_BP_Group.COLUMNNAME_C_BP_Group_ID, mandatory = false)
 	private int p_C_BP_Group_ID;
 
-	@Param(parameterName = "DateTrx", mandatory = false)
-	private Timestamp p_DateTrx;
+	@Param(parameterName = "DateInvoiced", mandatory = false)
+	private Timestamp p_DateInvoiced;
 
 	@Param(parameterName = "POReference", mandatory = false)
 	private String p_POReference;
@@ -122,7 +122,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 		paySelectionUpdater.setC_BPartner_ID(p_C_BPartner_ID);
 		paySelectionUpdater.setC_BP_Group_ID(p_C_BP_Group_ID);
 		paySelectionUpdater.setPOReference(p_POReference);
-		paySelectionUpdater.setDateTrx(p_DateTrx);
+		paySelectionUpdater.setDateInvoiced(p_DateInvoiced);
 	}
 
 	@Override

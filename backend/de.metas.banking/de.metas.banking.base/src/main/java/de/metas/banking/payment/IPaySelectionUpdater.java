@@ -77,7 +77,7 @@ public interface IPaySelectionUpdater
 
 	IPaySelectionUpdater addPaySelectionLineToUpdate(int paySelectionLineId);
 
-	IPaySelectionUpdater setDateTrx(Timestamp DateTrx);
+	IPaySelectionUpdater setDateInvoiced(Timestamp DateInvoiced);
 
 	IPaySelectionUpdater setPOReference(String POReference);
 
