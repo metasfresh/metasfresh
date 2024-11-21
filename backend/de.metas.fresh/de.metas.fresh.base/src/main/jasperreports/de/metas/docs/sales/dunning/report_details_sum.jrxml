@@ -20,14 +20,14 @@
 	<field name="openamt" class="java.math.BigDecimal"/>
 	<field name="feeamt" class="java.math.BigDecimal"/>
 	<field name="totalamt" class="java.math.BigDecimal"/>
-	<field name="cursymbol" class="java.lang.String"/>
+	<field name="currency" class="java.lang.String"/>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="currency" class="java.lang.String">
-		<variableExpression><![CDATA[$F{cursymbol}]]></variableExpression>
-		<initialValueExpression><![CDATA[$F{cursymbol}]]></initialValueExpression>
+		<variableExpression><![CDATA[$F{currency}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{currency}]]></initialValueExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -71,7 +71,7 @@
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField-1" mode="Transparent" x="500" y="0" width="45" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
