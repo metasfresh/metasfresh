@@ -28,7 +28,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 datepromised      timestamp WITH TIME ZONE,
                 dt_description    text,
                 offer_documentno  character varying,
-                deliverytoaddress character varying
+                deliverytoaddress character varying,
+                validuntil        timestamp WITH TIME ZONE,
+                version           character varying
             )
     STABLE
     LANGUAGE sql
@@ -73,7 +75,15 @@ SELECT o.description                             AS description,
        REPLACE(
                REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
                E'\n', ' | '
-       )                                         AS deliverytoaddress
+       )                                         AS deliverytoaddress,
+       CASE
+           WHEN o.OrderType = 'ON'
+               THEN o.validuntil
+       END                                       AS validuntil,
+       CASE
+           WHEN o.versionno = 'ON'
+               THEN o.versionno
+       END                                       AS versionno
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
