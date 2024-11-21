@@ -1,37 +1,41 @@
-import counterpart from 'counterpart';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import classnames from 'classnames';
+import counterpart from "counterpart";
+import PropTypes from "prop-types";
+import React, { PureComponent } from "react";
+import { connect } from "react-redux";
+import classnames from "classnames";
 
-import history from '../../services/History';
-import { getPrintingOptions } from '../../api/window';
-import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import history from "../../services/History";
+import { getPrintingOptions } from "../../api/window";
+import { deleteRequest } from "../../api";
+import { duplicateRequest, openFile } from "../../actions/GenericActions";
 import {
   openModal,
-  setPrintingOptions,
-  resetPrintingOptions,
   openPrintingOptionsModal,
-} from '../../actions/WindowActions';
-import { setBreadcrumb } from '../../actions/MenuActions';
+  resetPrintingOptions,
+  setPrintingOptions,
+} from "../../actions/WindowActions";
+import { setBreadcrumb } from "../../actions/MenuActions";
 
-import keymap from '../../shortcuts/keymap';
-import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
+import keymap from "../../shortcuts/keymap";
+import GlobalContextShortcuts from "../keyshortcuts/GlobalContextShortcuts";
 
-import WidgetWrapper from '../../containers/WidgetWrapper';
-import Indicator from '../app/Indicator';
-import Prompt from '../app/Prompt';
-import NewEmail from '../email/NewEmail';
-import Inbox from '../inbox/Inbox';
-import NewLetter from '../letter/NewLetter';
-import Tooltips from '../tooltips/Tooltips';
-import Breadcrumb from './Breadcrumb';
-import SideList from './SideList';
-import Subheader from './SubHeader';
-import UserDropdown from './UserDropdown';
+import WidgetWrapper from "../../containers/WidgetWrapper";
+import Indicator from "../app/Indicator";
+import Prompt from "../app/Prompt";
+import NewEmail from "../email/NewEmail";
+import Inbox from "../inbox/Inbox";
+import NewLetter from "../letter/NewLetter";
+import Tooltips from "../tooltips/Tooltips";
+import Breadcrumb from "./Breadcrumb";
+import SideList from "./SideList";
+import Subheader from "./SubHeader";
+import UserDropdown from "./UserDropdown";
 
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
+import {
+  getDocActionElementFromState,
+  getDocSummaryDataFromState,
+} from "../../reducers/windowHandlerUtils";
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -50,7 +54,7 @@ class Header extends PureComponent {
     scrolled: false,
     isInboxOpen: false,
     isUDOpen: false,
-    tooltipOpen: '',
+    tooltipOpen: "",
     isEmailOpen: false,
     deletePrompt: { open: false },
   };
@@ -119,7 +123,7 @@ class Header extends PureComponent {
    * @summary ToDo: Describe the method
    */
   initEventListeners = () => {
-    document.addEventListener('scroll', this.handleScroll);
+    document.addEventListener("scroll", this.handleScroll);
   };
 
   /**
@@ -127,7 +131,7 @@ class Header extends PureComponent {
    * @summary ToDo: Describe the method
    */
   removeEventListeners = () => {
-    document.removeEventListener('scroll', this.handleScroll);
+    document.removeEventListener("scroll", this.handleScroll);
   };
 
   /**
@@ -186,7 +190,7 @@ class Header extends PureComponent {
           menuOverlay: nodeId,
         },
         () => {
-          if (nodeId !== '') {
+          if (nodeId !== "") {
             this.setState({ isMenuOverlayShow: true });
           } else {
             this.setState({ isMenuOverlayShow: false });
@@ -228,7 +232,7 @@ class Header extends PureComponent {
     const { dispatch } = this.props;
 
     dispatch(setBreadcrumb([]));
-    history.push('/');
+    history.push("/");
   };
 
   /**
@@ -238,9 +242,9 @@ class Header extends PureComponent {
    */
   toggleScrollScope = (open) => {
     if (!open) {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     } else {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
   };
 
@@ -256,13 +260,13 @@ class Header extends PureComponent {
     const { windowId } = this.props;
     this.openModal(
       windowId,
-      'static',
-      counterpart.translate('window.comments.caption'),
+      "static",
+      counterpart.translate("window.comments.caption"),
       null,
       null,
       null,
       null,
-      'comments'
+      "comments"
     );
   };
 
@@ -350,7 +354,7 @@ class Header extends PureComponent {
 
     try {
       const response = await getPrintingOptions({
-        entity: 'window',
+        entity: "window",
         windowId,
         docId,
       });
@@ -363,10 +367,10 @@ class Header extends PureComponent {
         // in case there are no options we directly print and reset the printing options in the store
         if (!options) {
           openFile(
-            'window',
+            "window",
             windowId,
             docId,
-            'print',
+            "print",
             `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
           );
           dispatch(resetPrintingOptions());
@@ -394,7 +398,7 @@ class Header extends PureComponent {
    * @param {string} docId
    */
   handleClone = (windowId, docId) => {
-    duplicateRequest('window', windowId, docId).then((response) => {
+    duplicateRequest("window", windowId, docId).then((response) => {
       if (response && response.data && response.data.id) {
         this.redirect(`/window/${windowId}/${response.data.id}`);
       }
@@ -449,7 +453,7 @@ class Header extends PureComponent {
     this.setState(
       { deletePrompt: { ...this.state.deletePrompt, open: false } },
       () => {
-        deleteRequest('window', windowId, null, null, [dataId]).then(() => {
+        deleteRequest("window", windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
           this.redirectBackAfterDelete({ windowId });
         });
@@ -458,7 +462,7 @@ class Header extends PureComponent {
   };
 
   handleDocStatusToggle = (close) => {
-    const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
+    const elem = document.getElementsByClassName("js-dropdown-toggler")[0];
 
     if (close) {
       elem.blur();
@@ -498,7 +502,7 @@ class Header extends PureComponent {
       isInboxOpen: false,
       isUDOpen: false,
       isSideListShow: false,
-      tooltipOpen: '',
+      tooltipOpen: "",
     };
 
     if (clickedItem) {
@@ -506,19 +510,19 @@ class Header extends PureComponent {
     }
 
     state.isSubheaderShow =
-      clickedItem === 'isSubheaderShow' ? !isSubheaderShow : false;
+      clickedItem === "isSubheaderShow" ? !isSubheaderShow : false;
 
     this.setState(state, callback);
 
     if (
-      document.getElementsByClassName('js-dropdown-toggler')[0] &&
-      clickedItem !== 'dropdown'
+      document.getElementsByClassName("js-dropdown-toggler")[0] &&
+      clickedItem !== "dropdown"
     ) {
       this.handleDocStatusToggle(true);
     }
   };
 
-  closeDropdownOverlay = () => this.closeOverlays('dropdown');
+  closeDropdownOverlay = () => this.closeOverlays("dropdown");
 
   /**
    * @method redirect
@@ -593,11 +597,11 @@ class Header extends PureComponent {
       <div>
         {deletePrompt && deletePrompt.open && (
           <Prompt
-            title={counterpart.translate('window.Delete.caption')}
-            text={counterpart.translate('window.delete.message')}
+            title={counterpart.translate("window.Delete.caption")}
+            text={counterpart.translate("window.delete.message")}
             buttons={{
-              submit: counterpart.translate('window.delete.confirm'),
-              cancel: counterpart.translate('window.delete.cancel'),
+              submit: counterpart.translate("window.delete.confirm"),
+              cancel: counterpart.translate("window.delete.cancel"),
             }}
             onCancelClick={this.handleDeletePromptCancelClick}
             onSubmitClick={this.handleDeletePromptSubmitClick}
@@ -605,26 +609,26 @@ class Header extends PureComponent {
         )}
 
         <nav
-          className={classnames('header header-super-faded', {
-            'header-shadow': scrolled,
+          className={classnames("header header-super-faded", {
+            "header-shadow": scrolled,
           })}
         >
           <div className="container-fluid">
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={() => this.closeOverlays('isSubheaderShow')}
+                  onClick={() => this.closeOverlays("isSubheaderShow")}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
-                  onMouseLeave={() => this.toggleTooltip('')}
+                  onMouseLeave={() => this.toggleTooltip("")}
                   className={classnames(
-                    'btn-square btn-header',
-                    'tooltip-parent js-not-unselect',
+                    "btn-square btn-header",
+                    "tooltip-parent js-not-unselect",
                     {
-                      'btn-meta-default-dark btn-subheader-open btn-header-open':
+                      "btn-meta-default-dark btn-subheader-open btn-header-open":
                         isSubheaderShow,
-                      'btn-meta-primary': !isSubheaderShow,
+                      "btn-meta-primary": !isSubheaderShow,
                     }
                   )}
                 >
@@ -632,7 +636,7 @@ class Header extends PureComponent {
                     {hasComments && (
                       <span
                         className="notification-number size-sm"
-                        title={counterpart.translate('window.comments.caption')}
+                        title={counterpart.translate("window.comments.caption")}
                       />
                     )}
                   </i>
@@ -641,7 +645,7 @@ class Header extends PureComponent {
                     <Tooltips
                       name={keymap.OPEN_ACTIONS_MENU}
                       action={counterpart.translate(
-                        'mainScreen.actionMenu.tooltip'
+                        "mainScreen.actionMenu.tooltip"
                       )}
                       type=""
                     />
@@ -673,7 +677,7 @@ class Header extends PureComponent {
                 {docStatus && (
                   <div
                     className="hidden-sm-down tooltip-parent js-not-unselect"
-                    onClick={() => this.toggleTooltip('')}
+                    onClick={() => this.toggleTooltip("")}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
                   >
                     <WidgetWrapper
@@ -693,7 +697,7 @@ class Header extends PureComponent {
                       <Tooltips
                         name={keymap.DOC_STATUS}
                         action={counterpart.translate(
-                          'mainScreen.docStatus.tooltip'
+                          "mainScreen.docStatus.tooltip"
                         )}
                         type=""
                       />
@@ -703,18 +707,18 @@ class Header extends PureComponent {
 
                 <div
                   className={classnames(
-                    'header-item-container',
-                    'header-item-container-static',
-                    'pointer tooltip-parent js-not-unselect',
+                    "header-item-container",
+                    "header-item-container-static",
+                    "pointer tooltip-parent js-not-unselect",
                     {
-                      'header-item-open': isInboxOpen,
+                      "header-item-open": isInboxOpen,
                     }
                   )}
-                  onClick={() => this.closeOverlays('', this.openInbox)}
+                  onClick={() => this.closeOverlays("", this.openInbox)}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
-                  onMouseLeave={() => this.toggleTooltip('')}
+                  onMouseLeave={() => this.toggleTooltip("")}
                 >
                   <span className="header-item header-item-badge icon-lg">
                     <i className="meta-icon-notifications" />
@@ -727,8 +731,8 @@ class Header extends PureComponent {
                   {tooltipOpen === keymap.OPEN_INBOX_MENU && (
                     <Tooltips
                       name={keymap.OPEN_INBOX_MENU}
-                      action={counterpart.translate('mainScreen.inbox.tooltip')}
-                      type={''}
+                      action={counterpart.translate("mainScreen.inbox.tooltip")}
+                      type={""}
                     />
                   )}
                 </div>
@@ -758,20 +762,20 @@ class Header extends PureComponent {
                 {showSidelist && (
                   <div
                     className={classnames(
-                      'tooltip-parent btn-header',
-                      'side-panel-toggle btn-square',
-                      'js-not-unselect',
+                      "tooltip-parent btn-header",
+                      "side-panel-toggle btn-square",
+                      "js-not-unselect",
                       {
-                        'btn-meta-default-bright btn-header-open':
+                        "btn-meta-default-bright btn-header-open":
                           isSideListShow,
-                        'btn-meta-primary': !isSideListShow,
+                        "btn-meta-primary": !isSideListShow,
                       }
                     )}
                     onClick={() => this.handleSidelistToggle(0)}
                     onMouseEnter={() =>
                       this.toggleTooltip(keymap.OPEN_SIDEBAR_MENU_0)
                     }
-                    onMouseLeave={() => this.toggleTooltip('')}
+                    onMouseLeave={() => this.toggleTooltip("")}
                   >
                     <i className="meta-icon-list" />
                     {tooltipOpen === keymap.OPEN_SIDEBAR_MENU_0 && (
@@ -779,7 +783,7 @@ class Header extends PureComponent {
                         name={keymap.OPEN_SIDEBAR_MENU_0}
                         action={counterpart.translate(
                           /* eslint-disable max-len */
-                          'mainScreen.sideList.tooltip'
+                          "mainScreen.sideList.tooltip"
                           /* eslint-enable max-len */
                         )}
                         type=""
@@ -795,7 +799,7 @@ class Header extends PureComponent {
             <Indicator
               indicator={indicator}
               isDocumentNotSaved={isDocumentNotSaved}
-              error={saveStatus?.error ? saveStatus?.reason : ''}
+              error={saveStatus?.error ? saveStatus?.reason : ""}
               exception={saveStatus?.error ? saveStatus?.exception : null}
             />
           )}
@@ -803,7 +807,7 @@ class Header extends PureComponent {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
+            closeSubheader={() => this.closeOverlays("isSubheaderShow")}
             docNo={docNoData && docNoData.value}
             openModal={this.openModal}
             openModalRow={this.openModalRow}
@@ -830,7 +834,7 @@ class Header extends PureComponent {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowId={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ""}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
@@ -844,14 +848,14 @@ class Header extends PureComponent {
 
         {isEmailOpen && (
           <NewEmail
-            windowId={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ""}
             docId={dataId}
             handleCloseEmail={this.handleCloseEmail}
           />
         )}
         {isLetterOpen && (
           <NewLetter
-            windowId={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ""}
             docId={dataId}
             handleCloseLetter={this.handleCloseLetter}
           />
@@ -860,9 +864,9 @@ class Header extends PureComponent {
           handleSidelistToggle={this.handleSidelistToggle}
           handleMenuOverlay={
             isMenuOverlayShow
-              ? () => this.handleMenuOverlay('', '')
+              ? () => this.handleMenuOverlay("", "")
               : () =>
-                  this.closeOverlays('', () => this.handleMenuOverlay('', '0'))
+                  this.closeOverlays("", () => this.handleMenuOverlay("", "0"))
           }
           handleInboxToggle={this.handleInboxToggle}
           handleUDToggle={this.handleUDToggle}
@@ -871,8 +875,8 @@ class Header extends PureComponent {
               ? () =>
                   this.openModal(
                     windowId,
-                    'window',
-                    counterpart.translate('window.advancedEdit.caption'),
+                    "window",
+                    counterpart.translate("window.advancedEdit.caption"),
                     true
                   )
               : undefined
@@ -895,7 +899,7 @@ class Header extends PureComponent {
               : undefined
           }
           handleDocStatusToggle={
-            document.getElementsByClassName('js-dropdown-toggler')[0]
+            document.getElementsByClassName("js-dropdown-toggler")[0]
               ? this.handleDocStatusToggle
               : undefined
           }
@@ -966,22 +970,15 @@ Header.propTypes = {
 const mapStateToProps = (state) => {
   const {
     indicator,
-    master: {
-      layout: { docActionElement, documentSummaryElement },
-      data,
-      saveStatus,
-    },
+    master: { saveStatus },
   } = state.windowHandler;
-
-  const docSummaryData =
-    documentSummaryElement && data[documentSummaryElement.fields[0].field];
 
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
-    docStatus: docActionElement,
-    docSummaryData,
+    docStatus: getDocActionElementFromState(state),
+    docSummaryData: getDocSummaryDataFromState(state),
     indicator,
     saveStatus,
   };
