@@ -7,7 +7,7 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_details_sum ( IN Record_ID nume
 		openamt numeric, 
 		feeamt numeric,
 		totalamt numeric,
-		iso_code character
+        currency character
 	) AS 
 $$
 SELECT
@@ -16,7 +16,7 @@ SELECT
 	SUM(doc.GrandTotal - doc.PaidAmt) AS openamt,
 	SUM(dl.amt) AS feeamt,
 	SUM(invoiceopen(dc.Record_ID, 0::numeric) + dl.amt) AS totalamt,
-	c.ISO_Code
+    c.cursymbol                                                                          AS currency
 FROM
 	C_DunningDoc dd
 	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID AND dl.isActive = 'Y'
@@ -40,7 +40,7 @@ WHERE
 	dd.C_DunningDoc_ID = $1 AND dd.isActive = 'Y'
 GROUP BY
 	dd.C_DunningDoc_ID,
-	c.ISO_Code
+	c.cursymbol
 ;
 $$ 
 LANGUAGE sql STABLE;
