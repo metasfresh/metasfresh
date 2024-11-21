@@ -29,10 +29,8 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.POInfo;
-import org.compiere.model.POInfoColumn;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -87,6 +85,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 		if (documentType.isWindow() && detailId != null)
 		{
 			final AdTabId adTabId = detailId.toAdTabId();
+			@SuppressWarnings("DataFlowIssue")
 			final QuickInputConfigLayout quickInputLayout = adWindowDAO.getQuickInputConfigLayout(adTabId).orElse(null);
 			if (quickInputLayout != null)
 			{
@@ -158,30 +157,17 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 	}
 
 	@NonNull
-	private LookupDescriptorProvider getAccountProvider()
+    private LookupDescriptorProvider getAccountProvider()
 	{
-		final POInfo poInfo = POInfo.getPOInfo(I_SAP_GLJournalLine.Table_Name);
-		if(poInfo == null){return getAccountProviderFallback();}
-
-		final POInfoColumn columnInfo = poInfo.getColumn(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID);
-		if(columnInfo == null){return getAccountProviderFallback();}
-
-		final AdValRuleId valueRuleId = columnInfo.getAD_Val_Rule_ID();
-		if(valueRuleId == null){return getAccountProviderFallback();}
-
+		@SuppressWarnings("DataFlowIssue")
+		final AdValRuleId valueRuleId = POInfo.getPOInfo(I_SAP_GLJournalLine.Table_Name).getColumn(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID).getAD_Val_Rule_ID();
 		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
-				.setCtxTableName(I_C_ValidCombination.Table_Name)
-				.setCtxColumnName(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
+				.setCtxTableName(I_SAP_GLJournalLine.Table_Name)
+				.setCtxColumnName(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID)
 				.setDisplayType(DisplayType.Search)
 				.setAD_Val_Rule_ID(valueRuleId);
 
 		return descriptorProviderBuilder.build();
-	}
-
-	@NonNull
-	private LookupDescriptorProvider getAccountProviderFallback()
-	{
-		return lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name);
 	}
 
 	private DocumentFieldDescriptor.Builder prepareField(@NonNull final String fieldName, @NonNull final QuickInputConfigLayout layoutConfig)
