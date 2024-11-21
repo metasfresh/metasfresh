@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -273,6 +274,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		sqlParams.add(payDate); // #3
 		sqlParams.add(C_CurrencyTo_ID); // #4
 		sqlParams.add(payDate); // #5
+
+
+		// filter Org_BP_Account_ID if set
+		{
+			final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
+			sql += "AND (i.Org_BP_Account_ID = ? OR i.Org_BP_Account_ID is null)";
+			sqlParams.add(orgBankAccountId);
+		}
 
 		// Not already paid invoices
 		{
