@@ -755,7 +755,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// No account
 		if (Account_ID <= 0)
 		{
-			logger.debug("NO account for C_Tax_ID=" + taxId);
+			logger.debug("NO account for C_Tax_ID={}", taxId);
 			return null;
 		}
 

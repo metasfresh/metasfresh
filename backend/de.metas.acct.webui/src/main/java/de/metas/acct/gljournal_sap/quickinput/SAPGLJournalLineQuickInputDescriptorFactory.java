@@ -33,6 +33,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.POInfo;
+import org.compiere.model.POInfoColumn;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -161,12 +162,14 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 	@NonNull
 	private LookupDescriptorProvider getAccountProvider()
 	{
-		final AdValRuleId valueRuleId = AdValRuleId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYS_CONFIG_FilterAccount, -1));
+		final POInfo poInfo = POInfo.getPOInfo(I_SAP_GLJournalLine.Table_Name);
+		if(poInfo == null){return getAccountProviderFallback();}
 
-		if (valueRuleId == null)
-		{
-			return lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name);
-		}
+		final POInfoColumn columnInfo = poInfo.getColumn(I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID);
+		if(columnInfo == null){return getAccountProviderFallback();}
+
+		final AdValRuleId valueRuleId = columnInfo.getAD_Val_Rule_ID();
+		if(valueRuleId == null){return getAccountProviderFallback();}
 
 		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
 				.setCtxTableName(I_C_ValidCombination.Table_Name)
@@ -175,6 +178,12 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 				.setAD_Val_Rule_ID(valueRuleId);
 
 		return descriptorProviderBuilder.build();
+	}
+
+	@NonNull
+	private LookupDescriptorProvider getAccountProviderFallback()
+	{
+		return lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name);
 	}
 
 	private DocumentFieldDescriptor.Builder prepareField(@NonNull final String fieldName, @NonNull final QuickInputConfigLayout layoutConfig)
