@@ -10,12 +10,17 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,549252,541436,540810,0,TO_TIMESTAMP('2024-11-20 18:23:31','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y',10,TO_TIMESTAMP('2024-11-20 18:23:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2024-11-20T16:23:40.603Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,549256,541437,540810,0,TO_TIMESTAMP('2024-11-20 18:23:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y',20,TO_TIMESTAMP('2024-11-20 18:23:40','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2024-11-21T13:45:56.509Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,552760,541438,540810,0,TO_TIMESTAMP('2024-11-21 15:45:56','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y',20,TO_TIMESTAMP('2024-11-21 15:45:56','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2024-11-20T16:23:49.157Z
-CREATE INDEX M_HU_Attribute_MHD ON M_HU_Attribute (M_HU_ID,M_Attribute_ID) WHERE M_Attribute_ID=1000025
+-- 2024-11-21T13:46:29.806Z
+UPDATE AD_Index_Table SET Description='Used in SQL Column M_ShipmentSchedule.BestBeforeDate', WhereClause='M_Attribute_ID=540020',Updated=TO_TIMESTAMP('2024-11-21 15:46:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540810
+;
+
+-- 2024-11-21T13:46:34.377Z
+-- Used in SQL Column M_ShipmentSchedule.BestBeforeDate
+CREATE INDEX M_HU_Attribute_MHD ON M_HU_Attribute (M_HU_ID,ValueDate) WHERE M_Attribute_ID=540020
 ;
 
 -- 2024-11-20T15:33:28.781Z
