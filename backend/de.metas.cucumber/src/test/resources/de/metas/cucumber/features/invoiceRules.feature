@@ -42,7 +42,7 @@ Feature: invoice rules
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -256,6 +256,9 @@ Feature: invoice rules
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_3                            | 10                        |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_3                            |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_3                            | D                 | Y                  |
