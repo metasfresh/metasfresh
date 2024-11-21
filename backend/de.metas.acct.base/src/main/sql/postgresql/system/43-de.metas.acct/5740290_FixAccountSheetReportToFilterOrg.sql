@@ -23,6 +23,10 @@ CREATE OR REPLACE FUNCTION AccountSheetReport(p_dateFrom        date,
                 endingBalance    numeric,
                 taxRate          text,
                 taxCategory      text,
+				amtsourcecr      numeric, 
+				amtsourcedr      numeric,
+				currency         text, 
+				currencyrate     numeric,
                 docTypeName      text,
                 documentno       text,
                 description      text,
@@ -51,6 +55,10 @@ BEGIN
         dateacct         timestamp,
         amtacctdr        numeric,
         amtacctcr        numeric,
+		amtsourcecr      numeric, 
+		amtsourcedr      numeric,
+		currency        text, 
+		currencyrate     numeric,
         description      text,
         c_doctype_id     numeric(10),
         c_tax_id         numeric(10),
@@ -123,6 +131,10 @@ BEGIN
                         coalesce(taxTrl.name, t.name)                 taxName,
                         fa.amtacctdr,
                         fa.amtacctcr,
+						fa.amtsourcecr, 
+		                fa.amtsourcedr,
+		                c.iso_code as currency, 
+		                fa.currencyrate,
                         fa.description,
                         fa.c_doctype_id,
                         coalesce(dtTrl.name, dt.name)                 docTypeName,
@@ -140,6 +152,8 @@ BEGIN
                           LEFT JOIN c_taxcategory_trl tcTrl ON tc.c_taxcategory_id = tcTrl.c_taxcategory_id AND tcTrl.ad_language = p_ad_language
                           LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id AND dt.c_doctype_id != 0
                           LEFT JOIN c_doctype_trl dtTrl ON dt.c_doctype_id = dtTrl.c_doctype_id AND dtTrl.ad_language = p_ad_language
+						  LEFT JOIN c_currency c on c.c_currency_id = fa.c_currency_id
+						  
                  WHERE TRUE
                    AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
@@ -159,6 +173,10 @@ BEGIN
                                 dateacct,
                                 amtacctdr,
                                 amtacctcr,
+								amtsourcecr, 
+								amtsourcedr,
+								currency, 
+								currencyrate,
                                 description,
                                 c_doctype_id,
                                 c_tax_id,
@@ -177,6 +195,10 @@ BEGIN
            ffa.dateacct,
            ffa.amtacctdr,
            ffa.amtacctcr,
+		   ffa.amtsourcecr, 
+		   ffa.amtsourcedr,
+		   ffa.currency, 
+		   ffa.currencyrate,
            ffa.description,
            ffa.c_doctype_id,
            ffa.c_tax_id,
@@ -236,6 +258,10 @@ BEGIN
                t.endingBalance,
                t.taxName         taxRate,
                t.taxCategoryName taxCategory,
+			   t.amtsourcecr, 
+		       t.amtsourcedr,
+		       t.currency, 
+		       t.currencyrate,
                t.docTypeName,
                t.documentno::text,
                t.description::text,
@@ -247,89 +273,3 @@ $BODY$
     LANGUAGE plpgsql
     VOLATILE
 ;
-
-
-/*
-Performance: it's rather bad
-
-Running on the biggest database we have available, I get these numbers:
-
-- test 1:
-    2017-04-01 -> 2018-05-31 = 13 months
-    ~4 million records
-
-select *
-FROM AccountSheetReport(
-    '2017-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY AccountValue, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.49811](0s) [Δ=0s]: start
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.523303](1s) [Δ=1s]: created empty temporary table
-[2020-02-13 13:26:15] [00000] [2020-02-13 11:26:13.638375](12s) [Δ=11s]: inserted beginningBalance: 168 records
-[2020-02-13 13:26:34] [00000] [2020-02-13 11:26:32.75252](31s) [Δ=19s]: inserted:3948480 fact_acct
-[2020-02-13 13:29:12] [00000] [2020-02-13 11:29:10.731671](189s) [Δ=158s]: finished calculating rolling sum
-[2020-02-12 16:22:15] Execution: 189 seconds = 3 min
-
-
-- test 2:
-    2018-04-01 -> 2018-05-31 = 2 months
-    ~500k records
-
-select *
-FROM AccountSheetReport(
-    '2018-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY AccountValue, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:29:50] [00000] [2020-02-13 11:29:49.129183](0s) [Δ=0s]: start
-[2020-02-13 13:29:51] [00000] [2020-02-13 11:29:49.142257](0s) [Δ=0s]: created empty temporary table
-[2020-02-13 13:30:09] [00000] [2020-02-13 11:30:08.217192](19s) [Δ=19s]: inserted beginningBalance: 155 records
-[2020-02-13 13:30:14] [00000] [2020-02-13 11:30:12.691999](24s) [Δ=5s]: inserted:553237 fact_acct
-[2020-02-13 13:30:34] [00000] [2020-02-13 11:30:32.451129](43s) [Δ=19s]: finished calculating rolling sum
-[2020-02-13 13:30:37] Execution: 47 s
-
-
-=====
-If you have any other ideas to make this faster, please DO tell me!!
-I have tried creating indexes just before creating the rolling sum, but they have only slowed the processing (3min -> 4 min or even more)
-
-CREATE INDEX ON TMP_AccountSheetReport (fact_acct_id);
-CREATE INDEX ON TMP_AccountSheetReport (account_id);
-
-
-
-# How to check the results of the report?
-
-- for account_id: 1002995 (== value = 20010 in c_element value)
-these 2 queries should return the same ending balance.
-
-SELECT *
-FROM AccountSheetReport(
-        '2020-02-01'::date,
-        '2020-02-02'::date,
-        1000000,
-        1000000,
-        (SELECT c_elementvalue_id FROM c_elementvalue WHERE value = '20010')
-    )
-ORDER BY AccountValue, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-SELECT *
-FROM
-    de_metas_acct.acctBalanceToDate((SELECT c_elementvalue_id FROM c_elementvalue WHERE value = '20010'),
-                                    1000000,
-                                    '2020-02-02'::date,
-                                    1000000,
-                                    'N',
-                                    'N')
-;
-*/
