@@ -24,7 +24,7 @@ $$
 SELECT COALESCE(dt_trl.printname, dt.PrintName)                                             AS PrintName,
        COALESCE(doc.DocumentNo, 'ERROR')                                                    AS DocumentNo,
        doc.DocumentDate,
-       c.iso_code                                                                           AS currency,
+       c.cursymbol                                                                          AS currency,
        doc.GrandTotal,
        doc.PaidAmt                                                                          AS paidamt,
        doc.GrandTotal - doc.PaidAmt                                                         AS openamt,
