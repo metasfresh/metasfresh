@@ -28,3 +28,17 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(952)
 ;
 
+-- Name: C_Invoice C_PaySelection Invoices Not paid
+-- 2024-11-21T10:24:38.548Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540696,'C_Invoice.IsPaid=''N''',TO_TIMESTAMP('2024-11-21 12:24:38.379','YYYY-MM-DD HH24:MI:SS.US'),100,'U','Y','C_Invoice C_PaySelection Invoices Not paid','S',TO_TIMESTAMP('2024-11-21 12:24:38.379','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Name: C_Invoice C_PaySelection Invoices Not paid
+-- 2024-11-21T10:25:13.812Z
+DELETE FROM AD_Val_Rule WHERE AD_Val_Rule_ID=540696
+;
+
+-- 2024-11-21T10:25:17.732Z
+INSERT INTO AD_Val_Rule_Included (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,AD_Val_Rule_Included_ID,Created,CreatedBy,Included_Val_Rule_ID,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540262,540042,TO_TIMESTAMP('2024-11-21 12:25:17.61','YYYY-MM-DD HH24:MI:SS.US'),100,146,'Y',0,TO_TIMESTAMP('2024-11-21 12:25:17.61','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
