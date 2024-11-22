@@ -27,6 +27,7 @@ public class AttributesIncludedTabDataField
 	@Nullable LocalDate valueDate;
 	@Nullable AttributeValueId valueItemId;
 
+	@SuppressWarnings("unused")
 	public static class AttributesIncludedTabDataFieldBuilder
 	{
 		AttributesIncludedTabDataFieldBuilder clearValues()

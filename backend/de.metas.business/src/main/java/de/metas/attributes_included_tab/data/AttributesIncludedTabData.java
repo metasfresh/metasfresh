@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -55,11 +54,5 @@ public class AttributesIncludedTabData
 	{
 		final AttributesIncludedTabDataField field = fields.get(attributeId);
 		return field != null ? field.getValueDate() : null;
-	}
-
-	public AttributeValueId getValueAsAttributeValueId(final AttributeId attributeId)
-	{
-		final AttributesIncludedTabDataField field = fields.get(attributeId);
-		return field != null ? field.getValueItemId() : null;
 	}
 }
