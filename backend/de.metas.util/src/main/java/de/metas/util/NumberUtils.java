@@ -22,7 +22,6 @@ package de.metas.util;
  * #L%
  */
 
-import de.metas.common.util.Constants;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -31,7 +30,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -156,7 +154,7 @@ public final class NumberUtils
 			@Nullable final BigDecimal defaultValue,
 			final boolean failIfUnparsable)
 	{
-		if (Constants.NULL.equals(Objects.toString(value, Constants.NULL))) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
+		if (value == null) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
 		{
 			return defaultValue;
 		}
