@@ -70,7 +70,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_S0316_010 | ol_1_S0316_010            | N             |
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0316_010                  | D            | true                | false       |
 
@@ -159,7 +159,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_11212023_4 | ol_1_11212023_4           | N             |
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_11212023_4                 | D            | true                | false       |
 
@@ -381,7 +381,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_S0316_020 | ol_1_S0316_020            | N             |
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0316_020                  | D            | true                | false       |
 
@@ -546,7 +546,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'o_1_S0316_030'
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0316_030                  | PD           | true                | false       |
 
@@ -719,7 +719,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'o_1_11212023_2'
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_11212023_2                 | PD           | true                | false       |
 
@@ -1081,7 +1081,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'o_1_S0316_040'
 
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0316_040                  | PD           | true                | false       |
 

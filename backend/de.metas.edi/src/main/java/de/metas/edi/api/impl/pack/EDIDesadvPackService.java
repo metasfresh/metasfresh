@@ -196,7 +196,7 @@ public class EDIDesadvPackService
 					packLineSequence);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
-
+		
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
 			createPackUsingJustInOutLine(
@@ -256,9 +256,12 @@ public class EDIDesadvPackService
 					productId,
 					qtyToAdd.getUOMQtyNotNull().getUomId());
 
+			// Note need to use the StockQty because lutuConfigurationInStockUOM is also in stock-UOM. 
+			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
 			requiredLUCount = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
 					lutuConfigurationInStockUOM,
-					qtyToAdd.getUOMQtyNotNull());
+					qtyToAdd.getStockQty() 
+			);
 		}
 
 		final Quantity qtyCUsPerTUInStockUOM;
