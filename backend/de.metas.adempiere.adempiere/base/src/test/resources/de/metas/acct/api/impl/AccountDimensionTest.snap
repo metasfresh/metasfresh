@@ -1,22 +1,36 @@
 de.metas.acct.api.impl.AccountDimensionTest.testAccountDimension_setNullValues=[
   {
-    "acctSchemaId": 1,
     "segmentValues": {
-      "Client": 1000000,
-      "Organization": 1000000,
-      "Account": 1
-    }
-  }
-]
-
-
-de.metas.acct.api.impl.AccountDimensionTest.testAccountDimension_valuesNotSet=[
-  {
-    "acctSchemaId": 1,
-    "segmentValues": {
-      "Client": 1000000,
-      "Organization": 1000000,
-      "Account": 1
+      "Client": -1,
+      "Organization": -1,
+      "Account": -1,
+      "SubAccount": -1,
+      "Product": -1,
+      "BPartner": -1,
+      "OrgTrx": -1,
+      "LocationFrom": -1,
+      "LocationTo": -1,
+      "SalesRegion": -1,
+      "Project": -1,
+      "Campaign": -1,
+      "Activity": -1,
+      "UserList1": -1,
+      "UserList2": -1,
+      "UserElement1": -1,
+      "UserElement2": -1,
+      "UserElementString1": "",
+      "UserElementString2": "",
+      "UserElementString3": "",
+      "UserElementString4": "",
+      "UserElementString5": "",
+      "UserElementString6": "",
+      "UserElementString7": "",
+      "UserElementNumber1": "",
+      "UserElementNumber2": "",
+      "SalesOrder": -1,
+      "SectionCode": -1,
+      "HarvestingCalendar": -1,
+      "HarvestingYear": -1
     }
   }
 ]
