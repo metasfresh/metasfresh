@@ -224,7 +224,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020       | newCreatedCU_S0317_020    |
+      | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020           | newCreatedCU_S0317_020        |
 
     And after not more than 30s, M_HUs should have
       | M_HU_ID.Identifier  | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -388,8 +388,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       ## set catch-weight values! note that they exceed the weight to be expected from the C_UOM_Conversion
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
-      | s_s_1_S0317_030                  | 1.10                       |
-      | s_s_2_S0317_030                  | 0.51                       |
+      | s_s_1_S0317_030                  | 1.10                           |
+      | s_s_2_S0317_030                  | 0.51                           |
 
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
@@ -411,10 +411,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | shipmentLine_2_S0317_030  | s_1_S0317_030         | p_1_S0317_030           | 1           | true      | ol_2_S0317_030                |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
-      | p_1_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 10       |
-      | p_2_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 20       |
-      | p_3_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 30       |
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
+      | p_1_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 10        |
+      | p_2_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 20        |
+      | p_3_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 30        |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
