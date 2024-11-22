@@ -26,7 +26,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.common.util.Constants;
 import de.metas.common.util.StringUtils;
 import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
