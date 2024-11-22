@@ -26,17 +26,15 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
-import de.metas.common.util.Constants;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static de.metas.common.util.Constants.NULL_REPO_ID;
 
 @ExtendWith(SnapshotExtension.class)
 public class AccountDimensionTest
 {
     private static final int ZERO = 0;
+    private static final int NULL_REPO_ID = -1;
 
     private static final ImmutableSet<AcctSegmentType> INT_SEGMENTS = ImmutableSet.of(
             AcctSegmentType.Client,
@@ -153,7 +151,7 @@ public class AccountDimensionTest
         Assertions.assertThat(accountDimension.getHarvesting_Year_ID()).isEqualTo(NULL_REPO_ID);
 
         ALL_SEGMENTS.forEach(acctSegmentType -> assertSegmentValueSet(accountDimension, acctSegmentType));
-        NULLABLE_SEGMENTS.forEach(acctSegmentType -> assertSegmentValueNullConstant(accountDimension, acctSegmentType));
+        NULLABLE_SEGMENTS.forEach(acctSegmentType -> assertSegmentValueEmptyString(accountDimension, acctSegmentType));
         INT_SEGMENTS.forEach(acctSegmentType -> assertSegmentValueNullRepoId(accountDimension, acctSegmentType));
     }
 
@@ -167,9 +165,9 @@ public class AccountDimensionTest
         Assertions.assertThat(accountDimension.getSegmentValue(acctSegmentType)).as(String.valueOf(acctSegmentType)).isEqualTo(NULL_REPO_ID);
     }
 
-    private void assertSegmentValueNullConstant(final AccountDimension accountDimension, final AcctSegmentType acctSegmentType)
+    private void assertSegmentValueEmptyString(final AccountDimension accountDimension, final AcctSegmentType acctSegmentType)
     {
-        Assertions.assertThat(accountDimension.getSegmentValue(acctSegmentType)).as(String.valueOf(acctSegmentType)).isEqualTo(Constants.NULL);
+        Assertions.assertThat(accountDimension.getSegmentValue(acctSegmentType)).as(String.valueOf(acctSegmentType)).isEqualTo("");
     }
 
     @Test

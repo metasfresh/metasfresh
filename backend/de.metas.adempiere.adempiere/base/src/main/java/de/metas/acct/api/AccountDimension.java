@@ -25,7 +25,6 @@ package de.metas.acct.api;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
-import de.metas.common.util.Constants;
 import de.metas.common.util.StringUtils;
 import de.metas.util.NumberUtils;
 import lombok.Getter;
@@ -277,7 +276,7 @@ public final class AccountDimension
 			else
 			{
 				final String stringValue = StringUtils.asStringAndTrimBlankToNull(value);
-                segmentValues.put(segmentType, Objects.requireNonNullElse(stringValue, Constants.NULL));
+                segmentValues.put(segmentType, Objects.requireNonNullElse(stringValue, ""));
 			}
 
 			return this;
