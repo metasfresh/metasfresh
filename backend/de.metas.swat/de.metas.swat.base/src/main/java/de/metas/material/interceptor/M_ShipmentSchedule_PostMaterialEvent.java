@@ -88,14 +88,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final boolean nothingActuallyChanged = //
-				event.getOrderedQuantityDelta().signum() == 0
-						&& event.getReservedQuantityDelta().signum() == 0;
-		if (nothingActuallyChanged)
-		{
-			return;
-		}
-
 		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
 
@@ -274,12 +266,12 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.quantity(orderedQuantity.subtract(getActualDeliveredQty(shipmentSchedule)))
+				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
 				.build();
 	}
 
 	@NonNull
-	private BigDecimal getActualDeliveredQty(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private BigDecimal getDeliveredQtyFromHUs(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPicked = shipmentScheduleAllocDAO
 				.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
