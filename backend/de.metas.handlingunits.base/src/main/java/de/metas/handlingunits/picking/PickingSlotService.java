@@ -55,7 +55,7 @@ public class PickingSlotService
 	 */
 	public boolean releasePickingSlot(@NonNull final ReleasePickingSlotRequest request)
 	{
-		final boolean clearedAllPickingJobs = pickingJobService.clearAssignmentsForSlot(request.getPickingSlotId(), request.isAbortOngoingPickingJobs());
+		final boolean clearedAllPickingJobs = pickingJobService.clearAssignmentsForSlot(request.getPickingSlotId(), request.isForceRemoveForOngoingJobs());
 		if (!clearedAllPickingJobs)
 		{
 			throw new AdempiereException(ONGOING_PICKING_JOBS_ERR_MSG).markAsUserValidationError();
