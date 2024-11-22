@@ -163,6 +163,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsHidePriceAndAmountOnPrint;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInEffect;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
@@ -838,6 +839,12 @@ public class C_Invoice_Candidate_StepDef
 				if (netAmtInvoiced != null)
 				{
 					softly.assertThat(updatedInvoiceCandidate.getNetAmtInvoiced()).as(COLUMNNAME_NetAmtInvoiced).isEqualTo(netAmtInvoiced);
+				}
+
+				final Boolean isHidePriceAndAmountOnPrint = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsHidePriceAndAmountOnPrint);
+				if (isHidePriceAndAmountOnPrint != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
 				}
 
 				softly.assertAll();

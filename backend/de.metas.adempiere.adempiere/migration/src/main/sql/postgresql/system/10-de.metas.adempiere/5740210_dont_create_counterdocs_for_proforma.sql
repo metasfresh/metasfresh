@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.migration-sql
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,26 +20,10 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing;
+-- 2024-11-20T12:56:27.695Z
+UPDATE C_DocType SET IsCreateCounter='N',Updated=TO_TIMESTAMP('2024-11-20 13:56:27.695','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541128
+;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.contracts.modular.log.ModularContractLogEntryId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Builder
-@Value
-public class ComputingResponse
-{
-	@NonNull Quantity qty;
-	@NonNull ProductPrice price;
-	@Nullable InvoiceCandidateId invoiceCandidateId;
-	@NonNull ImmutableSet<ModularContractLogEntryId> ids;
-	boolean hidePriceAndAmountOnPrint;
-}
+-- 2024-11-20T12:56:54.579Z
+UPDATE C_DocType SET IsCreateCounter='N',Updated=TO_TIMESTAMP('2024-11-20 13:56:54.579','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541113
+;

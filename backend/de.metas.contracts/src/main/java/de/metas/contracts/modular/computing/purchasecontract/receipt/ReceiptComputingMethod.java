@@ -166,6 +166,7 @@ public class ReceiptComputingMethod extends AbstractComputingMethodHandler
 						.uomId(stockUOMId)
 						.build())
 				.qty(computingMethodService.getQtySum(logs, stockUOMId))
+				.hidePriceAndAmountOnPrint(true)
 				.build();
 	}
 

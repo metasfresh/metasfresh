@@ -27,8 +27,6 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -151,6 +149,7 @@ public final class NumberUtils
 		return asBigDecimal(value, defaultValue, failIfUnparsable);
 	}
 
+	@Nullable
 	private static BigDecimal asBigDecimal(
 			@Nullable final Object value,
 			@Nullable final BigDecimal defaultValue,

@@ -162,10 +162,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private boolean documentDetailsLoaded = false;
 	private DocBaseAndSubType _docBaseAndSubType = null;
 	private final DocStatus _docStatus;
-	private String m_DocumentNo = null;
-	private String m_Description = null;
-	private GLCategoryId m_GL_Category_ID;
-	private MPeriod m_period = null;
+    @Nullable private String m_DocumentNo = null;
+    @Nullable private String m_Description = null;
+    @Nullable private GLCategoryId m_GL_Category_ID;
+    @Nullable private MPeriod m_period = null;
 	private int m_C_Period_ID = 0;
 	@Nullable private final LocationId locationFromId = null;
 	@Nullable private final LocationId locationToId = null;
@@ -1040,6 +1040,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return _docStatus;
 	}
 
+	@NonNull
 	protected final String getDescription()
 	{
 		if (m_Description == null)
@@ -1053,6 +1054,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
+	@Nullable
 	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
 
 	public final Optional<CurrencyId> getCurrencyIdOptional()
@@ -1064,7 +1066,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return _currencyId;
 	}
 
-	protected final void setC_Currency_ID(final CurrencyId currencyId)
+	protected final void setC_Currency_ID(@Nullable final CurrencyId currencyId)
 	{
 		_currencyId = Optional.ofNullable(currencyId);
 		_currencyPrecision = null;
@@ -1085,6 +1087,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_MultiCurrency = true;
 	}
 
+	@Nullable
 	protected final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
@@ -1106,6 +1109,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				.orElse(ICurrencyDAO.DEFAULT_PRECISION);
 	}
 
+	@Nullable
 	protected final GLCategoryId getGL_Category_ID()
 	{
 		return m_GL_Category_ID;
@@ -1227,6 +1231,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setBPBankAccountId(BankAccountId)}, or attempts to get it from our <code>p_po</code> (document record).
 	 */
+	@Nullable
 	final BankAccountId getBPBankAccountId()
 	{
 		Optional<BankAccountId> bankAccountId = _bankAccountId;
@@ -1260,11 +1265,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return bankAccount;
 	}
 
+    @Nullable
 	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
 
+	@Nullable
 	protected final BPartnerId getBPartnerId()
 	{
 		if (_bpartnerId == null)
@@ -1274,7 +1281,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return _bpartnerId.orElse(null);
 	}
 
-	protected final void setBPartnerId(final BPartnerId bpartnerId)
+	protected final void setBPartnerId(@Nullable final BPartnerId bpartnerId)
 	{
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
@@ -1284,6 +1291,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("C_BPartner_Location_ID");
 	}
 
+	@Nullable
 	protected final BPartnerLocationId getBPartnerLocationId()
 	{
 		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
@@ -1381,6 +1389,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIdOrNull("M_SectionCode_ID", SectionCodeId::ofRepoIdOrNull);
 	}
 
+	@Nullable
 	public BPartnerId getBPartnerId2() {return getValueAsIdOrNull("C_BPartner2_ID", BPartnerId::ofRepoIdOrNull);}
 
 	protected final int getValueAsIntOrZero(final String columnName) {return getDocModel().getValueAsIntOrZero(columnName);}

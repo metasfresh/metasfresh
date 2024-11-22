@@ -718,6 +718,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setInvoicingGroup(cand.getInvoicingGroup());
 				invoiceLine.setUserElementNumber1(cand.getUserElementNumber1());
 				invoiceLine.setUserElementNumber2(cand.getUserElementNumber2());
+				invoiceLine.setIsHidePriceAndAmountOnPrint(cand.isHidePriceAndAmountOnPrint());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)
