@@ -120,9 +120,7 @@ public class AccountDAO implements IAccountDAO
 
 				else
 				{
-					final boolean mandatorySegment = segmentType == AcctSegmentType.Client
-							|| segmentType == AcctSegmentType.Organization
-							|| segmentType == AcctSegmentType.Account;
+					final boolean mandatorySegment = segmentType.isMandatoryQuerySegment();
 					if (mandatorySegment)
 					{
 						queryBuilder.addEqualsFilter(columnName, valueInt);
