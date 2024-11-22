@@ -163,7 +163,7 @@ public class DDOrderLowLevelService
 
 		try
 		{
-			return productPlanningDAO.findPlant(
+			return productPlanningDAO.findPlantId(
 					adOrgId,
 					warehouseFrom,
 					ddOrderLine.getM_Product_ID(),

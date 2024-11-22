@@ -25,11 +25,10 @@ package org.compiere.model;
  * #L%
  */
 
+import de.metas.util.Check;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import de.metas.util.Check;
 
 /**
  * AD Index Column
@@ -95,7 +94,7 @@ public class MIndexColumn extends X_AD_Index_Column {
 		final Object[] params = { indexTable.get_ID(), column.get_ID() };
 
 		MIndexColumn indexColumn = new Query(ctx, Table_Name,
-				whereClause, trxName).setParameters(params).firstOnly();
+				whereClause, trxName).setParameters(params).firstOnly(MIndexColumn.class);
 
 		if (indexColumn == null) {
 			

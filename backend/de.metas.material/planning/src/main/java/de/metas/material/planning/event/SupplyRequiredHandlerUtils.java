@@ -1,8 +1,14 @@
 package de.metas.material.planning.event;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -12,6 +18,7 @@ import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 
 /*
  * #%L
@@ -38,6 +45,7 @@ import java.math.BigDecimal;
 @UtilityClass
 public class SupplyRequiredHandlerUtils
 {
+	private final MainDataRequestHandler mainDataRequestHandler = new MainDataRequestHandler();
 
 	@NonNull
 	public static MaterialRequest mkRequest(
@@ -65,4 +73,27 @@ public class SupplyRequiredHandlerUtils
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		return Quantity.of(qtyToSupplyBD, uom);
 	}
+
+	public void updateQtySupplyRequired(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final BigDecimal qtySupplyRequiredDelta)
+	{
+		if (qtySupplyRequiredDelta.signum() == 0)
+		{
+			return;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId orgTimezone = orgDAO.getTimeZone(eventDescriptor.getOrgId());
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgTimezone);
+
+		mainDataRequestHandler.handleDataUpdateRequest(
+				UpdateMainDataRequest.builder()
+						.identifier(mainDataRecordIdentifier)
+						.qtySupplyRequired(qtySupplyRequiredDelta)
+						.build()
+		);
+	}
+
 }

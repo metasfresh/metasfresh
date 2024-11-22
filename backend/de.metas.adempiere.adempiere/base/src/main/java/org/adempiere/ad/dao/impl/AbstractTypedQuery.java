@@ -37,6 +37,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,13 @@ import java.util.function.IntFunction;
  */
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
+	@Nullable
+	@Override
+	public T firstOnly() throws DBException
+	{
+		return firstOnly(getModelClass());
+	}
+
 	@Override
 	public final <ET extends T> ET firstOnly(final Class<ET> clazz) throws DBException
 	{
@@ -158,6 +166,12 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	public <K, ET extends T> Map<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final List<ET> list = list(modelClass);
+		return Maps.uniqueIndex(list, keyFunction::apply);
+	}
+	@Override
+	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
+	{
+		final List<T> list = list();
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
 

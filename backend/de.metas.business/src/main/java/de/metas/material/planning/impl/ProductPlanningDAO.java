@@ -184,13 +184,20 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery query)
 	{
 		return toSql(query)
-				.create()
-				.firstOptional(I_PP_Product_Planning.class)
+				.firstOptional()
 				.map(ProductPlanningDAO::fromRecord);
 	}
 
 	@Override
-	public ResourceId findPlant(
+	public Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query)
+	{
+		return toSql(query)
+				.stream()
+				.map(ProductPlanningDAO::fromRecord);
+	}
+
+	@Override
+	public ResourceId findPlantId(
 			final int orgRepoId,
 			final I_M_Warehouse warehouse,
 			final int productRepoId,
@@ -295,7 +302,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();
 	}
 

@@ -1,17 +1,5 @@
 package de.metas.banking.service.impl;
 
-import java.time.LocalDate;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.Query;
-import org.compiere.util.TimeUtil;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -26,6 +14,17 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.util.Properties;
 
 public class CashStatementBL implements ICashStatementBL
 {
@@ -83,7 +82,7 @@ public class CashStatementBL implements ICashStatementBL
 
 		I_C_BankStatement bs = new Query(ctx, I_C_BankStatement.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
-				.firstOnly();
+				.firstOnly(I_C_BankStatement.class);
 
 		if (bs != null)
 		{
