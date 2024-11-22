@@ -304,9 +304,6 @@ public class EDIDesadvPackService
 
 		StockQtyAndUOMQty remainingQty = qtyToAdd;
 
-		// About the "remainingQty.signum() > 0":
-		// although it should be fine to rely on requiredLUCount, there was a case - which I didn't manage to reproduce - 
-		// where a superflous pack with movementQty=0 was created. 
 		for (int i = 0; i < requiredLUCount; i++)
 		{
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
