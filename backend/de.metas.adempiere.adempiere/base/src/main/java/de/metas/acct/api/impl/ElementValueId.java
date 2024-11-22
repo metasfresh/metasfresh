@@ -61,7 +61,7 @@ public class ElementValueId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final ElementValueId id)
+	public static int toRepoId(@Nullable final ElementValueId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
