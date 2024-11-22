@@ -224,7 +224,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020       | newCreatedCU_S0317_020    |
+      | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020           | newCreatedCU_S0317_020        |
 
     And after not more than 30s, M_HUs should have
       | M_HU_ID.Identifier  | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -302,4 +302,128 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | %END%                                                                                                                                                                          |
       | "1","ipaSSCC18_14092022_1","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","10","0","210420","lotNumber","","","","","","","","","","","",""  |
       | "1","ipaSSCC18_14092022_2","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+
+
+  @Id:S0317_030
+  Scenario: S0317_030 - 3 Packs from 2 lines with no HU & 1 packing item - !both lines have the same product!
+  in:
+  M_HU_PI_Item_Product_ID: created in the test, with just 1 TU per LU
+  C_OrderLine-1:
+  - QtyEntered = 2COLI = 2CUs
+  C_OrderLine-2:
+  - QtyEntered = 1COLI = 1CU
+
+    Given metasfresh contains M_Products:
+      | Identifier    | OPT.X12DE355 |
+      | p_1_S0317_030 | PCE          |
+
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
+      | p_1_S0317_030           | PCE                    | KGM                  | 0.25         | true                     |
+    And metasfresh contains M_PricingSystems
+      | Identifier     |
+      | ps_1_S0317_030 |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_S0317_030 | ps_1_S0317_030     | DE                    | EUR                 | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID |
+      | plv_1_S0317_030 | pl_1_S0317_030 |
+    And metasfresh contains M_ProductPrices
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | InvoicableQtyBasedOn |
+      | pp_1_S0317_030 | plv_1_S0317_030        | p_1_S0317_030 | 10.0     | KGM               | Normal                        | CatchWeight          |
+    And metasfresh contains C_BPartners:
+      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1_S0317_030 | N        | Y              | ps_1_S0317_030     |
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
+      | endcustomer_1_S0317_030  | true                     | bPartnerDesadvRecipientGLN |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
+      | bp_1_S0317_030                   | endcustomer_1_S0317_030  | p_1_S0317_030           | 2234567890123 |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name           |
+      | pm_1_S0317_030                     | p_1_S0317_030               | name_S0317_030 |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
+      | huPackagingCode_1_S0317_030      | ISO1          | LU          |
+      | huPackagingCode_2_S0317_030      | CART          | TU          |
+    And metasfresh contains M_HU_PI:
+      | Identifier                   |
+      | huPackingLU_S0317_030        |
+      | huPackingTU_S0317_030        |
+      | huPackingVirtualPI_S0317_030 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier        | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
+      | packingVersionLU_S0317_030    | huPackingLU_S0317_030        | LU          | Y         |                                      |
+      | packingVersionTU_S0317_030    | huPackingTU_S0317_030        | TU          | Y         | huPackagingCode_2_S0317_030          |
+      | packingVersionCU_S0317_030    | huPackingVirtualPI_S0317_030 | V           | Y         |                                      |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier | OPT.M_HU_PackingMaterial_ID.Identifier |
+      | huPiItemLU_S0317_030       | packingVersionLU_S0317_030    | 1   | HU       | huPackingTU_S0317_030            |                                        |
+      | huPiItemTU_S0317_030       | packingVersionTU_S0317_030    | 0   | PM       |                                  | pm_1_S0317_030                         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.M_HU_PackagingCode_LU_Fallback_ID.Identifier | OPT.GTIN_LU_PackingMaterial_Fallback |
+      | huAuditProductTU_S0317_030         | huPiItemTU_S0317_030       | p_1_S0317_030           | 1   | 2021-01-01 | huPackagingCode_1_S0317_030                      | 1234567890123                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1_S0317_030 | true    | endcustomer_1_S0317_030  | 2021-04-17  | po_ref_@Date@   |
+
+    # Setting UOM=COLI; since the M_HU_PI_Item_Product_ID has a capacity of 10, we'll expect 20CUs resp 10CUs to be shipped.
+    # Note that both UOM and QtyItemCapacity can't be set in the UOM. They are both coming from C_OLCand, where the QtyItemCapacity may be taken from M_HU_PI_Item_Product_ID
+    # It's not ideal that we need to set it explicitly here, but otherwise we run into different problems with model-interceptors and MOrderLine.beforeSafe().
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1_S0317_030 | o_1_S0317_030         | p_1_S0317_030           | 2          | huAuditProductTU_S0317_030             | COLI                  | 1                   |
+      | ol_2_S0317_030 | o_1_S0317_030         | p_1_S0317_030           | 1          | huAuditProductTU_S0317_030             | COLI                  | 1                   |
+
+    When the order identified by o_1_S0317_030 is completed
+
+    And after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1_S0317_030 | ol_1_S0317_030            | N             |
+      | s_s_2_S0317_030 | ol_2_S0317_030            | N             |
     
+      ## set catch-weight values! note that they exceed the weight to be expected from the C_UOM_Conversion
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
+      | s_s_1_S0317_030                  | 1.10                           |
+      | s_s_2_S0317_030                  | 0.51                           |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1_S0317_030                  |
+      | s_s_2_S0317_030                  |
+
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1_S0317_030                  |
+      | s_s_2_S0317_030                  |
+
+    Then after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_1_S0317_030                  | s_1_S0317_030         |
+
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
+      | shipmentLine_1_S0317_030  | s_1_S0317_030         | p_1_S0317_030           | 2           | true      | ol_1_S0317_030                |
+      | shipmentLine_2_S0317_030  | s_1_S0317_030         | p_1_S0317_030           | 1           | true      | ol_2_S0317_030                |
+
+    And after not more than 30s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
+      | p_1_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 1         |
+      | p_2_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 2         |
+      | p_3_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 3         |
+
+    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0317_030                     | p_1_S0317_030                 | 1               | 1               | 1               | 1                   | 1         | s_1_S0317_030             | shipmentLine_1_S0317_030      | huPackagingCode_2_S0317_030             | 2234567890123               |
+      | pi_2_S0317_030                     | p_2_S0317_030                 | 1               | 1               | 1               | 1                   | 1         | s_1_S0317_030             | shipmentLine_1_S0317_030      | huPackagingCode_2_S0317_030             | 2234567890123               |
+      | pi_3_S0317_030                     | p_3_S0317_030                 | 1               | 1               | 1               | 1                   | 1         | s_1_S0317_030             | shipmentLine_2_S0317_030      | huPackagingCode_2_S0317_030             | 2234567890123               |
+
+    And the shipment identified by s_1_S0317_030 is reversed
+
+    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+
+    And after not more than 30s, there are no records in EDI_Desadv_Pack
