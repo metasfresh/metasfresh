@@ -302,6 +302,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(C_CurrencyTo_ID);
 		}
 
+		// Only for Pay Selection's Organization (if set)
+		if (paySelection.getAD_Org_ID() > 0)
+		{
+			sql += " AND i.AD_Org_ID=? ";
+			sqlParams.add(paySelection.getAD_Org_ID());
+		}
+
 		// Only those invoices from our tenant (guard, shall not happen)
 		{
 			sql += " AND i.AD_Client_ID=?";
