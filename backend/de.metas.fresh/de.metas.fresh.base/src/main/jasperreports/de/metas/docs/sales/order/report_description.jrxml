@@ -90,8 +90,8 @@
 	<field name="validuntil" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="validuntil"/>
 	</field>
-	<field name="version" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="version"/>
+	<field name="versionno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="versionno"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -378,7 +378,7 @@
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-5" x="323" y="130" width="89" height="13" uuid="463b7bee-7f09-434f-995a-0a3c09637eac">
-					<printWhenExpression><![CDATA[new Boolean($F{version} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{versionno} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -390,21 +390,6 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{VersionNo}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-3" x="412" y="130" width="133" height="13" uuid="c82a0069-342f-4c23-ac9b-f1c8a1f7a2ee">
-					<printWhenExpression><![CDATA[new Boolean($R{show_datepromised}.equals( "Y" ) && $F{datepromised} != null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{version}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-3" x="412" y="117" width="133" height="13" uuid="7ffe2203-9be4-46c0-ba8a-3d4ebd140b25"/>
@@ -418,6 +403,19 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{validuntil}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-3" x="412" y="130" width="133" height="13" uuid="00500998-7c2b-4a03-a14a-6646a99d3e1f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{versionno}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

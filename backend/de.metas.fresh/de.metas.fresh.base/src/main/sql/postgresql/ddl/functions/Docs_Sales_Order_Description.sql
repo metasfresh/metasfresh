@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 offer_documentno  character varying,
                 deliverytoaddress character varying,
                 validuntil        timestamp WITH TIME ZONE,
-                version           character varying
+                versionno           character varying
             )
     STABLE
     LANGUAGE sql
@@ -81,7 +81,7 @@ SELECT o.description                             AS description,
                THEN o.validuntil
        END                                       AS validuntil,
        CASE
-           WHEN o.versionno = 'ON'
+           WHEN o.OrderType = 'ON'
                THEN o.versionno
        END                                       AS versionno
 FROM C_Order o
