@@ -34,11 +34,6 @@ public class AttributeConstants
 	 */
 	public final int M_AttributeSetInstance_ID_None = AttributeSetInstanceId.NONE.getRepoId();
 
-	/**
-	 * No Attribute Set (record which actually exists in M_AttributeSet table)
-	 */
-	public final int M_AttributeSet_ID_None = 0;
-
 	public final AttributeCode ATTR_TE = AttributeCode.ofString("HU_TE");
 	public final AttributeCode ATTR_DateReceived = AttributeCode.ofString("HU_DateReceived");
 	public final AttributeCode ATTR_SecurPharmScannedStatus = AttributeCode.ofString("HU_Scanned");

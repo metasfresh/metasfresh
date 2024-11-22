@@ -52,6 +52,8 @@ public interface IAttributesBL extends ISingletonService
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
+
 	/**
 	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
 	 *

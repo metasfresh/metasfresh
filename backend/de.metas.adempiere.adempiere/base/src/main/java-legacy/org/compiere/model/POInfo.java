@@ -2,6 +2,7 @@ package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.persistence.modelgen.TableInfo;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,9 +85,21 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	@Nullable
-	public static POInfo getPOInfo(final String tableName)
+	public static POInfo getPOInfo(@NonNull final String tableName)
 	{
 		return getPOInfoMap().getByTableNameOrNull(tableName);
+	}
+
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
+	{
+		return getPOInfoMap().getByTableName(tableName);
+	}
+	
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final AdTableId adTableId)
+	{
+		return getPOInfoMap().getByTableId(adTableId);
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -132,6 +146,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Element.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Ref_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Val_Rule.Table_Name)
 			.build();
 
@@ -1398,11 +1413,38 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableId.get(tableId);
 		}
+		
+		@NonNull
+		public POInfo getByTableId(@NonNull final AdTableId tableId)
+		{
+			final POInfo poInfo = getByTableIdOrNull(tableId);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableId);
+			}
+			return poInfo;
+		}
 
 		@Nullable
 		public POInfo getByTableNameOrNull(@NonNull final String tableName)
 		{
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
+
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
+		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
+		public ImmutableCollection<POInfo> toCollection() {return byTableId.values();}
 	}
 }   // POInfo

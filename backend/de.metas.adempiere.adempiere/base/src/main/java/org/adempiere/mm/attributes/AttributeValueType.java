@@ -90,4 +90,6 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 			}
 		}
 	}
+
+	public boolean isList() {return LIST.equals(this);}
 }

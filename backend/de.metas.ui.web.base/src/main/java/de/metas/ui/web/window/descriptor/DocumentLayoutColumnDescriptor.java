@@ -126,7 +126,7 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
-		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
 		{
 			elementGroupsBuilders.addAll(elementGroupBuilders);
 			return this;
