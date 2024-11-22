@@ -29,10 +29,10 @@ de.metas.acct.api.impl.AccountDimensionTest.testAccountDimension_setNullValues=[
       "UserElementNumber2": "",
       "SalesOrder": -1,
       "SectionCode": -1,
-      "HarvestingCalendar": -1,
-      "HarvestingYear": -1,
       "UserElementDate1": "",
-      "UserElementDate2": ""
+      "UserElementDate2": "",
+      "HarvestingCalendar": -1,
+      "HarvestingYear": -1
     }
   }
 ]
