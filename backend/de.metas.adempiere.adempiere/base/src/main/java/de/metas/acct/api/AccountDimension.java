@@ -26,6 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.common.util.Constants;
 import de.metas.common.util.StringUtils;
 import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -75,6 +77,7 @@ public final class AccountDimension
 				.toString();
 	}
 
+	@Nullable
 	public Object getSegmentValue(final AcctSegmentType segmentType)
 	{
 		return segmentValues.get(segmentType);
@@ -302,10 +305,7 @@ public final class AccountDimension
 			else
 			{
 				final String stringValue = StringUtils.asStringAndTrimBlankToNull(value);
-				if(stringValue != null)
-				{
-					segmentValues.put(segmentType, stringValue);
-				}
+                segmentValues.put(segmentType, Objects.requireNonNullElse(stringValue, Constants.NULL));
 			}
 
 			return this;
@@ -370,7 +370,7 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_ElementValue_ID(final ElementValueId C_ElementValue_ID)
+		public Builder setC_ElementValue_ID(@Nullable final ElementValueId C_ElementValue_ID)
 		{
 			setSegmentValue(AcctSegmentType.Account, ElementValueId.toRepoId(C_ElementValue_ID));
 			return this;
@@ -412,7 +412,7 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_SalesRegion_ID(final SalesRegionId C_SalesRegion_ID)
+		public Builder setC_SalesRegion_ID(@Nullable final SalesRegionId C_SalesRegion_ID)
 		{
 			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
 			return this;
@@ -514,13 +514,13 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setUserElementDate1(final Instant userElementDate1)
+		public Builder setUserElementDate1(@Nullable final Instant userElementDate1)
 		{
 			setSegmentValue(AcctSegmentType.UserElementDate1, userElementDate1);
 			return this;
 		}
 
-		public Builder setUserElementDate2(final Instant userElementDate2)
+		public Builder setUserElementDate2(@Nullable final Instant userElementDate2)
 		{
 			setSegmentValue(AcctSegmentType.UserElementDate2, userElementDate2);
 			return this;

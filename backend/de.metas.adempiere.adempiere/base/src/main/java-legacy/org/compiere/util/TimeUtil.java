@@ -3,6 +3,7 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -1966,7 +1967,7 @@ public class TimeUtil
 		{
 			return null;
 		}
-		else if (String.valueOf(obj).equals(String.valueOf((Object)null)))
+		else if (StringUtils.asStringAndTrimBlankToNull(obj) == null)
 		{
 			return null;
 		}
@@ -1986,20 +1987,17 @@ public class TimeUtil
 		{
 			return ((Date)obj).toInstant();
 		}
-		else if (obj instanceof LocalDateTime)
+		else if (obj instanceof final LocalDateTime localDateTime)
 		{
-			final LocalDateTime localDateTime = (LocalDateTime)obj;
-			return localDateTime.atZone(zoneId).toInstant();
+            return localDateTime.atZone(zoneId).toInstant();
 		}
-		else if (obj instanceof LocalDate)
+		else if (obj instanceof final LocalDate localDate)
 		{
-			final LocalDate localDate = (LocalDate)obj;
-			return localDate.atStartOfDay(zoneId).toInstant();
+            return localDate.atStartOfDay(zoneId).toInstant();
 		}
-		else if (obj instanceof LocalTime)
+		else if (obj instanceof final LocalTime localTime)
 		{
-			final LocalTime localTime = (LocalTime)obj;
-			return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
+            return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof XMLGregorianCalendar)
 		{
@@ -2020,10 +2018,6 @@ public class TimeUtil
 		{
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
-		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else
 		{
