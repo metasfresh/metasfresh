@@ -30,6 +30,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @JsonDeserialize(builder = JsonBPartnerAttachment.JsonBPartnerAttachmentBuilder.class)
 public class JsonBPartnerAttachment
@@ -42,7 +44,7 @@ public class JsonBPartnerAttachment
 	@JsonProperty("METASFRESHID")
 	String metasfreshId;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("ANHANGDATEI")
 	String attachmentFilePath;
 
@@ -50,7 +52,7 @@ public class JsonBPartnerAttachment
 	public JsonBPartnerAttachment(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
 			@JsonProperty("METASFRESHID") final @NonNull String metasfreshId,
-			@JsonProperty("ANHANGDATEI") final @NonNull String attachmentFilePath)
+			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath)
 	{
 		this.flag = flag;
 		this.metasfreshId = metasfreshId;
