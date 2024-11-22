@@ -33,6 +33,7 @@ import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -59,15 +60,20 @@ public class BPartnerAttachmentsRouteBuilder extends RouteBuilder
 				.routeId(ATTACH_FILE_TO_BPARTNER_ROUTE_ID)
 				.log("Route invoked!")
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonBPartnerAttachment.class))
-				.process(this::buildAndAttachContext)
+				.choice()
+				.when(simple("${body.getAttachmentFilePath} != null"))
+						.process(this::buildAndAttachContext)
 
-				.process(RetrieveExternalSystemRequestBuilder::buildAndAttachRetrieveExternalSystemRequest)
-				.to("{{" + ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO + "}}")
-				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonExternalSystemInfo.class))
-				.process(this::processExternalSystemInfo)
+						.process(RetrieveExternalSystemRequestBuilder::buildAndAttachRetrieveExternalSystemRequest)
+						.to("{{" + ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO + "}}")
+						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonExternalSystemInfo.class))
+						.process(this::processExternalSystemInfo)
 
-				.process(new BPartnerAttachmentsProcessor()).id(ATTACH_FILE_TO_BPARTNER_PROCESSOR_ID)
-				.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
+						.process(new BPartnerAttachmentsProcessor()).id(ATTACH_FILE_TO_BPARTNER_PROCESSOR_ID)
+						.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
+				.otherwise()
+					.log(LoggingLevel.INFO, "Nothing to do ! ANHANGDATEI is missing !")
+				.endChoice();
 	}
 
 	private void buildAndAttachContext(@NonNull final Exchange exchange)
