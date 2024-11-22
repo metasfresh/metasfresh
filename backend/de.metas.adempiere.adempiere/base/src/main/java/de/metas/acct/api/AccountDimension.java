@@ -305,7 +305,7 @@ public final class AccountDimension
 			else
 			{
 				final String stringValue = StringUtils.asStringAndTrimBlankToNull(value);
-                segmentValues.put(segmentType, Objects.requireNonNullElse(stringValue, Constants.NULL));
+                segmentValues.put(segmentType, Objects.requireNonNullElse(stringValue, ""));
 			}
 
 			return this;

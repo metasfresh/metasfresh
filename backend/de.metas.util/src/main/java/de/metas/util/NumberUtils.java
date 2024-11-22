@@ -149,6 +149,7 @@ public final class NumberUtils
 		return asBigDecimal(value, defaultValue, failIfUnparsable);
 	}
 
+	@Nullable
 	private static BigDecimal asBigDecimal(
 			@Nullable final Object value,
 			@Nullable final BigDecimal defaultValue,
