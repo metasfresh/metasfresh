@@ -1,17 +1,16 @@
 package de.metas.ui.web.window.descriptor;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -37,13 +36,13 @@ import lombok.NonNull;
 
 public class DocumentLayoutColumnDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final String internalName;
-	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+	@Getter private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
@@ -59,11 +58,6 @@ public class DocumentLayoutColumnDescriptor
 				.add("internalName", internalName)
 				.add("elementGroups", elementGroups.isEmpty() ? null : elementGroups)
 				.toString();
-	}
-
-	public List<DocumentLayoutElementGroupDescriptor> getElementGroups()
-	{
-		return elementGroups;
 	}
 
 	public boolean hasElementGroups()
@@ -104,8 +98,8 @@ public class DocumentLayoutColumnDescriptor
 		{
 			return elementGroupsBuilders
 					.stream()
-					.map(elementGroupBuilder -> elementGroupBuilder.build())
-					.filter(elementGroup -> checkValid(elementGroup))
+					.map(DocumentLayoutElementGroupDescriptor.Builder::build)
+					.filter(this::checkValid)
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
@@ -126,7 +120,7 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
-		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
 		{
 			elementGroupsBuilders.addAll(elementGroupBuilders);
 			return this;

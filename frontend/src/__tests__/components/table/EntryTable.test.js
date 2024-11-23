@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
@@ -15,7 +15,7 @@ import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -26,8 +26,6 @@ const createStore = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 const props = {

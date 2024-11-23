@@ -1,10 +1,12 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
@@ -33,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -107,30 +110,63 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		if (attributeSetId.isNone())
 		{
-			return AttributeSetAttributeIdsList.EMPTY;
+			return AttributeSetAttributeIdsList.empty(attributeSetId);
 		}
 
 		return attributeSetAttributeIdsListsCache.getOrLoad(attributeSetId, this::retrieveAttributeIdsByAttributeSetId);
 	}
 
+	@Override
+	public MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull final Set<AttributeSetId> attributeSetIds)
+	{
+		if (attributeSetIds.isEmpty())
+		{
+			return MultiAttributeSetAttributeIdsList.EMPTY;
+		}
+
+		return MultiAttributeSetAttributeIdsList.of(attributeSetAttributeIdsListsCache.getAllOrLoad(attributeSetIds, this::retrieveAttributeIdsByAttributeSetIds));
+	}
+
+	@NonNull
 	private AttributeSetAttributeIdsList retrieveAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
 		{
-			return AttributeSetAttributeIdsList.EMPTY;
+			return AttributeSetAttributeIdsList.empty(attributeSetId);
 		}
 
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
+		return retrieveAttributeIdsByAttributeSetIds(ImmutableSet.of(attributeSetId)).get(attributeSetId);
+	}
+
+	@NonNull
+	private Map<AttributeSetId, AttributeSetAttributeIdsList> retrieveAttributeIdsByAttributeSetIds(@NonNull final Set<AttributeSetId> attributeSetIds)
+	{
+		if (attributeSetIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ArrayListMultimap<AttributeSetId, AttributeSetAttribute> result = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_AttributeUse.COLUMN_M_AttributeSet_ID, attributeSetId)
-				.orderBy(I_M_AttributeUse.COLUMN_SeqNo)
-				.orderBy(I_M_AttributeUse.COLUMN_M_AttributeUse_ID)
+				.addInArrayFilter(I_M_AttributeUse.COLUMN_M_AttributeSet_ID, attributeSetIds)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_SeqNo)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeUse_ID)
 				.create()
-				.list()
 				.stream()
-				.map(AttributeDAO::toAttributeSetAttribute)
-				.collect(AttributeSetAttributeIdsList.collect());
+				.collect(Multimaps.toMultimap(
+						record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID()),
+						AttributeDAO::toAttributeSetAttribute,
+						ArrayListMultimap::create));
+
+		return attributeSetIds.stream()
+				.map(attributeSetId -> AttributeSetAttributeIdsList.builder()
+						.attributeSetId(attributeSetId)
+						.list(result.get(attributeSetId))
+						.build())
+				.collect(ImmutableMap.toImmutableMap(
+						AttributeSetAttributeIdsList::getAttributeSetId,
+						list -> list));
 	}
 
 	private static AttributeSetAttribute toAttributeSetAttribute(final I_M_AttributeUse record)

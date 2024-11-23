@@ -254,6 +254,17 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
+	@NonNull
+	public DetailId getDetailIdNotNull()
+	{
+		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
+	}
+
+	public boolean hasIdFields()
+	{
+		return !idFields.isEmpty();
+	}
+
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -749,6 +760,11 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
+		}
+
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> builderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
@@ -848,6 +864,13 @@ public class DocumentEntityDescriptor
 			return _tableName;
 		}
 
+		@NonNull
+		public String getTableNameNotNull()
+		{
+			return _tableName.orElseThrow(() -> new AdempiereException("No main tablename determined"));
+		}
+
+		@Nullable
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);

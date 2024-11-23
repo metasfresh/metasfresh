@@ -404,6 +404,13 @@ export function updateGridTableData({
   };
 }
 
+export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
+  return {
+    type: types.PARTIAL_UPDATE_TABLE_DATA,
+    payload: { tableId, rowsToUpdate },
+  };
+}
+
 /*
  * @method createTabTable
  * @summary Create a new table entry for the details view when it's created,
