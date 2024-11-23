@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -64,7 +65,7 @@ public final class OrderedDocumentsList
 	}
 
 	private final ArrayList<Document> documents;
-	private final DocumentQueryOrderByList orderBys;
+	@Getter private final DocumentQueryOrderByList orderBys;
 
 	private OrderedDocumentsList(
 			@Nullable final Collection<Document> documents,
@@ -112,10 +113,5 @@ public final class OrderedDocumentsList
 	public Document get(final int index)
 	{
 		return documents.get(index);
-	}
-
-	public DocumentQueryOrderByList getOrderBys()
-	{
-		return orderBys;
 	}
 }

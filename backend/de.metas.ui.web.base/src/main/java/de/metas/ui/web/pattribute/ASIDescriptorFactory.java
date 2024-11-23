@@ -89,7 +89,7 @@ public class ASIDescriptorFactory
 		return asiDescriptorById.getOrLoad(key, () -> createASIDescriptor(request));
 	}
 
-	private static final ArrayKey createASIDescriptorCachingKey(final WebuiASIEditingInfo request)
+	private static ArrayKey createASIDescriptorCachingKey(final WebuiASIEditingInfo request)
 	{
 		return ArrayKey.builder()
 				.append(request.getContextWindowType())
@@ -120,7 +120,7 @@ public class ASIDescriptorFactory
 				.build();
 	}
 
-	private final DocumentEntityDescriptor createDocumentEntityDescriptor(
+	private DocumentEntityDescriptor createDocumentEntityDescriptor(
 			final DocumentId asiDescriptorId,
 			final String name,
 			final String description,
@@ -250,8 +250,8 @@ public class ASIDescriptorFactory
 
 		entityDescriptor.getFields()
 				.stream()
-				.map(fieldDescriptor -> createLayoutElement(fieldDescriptor))
-				.forEach(layoutElement -> layout.addElement(layoutElement));
+				.map(ASIDescriptorFactory::createLayoutElement)
+				.forEach(layout::addElement);
 
 		return layout.build();
 	}

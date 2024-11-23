@@ -1,15 +1,12 @@
 package de.metas.attributes_included_tab.data;
 
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -80,47 +77,5 @@ public class AttributesIncludedTabDataField
 	{
 		Check.assumeEquals(valueType, AttributeValueType.STRING, "Expected STRING type: {}", this);
 		return toBuilder().clearValues().valueString(valueString).build();
-	}
-
-	public AttributesIncludedTabDataField withValue(@Nullable Object valueObj)
-	{
-		String valueStringNew = null;
-		BigDecimal valueNumberNew = null;
-		LocalDate valueDateNew = null;
-		AttributeValueId valueItemIdNew = null;
-
-		switch (valueType)
-		{
-			case STRING:
-				valueStringNew = valueObj != null ? valueObj.toString() : null;
-				break;
-			case NUMBER:
-				valueNumberNew = NumberUtils.asBigDecimal(valueObj);
-				break;
-			case DATE:
-				valueDateNew = TimeUtil.asLocalDate(valueObj);
-				break;
-			case LIST:
-				// TODO is it right?!
-				valueStringNew = valueObj != null ? valueObj.toString() : null;
-				break;
-			default:
-				throw new AdempiereException("Unexpected value type: " + valueType);
-		}
-
-		if (Objects.equals(this.valueString, valueStringNew)
-				&& Objects.equals(this.valueNumber, valueNumberNew)
-				&& Objects.equals(this.valueDate, valueDateNew)
-				&& Objects.equals(this.valueItemId, valueItemIdNew))
-		{
-			return this; // no change
-		}
-
-		return toBuilder()
-				.valueString(valueStringNew)
-				.valueNumber(valueNumberNew)
-				.valueDate(valueDateNew)
-				.valueItemId(valueItemIdNew)
-				.build();
 	}
 }

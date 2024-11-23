@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -37,13 +38,13 @@ import lombok.NonNull;
 
 public class DocumentLayoutColumnDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final String internalName;
-	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+	@Getter private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
@@ -59,11 +60,6 @@ public class DocumentLayoutColumnDescriptor
 				.add("internalName", internalName)
 				.add("elementGroups", elementGroups.isEmpty() ? null : elementGroups)
 				.toString();
-	}
-
-	public List<DocumentLayoutElementGroupDescriptor> getElementGroups()
-	{
-		return elementGroups;
 	}
 
 	public boolean hasElementGroups()
@@ -104,8 +100,8 @@ public class DocumentLayoutColumnDescriptor
 		{
 			return elementGroupsBuilders
 					.stream()
-					.map(elementGroupBuilder -> elementGroupBuilder.build())
-					.filter(elementGroup -> checkValid(elementGroup))
+					.map(DocumentLayoutElementGroupDescriptor.Builder::build)
+					.filter(this::checkValid)
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
