@@ -4,7 +4,7 @@ import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
@@ -17,7 +17,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductBLTest
 {
@@ -54,9 +54,9 @@ public class ProductBLTest
 		product1.setM_AttributeSet_ID(as1.getM_AttributeSet_ID());
 		save(product1);
 
-		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
+		final AttributeSetId productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1);
 
-		assertThat(productAS_ID).isEqualTo(AttributeConstants.M_AttributeSet_ID_None);
+		assertThat(productAS_ID).isEqualTo(AttributeSetId.NONE);
 	}
 
 	@Test

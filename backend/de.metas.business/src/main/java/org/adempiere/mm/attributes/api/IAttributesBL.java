@@ -52,6 +52,8 @@ public interface IAttributesBL extends ISingletonService
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
+
 	/**
 	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
 	 *
@@ -61,7 +63,7 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Gets product attribute by ID.
-	 *
+	 * <p>
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
 	 *

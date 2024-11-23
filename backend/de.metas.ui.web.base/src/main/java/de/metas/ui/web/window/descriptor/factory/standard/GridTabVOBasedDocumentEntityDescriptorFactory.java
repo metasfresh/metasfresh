@@ -152,6 +152,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		collectSpecialFieldsDone();
 	}
 
+	@NonNull
+	public String getTableName() {return documentEntity().getTableNameNotNull();}
+
 	public ILogicExpression getTabDisplayLogic()
 	{
 		return documentEntity().getDisplayLogic();
@@ -490,7 +493,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Nullable
 	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
 	{
-		if(gridFieldVO.isVirtualColumn())
+		if (gridFieldVO.isVirtualColumn())
 		{
 			return gridFieldVO.getColumnSql(contextTableName);
 		}

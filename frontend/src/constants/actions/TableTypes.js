@@ -28,6 +28,8 @@ export const DELETE_TABLE = 'DELETE_TABLE';
  */
 export const UPDATE_TABLE_DATA = 'UPDATE_TABLE_DATA';
 
+export const PARTIAL_UPDATE_TABLE_DATA = 'PARTIAL_UPDATE_TABLE_DATA';
+
 /**
  * @constant
  * @type {string} update table selection

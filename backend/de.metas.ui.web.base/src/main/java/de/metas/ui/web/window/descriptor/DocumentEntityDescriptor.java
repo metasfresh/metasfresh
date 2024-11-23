@@ -85,6 +85,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DocumentEntityDescriptor
 {
 	public static Builder builder()
@@ -251,6 +252,12 @@ public class DocumentEntityDescriptor
 	{
 		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
 		return WindowId.of(documentTypeId);
+	}
+
+	@NonNull
+	public DetailId getDetailIdNotNull()
+	{
+		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
 	}
 
 	public boolean hasIdFields()
@@ -759,6 +766,11 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
+		}
+
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> builderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
@@ -848,6 +860,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(final Optional<String> tableName)
 		{
+			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
 			return this;
 		}
@@ -857,6 +870,13 @@ public class DocumentEntityDescriptor
 			return _tableName;
 		}
 
+		@NonNull
+		public String getTableNameNotNull()
+		{
+			return _tableName.orElseThrow(() -> new AdempiereException("No main tablename determined"));
+		}
+
+		@Nullable
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);
@@ -999,7 +1019,7 @@ public class DocumentEntityDescriptor
 		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
 		{
 			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
-            return this;
+			return this;
 		}
 
 		/**

@@ -1,29 +1,5 @@
 package de.metas.ui.web.pattribute;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.stereotype.Component;
-
 import de.metas.cache.CCache;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -43,6 +19,30 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -89,7 +89,7 @@ public class ASIDescriptorFactory
 		return asiDescriptorById.getOrLoad(key, () -> createASIDescriptor(request));
 	}
 
-	private static final ArrayKey createASIDescriptorCachingKey(final WebuiASIEditingInfo request)
+	private static ArrayKey createASIDescriptorCachingKey(final WebuiASIEditingInfo request)
 	{
 		return ArrayKey.builder()
 				.append(request.getContextWindowType())
@@ -120,7 +120,7 @@ public class ASIDescriptorFactory
 				.build();
 	}
 
-	private final DocumentEntityDescriptor createDocumentEntityDescriptor(
+	private DocumentEntityDescriptor createDocumentEntityDescriptor(
 			final DocumentId asiDescriptorId,
 			final String name,
 			final String description,
@@ -140,8 +140,8 @@ public class ASIDescriptorFactory
 				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
-		//
-		;
+				//
+				;
 
 		for (final I_M_Attribute attribute : attributes)
 		{
@@ -232,8 +232,8 @@ public class ASIDescriptorFactory
 				.addCharacteristic(Characteristic.PublicField)
 				//
 				.setDataBinding(new ASIAttributeFieldBinding(attributeId, fieldName, attribute.isMandatory(), readMethod, writeMethod))
-		//
-		;
+				//
+				;
 	}
 
 	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
@@ -250,8 +250,8 @@ public class ASIDescriptorFactory
 
 		entityDescriptor.getFields()
 				.stream()
-				.map(fieldDescriptor -> createLayoutElement(fieldDescriptor))
-				.forEach(layoutElement -> layout.addElement(layoutElement));
+				.map(ASIDescriptorFactory::createLayoutElement)
+				.forEach(layout::addElement);
 
 		return layout.build();
 	}
@@ -298,7 +298,7 @@ public class ASIDescriptorFactory
 		private final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
 
 		private ASIAttributeFieldBinding( //
-				final int attributeId, final String attributeName //
+										  final int attributeId, final String attributeName //
 				, final boolean mandatory //
 				, final Function<I_M_AttributeInstance, Object> readMethod //
 				, final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod //
@@ -344,13 +344,13 @@ public class ASIDescriptorFactory
 		private static void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
 		{
 			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
-			final int attributeValueId = field.getDescriptor().getLookupDescriptor()
+			final AttributeValueId attributeValueId = field.getDescriptor().getLookupDescriptor()
 					.get()
 					.cast(ASILookupDescriptor.class)
-					.getM_AttributeValue_ID(lookupValue);
+					.getAttributeValueId(lookupValue);
 
 			ai.setValue(lookupValue == null ? null : lookupValue.getIdAsString());
-			ai.setM_AttributeValue_ID(attributeValueId);
+			ai.setM_AttributeValue_ID(AttributeValueId.toRepoId(attributeValueId));
 		}
 
 		public void createAndSaveM_AttributeInstance(final I_M_AttributeSetInstance asiRecord, final IDocumentFieldView asiField)
