@@ -166,19 +166,42 @@ public class AttributesIncludedTabLoader
 				.description(entityDescriptor.getDescription())
 				.queryOnActivate(true)
 				.singleRowDetailLayout(true)
-				.singleRowLayout(DocumentLayoutSingleRow.builder()
-						.setWindowId(windowId)
-						.addSection(DocumentLayoutSectionDescriptor.builder()
-								.setCaption(TranslatableStrings.empty())
-								.setDescription(TranslatableStrings.empty())
-								.addColumn(DocumentLayoutColumnDescriptor.builder()
-										.addElementGroup(DocumentLayoutElementGroupDescriptor.builder()
-												.addElementLines(fieldNamesInOrder.stream()
-														.map(fieldName -> createLayoutElementLine(entityDescriptor.getField(fieldName)))
-														.collect(Collectors.toList()))))
-								.setClosableMode(DocumentLayoutSectionDescriptor.ClosableMode.INITIALLY_OPEN)
-								.setCaptionMode(DocumentLayoutSectionDescriptor.CaptionMode.DISPLAY)))
+				.singleRowLayout(
+						DocumentLayoutSingleRow.builder()
+								.setWindowId(windowId)
+								.addSection(createLayoutSection(entityDescriptor, fieldNamesInOrder))
+				)
 				.build();
+	}
+
+	private DocumentLayoutSectionDescriptor.Builder createLayoutSection(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final List<String> fieldNamesInOrder)
+	{
+		return DocumentLayoutSectionDescriptor.builder()
+				.setCaption(TranslatableStrings.empty())
+				.setDescription(TranslatableStrings.empty())
+				.addColumn(createLayoutColumn(entityDescriptor, fieldNamesInOrder))
+				.setClosableMode(DocumentLayoutSectionDescriptor.ClosableMode.INITIALLY_OPEN)
+				.setCaptionMode(DocumentLayoutSectionDescriptor.CaptionMode.DISPLAY);
+	}
+
+	private DocumentLayoutColumnDescriptor.Builder createLayoutColumn(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final List<String> fieldNamesInOrder)
+	{
+		return DocumentLayoutColumnDescriptor.builder()
+				.addElementGroups(
+						fieldNamesInOrder.stream()
+								.map(fieldName -> createLayoutElementGroup(entityDescriptor.getField(fieldName)))
+								.collect(Collectors.toList())
+				);
+	}
+
+	private DocumentLayoutElementGroupDescriptor.@NonNull Builder createLayoutElementGroup(final @NonNull DocumentFieldDescriptor field)
+	{
+		return DocumentLayoutElementGroupDescriptor.builder()
+				.addElementLine(createLayoutElementLine(field));
 	}
 
 	private DocumentLayoutElementLineDescriptor.Builder createLayoutElementLine(@NonNull final DocumentFieldDescriptor field)
