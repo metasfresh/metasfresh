@@ -392,6 +392,15 @@ export function getScope(isModal) {
   return isModal ? 'modal' : 'master';
 }
 
+export function parseItemToDisplay({ item }) {
+  return item.fieldsByName
+    ? {
+        ...item,
+        fieldsByName: parseToDisplay(item.fieldsByName),
+      }
+    : item;
+}
+
 export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
