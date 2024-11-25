@@ -16,6 +16,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -28,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test
@@ -140,7 +142,8 @@ class PickingJob_Scenarios_Test
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
 						.isAllowPickingAnyHU(false) // we need a plan built
-						.build());
+						.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 		System.out.println("Created " + pickingJob);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
@@ -172,7 +175,6 @@ class PickingJob_Scenarios_Test
 											.build()))
 							.build());
 		}
-
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
