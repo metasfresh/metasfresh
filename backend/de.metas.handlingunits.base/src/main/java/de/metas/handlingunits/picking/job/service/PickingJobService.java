@@ -76,6 +76,7 @@ public class PickingJobService
 {
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
+	public final static AdMessageKey MISSING_PICKING_SLOT_ID_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.MISSING_PICKING_SLOT_ID_ERROR_MSG");
 	
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -387,7 +388,7 @@ public class PickingJobService
 	/**
 	 * @return true, if all picking jobs have been removed form the slot, false otherwise
 	 */
-	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean abortOngoingPickingJobs)
+	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean forceRemoveForOngoingJobs)
 	{
 		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());
 		if (pickingJobs.isEmpty())
@@ -395,7 +396,7 @@ public class PickingJobService
 			return true;
 		}
 
-		return pickingJobs.stream().allMatch(job -> removePickingSlotAssignment(job, abortOngoingPickingJobs));
+		return pickingJobs.stream().allMatch(job -> removePickingSlotAssignment(job, forceRemoveForOngoingJobs));
 	}
 
 	private void unassignPickingJob(@NonNull final PickingJob jobParam)
@@ -453,17 +454,17 @@ public class PickingJobService
 
 	private boolean removePickingSlotAssignment(
 			@NonNull final PickingJob pickingJob,
-			final boolean abortOngoingPickingJobs)
+			final boolean forceRemoveForOngoingPickingJob)
 	{
 		if (pickingJob.isNothingPicked())
 		{
-			pickingJobRepository.save(pickingJob.withPickingSlot(null));
-			return true;
-		}
-		else if (abortOngoingPickingJobs)
-		{
 			final PickingJob abortedPickingJob = abort(pickingJob);
 			Check.assume(!abortedPickingJob.getPickingSlotId().isPresent(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
+			return true;
+		}
+		else if (forceRemoveForOngoingPickingJob)
+		{
+			pickingJobRepository.save(pickingJob.withPickingSlot(null));
 			return true;
 		}
 		else
