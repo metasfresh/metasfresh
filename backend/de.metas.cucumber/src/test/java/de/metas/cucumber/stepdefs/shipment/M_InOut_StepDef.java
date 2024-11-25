@@ -254,7 +254,7 @@ public class M_InOut_StepDef
 				final I_M_Product productRecord = productDAO.getById(productId);
 				qtysToDeliverOverride.put(shipmentScheduleId, StockQtyAndUOMQty.builder()
 						.productId(productId)
-						.stockQty(Quantitys.create(qtyToDeliverOverride, UomId.ofRepoId(productRecord.getC_UOM_ID())))
+						.stockQty(Quantitys.of(qtyToDeliverOverride, UomId.ofRepoId(productRecord.getC_UOM_ID())))
 						.build());
 			}
 		}
