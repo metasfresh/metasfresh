@@ -78,7 +78,7 @@ import lombok.Value;
 @Value
 public class DataEntryTabLoader
 {
-	private final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+	DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
 
 	AdWindowId adWindowId;
 	WindowId windowId;
@@ -200,7 +200,7 @@ public class DataEntryTabLoader
 		final ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> //
 		elementGroups = createLayoutElemementTab(dataEntrySection);
 
-		column.addElementTabs(elementGroups);
+		column.addElementGroups(elementGroups);
 
 		return layoutSection;
 	}

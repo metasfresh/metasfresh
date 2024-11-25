@@ -55,7 +55,7 @@ public final class OrderedDocumentsList
 		this.orderBys = orderBys;
 	}
 
-	public static OrderedDocumentsList of(final Collection<Document> documents, final DocumentQueryOrderByList orderBys)
+	public static OrderedDocumentsList of(@NonNull final Collection<Document> documents, @NonNull final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(documents, orderBys);
 	}
@@ -76,7 +76,7 @@ public final class OrderedDocumentsList
 		return new OrderedDocumentsList(ImmutableList.of(), DocumentQueryOrderByList.EMPTY);
 	}
 
-	public static OrderedDocumentsList newEmpty(final DocumentQueryOrderByList orderBys)
+	public static OrderedDocumentsList newEmpty(@NonNull final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(ImmutableList.of(), orderBys);
 	}

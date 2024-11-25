@@ -1,8 +1,8 @@
-import axios from 'axios';
-import counterpart from 'counterpart';
-import currentDevice from 'current-device';
+import axios from "axios";
+import counterpart from "counterpart";
+import currentDevice from "current-device";
 
-import history from '../services/History';
+import history from "../services/History";
 
 import {
   ACTIVATE_TAB,
@@ -42,15 +42,16 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-} from '../constants/ActionTypes';
-import { createView, patchViewAction } from './ViewActions';
-import { PROCESS_NAME } from '../constants/Constants';
-import { preFormatPostDATA, toggleFullScreen } from '../utils';
+} from "../constants/ActionTypes";
+import { createView, patchViewAction } from "./ViewActions";
+import { PROCESS_NAME } from "../constants/Constants";
+import { preFormatPostDATA, toggleFullScreen } from "../utils";
 import {
   getInvalidDataItem,
   getScope,
+  parseItemToDisplay,
   parseToDisplay,
-} from '../utils/documentListHelper';
+} from "../utils/documentListHelper";
 
 import {
   formatParentUrl,
@@ -58,28 +59,29 @@ import {
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
-} from '../api';
+} from "../api";
 
-import { getTableId } from '../reducers/tables';
+import { getTableId } from "../reducers/tables";
 import {
   addNotification,
   deleteNotification,
   setNotificationProgress,
-} from './AppActions';
-import { getWindowBreadcrumb } from './MenuActions';
+} from "./AppActions";
+import { getWindowBreadcrumb } from "./MenuActions";
 import {
   updateCommentsPanel,
   updateCommentsPanelOpenFlag,
   updateCommentsPanelTextInput,
-} from './CommentsPanelActions';
+} from "./CommentsPanelActions";
 import {
   createTabTable,
+  partialUpdateGridTableRows,
   updateTableRowProperty,
   updateTabTable,
-} from './TableActions';
-import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
-import { getPrintFile, getPrintUrl } from '../api/window';
-import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
+} from "./TableActions";
+import { inlineTabAfterGetLayout, patchInlineTab } from "./InlineTabActions";
+import { getPrintFile, getPrintUrl } from "../api/window";
+import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from "../components/app/ChangeCurrentWorkplace";
 
 export function toggleOverlay(data) {
   return {
@@ -1115,26 +1117,51 @@ function updateData(doc, scope) {
 }
 
 function mapDataToState({ data, isModal, rowId, disconnected }) {
+  const isNewRow = rowId === 'NEW';
+
   return (dispatch) => {
+    if (disconnected === 'inlineTab') {
+      // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+      // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+      return;
+    }
+
     const dataArray = typeof data.splice === 'function' ? data : [data];
+    const rowsToUpdateByTableId = {};
 
-    dataArray.map((item, index) => {
-      const parsedItem = item.fieldsByName
-        ? {
-            ...item,
-            fieldsByName: parseToDisplay(item.fieldsByName),
-          }
-        : item;
+    dataArray.forEach((item, index) => {
+      const isFirstItem = index === 0;
+      const isRow = !!item.rowId;
 
-      if (
-        !(index === 0 && rowId === 'NEW') &&
-        (!item.rowId || (isModal && item.rowId))
-      ) {
-        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
-        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
-        disconnected !== 'inlineTab' &&
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+      if (isNewRow && isFirstItem) {
+        //
+      } else if (!isRow || (isModal && isRow)) {
+        const parsedItem = parseItemToDisplay({ item });
+        dispatch(updateData(parsedItem, getScope(isModal && isFirstItem)));
       }
+
+      if (isRow) {
+        const tableId = getTableId({
+          windowId: item.windowId,
+          docId: item.id,
+          tabId: item.tabId,
+        });
+
+        if (!rowsToUpdateByTableId[tableId]) {
+          rowsToUpdateByTableId[tableId] = [];
+        }
+
+        rowsToUpdateByTableId[tableId].push(item);
+      }
+    });
+
+    Object.keys(rowsToUpdateByTableId).forEach((tableId) => {
+      dispatch(
+        partialUpdateGridTableRows({
+          tableId,
+          rowsToUpdate: rowsToUpdateByTableId[tableId],
+        })
+      );
     });
   };
 }
