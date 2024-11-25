@@ -17,7 +17,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -157,7 +156,7 @@ class PickingJob_Scenarios_Test
 						.deliveryBPLocationId(helper.shipToBPLocationId)
 						.isAllowPickingAnyHU(false) // we need a plan built
 						.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(PickingSlotId.ofRepoId(1), "TEST"));
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 		System.out.println("Created " + pickingJob);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
