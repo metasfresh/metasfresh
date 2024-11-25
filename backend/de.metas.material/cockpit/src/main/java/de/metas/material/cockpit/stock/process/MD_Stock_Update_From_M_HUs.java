@@ -109,7 +109,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantitys.create(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
+		final Quantity qtyInStorageUOM = Quantitys.of(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		return StockDataUpdateRequest.builder()

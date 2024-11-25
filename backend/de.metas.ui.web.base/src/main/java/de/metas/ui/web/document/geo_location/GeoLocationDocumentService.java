@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.geo_location;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.AdMessageKey;
@@ -91,14 +92,14 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	@Override
 	@Nullable
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (context.getTableName() == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
+
+		final ImmutableList<DocumentFieldDescriptor> fields = context.getFields();
 		if (fields.isEmpty())
 		{
 			return null;
@@ -159,31 +160,31 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 				.setDisplayName(caption)
 				//
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_Address1)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Address1))
-						.setWidgetType(DocumentFieldWidgetType.Text))
+									  .fieldName(GeoLocationFilterConverter.PARAM_Address1)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Address1))
+									  .widgetType(DocumentFieldWidgetType.Text))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_Postal)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Postal))
-						.setWidgetType(DocumentFieldWidgetType.Text))
+									  .fieldName(GeoLocationFilterConverter.PARAM_Postal)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Postal))
+									  .widgetType(DocumentFieldWidgetType.Text))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_City)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_City))
-						.setWidgetType(DocumentFieldWidgetType.Text))
+									  .fieldName(GeoLocationFilterConverter.PARAM_City)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_City))
+									  .widgetType(DocumentFieldWidgetType.Text))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_CountryId)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_CountryId))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
+									  .fieldName(GeoLocationFilterConverter.PARAM_CountryId)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_CountryId))
+									  .mandatory(true)
+									  .widgetType(DocumentFieldWidgetType.Lookup)
+									  .lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_Distance)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Distance))
-						.setWidgetType(DocumentFieldWidgetType.Integer))
+									  .fieldName(GeoLocationFilterConverter.PARAM_Distance)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Distance))
+									  .widgetType(DocumentFieldWidgetType.Integer))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(GeoLocationFilterConverter.PARAM_VisitorsAddress)
-						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_VisitorsAddress))
-						.setWidgetType(DocumentFieldWidgetType.YesNo))
+									  .fieldName(GeoLocationFilterConverter.PARAM_VisitorsAddress)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_VisitorsAddress))
+									  .widgetType(DocumentFieldWidgetType.YesNo))
 				//
 				.addInternalParameter(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
 				//

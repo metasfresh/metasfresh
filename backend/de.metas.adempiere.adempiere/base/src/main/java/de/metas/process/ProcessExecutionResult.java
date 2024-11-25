@@ -92,7 +92,7 @@ public class ProcessExecutionResult
 		Never
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
+	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private PInstanceId pinstanceId;
 
@@ -127,7 +127,7 @@ public class ProcessExecutionResult
 	private ReportResultData reportData;
 
 	/**
-	 * If the process fails with an Throwable, the Throwable is caught and stored here
+	 * If the process fails with a Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
@@ -755,7 +755,19 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
+	}
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.logId(Log_ID)
+				.pDate(P_Date)
+				.pNumber(P_Number)
+				.pMsg(P_Msg)
+				.warningMessages(warningMessages)
+				.build();
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
@@ -961,6 +973,11 @@ public class ProcessExecutionResult
 			this.viewId = viewId;
 			this.profileId = profileId;
 			this.target = target;
+		}
+
+		public static WebuiViewToOpen modalOverlay(@NonNull final String viewId)
+		{
+			return builder().viewId(viewId).target(ViewOpenTarget.ModalOverlay).build();
 		}
 	}
 

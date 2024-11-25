@@ -305,6 +305,39 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_M_HU_PackagingCode_Text = "M_HU_PackagingCode_Text";
 
 	/**
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_InOut_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
+
+	@Deprecated
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
+
+	ModelColumn<I_EDI_Desadv_Pack, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer

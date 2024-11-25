@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -176,7 +177,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCands(List<I_C_Invoice_Candidate> ics);
-	
+
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -284,6 +285,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1566">https://github.com/metasfresh/metasfresh/issues/1566</a>
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
+
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
 
 	/**
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
@@ -416,4 +419,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }

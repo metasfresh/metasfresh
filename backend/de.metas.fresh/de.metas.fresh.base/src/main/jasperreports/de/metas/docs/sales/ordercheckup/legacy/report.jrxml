@@ -116,7 +116,7 @@ LIMIT 1
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-6" x="286" y="175" width="309" height="41" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0"/>
 				<subreportParameter name="bp_loc_id">
-					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID} == null ? $F{c_bpartner_location_id} : null]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>

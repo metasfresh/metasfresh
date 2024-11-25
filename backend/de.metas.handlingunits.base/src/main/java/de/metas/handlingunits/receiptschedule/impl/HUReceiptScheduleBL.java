@@ -622,7 +622,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
-		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
 		if (!allocsAll.isEmpty())
 		{
 			loggable.addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
@@ -664,8 +664,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private Set<HuId> retrieveAllocatedHuIds(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		return receiptSchedules.stream()
-				.map(receiptSchedule -> huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited))
+				.map(receiptSchedule -> huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited))
 				.flatMap(Collection::stream)
+				.filter(I_M_ReceiptSchedule_Alloc::isActive) // inactive RSAs have destroyed HUs - ignore those
 				.flatMap(allocation -> Stream.of(allocation.getVHU_ID(), allocation.getM_TU_HU_ID(), allocation.getM_LU_HU_ID()))
 				.filter(huId -> huId > 0)
 				.map(HuId::ofRepoId)

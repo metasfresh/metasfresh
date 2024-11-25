@@ -218,6 +218,11 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_
 INSERT INTO t_alter_column values('m_product_nutrition','SeqNo','NUMERIC(10)',null,null)
 ;
 
+--- workaround for some exisiting instances
+update m_product_nutrition set seqno=m_product_nutrition_id, updatedby=99, updated='2023-08-13 22:00' where seqNo is null;
+commit;
+
+
 -- 2021-12-02T20:15:15.053Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('m_product_nutrition','SeqNo',null,'NOT NULL',null)

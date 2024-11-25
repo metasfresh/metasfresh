@@ -56,7 +56,7 @@ public interface IInOutDAO extends ISingletonService
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineById(InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
@@ -113,7 +113,9 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
-	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
+	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
+
+	<T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
 	@NonNull
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);

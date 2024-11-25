@@ -169,7 +169,7 @@ public class MMedia extends X_CM_Media
 				.append(getAD_Client_ID()).append(",0, 'Y', now(), 0, now(), 0,")
 				.append(getAD_Tree_ID()).append(",").append(get_ID())
 				.append(", 0, 999)");
-			int no = DB.executeUpdate(sb.toString(), get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), get_TrxName());
 			if (no > 0)
 				log.debug("#" + no + " - TreeType=CMM");
 			else
@@ -193,7 +193,7 @@ public class MMedia extends X_CM_Media
 		StringBuffer sb = new StringBuffer ("DELETE FROM AD_TreeNodeCMM ")
 			.append(" WHERE Node_ID=").append(get_IDOld())
 			.append(" AND AD_Tree_ID=").append(getAD_Tree_ID());
-		int no = DB.executeUpdate(sb.toString(), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("#" + no + " - TreeType=CMM");
 		else

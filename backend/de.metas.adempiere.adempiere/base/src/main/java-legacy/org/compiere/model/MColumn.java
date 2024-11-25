@@ -311,7 +311,7 @@ public class MColumn extends X_AD_Column
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Column_ID=").append(get_ID());
-				int no = DB.executeUpdate(sql.toString(), get_TrxName());
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
 		}
@@ -366,7 +366,7 @@ public class MColumn extends X_AD_Column
 	 */
 	public static int getTable_ID(Properties ctx, int AD_Column_ID, String trxName)
 	{
-		String sqlStmt = "SELECT AD_Table_ID FROM AD_Column WHERE AD_Column_ID=?";
+		final String sqlStmt = "SELECT AD_Table_ID FROM AD_Column WHERE AD_Column_ID=?";
 		return DB.getSQLValue(trxName, sqlStmt, AD_Column_ID);
 	}
 

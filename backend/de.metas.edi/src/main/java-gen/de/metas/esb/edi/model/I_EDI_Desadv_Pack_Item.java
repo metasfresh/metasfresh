@@ -301,7 +301,7 @@ public interface I_EDI_Desadv_Pack_Item
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_M_HU_PackagingCode_TU_Text = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "M_HU_PackagingCode_TU_Text", null);
 	String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
 
-	/**
+ 	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *

@@ -183,7 +183,7 @@ public class HUReservationRepository
 				.documentRef(extractDocumentRef(record))
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
 				.vhuId(HuId.ofRepoId(record.getVHU_ID()))
-				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), uomId))
 				.build();
 	}
 

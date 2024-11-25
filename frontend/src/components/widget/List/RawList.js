@@ -480,12 +480,14 @@ export class RawList extends PureComponent {
   };
 
   renderMultiSelectDropdown = () => {
-    const { listHash } = this.props;
+    const { listHash, loading, hasMoreResults } = this.props;
 
     return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
+        hasMoreResults={hasMoreResults}
+        loading={loading}
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
         isToggled={this.props.isToggled}
@@ -547,6 +549,7 @@ RawList.propTypes = {
   clearable: PropTypes.bool,
   list: PropTypes.array,
   listHash: PropTypes.string,
+  hasMoreResults: PropTypes.bool,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,

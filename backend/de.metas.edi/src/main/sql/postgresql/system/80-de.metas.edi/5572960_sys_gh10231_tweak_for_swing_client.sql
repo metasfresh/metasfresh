@@ -1,0 +1,30 @@
+-- 2020-11-21T15:37:47.633Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=160,Updated=TO_TIMESTAMP('2020-11-21 16:37:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=626129
+;
+
+-- 2020-11-21T15:37:55.737Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='Y', SeqNo=170,Updated=TO_TIMESTAMP('2020-11-21 16:37:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=589562
+;
+
+-- 2020-11-21T15:38:27.575Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=180,Updated=TO_TIMESTAMP('2020-11-21 16:38:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=626129
+;
+
+-- 2020-11-21T15:38:29.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2020-11-21 16:38:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=589562
+;
+
+-- 2020-11-21T15:38:30.537Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2020-11-21 16:38:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=626129
+;
+
+-- 2020-11-21T15:38:43.557Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2020-11-21 16:38:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=589562
+;
+

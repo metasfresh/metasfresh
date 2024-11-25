@@ -125,7 +125,7 @@ public class AssetTransfer extends JavaProcess
 				  + "WHERE Processed='Y'" 
 				  + " AND A_Entry_Type = 'TRN'" + clientCheck;
 			
-			no = DB.executeUpdate (sql,null);
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		try {
@@ -275,7 +275,7 @@ public class AssetTransfer extends JavaProcess
 				change.setChangeAmt(v_Balance);
 				change.save();
 				
-				DB.executeUpdate(sql,null);
+				DB.executeUpdateAndSaveErrorOnFail(sql, null);
 				
 				AssetTransfer.setIsActive(false);
 				AssetTransfer.save();

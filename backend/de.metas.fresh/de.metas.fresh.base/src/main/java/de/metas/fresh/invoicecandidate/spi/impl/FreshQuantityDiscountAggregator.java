@@ -22,19 +22,6 @@ package de.metas.fresh.invoicecandidate.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
@@ -60,12 +47,24 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Quantity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
  * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation creates <b>two</b> invoice lines. The
  * fist one ignores the discount and invoices whatever is the full quantity. The second line explicitly subtracts the discount quantity (line with a negative quantity).
- *
+ * <p>
  * <b>Important:</b> this customization is applied only to purchase invoice candidates! Right now the catch-weight invoicing (plus qtyToInvoiceOverride) is not working together with the qutWithIssues (plus qualtiyDiscountOverride)!
  * <p>
  * Note about the naming: this class is called Fresh<b>Quantity</b>DiscountAggregator because the discount is not a percentage on the price, but a part of the delivered quantity is not invoiced. It
@@ -80,14 +79,14 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private static final transient AdMessageKey MSG_QualityDiscount = AdMessageKey.of("de.metas.fresh.invoicecandidate.QualityDiscount");
+	private static final AdMessageKey MSG_QualityDiscount = AdMessageKey.of("de.metas.fresh.invoicecandidate.QualityDiscount");
 	private final Map<Integer, String> bpartnerId2descriptionPrefix = new HashMap<>();
 
 	/**
 	 * Stores ics and their icIols whose iols are in dispute. Those icIols are ignored by the default implementation, so we need to store them here, because in this implementation we want to keep
 	 * track of them (to have the chance to create MatchInv and stuff).
 	 */
-	private Map<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<>();
+	private final Map<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<>();
 
 	/**
 	 * We use the default aggregator to do most of the work.
@@ -114,12 +113,9 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		defaultAggregator.addInvoiceCandidate(request);
 
 		// adding the list anyways, even if we won't ever add an icIol to it. That way we won't have to check for containsKey further down.
-		List<I_C_InvoiceCandidate_InOutLine> list = ic2IndisputeIcIols.get(request.getC_Invoice_Candidate());
-		if (list == null)
-		{
-			list = new ArrayList<>();
-			ic2IndisputeIcIols.put(request.getC_Invoice_Candidate(), list);
-		}
+		final List<I_C_InvoiceCandidate_InOutLine> list = ic2IndisputeIcIols.computeIfAbsent(
+				request.getC_Invoice_Candidate(), 
+				k -> new ArrayList<>());
 
 		if (aggregationBL.isIolInDispute(request.getC_InvoiceCandidate_InOutLine()))
 		{
@@ -158,15 +154,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	private Set<Integer> candsSeen = new HashSet<>();
+	private final Set<Integer> candsSeen = new HashSet<>();
 
 	/**
 	 * Create quality discount invoice line aggregates (one for each invoice candidate), if needed.
-	 *
+	 * <p>
 	 * NOTE: this method will also adjust the qty to invoice of the original invoice line.
-	 *
-	 * @param invoiceCandAggregate
-	 * @return
 	 */
 	private List<IInvoiceCandAggregate> createQualityDiscountAggregates(final IInvoiceCandAggregate invoiceCandAggregate)
 	{
@@ -241,7 +234,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	/**
 	 * Creates an aggregate with one {@link IInvoiceLineRW} having "minus" <code>qtyDiscount</code>.
 	 *
-	 * @param invoiceLineAttributes attributes to be used on new invoice line
 	 * @return resulting aggregate; never return <code>null</code>.
 	 */
 	private IInvoiceCandAggregate createQualityDiscountInvoiceLine(
@@ -295,11 +287,11 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	private Money computeLineNetAmt(final ProductPrice priceActual, final Quantity quantity)
 	{
-		final Money lineNetAmt = SpringContextHolder.instance.getBean(MoneyService.class).multiply(quantity, priceActual);
-		return lineNetAmt;
+		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+		return moneyService.multiply(quantity, priceActual);
 	}
 
-	private final Percent getQualityDiscountPercent(final I_C_Invoice_Candidate candidate)
+	private Percent getQualityDiscountPercent(final I_C_Invoice_Candidate candidate)
 	{
 		final Percent qualityDiscoutPercent = invoiceCandBL.getQualityDiscountPercentEffective(candidate);
 		// return qualityDiscoutPercent.setScale(2, RoundingMode.HALF_UP); // make sure the number looks nice
@@ -309,7 +301,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	/**
 	 * Gets description prefix to be used when creating an invoice line for given invoice candidate.
 	 */
-	private final String getDescriptionPrefix(final I_C_Invoice_Candidate candidate)
+	private String getDescriptionPrefix(final I_C_Invoice_Candidate candidate)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -330,12 +322,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return descriptionPrefix;
 	}
 
-	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine)
+	private void setNetLineAmt(final IInvoiceLineRW invoiceLine)
 	{
 		final Quantity stockQty = invoiceLine.getQtysToInvoice().getStockQty();
 		final Quantity uomQty = invoiceLine.getQtysToInvoice().getUOMQtyOpt().orElse(stockQty);
 
-		ProductPrice priceActual = invoiceLine.getPriceActual();
+		final ProductPrice priceActual = invoiceLine.getPriceActual();
 
 		final Money lineNetAmt = computeLineNetAmt(priceActual, uomQty);
 

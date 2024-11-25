@@ -146,7 +146,7 @@ public class EDIDesadvPackService
 
 		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
 	}
-	
+
 	@NonNull
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
@@ -188,7 +188,7 @@ public class EDIDesadvPackService
 		if (desadvLineId == null)
 		{
 			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-						 orderLineRecord.getC_OrderLine_ID());
+					orderLineRecord.getC_OrderLine_ID());
 
 			return;
 		}
@@ -289,12 +289,12 @@ public class EDIDesadvPackService
 		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
 			// we use the capacity which the goods were ordered in
-			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+			qtyCUsPerTUInStockUOM = Quantitys.of(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
 		}
 		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
 			// we make an educated guess, based on the packing-instruction's information
-			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
+			qtyCUsPerTUInStockUOM = Quantitys.of(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
 		}
 		else
 		{
@@ -337,27 +337,7 @@ public class EDIDesadvPackService
 			createEDIDesadvPackRequestBuilder.huPackagingCodeID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID));
 			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
 
-			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
-			createEDIDesadvPackItemRequestBuilder.huPackagingCodeTUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeTU_ID));
-
-			final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
-			if (huPackingMaterials.size() == 1)
-			{
-				final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
-						.retrieveBPartnerProductAssociation(Env.getCtx(),
-															bpartnerId,
-															ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-															OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
-				if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
-				{
-					createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
-				}
-			}
-			else
-			{
-				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
-							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
-			}
+			setPackRecordPackagingCodeAndGTIN(createEDIDesadvPackItemRequestBuilder, tuPIItemProduct, bpartnerId, desadvLineRecord);
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
@@ -374,11 +354,46 @@ public class EDIDesadvPackService
 			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, packUomId, invoiceUomId, movementQty, invoicableQtyBasedOn, uomToStockRatio);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
-															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
-															 .build());
+					.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
+					.build());
 
 			// prepare next iteration within this for-look
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
+		}
+	}
+
+	@NonNull
+	public EDIDesadvPack createDesadvPack(@NonNull final CreateEDIDesadvPackRequest createEDIDesadvPackRequest)
+	{
+		return ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
+	}
+
+	public void setPackRecordPackagingCodeAndGTIN(
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final I_EDI_DesadvLine desadvLineRecord)
+	{
+		final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
+		createEDIDesadvPackItemRequestBuilder.huPackagingCodeTUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeTU_ID));
+
+		final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
+		if (huPackingMaterials.size() == 1)
+		{
+			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
+					.retrieveBPartnerProductAssociation(Env.getCtx(),
+														bPartnerId,
+														ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+														OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+			{
+				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
+			}
+		}
+		else
+		{
+			logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
+						 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
 		}
 	}
 
@@ -443,14 +458,14 @@ public class EDIDesadvPackService
 				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
-																   bPartnerId,
+				bPartnerId,
 																   qtyCUsPerTopLevelHU,
-																   productId,
-																   desadvLineRecord,
-																   inOutLineRecord,
-																   desadvLineWithPacks,
-																   invoicableQtyBasedOn,
-																   uomToStockRatio,
+				productId,
+				desadvLineRecord,
+				inOutLineRecord,
+				desadvLineWithPacks,
+				invoicableQtyBasedOn,
+				uomToStockRatio,
 																   sequences.getPackSeqNoSequence(),
 																   sequences.getPackItemLineSequence());
 
@@ -724,7 +739,7 @@ public class EDIDesadvPackService
 		{
 			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(packagingGTIN);
 		}
-	}
+		}
 
 	private static void setPackagingGTINsToPackItem(
 			@NonNull final ImmutableList<HU> childHUs,

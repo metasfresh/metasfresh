@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
@@ -92,6 +93,8 @@ public class CucumberLifeCycleSupport
 			Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 			update_ReplicationProcessors();
+
+			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
 
 			beforeAllMethodDone = true;
 		}

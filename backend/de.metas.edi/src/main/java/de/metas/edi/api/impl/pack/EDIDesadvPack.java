@@ -51,7 +51,7 @@ public class EDIDesadvPack
 	EDIDesadvId ediDesadvId;
 
 	int seqNo;
-	
+
 	@NonNull
 	String sscc18;
 
@@ -112,7 +112,7 @@ public class EDIDesadvPack
 		EDIDesadvLineId ediDesadvLineId;
 
 		int line;
-		
+
 		@NonNull
 		BigDecimal movementQty;
 

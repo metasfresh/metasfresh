@@ -1,16 +1,22 @@
 package de.metas.ui.web.view.json;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /*
  * #%L
@@ -39,6 +45,10 @@ import java.util.List;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@Value
+@Builder
+@Jacksonized
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE) // cannot use it because of "otherProperties"
 @Getter
 public class JSONViewOrderBy
 {
@@ -49,12 +59,10 @@ public class JSONViewOrderBy
 			return ImmutableList.of();
 		}
 
-		return orderBys.stream()
-				.map(JSONViewOrderBy::of)
-				.collect(GuavaCollectors.toImmutableList());
+		return orderBys.stream().map(JSONViewOrderBy::of).collect(ImmutableList.toImmutableList());
 	}
 
-	private static JSONViewOrderBy of(final DocumentQueryOrderBy orderBy)
+	private static JSONViewOrderBy of(@NonNull final DocumentQueryOrderBy orderBy)
 	{
 		return new JSONViewOrderBy(orderBy.getFieldName(), orderBy.isAscending());
 	}
@@ -72,9 +80,9 @@ public class JSONViewOrderBy
 	}
 
 	@JsonProperty("fieldName")
-	private final String fieldName;
+	String fieldName;
 	@JsonProperty("ascending")
-	private final boolean ascending;
+	boolean ascending;
 
 	@JsonCreator
 	public JSONViewOrderBy(

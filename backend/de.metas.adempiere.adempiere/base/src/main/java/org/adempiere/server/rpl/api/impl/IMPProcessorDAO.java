@@ -69,9 +69,9 @@ public class IMPProcessorDAO extends AbstractIMPProcessorDAO
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(impProcessor);
-		final int no = DB.executeUpdateEx(sql.toString(),
-				new Object[] { impProcessor.getIMP_Processor_ID() },
-				trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
+															   new Object[] { impProcessor.getIMP_Processor_ID() },
+															   trxName);
 		return no;
 	}
 }

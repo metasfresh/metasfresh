@@ -299,7 +299,7 @@ class ShipmentCandidateAPIService
 		{
 			final InputDataSourceId id = InputDataSourceId.ofRepoId(olCand.getAD_InputDataSource_ID()); // C_OLCand.AD_InputDataSource_ID is mandatory
 			final I_AD_InputDataSource byId = inputDataSourceDAO.getById(id);
-			
+
 			if (Check.isNotBlank(byId.getInternalName()))
 			{
 				itemBuilder.orderDataSourceInternalName(byId.getInternalName());

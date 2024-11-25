@@ -41,28 +41,6 @@ UPDATE AD_Process SET Description='Übergibt alle Lieferavis-Datensätze, die no
 UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:25.648000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585400
 ;
 
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
 -- 2024-06-20T10:40:27.288Z
 UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:27.288000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585400

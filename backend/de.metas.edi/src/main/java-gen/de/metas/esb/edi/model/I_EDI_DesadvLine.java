@@ -171,7 +171,7 @@ public interface I_EDI_DesadvLine
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setEanCom_Invoice_UOM (@Nullable String EanCom_Invoice_UOM);
+	void setEanCom_Invoice_UOM (@Nullable java.lang.String EanCom_Invoice_UOM);
 
 	/**
 	 * Get EanCom_Invoice_UOM.
@@ -182,7 +182,7 @@ public interface I_EDI_DesadvLine
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	@Nullable String getEanCom_Invoice_UOM();
+	@Nullable java.lang.String getEanCom_Invoice_UOM();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new ModelColumn<>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
 	String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
@@ -303,7 +303,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN_CU (@Nullable String GTIN_CU);
+	void setGTIN_CU (@Nullable java.lang.String GTIN_CU);
 
 	/**
 	 * Get CU-GTIN.
@@ -312,7 +312,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGTIN_CU();
+	@Nullable java.lang.String getGTIN_CU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN_CU = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN_CU", null);
 	String COLUMNNAME_GTIN_CU = "GTIN_CU";
@@ -324,7 +324,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN_TU (@Nullable String GTIN_TU);
+	void setGTIN_TU (@Nullable java.lang.String GTIN_TU);
 
 	/**
 	 * Get TU-GTIN.
@@ -333,7 +333,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGTIN_TU();
+	@Nullable java.lang.String getGTIN_TU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN_TU = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN_TU", null);
 	String COLUMNNAME_GTIN_TU = "GTIN_TU";

@@ -992,7 +992,11 @@ public class MOrderLine extends X_C_OrderLine
 					+ " SET TotalLines="
 					+ "(SELECT COALESCE(SUM(ol.LineNetAmt),0) FROM C_OrderLine ol WHERE ol.C_Order_ID=o.C_Order_ID) "
 					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
-			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 1)
+			{
+				new AdempiereException("Updating TotalLines failed for C_Order_IDs=" + orderIds);
+			}
 		}
 		// Update Order Header: GrandTotal
 		{
@@ -1002,7 +1006,11 @@ public class MOrderLine extends X_C_OrderLine
 					// SUM up C_OrderTax.TaxAmt only for those lines which does not have Tax Included
 					+ "(SELECT COALESCE(SUM(TaxAmt),0) FROM C_OrderTax ot WHERE o.C_Order_ID=ot.C_Order_ID AND ot.IsActive='Y' AND ot.IsTaxIncluded='N') "
 					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
-			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 1)
+			{
+				new AdempiereException("Updating GrandTotal failed for C_Order_IDs=" + orderIds);
+			}
 		}
 	}
 }    // MOrderLine

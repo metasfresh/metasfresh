@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.esb.edi.model;
 
 import org.adempiere.model.ModelColumn;
@@ -73,6 +51,31 @@ public interface I_EDI_DesadvLine_InOutLine
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_EDI_DesadvLine_InOutLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set BPartner UOM.
@@ -139,31 +142,6 @@ public interface I_EDI_DesadvLine_InOutLine
 	String COLUMNNAME_C_UOM_Invoice_ID = "C_UOM_Invoice_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_EDI_DesadvLine_InOutLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set DesadvLineTotalQtyDelivered.
 	 *
 	 * <br>Type: Quantity
@@ -202,11 +180,11 @@ public interface I_EDI_DesadvLine_InOutLine
 	 */
 	int getEDI_DesadvLine_ID();
 
-	I_EDI_DesadvLine getEDI_DesadvLine();
+	de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine();
 
-	void setEDI_DesadvLine(I_EDI_DesadvLine EDI_DesadvLine);
+	void setEDI_DesadvLine(de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine);
 
-	ModelColumn<I_EDI_DesadvLine_InOutLine, I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "EDI_DesadvLine_ID", I_EDI_DesadvLine.class);
+	ModelColumn<I_EDI_DesadvLine_InOutLine, de.metas.esb.edi.model.I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "EDI_DesadvLine_ID", de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	String COLUMNNAME_EDI_DesadvLine_ID = "EDI_DesadvLine_ID";
 
 	/**

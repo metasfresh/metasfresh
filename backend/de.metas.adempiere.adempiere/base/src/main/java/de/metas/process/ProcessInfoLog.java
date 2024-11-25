@@ -18,9 +18,12 @@ package de.metas.process;
 
 import de.metas.common.util.time.SystemTime;
 
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -65,6 +68,17 @@ public final class ProcessInfoLog implements Serializable
 		m_P_Date = P_Date;
 		m_P_Number = P_Number;
 		m_P_Msg = P_Msg;
+		warningMessages = null;
+	}
+
+
+	public ProcessInfoLog(@NonNull final  ProcessInfoLogRequest request)
+	{
+		m_Log_ID = request.getLogId();
+		m_P_Date = request.getPDate();
+		m_P_Number = request.getPNumber();
+		m_P_Msg = request.getPMsg();
+		warningMessages = request.getWarningMessages();
 	}
 
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
@@ -73,6 +87,7 @@ public final class ProcessInfoLog implements Serializable
 	private final Timestamp m_P_Date;
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
+	private final List<String> warningMessages;
 	private boolean savedInDB = false;
 
 	public int getLog_ID()
@@ -93,6 +108,11 @@ public final class ProcessInfoLog implements Serializable
 	public String getP_Msg()
 	{
 		return m_P_Msg;
+	}
+
+	public List<String> getWarningMessages()
+	{
+		return warningMessages;
 	}
 
 	public void markAsSavedInDB()

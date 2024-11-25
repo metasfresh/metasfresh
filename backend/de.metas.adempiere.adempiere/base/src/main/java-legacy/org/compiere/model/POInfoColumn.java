@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import de.metas.ad_reference.TableRefTable;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
@@ -8,7 +9,6 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -143,7 +143,7 @@ public final class POInfoColumn implements Serializable
 			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
 			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
 			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-			final ExplainedOptional<TableRefInfo> tableRefInfo = lookupDAO.getTableRefInfo(ad_Reference_Value_ID);
+			final ExplainedOptional<TableRefTable> tableRefInfo = lookupDAO.getTableRefInfo(ad_Reference_Value_ID);
 			if (!tableRefInfo.isPresent())
 			{
 				// NOTE: avoid log WARN or ERROR because that one might trigger ErrorManager which might call POInfo => recursion

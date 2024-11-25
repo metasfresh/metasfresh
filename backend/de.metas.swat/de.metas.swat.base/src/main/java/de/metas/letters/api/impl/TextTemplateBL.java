@@ -226,8 +226,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 				+ "?,?,?,?,?,?,?,?,?,?"
 				+ ",getdate(),0,getdate(),0,'Y'"
 				+ ")";
-		DB.executeUpdateEx(sql,
-				new Object[] {
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												new Object[] {
 						adClientId,
 						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						pinstanceId,
@@ -239,7 +239,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 						request.getAddress(),
 						request.getUserId() == null ? null : request.getUserId().getRepoId(),
 				},
-				ITrx.TRXNAME_None);
+												ITrx.TRXNAME_None);
 	}
 
 	@Override

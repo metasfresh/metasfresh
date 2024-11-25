@@ -23,6 +23,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -55,6 +56,7 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -112,6 +114,11 @@ public interface IQuery<T>
 	 * @return List
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
+
+	default ImmutableList<T> listImmutable() throws DBException
+	{
+		return ImmutableList.copyOf(list());
+	}
 
 	/**
 	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
@@ -188,6 +195,11 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
+	default Optional<T> firstOptional() throws DBException
+	{
+		return Optional.ofNullable(first());
+	}
+
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
 	{
 		return Optional.ofNullable(first(clazz));
@@ -210,6 +222,11 @@ public interface IQuery<T>
 	 */
 	@NonNull
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+
+	/**
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
+	 */
+	T firstOnly() throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -426,6 +443,8 @@ public interface IQuery<T>
 	 */
 	int delete(boolean failIfProcessed);
 
+	default void forEach(@NonNull final Consumer<T> action) {stream().forEach(action);}
+
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
 	 */
@@ -502,6 +521,8 @@ public interface IQuery<T>
 	 * @see #list(Class)
 	 */
 	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+
+	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
 
 	/**
 	 * Gets an immutable ID to model map.

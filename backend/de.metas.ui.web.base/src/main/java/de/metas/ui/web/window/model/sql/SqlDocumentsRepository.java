@@ -24,6 +24,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -153,6 +154,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
 		final SqlAndParams sql = sqlBuilder.getSql();
 		final String adLanguage = sqlBuilder.getAD_Language();
+		final DocumentQueryOrderByList orderBys = sqlBuilder.getOrderBysEffective();
 		logger.debug("Retrieving records: {}", sql);
 
 		final int loadLimitWarn = getLoadLimitWarn();
@@ -163,7 +165,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			maxRowsToFetch = loadLimitMax;
 		}
 
-		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(orderBys);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

@@ -469,7 +469,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
 		assertNotClosed();
 
@@ -477,8 +477,7 @@ public final class DefaultView implements IEditableView
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx)
-				.getValues();
+				.findEntities(ctx);
 	}
 
 	@Override
@@ -528,7 +527,7 @@ public final class DefaultView implements IEditableView
 
 			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)
-					.maxRows(1000) // MAX rows to fetch
+					.maxRows(suggestedLimit.toIntOrZero()) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
 					.pageFetcher((firstRow, pageSize) -> Page.ofRowsOrNull(viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageSize)))
 					.build()
@@ -536,10 +535,11 @@ public final class DefaultView implements IEditableView
 		}
 		else
 		{
-			// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
+			// NOTE: we get/retrieve one by one because we assume the "selected documents" were recently retrieved,
 			// and the records recently retrieved have a big chance to be cached.
 			return rowIds.stream()
 					.distinct()
+					.limit(suggestedLimit.isLimited() ? suggestedLimit.toInt() : Long.MAX_VALUE)
 					.map(rowId -> {
 						try
 						{

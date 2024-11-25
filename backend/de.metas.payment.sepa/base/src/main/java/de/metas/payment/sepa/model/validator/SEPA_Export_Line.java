@@ -22,30 +22,27 @@ package de.metas.payment.sepa.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_SEPA_Export_Line.class)
 public class SEPA_Export_Line
 {
 	/**
 	 * If the given line's account is an ESR account, then this method sets the line's <code>OtherAccountIdentification</code> value to the ESR-account's retrieveESRAccountNo.
-	 * 
 	 * task 07789
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateOtherAccountIdentification(I_SEPA_Export_Line esrImport)
+	public void updateOtherAccountIdentification(final I_SEPA_Export_Line esrImport)
 	{
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 		final  String QR_IBAN = bpBankAccount.getQR_IBAN();
@@ -55,7 +52,7 @@ public class SEPA_Export_Line
 			return; // nothing to do if is not ESR or if is a QR account
 		}
 
-		if (QR_IBAN != null && QR_IBAN.length() > 0)
+		if (Check.isNotBlank(QR_IBAN))
 		{
 			esrImport.setOtherAccountIdentification(""); // set nothing, but we need to make sure that tag is closed
 			return;

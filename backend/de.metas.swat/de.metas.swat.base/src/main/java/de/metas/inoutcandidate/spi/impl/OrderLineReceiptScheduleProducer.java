@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -396,7 +398,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 		receiptSchedule.setIsActive(false);
-		InterfaceWrapperHelper.delete(receiptSchedule);
+		deleteRecord(receiptSchedule);
 	}
 
 	/**

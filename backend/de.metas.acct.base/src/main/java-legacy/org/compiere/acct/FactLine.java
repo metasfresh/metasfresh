@@ -1134,13 +1134,19 @@ public final class FactLine extends X_Fact_Acct
 	@Override
 	public String toString()
 	{
-		return "FactLine=[" + getAD_Table_ID() + ":" + getRecord_ID()
+		String sb = "FactLine=[" + getAD_Table_ID() + ":" + getRecord_ID()
 				+ "," + m_acct
 				+ ",Cur=" + getC_Currency_ID()
 				+ ", DR=" + getAmtSourceDr() + "|" + getAmtAcctDr()
 				+ ", CR=" + getAmtSourceCr() + "|" + getAmtAcctCr()
-				+ ", Record/Line=" + getRecord_ID() + (getLine_ID() > 0 ? "/" + getLine_ID() : "")
-				+ "]";
+				+ ", Record/Line=" + getRecord_ID() + (getLine_ID() > 0 ? "/" + getLine_ID() : "");
+		final BigDecimal currencyRate = getCurrencyRate();
+		if (currencyRate != null && currencyRate.signum() != 0 && currencyRate.compareTo(BigDecimal.ONE) != 0)
+		{
+			sb = sb + ", currencyRate=" + currencyRate;
+		}
+		sb = sb + "]";
+		return sb;
 	}
 
 	public OrgId getOrgId() {return OrgId.ofRepoIdOrAny(getAD_Org_ID());}

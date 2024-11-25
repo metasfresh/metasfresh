@@ -16,46 +16,21 @@
  *****************************************************************************/
 package org.eevolution.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Query;
+import org.eevolution.model.I_PP_Product_BOMLine;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Query;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 
 /**
@@ -88,12 +63,12 @@ public class ComponentChange extends JavaProcess
 	{
 		int morepara = 0;
 		
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 
 			if (para.getParameter() == null)
-				;
+				return;
 			else if (name.equals("M_Product_ID") && morepara == 0)
 			{    
 				p_M_Product_ID = para.getParameterAsInt();
@@ -124,8 +99,8 @@ public class ComponentChange extends JavaProcess
 			throw new FillMandatoryException("Action");
 		}
 		
-		List<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer();
+		final List<Object> params = new ArrayList<>();
+		final StringBuffer whereClause = new StringBuffer();
 		
 		whereClause.append(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID+"=?");
 		params.add(p_M_Product_ID);
@@ -141,10 +116,10 @@ public class ComponentChange extends JavaProcess
 			params.add(p_ValidFrom);
 		}
 
-		List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
+		final List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
 													.setParameters(params)
 													.list(I_PP_Product_BOMLine.class);
-		for(I_PP_Product_BOMLine bomline : components) 
+		for(final I_PP_Product_BOMLine bomline : components)
 		{		
 			if (p_Action.equals(ACTION_Add))
 			{
@@ -172,14 +147,14 @@ public class ComponentChange extends JavaProcess
 			{
 				throw new LiberoException("Action not supported - "+p_Action);
 			}
-			addLog(Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
+			addLog(ADReferenceService.get().retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
 		}                    
 		return "@OK@";
 	}	//	doIt
 
-	protected void actionAdd(I_PP_Product_BOMLine bomline, int line)
+	protected void actionAdd(final I_PP_Product_BOMLine bomline, final int line)
 	{
-		I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
+		final I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
 				.setFrom(bomline)
 				.copyToNew(I_PP_Product_BOMLine.class);
 		newbomline.setIsActive(true);
@@ -195,14 +170,14 @@ public class ComponentChange extends JavaProcess
 		saveRecord(newbomline);
 	}
 	
-	protected void actionDeactivate(I_PP_Product_BOMLine bomline)
+	protected void actionDeactivate(final I_PP_Product_BOMLine bomline)
 	{
 		bomline.setIsActive(false);
 		bomline.setM_ChangeNotice_ID(p_M_ChangeNotice_ID);
 		saveRecord(bomline);
 	}
 
-	protected void actionExpire(I_PP_Product_BOMLine bomline)
+	protected void actionExpire(final I_PP_Product_BOMLine bomline)
 	{
 		bomline.setIsActive(true);
 		bomline.setValidTo(bomline.getUpdated());

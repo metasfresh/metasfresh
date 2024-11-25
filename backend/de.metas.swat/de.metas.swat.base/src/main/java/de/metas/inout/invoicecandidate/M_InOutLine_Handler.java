@@ -471,7 +471,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutRecord.getC_DocType_ID() > 0)
 		{
-			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID());
 			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
 			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
 			{
@@ -508,6 +508,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return null;
 	}
 
+	@NonNull
 	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
 	{
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
@@ -540,8 +541,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.stream()
 					.map(InvoiceCandidateId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
-
-			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
 
 			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
 			return;

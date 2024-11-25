@@ -96,6 +96,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -109,7 +110,8 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candida
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
@@ -299,7 +301,7 @@ public class MD_Candidate_StepDef
 					.create()
 					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
-			assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
+			softly.assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
 			softly.assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - Fresh_QtyOnHand_ID", freshQtyOnHandLineId).isEqualTo(freshQtyOnHandId);
 			softly.assertThat(stockChangeDetail.isReverted()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - isReverted", freshQtyOnHandLineId).isEqualTo(isReverted);
 
@@ -343,7 +345,7 @@ public class MD_Candidate_StepDef
 				event = MaterialDispoUtils.createStockEstimateDeletedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
 				break;
 			default:
-				throw new AdempiereException("Event type not handeled: " + eventType);
+				throw new AdempiereException("Event type not handled: " + eventType);
 		}
 
 		//noinspection deprecation
@@ -419,15 +421,17 @@ public class MD_Candidate_StepDef
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
+		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
 		table.forEach((row) -> {
 			// make sure the given md_candidate has been created
-			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row);
+			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row, candidateIdsAlreadyMatched);
 			SharedTestContext.put("candidateId", materialDispoRecord.getCandidateId().getRepoId());
 			SharedTestContext.put("materialDispoRecord", materialDispoRecord);
 
 			validate_md_candidate(row, materialDispoRecord);
 
 			materialDispoDataItemStepDefData.putOrReplace(row.getIdentifier(), materialDispoRecord);
+			candidateIdsAlreadyMatched.put(materialDispoRecord.getCandidateId(), row.getIdentifier());
 		});
 
 		stopwatch.stop();
@@ -476,7 +480,8 @@ public class MD_Candidate_StepDef
 
 	private MaterialDispoDataItem tryAndWaitForCandidate(
 			final int timeoutSec,
-			final @NonNull MaterialDispoTableRow row) throws InterruptedException
+			final @NonNull MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude) throws InterruptedException
 	{
 
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
@@ -487,17 +492,19 @@ public class MD_Candidate_StepDef
 		SharedTestContext.put("actual candidates query SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
 
 		return StepDefUtil.<MaterialDispoDataItem>tryAndWaitForItem()
-				.worker(() -> retrieveMaterialDispoDataItem(row))
+				.worker(() -> retrieveMaterialDispoDataItem(row, candidateIdsToExclude))
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(1000L)
 				.execute();
 	}
 
-	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow row)
+	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(
+			final @NonNull MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
 		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
-		return newValidator().findValidItem(items, row);
+		return newValidator().findValidItem(items, row, candidateIdsToExclude);
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
@@ -507,7 +514,6 @@ public class MD_Candidate_StepDef
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 				.build());

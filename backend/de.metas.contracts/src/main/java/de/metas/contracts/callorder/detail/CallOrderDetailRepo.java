@@ -206,7 +206,7 @@ public class CallOrderDetailRepo
 
 		if (record.getC_OrderLine_ID() > 0)
 		{
-			final Quantity qtyEntered = Quantitys.create(record.getQtyEntered(), uomId);
+			final Quantity qtyEntered = Quantitys.of(record.getQtyEntered(), uomId);
 
 			return builder
 					.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
@@ -217,7 +217,7 @@ public class CallOrderDetailRepo
 		}
 		else if (record.getM_InOutLine_ID() > 0)
 		{
-			final Quantity qtyDeliveredInUOM = Quantitys.create(record.getQtyDeliveredInUOM(), uomId);
+			final Quantity qtyDeliveredInUOM = Quantitys.of(record.getQtyDeliveredInUOM(), uomId);
 
 			return builder
 					.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
@@ -227,7 +227,7 @@ public class CallOrderDetailRepo
 		}
 		else if (record.getC_InvoiceLine_ID() > 0)
 		{
-			final Quantity qtyInvoicedInUOM = Quantitys.create(record.getQtyInvoicedInUOM(), uomId);
+			final Quantity qtyInvoicedInUOM = Quantitys.of(record.getQtyInvoicedInUOM(), uomId);
 
 			return builder
 					.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))

@@ -240,7 +240,7 @@ public class IssueRepository
 				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
-				.invoicableChildEffort(Quantitys.create(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
+				.invoicableChildEffort(Quantitys.of(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
 				.latestActivityOnIssue(TimeUtil.asInstant(record.getLatestActivity()))
 				.latestActivityOnSubIssues(TimeUtil.asInstant(record.getLatestActivityOnSubIssues()))
 				.externalIssueNo(record.getExternalIssueNo())

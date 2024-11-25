@@ -281,12 +281,12 @@ public class M_Inventory_StepDef
 		{
 			productId = productIdentifier.getAsId(ProductId.class);
 			final I_M_Product productById = productDAO.getById(productId);
-			productTable.put(productIdentifier, productById);
+			productTable.putOrReplace(productIdentifier, productById);
 
 		}
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 
-		InterfaceWrapperHelper.save(inventoryLineRecord);
+		saveRecord(inventoryLineRecord);
 
 		row.getAsOptionalIdentifier("M_InventoryLine_ID")
 				.ifPresent(inventoryLineIdentifier -> inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord));

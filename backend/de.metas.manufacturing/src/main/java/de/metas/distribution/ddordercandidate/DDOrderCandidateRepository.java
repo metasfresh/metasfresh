@@ -144,9 +144,9 @@ public class DDOrderCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.create(record.getQtyEntered(), uomId))
+				.qty(Quantitys.of(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
-				.qtyProcessed(Quantitys.create(record.getQtyProcessed(), uomId))
+				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				//

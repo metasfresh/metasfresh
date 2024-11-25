@@ -22,21 +22,20 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.
  *
  * @author tsa
- *
  */
 public class OrderLineHUPackingAware implements IHUPackingAware
 {
@@ -52,11 +51,8 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	 */
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public OrderLineHUPackingAware(final I_C_OrderLine orderLine)
+	public OrderLineHUPackingAware(@NonNull final I_C_OrderLine orderLine)
 	{
-		super();
-
-		Check.assumeNotNull(orderLine, "orderLine not null");
 		this.orderLine = orderLine;
 	}
 
@@ -86,7 +82,7 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	/**
-	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM()}.
+	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM_ID()}.
 	 */
 	@Override
 	public BigDecimal getQty()
@@ -151,6 +147,19 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	{
 		orderLine.setQtyEnteredTU(qtyPacks);
 		values.setQtyTU(qtyPacks);
+	}
+
+	@Override
+	public void setQtyCUsPerTU(final BigDecimal qtyCUsPerTU)
+	{
+		orderLine.setQtyItemCapacity(qtyCUsPerTU);
+		values.setQtyCUsPerTU(qtyCUsPerTU);
+	}
+
+	@Override
+	public Optional<BigDecimal> getQtyCUsPerTU()
+	{
+		return Optional.of(orderLine.getQtyItemCapacity());
 	}
 
 	@Override

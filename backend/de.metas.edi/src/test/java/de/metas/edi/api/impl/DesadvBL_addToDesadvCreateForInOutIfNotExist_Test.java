@@ -71,7 +71,8 @@ import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -217,7 +218,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		saveRecord(inOutLineRecord);
 
 		final HURepository huRepository = new HURepository();
-		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), huRepository, new EDIDesadvInOutLineDAO());
+		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test

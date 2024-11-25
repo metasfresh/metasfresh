@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -60,7 +61,6 @@ import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -614,7 +614,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public String getDocStatusName()
 	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
+		return ADReferenceService.get().retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
 	} // getDocStatusName
 
 	/**
@@ -857,7 +857,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		final int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1123,7 +1123,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;

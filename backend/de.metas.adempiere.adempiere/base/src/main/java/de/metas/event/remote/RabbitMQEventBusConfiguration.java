@@ -11,7 +11,6 @@ import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
@@ -51,8 +50,6 @@ import java.util.Optional;
 @EnableRabbit // needed for @RabbitListener to be considered
 public class RabbitMQEventBusConfiguration
 {
-	private static final String FANOUT_SUFFIX = "-fanout";
-	private static final String DIRECT_SUFFIX = "-direct";
 	private static final String APPLICATION_NAME_SPEL = "${spring.application.name:spring.application.name-not-set}";
 	@Value(APPLICATION_NAME_SPEL)
 	private String appName;
@@ -79,7 +76,7 @@ public class RabbitMQEventBusConfiguration
 
 	/**
 	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
-	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
+	 * Thx to <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq">spring-boot-features-rabbitmq</a>
 	 * <p>
 	 * (although right now it doesn't need to work..)
 	 */
@@ -113,27 +110,16 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public FanoutExchange fanoutEventsExchange()
+		public DirectExchange eventsExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public DirectExchange directEventsExchange()
+		public Binding eventsBinding()
 		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
-		public Binding fanoutEventsBinding()
-		{
-			return BindingBuilder.bind(eventsQueue()).to(fanoutEventsExchange());
-		}
-
-		@Bean
-		public Binding directEventsBinding()
-		{
-			return BindingBuilder.bind(eventsQueue()).to(directEventsExchange()).with(getQueueName());
+			return BindingBuilder.bind(eventsQueue())
+					.to(eventsExchange()).with(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Override
@@ -149,9 +135,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
-		public String getFanoutExchangeName()
+		public String getExchangeName()
 		{
-			return fanoutEventsExchange().getName();
+			return eventsExchange().getName();
 		}
 	}
 
@@ -174,27 +160,16 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public FanoutExchange fanoutCacheInvalidationExchange()
+		public DirectExchange cacheInvalidationExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public DirectExchange directCacheInvalidationExchange()
+		public Binding cacheInvalidationBinding()
 		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
-		public Binding fanoutCacheInvalidationBinding()
-		{
-			return BindingBuilder.bind(cacheInvalidationQueue()).to(fanoutCacheInvalidationExchange());
-		}
-
-		@Bean
-		public Binding directCacheInvalidationBinding()
-		{
-			return BindingBuilder.bind(cacheInvalidationQueue()).to(directCacheInvalidationExchange()).with(getQueueName());
+			return BindingBuilder.bind(cacheInvalidationQueue())
+					.to(cacheInvalidationExchange()).with(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Override
@@ -210,9 +185,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
-		public String getFanoutExchangeName()
+		public String getExchangeName()
 		{
-			return fanoutCacheInvalidationExchange().getName();
+			return cacheInvalidationExchange().getName();
 		}
 	}
 
@@ -235,27 +210,16 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public FanoutExchange fanoutAccountingExchange()
+		public DirectExchange accountingExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public DirectExchange directAccountingExchange()
+		public Binding accountingBinding()
 		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
-		public Binding fanoutAccountingBinding()
-		{
-			return BindingBuilder.bind(accountingQueue()).to(fanoutAccountingExchange());
-		}
-
-		@Bean
-		public Binding directAccountingBinding()
-		{
-			return BindingBuilder.bind(accountingQueue()).to(directAccountingExchange()).with(getQueueName());
+			return BindingBuilder.bind(accountingQueue())
+					.to(accountingExchange()).with(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Override
@@ -271,9 +235,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
-		public String getFanoutExchangeName()
+		public String getExchangeName()
 		{
-			return fanoutAccountingExchange().getName();
+			return accountingExchange().getName();
 		}
 	}
 
@@ -296,27 +260,16 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public FanoutExchange fanoutSchedulerExchange()
+		public DirectExchange schedulerExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public DirectExchange directSchedulerExchange()
+		public Binding schedulerBinding()
 		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
-		public Binding fanoutSchedulerBinding()
-		{
-			return BindingBuilder.bind(schedulerQueue()).to(fanoutSchedulerExchange());
-		}
-
-		@Bean
-		public Binding directSchedulerBinding()
-		{
-			return BindingBuilder.bind(schedulerQueue()).to(directSchedulerExchange()).with(getQueueName());
+			return BindingBuilder.bind(schedulerQueue())
+					.to(schedulerExchange()).with(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Override
@@ -332,9 +285,59 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
-		public String getFanoutExchangeName()
+		public String getExchangeName()
 		{
-			return fanoutSchedulerExchange().getName();
+			return schedulerExchange().getName();
+		}
+	}
+
+	@Configuration
+	public static class AsyncBatchQueueConfiguration implements IEventBusQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshAsyncBatchQueue.name}";
+		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
+		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-async-batch-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue asyncBatchQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public DirectExchange asyncBatchExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding asyncBatchBinding()
+		{
+			return BindingBuilder.bind(asyncBatchQueue())
+					.to(asyncBatchExchange()).with(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Override
+		public String getQueueName()
+		{
+			return asyncBatchQueue().getName();
+		}
+
+		@Override
+		public Optional<String> getTopicName()
+		{
+			return Optional.of(EVENTBUS_TOPIC.getName());
+		}
+
+		@Override
+		public String getExchangeName()
+		{
+			return asyncBatchExchange().getName();
 		}
 	}
 
@@ -342,7 +345,7 @@ public class RabbitMQEventBusConfiguration
 	public static class MaterialEventsQueueConfiguration implements IEventBusQueueConfiguration
 	{
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshMaterialEventsQueue.name}";
-		private static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
 		private static final String QUEUE_BEAN_NAME = "metasfreshMaterialEventsQueue";
 		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-material-events";
 
@@ -357,27 +360,16 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public FanoutExchange fanoutMaterialEventsExchange()
+		public DirectExchange materialEventsExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public DirectExchange directMaterialEventsExchange()
+		public Binding materialEventsBinding()
 		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
-		public Binding fanoutMaterialEventsBinding()
-		{
-			return BindingBuilder.bind(materialEventsQueue()).to(fanoutMaterialEventsExchange());
-		}
-
-		@Bean
-		public Binding directMaterialEventsBinding()
-		{
-			return BindingBuilder.bind(materialEventsQueue()).to(directMaterialEventsExchange()).with(getQueueName());
+			return BindingBuilder.bind(materialEventsQueue())
+					.to(materialEventsExchange()).with(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Override
@@ -393,39 +385,59 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
-		public String getFanoutExchangeName()
+		public String getExchangeName()
 		{
-			return fanoutMaterialEventsExchange().getName();
+			return materialEventsExchange().getName();
 		}
 	}
 
 	@Configuration
-	public static class AsyncBatchQueueConfiguration
+	public static class EffortControlQueueConfiguration implements IEventBusQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
-		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
-		private static final String EXCHANGE_NAME = "metasfresh-async-batch-events";
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.serviceprovider.eventbus.EffortControlEventRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshEffortControlQueue.name}";
+		private static final String QUEUE_BEAN_NAME = "metasfreshEffortControlQueue";
+		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-effort-control-events";
 
 		@Value(APPLICATION_NAME_SPEL)
 		private String appName;
 
 		@Bean(QUEUE_BEAN_NAME)
-		public AnonymousQueue asyncBatchQueue()
+		public AnonymousQueue effortControlQueue()
 		{
 			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
 		@Bean
-		public FanoutExchange asyncBatchExchange()
+		public DirectExchange effortControlExchange()
 		{
-			return new FanoutExchange(EXCHANGE_NAME);
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
 		}
 
 		@Bean
-		public Binding asyncBatchBinding()
+		public Binding effortControlBinding()
 		{
-			return BindingBuilder.bind(asyncBatchQueue()).to(asyncBatchExchange());
+			return BindingBuilder.bind(effortControlQueue())
+					.to(effortControlExchange()).with(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Override
+		public String getQueueName()
+		{
+			return effortControlQueue().getName();
+		}
+
+		@Override
+		public Optional<String> getTopicName()
+		{
+			return Optional.of(EVENTBUS_TOPIC.getName());
+		}
+
+		@Override
+		public String getExchangeName()
+		{
+			return effortControlExchange().getName();
 		}
 	}
 }

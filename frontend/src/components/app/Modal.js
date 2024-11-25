@@ -684,6 +684,7 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
+                  disabled={indicator === 'error'}
                 >
                   {counterpart.translate('modal.actions.start')}
 

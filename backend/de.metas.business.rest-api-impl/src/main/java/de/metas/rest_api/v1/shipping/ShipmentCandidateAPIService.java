@@ -59,6 +59,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;

@@ -33,36 +33,42 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.remote.RabbitMQDestinationResolver;
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueInformation;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RabbitMQ_StepDef
 {
 	private final RabbitMQDestinationResolver rabbitMQDestinationSolver = SpringContextHolder.instance.getBean(RabbitMQDestinationResolver.class);
 	private final EventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(EventBusFactory.class);
+	private final AmqpTemplate amqpTemplate = SpringContextHolder.instance.getBean(AmqpTemplate.class);
 
 	private final Queue_StepDefData queueTable;
 	private final Channel_StepDefData channelTable;
@@ -88,6 +94,12 @@ public class RabbitMQ_StepDef
 		connectionFactory = new CachingConnectionFactory(commandLineOptions.getRabbitHost(), commandLineOptions.getRabbitPort());
 		connectionFactory.setUsername(commandLineOptions.getRabbitUser());
 		connectionFactory.setPassword(commandLineOptions.getRabbitPassword());
+	}
+
+	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
+	public void wait_empty_material_queue() throws InterruptedException
+	{
+		waitEmptyMaterialQueue();
 	}
 
 	@Given("rabbitMQ queue is created")
@@ -206,25 +218,19 @@ public class RabbitMQ_StepDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
-		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
-
-		final String fanoutExchangeName = exchangeNamePrefix + "-fanout";
-		final String directExchangeName = exchangeNamePrefix + "-direct";
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
 
 		final Topic topic = topicTable.get(topicIdentifier);
-		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, fanoutExchangeName);
+		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, exchangeName);
 		final AnonymousQueue anonymousQueue = testRabbitMQConfiguration.getQueue();
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		final FanoutExchange fanoutExchange = new FanoutExchange(fanoutExchangeName, false, true);
-		final DirectExchange directExchange = new DirectExchange(directExchangeName, false, true);
+		final DirectExchange directExchange = new DirectExchange(exchangeName, false, true);
 
-		admin.declareExchange(fanoutExchange);
 		admin.declareExchange(directExchange);
 		admin.declareQueue(anonymousQueue);
-		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(fanoutExchange));
-		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(anonymousQueue.getName()));
+		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(exchangeName));
 
 		rabbitMQDestinationSolver.registerQueue(testRabbitMQConfiguration);
 
@@ -295,7 +301,7 @@ public class RabbitMQ_StepDef
 	private void createQueue(@NonNull final Map<String, String> tableRow)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
-		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
 		final Topic topic = topicTable.get(topicIdentifier);
 
@@ -304,11 +310,11 @@ public class RabbitMQ_StepDef
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		final FanoutExchange exchange = new FanoutExchange(exchangeNamePrefix + "-fanout", false, true);
+		final DirectExchange exchange = new DirectExchange(exchangeName, false, true);
 
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(exchangeName));
 
 		queueTable.put(identifier, queue);
 	}
@@ -319,10 +325,45 @@ public class RabbitMQ_StepDef
 		final String eventBody = DataTableUtil.extractStringForColumnName(tableRow, "Event.Body");
 
 		final Topic topic = topicTable.get(topicIdentifier);
+		assertThat(topic).as("Missing topic for Topic.Identifier=%s", topicIdentifier).isNotNull();
 
 		final IEventBus eventBus = eventBusFactory.getEventBus(topic);
+		assertThat(topic).as("Missing eventBus for topic=%s; Topic.Identifier=%s", topic.getName(), topicIdentifier).isNotNull();
+
 		eventBus.enqueueEvent(Event.builder()
-									  .withBody(eventBody)
-									  .build());
+				.withBody(eventBody)
+				.build());
+	}
+
+	private void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis();
+		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
+
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
+
+		long messageCount;
+		do
+		{
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
+					.orElseThrow(() -> new AdempiereException("Queue does not exist!")
+							.appendParametersToMessage()
+							.setParameter("QueueName", queueName));
+
+			messageCount = queueInformation.getMessageCount();
+		}
+		while (messageCount > 0 && deadLineMillis > System.currentTimeMillis());
+
+		if (messageCount > 0)
+		{
+			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
+					.appendParametersToMessage()
+					.setParameter("QueueName", queueName)
+					.setParameter("messageCount", messageCount);
+		}
 	}
 }

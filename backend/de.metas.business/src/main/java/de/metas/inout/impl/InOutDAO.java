@@ -90,9 +90,21 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 	}
 
 	@Override
@@ -120,12 +132,6 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
-	}
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)

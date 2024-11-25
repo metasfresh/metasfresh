@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
@@ -56,7 +57,6 @@ import de.metas.util.Services;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -77,7 +77,7 @@ public class PickingJobService
 {
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
-	
+
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -276,7 +276,7 @@ public class PickingJobService
 				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
 	}

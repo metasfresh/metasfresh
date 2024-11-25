@@ -111,15 +111,15 @@ public class EDIDesadvInOutLineDAO
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyEnteredInBPartnerUOM(Optional.of(record.getC_UOM_BPartner_ID())
 												 .map(UomId::ofRepoIdOrNull)
-												 .map(bpartnerUOMId -> Quantitys.create(record.getQtyEnteredInBPartnerUOM(), bpartnerUOMId))
+												 .map(bpartnerUOMId -> Quantitys.of(record.getQtyEnteredInBPartnerUOM(), bpartnerUOMId))
 												 .orElse(null))
 				.qtyDeliveredInStockingUOM(StockQtyAndUOMQtys
 												   .ofQtyInStockUOM(record.getQtyDeliveredInStockingUOM(), productId)
 												   .getStockQty())
-				.qtyDeliveredInUOM(Quantitys.create(record.getQtyDeliveredInUOM(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyDeliveredInUOM(Quantitys.of(record.getQtyDeliveredInUOM(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.qtyDeliveredInInvoiceUOM(Optional.of(record.getC_UOM_Invoice_ID())
 												  .map(UomId::ofRepoIdOrNull)
-												  .map(invoiceUOMId -> Quantitys.create(record.getQtyDeliveredInInvoiceUOM(), invoiceUOMId))
+												  .map(invoiceUOMId -> Quantitys.of(record.getQtyDeliveredInInvoiceUOM(), invoiceUOMId))
 												  .orElse(null))
 				.desadvTotalQtyDeliveredInStockingUOM(StockQtyAndUOMQtys
 															  .ofQtyInStockUOM(record.getDesadvLineTotalQtyDelivered(), productId)

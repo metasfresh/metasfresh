@@ -25,13 +25,13 @@ package org.adempiere.ad.table.api.impl;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -498,7 +498,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);

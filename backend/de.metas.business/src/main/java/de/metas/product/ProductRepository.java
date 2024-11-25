@@ -14,6 +14,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -57,6 +58,12 @@ public class ProductRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
 
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
@@ -328,6 +335,7 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.procurementStatus(productRecord.getProcurementStatus())
 				.build();
 	}
 
@@ -367,7 +375,7 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
-
+		record.setProcurementStatus(product.getProcurementStatus());
 		return record;
 	}
 

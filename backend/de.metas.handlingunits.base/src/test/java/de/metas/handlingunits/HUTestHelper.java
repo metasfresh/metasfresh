@@ -1,6 +1,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -572,6 +573,7 @@ public class HUTestHelper
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);

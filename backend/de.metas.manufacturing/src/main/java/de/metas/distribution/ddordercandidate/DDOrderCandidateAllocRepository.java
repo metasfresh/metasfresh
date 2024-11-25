@@ -63,7 +63,7 @@ public class DDOrderCandidateAllocRepository
 				.id(record.getDD_Order_Candidate_DDOrder_ID())
 				.ddOrderCandidateId(extractDDOrderCandidateId(record))
 				.ddOrderAndLineId(extractDDOrderAndLineId(record))
-				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
 	}
 

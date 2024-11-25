@@ -228,6 +228,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{

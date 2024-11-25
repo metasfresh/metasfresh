@@ -23,6 +23,7 @@
 package de.metas.edi.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -52,11 +53,13 @@ public interface IDesadvDAO extends ISingletonService
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
+	I_EDI_DesadvLine retrieveLineById(@NonNull EDIDesadvLineId ediDesadvLineId);
+
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */
 	@Nullable
-	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line);
+	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line, BPartnerId bPartnerId);
 
 	/**
 	 * @return all desadv lines (incl inactive ones) that reference the given <code>desadv</code>.
@@ -121,9 +124,13 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
-
 	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
+
+	@NonNull
+	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
+
+	@NonNull
+	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 
 	/**
 	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_SeqNo} value for the given desadvId.
@@ -134,10 +141,4 @@ public interface IDesadvDAO extends ISingletonService
 	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item#COLUMNNAME_Line} value for the given desadvId.
 	 */
 	int retrieveMaxDesadvPackItemLine(@NonNull EDIDesadvId ediDesadvId);
-
-	@NonNull
-	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
-
-	@NonNull
-	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 }

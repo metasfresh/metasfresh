@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
@@ -112,7 +112,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 									  "NL31INGB0000000044",// IBAN
 									  "INGBNL2A", // BIC
 									  new BigDecimal("100"), // amount
-									  eur, "210000000003139471430009017");
+									  eur,
+				"210000000003139471430009017");
 
 		createSEPAExportLineQRVersion(sepaExport,
 									  "002", // SEPA_MandateRefNo
@@ -179,7 +180,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.map(PaymentIdentification1::getEndToEndId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		assertThat(endToEndIds).containsExactlyInAnyOrder(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.NOTPROVIDED_VALUE);
+		assertThat(endToEndIds).containsExactlyInAnyOrder(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.NOTPROVIDED_GENERAL);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
@@ -401,6 +402,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	{
 		final String output = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
 		assertThat(output).isEqualTo(expected);
+	}
+
+
+	@Test
+	public void testIsInvalidQRReference()
+	{
+		assertIsInvalidQRReferenceWorks("", true);
+		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
+		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
+		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+	}
+
+	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)
+	{
+		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
+		assertThat(result).isEqualTo(expected);
 	}
 
 }

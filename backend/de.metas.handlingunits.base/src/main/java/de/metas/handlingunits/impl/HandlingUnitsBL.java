@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
@@ -88,7 +89,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -138,7 +138,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
@@ -1276,7 +1275,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@NonNull
 	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{
-		return adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		return adReferenceService.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
 	}
 
 	private boolean isWholeHierarchyCleared(@NonNull final I_M_HU hu)

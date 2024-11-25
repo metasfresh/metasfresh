@@ -252,7 +252,11 @@ public class DataTableRow
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
+		String string = null;
+		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
 		if (string == null && !columnName.startsWith("OPT."))
 		{
 			string = map.get("OPT." + columnName);
@@ -264,6 +268,11 @@ public class DataTableRow
 		if (string == null && !columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+
+		if (string == null)
+		{
+			string = map.get(columnName);
 		}
 
 		if (string == null || Check.isBlank(string))

@@ -3,8 +3,13 @@ package de.metas.ordercandidate.api;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.order.*;
+import de.metas.order.BPartnerOrderParams;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -49,7 +54,7 @@ import java.util.Objects;
  */
 
 @ToString
-final class OLCandFactory 
+public final class OLCandFactory
 {
     public static final String SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED = "de.metas.ordercandidate.Use_DateCandidate_As_DateOrdered";
     private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
@@ -61,10 +66,10 @@ final class OLCandFactory
     {
         return toOLCand(olCandRecord, null);
     }
-    
+
     public OLCand toOLCand(
             @NonNull final I_C_OLCand olCandRecord,
-            @Nullable final OLCandOrderDefaults orderDefaults) 
+            @Nullable final OLCandOrderDefaults orderDefaults)
     {
         final BPartnerOrderParams params = olCandBL.getBPartnerOrderParams(olCandRecord);
 
@@ -118,18 +123,19 @@ final class OLCandFactory
                 .email(olCandRecord.getEMail())
                 .phone(olCandRecord.getPhone())
                 .presetDateShipped(presetDateShipped)
-                .presetDateInvoiced(presetDateInvoiced);
+                .presetDateInvoiced(presetDateInvoiced)
+				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()));
 
         final boolean useDateCandidate = sysConfigBL.getBooleanValue(SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED, false, olCandRecord.getAD_Client_ID(), olCandRecord.getAD_Org_ID());
-        if (useDateCandidate) 
+        if (useDateCandidate)
         {
             builder.dateOrdered(TimeUtil.asLocalDate(olCandRecord.getDateCandidate(), tz));
-        } 
-        else 
+        }
+        else
         {
-            // this is how it was; but note that DateOrdered was not in the "EDI_Imp_C_OLCand" EXP_Format, 
+            // this is how it was; but note that DateOrdered was not in the "EDI_Imp_C_OLCand" EXP_Format,
             // so in the EDI ORDERS-case, it was always null.
-            builder.dateOrdered(TimeUtil.asLocalDate(olCandRecord.getDateOrdered(), tz)); 
+            builder.dateOrdered(TimeUtil.asLocalDate(olCandRecord.getDateOrdered(), tz));
         }
         return builder.build();
     }

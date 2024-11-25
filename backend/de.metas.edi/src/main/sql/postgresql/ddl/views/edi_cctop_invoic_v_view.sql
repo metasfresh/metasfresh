@@ -9,6 +9,7 @@ SELECT i.C_Invoice_ID                                                           
      , i.C_Order_ID
      , REGEXP_REPLACE(i.DocumentNo, '\s+$', '')                                                             AS Invoice_DocumentNo
      , i.DateInvoiced
+     , i.DateAcct
      , (CASE
             WHEN REGEXP_REPLACE(i.POReference::TEXT, '\s+$', '') <> ''::TEXT AND i.POReference IS NOT NULL /* task 09182: if there is a POReference, then export it */
                 THEN REGEXP_REPLACE(i.POReference, '\s+$', '')

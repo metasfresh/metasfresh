@@ -185,5 +185,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 
-	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
+	/**
+	 * Be sure to check the code! The method might return {@code true} at unexpected times! 
+	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
+	 */
+	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 }

@@ -19,7 +19,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +40,9 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.compiere.model.X_M_Product.PRODUCTTYPE_Item;
 
 /*
  * #%L
@@ -231,6 +232,127 @@ class InvoiceCandidateRecordServiceTest
 	 * Very similar to {@link #ofRecord()}, but has an ic with {@code InvoicableQtyBasedOn = CatchWeight}, but no icIol catchWeigth-quantities
 	 */
 	@Test
+	void ofRecord_RevertInouts()
+	{
+		final I_C_UOM stockUomRecord = uomConversionHelper.createUOM(2);
+		stockUomRecord.setC_UOM_ID(STOCK_UOM_ID.getRepoId());
+		saveRecord(stockUomRecord);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
+		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		productRecord.setProductType(PRODUCTTYPE_Item);
+		saveRecord(productRecord);
+
+		final I_C_UOM icUomRecord = uomConversionHelper.createUOM(2);
+		icUomRecord.setC_UOM_ID(IC_UOM_ID.getRepoId());
+		saveRecord(icUomRecord);
+
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
+		saveRecord(currencyRecord);
+
+		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class);
+		icRecord.setIsSOTrx(true);
+		icRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		icRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
+		icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
+		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_CatchWeight);
+		icRecord.setQtyOrdered(TWENTY);
+		icRecord.setQtyEntered(EIGHTY);
+		icRecord.setC_UOM_ID(icUomRecord.getC_UOM_ID());
+		saveRecord(icRecord);
+
+		final I_M_InOut io = newInstance(I_M_InOut.class);
+		io.setDocStatus(X_M_InOut.DOCSTATUS_Reversed);
+		saveRecord(io);
+
+		final I_C_UOM shipmentUomRecord = uomConversionHelper.createUOM(2);
+		saveRecord(shipmentUomRecord);
+
+		final I_M_InOutLine iol = newInstance(I_M_InOutLine.class);
+		iol.setM_Product_ID(productRecord.getM_Product_ID());
+		iol.setM_InOut_ID(io.getM_InOut_ID());
+		iol.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
+		iol.setMovementQty(TEN);
+		saveRecord(iol);
+
+		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+														.fromUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+														.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
+														.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+														.fromToMultiplier(TEN)
+														// .toFromMultiplier(new BigDecimal("0.1"))
+														.build());
+
+		final I_C_InvoiceCandidate_InOutLine icIol = newInstance(I_C_InvoiceCandidate_InOutLine.class);
+		icIol.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
+		icIol.setM_InOutLine_ID(iol.getM_InOutLine_ID());
+		icIol.setQtyDelivered(iol.getMovementQty());
+		icIol.setQtyDeliveredInUOM_Nominal(FOUR_HUNDRET);
+		icIol.setQtyDeliveredInUOM_Catch(FOUR_HUNDRET_TWENTY);
+		icIol.setC_UOM_ID(iol.getC_UOM_ID());
+		saveRecord(icIol);
+
+		final I_M_InOut io2 = newInstance(I_M_InOut.class);
+		io2.setDocStatus(X_M_InOut.DOCSTATUS_Reversed);
+		saveRecord(io2);
+
+		final I_M_InOutLine iol2 = newInstance(I_M_InOutLine.class);
+		iol2.setM_Product_ID(productRecord.getM_Product_ID());
+		iol2.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
+		iol2.setM_InOut_ID(io2.getM_InOut_ID());
+		iol2.setMovementQty(FIVE);
+		saveRecord(iol2);
+
+		final I_C_InvoiceCandidate_InOutLine icIol2 = newInstance(I_C_InvoiceCandidate_InOutLine.class);
+		icIol2.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
+		icIol2.setM_InOutLine_ID(iol2.getM_InOutLine_ID());
+		icIol2.setQtyDelivered(iol2.getMovementQty());
+		icIol2.setQtyDeliveredInUOM_Nominal(TWO_HUNDRET);
+		icIol2.setQtyDeliveredInUOM_Catch(ONE_HUNDRET_NINETY);
+		icIol2.setC_UOM_ID(iol2.getC_UOM_ID());
+		saveRecord(icIol2);
+
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+
+		// invoke the method under test;
+		final InvoiceCandidate result = new InvoiceCandidateRecordService().ofRecord(icRecord);
+
+		assertThat(result.getId()).isEqualTo(invoiceCandidateId);
+
+		final OrderedData orderedData = result.getOrderedData();
+		assertThat(orderedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
+		assertThat(orderedData.getQtyInStockUom().toBigDecimal()).isEqualByComparingTo(TWENTY);
+
+		assertThat(orderedData.getQty().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
+		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
+
+		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
+		assertThat(shippedData.getDeliveredQtyItems()).isNotEmpty();
+
+		assertThat(shippedData.getDeliveredQtyItems())
+				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
+				.contains(tuple(TEN, FOUR_HUNDRET, FOUR_HUNDRET_TWENTY, null),
+						  tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
+
+		assertThat(shippedData.getQtyInStockUom()).isNotNull();
+		assertThat(shippedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
+		assertThat(shippedData.getQtyInStockUom().toBigDecimal()).isZero();
+
+		assertThat(shippedData.getQtyNominal()).isNotNull();
+		assertThat(shippedData.getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
+		assertThat(shippedData.getQtyNominal().toBigDecimal()).isZero();
+
+		assertThat(shippedData.getQtyCatch()).isNull();
+
+		expect(result).toMatchSnapshot();
+	}
+
+	/**
+	 * Very similar to {@link #ofRecord()}, but has an ic with {@code InvoicableQtyBasedOn = CatchWeight}, but no icIol catchWeigth-quantities
+	 */
+	@Test
 	void ofRecord_no_catchWeightInfos()
 	{
 		final I_C_UOM stockUomRecord = createUomRecord(STOCK_UOM_ID);
@@ -321,7 +443,7 @@ class InvoiceCandidateRecordServiceTest
 	private I_M_Product createProductRecord(@NonNull final I_C_UOM uom)
 	{
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
+		productRecord.setProductType(PRODUCTTYPE_Item);
 		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		saveRecord(productRecord);

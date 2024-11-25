@@ -183,19 +183,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setGTIN_CU (final @Nullable String GTIN_CU)
+	public void setGTIN_CU (final @Nullable java.lang.String GTIN_CU)
 	{
 		set_Value (COLUMNNAME_GTIN_CU, GTIN_CU);
 	}
 
 	@Override
-	public String getGTIN_CU() 
+	public java.lang.String getGTIN_CU() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_CU);
 	}
 
 	@Override
-	public void setGTIN_TU (final @Nullable String GTIN_TU)
+	public void setGTIN_TU (final @Nullable java.lang.String GTIN_TU)
 	{
 		set_Value (COLUMNNAME_GTIN_TU, GTIN_TU);
 	}

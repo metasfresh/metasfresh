@@ -48,7 +48,7 @@ import static java.math.BigDecimal.ZERO;
 public final class Quantity implements Comparable<Quantity>
 {
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uomRecord)
 	{
@@ -56,7 +56,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
@@ -64,7 +64,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(final int qty, @NonNull final I_C_UOM uomRecord)
 	{

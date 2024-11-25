@@ -87,7 +87,7 @@ class OLCandOrderFactoryTest
 				Optional.empty()
 		));
 
-		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
+		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(

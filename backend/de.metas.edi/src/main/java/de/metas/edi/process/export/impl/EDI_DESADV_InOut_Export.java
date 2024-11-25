@@ -1,3 +1,5 @@
+package de.metas.edi.process.export.impl;
+
 /*
  * #%L
  * de.metas.edi
@@ -19,8 +21,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.edi.process.export.impl;
 
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.IDesadvDAO;
@@ -79,7 +79,7 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 			exportEDI(I_M_InOut_Desadv_V.class,
 					  EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT,
 					  I_M_InOut_Desadv_V.Table_Name,
-					  I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_Desadv_ID,
+					  I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID,
 					  CreateAttachmentRequest.builder()
 							  .target(TableRecordReference.of(I_EDI_Desadv.Table_Name, shipment.getEDI_Desadv_ID()))
 							  .attachmentName(EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT + "_" + shipment.getDocumentNo() + ".xml")

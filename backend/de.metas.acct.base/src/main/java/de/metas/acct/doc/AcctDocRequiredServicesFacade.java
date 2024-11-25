@@ -38,10 +38,12 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
@@ -65,6 +67,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 /*
@@ -107,6 +110,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final BankAccountService bankAccountService;
 
 	//
@@ -303,6 +307,12 @@ public class AcctDocRequiredServicesFacade
 		return costingService.createCostDetail(request);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
+	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		return costingService.createCostDetailOrEmpty(request);
+	}
+
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
@@ -311,6 +321,11 @@ public class AcctDocRequiredServicesFacade
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetails(request);
+	}
+
+	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	{
+		return costingService.createReversalCostDetailsOrEmpty(request);
 	}
 
 	public Optional<CostPrice> getCurrentCostPrice(
@@ -330,4 +345,5 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+	public ZoneId getTimeZone(@NonNull OrgId orgId) { return orgDAO.getTimeZone(orgId); }
 }

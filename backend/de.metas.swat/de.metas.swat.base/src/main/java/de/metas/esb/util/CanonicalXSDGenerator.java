@@ -25,36 +25,13 @@ package de.metas.esb.util;
  * #L%
  */
 
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,11 +55,34 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages
@@ -93,9 +93,9 @@ import de.metas.util.Services;
 public class CanonicalXSDGenerator
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(CanonicalXSDGenerator.class);
+	private static final Logger logger = LogManager.getLogger(CanonicalXSDGenerator.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	private static final String XSD_TYPE_YES_NO = "YES-NO";
 	private static final String XSD_ENUMERATION = "xsd:enumeration";
@@ -115,7 +115,9 @@ public class CanonicalXSDGenerator
 	public static String JAXB_AttributeSuffix = "Attr";
 	public static String JAXB_Version = "2.0";
 
+	@Nullable
 	private Document document = null;
+	@Nullable
 	private Element rootElement = null;
 
 	private final List<Element> complexTypes = new ArrayList<>();
@@ -161,8 +163,7 @@ public class CanonicalXSDGenerator
 			throw new RuntimeException(e.getLocalizedMessage(), e);
 		}
 
-		final Document result = documentBuilder.newDocument();
-		return result;
+		return documentBuilder.newDocument();
 	}
 
 	public void addEXPFormat(final I_EXP_Format format)
@@ -267,7 +268,7 @@ public class CanonicalXSDGenerator
 		Check.assume(toJavaName(name).equals(name),
 				"'name' param '" + name + "' equals '" + toJavaName(name) + "'");
 
-		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceDAO.retrieveListItems(AD_Reference_ID));
+		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceService.retrieveListItems(AD_Reference_ID));
 		if (listValues.isEmpty())
 		{
 			return null;
@@ -495,7 +496,7 @@ public class CanonicalXSDGenerator
 		}
 	}
 
-	private Element createXSDAttribute(final Element parent, final String name, final String type, final String fixed)
+	private Element createXSDAttribute(@Nullable final Element parent, final String name, @Nullable final String type, @Nullable final String fixed)
 	{
 		final Element e = document.createElement("xsd:attribute");
 		if (type != null)
@@ -573,7 +574,7 @@ public class CanonicalXSDGenerator
 	 * </ul>
 	 *
 	 */
-	private static final String mkAsciiOnly(final String input)
+	private static String mkAsciiOnly(final String input)
 	{
 		Check.assume(input != null, "Input string is not null");
 
@@ -806,7 +807,7 @@ public class CanonicalXSDGenerator
 	 * @param defaultDisplayType
 	 * @return
 	 */
-	private final int getDisplayType(final I_EXP_FormatLine line, final int defaultDisplayType)
+	private int getDisplayType(final I_EXP_FormatLine line, final int defaultDisplayType)
 	{
 		if (line.getAD_Reference_Override_ID() > 0)
 		{

@@ -41,6 +41,11 @@ BEGIN
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
         FROM C_AllocationHdr ah
         WHERE ah.C_AllocationHdr_ID = p_Record_ID;
+    ELSIF (p_TableName = 'C_BankStatement') THEN
+        SELECT bs.statementdate, 'CMB' AS docbasetype, bs.ad_client_id, bs.ad_org_id
+        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
+        FROM c_bankstatement bs
+        WHERE bs.c_bankstatement_id = p_Record_ID;
     ELSIF (p_TableName = 'M_InOut') THEN
         SELECT io.dateacct, dt.docbasetype, io.ad_client_id, io.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
@@ -83,6 +88,10 @@ BEGIN
         WHERE cc.pp_cost_collector_id = p_Record_ID;
     ELSE
         RAISE EXCEPTION 'Document %/% is not handled when checking if the period is open', p_TableName, p_Record_ID;
+    END IF;
+
+    IF (v_DateAcct IS NULL) THEN
+        RAISE EXCEPTION 'No document found for %/%', p_TableName, p_Record_ID;
     END IF;
 
     PERFORM "de_metas_acct".assert_period_open(

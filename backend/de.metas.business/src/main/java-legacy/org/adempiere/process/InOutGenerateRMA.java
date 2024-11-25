@@ -236,7 +236,7 @@ public class InOutGenerateRMA extends JavaProcess
 														   MInvoiceLine.COLUMNNAME_M_RMALine_ID + "=?",
 														   shipment.get_TrxName())
 						.setParameters(new Object[] { rmaLine.getM_RMALine_ID() })
-						.firstOnly();
+						.firstOnly(MInvoiceLine.class);
 				if (invoiceLine != null)
 				{
 					invoiceLine.setM_InOutLine_ID(shipLine.getM_InOutLine_ID());

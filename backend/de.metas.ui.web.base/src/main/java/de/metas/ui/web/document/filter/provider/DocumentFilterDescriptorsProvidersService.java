@@ -52,14 +52,12 @@ public final class DocumentFilterDescriptorsProvidersService
 		logger.info("Provider factories: {}", providerFactories);
 	}
 
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		final ImmutableList<DocumentFilterDescriptorsProvider> providers = providerFactories
 				.stream()
 				.filter(DocumentFilterDescriptorsProviderFactory::isActive)
-				.map(provider -> provider.createFiltersProvider(context, fields))
+				.map(provider -> provider.createFiltersProvider(context))
 				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
 				.collect(ImmutableList.toImmutableList());
 

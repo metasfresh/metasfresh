@@ -150,7 +150,7 @@ public class DocumentTypeVerify extends JavaProcess
 				+ "(SELECT MIN(C_PeriodControl_ID) "
 				+ "FROM C_PeriodControl pc3 "
 				+ "GROUP BY C_Period_ID, DocBaseType)";
-		int no = DB.executeUpdate(sql, false, trxName);
+		int no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, trxName);
 		s_log.info("Duplicates deleted #" + no);
 		
 		//	Insert Missing

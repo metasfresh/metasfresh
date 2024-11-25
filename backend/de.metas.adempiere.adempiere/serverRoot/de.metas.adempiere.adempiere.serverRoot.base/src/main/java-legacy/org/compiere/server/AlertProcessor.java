@@ -156,7 +156,7 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPreProcessing = rule.getPreProcessing();
 			if (!Check.isEmpty(sqlPreProcessing, true))
 			{
-				int no = DB.executeUpdate(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
+				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -202,7 +202,7 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPostProcessing = rule.getPostProcessing();
 			if (!Check.isEmpty(sqlPostProcessing, true))
 			{
-				int no = DB.executeUpdate(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
+				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();

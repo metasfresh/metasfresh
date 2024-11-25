@@ -413,7 +413,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
 
-		final Quantity qtyEntered = Quantitys.create(compensationLine.getQtyEntered(), compensationLine.getUomId());
+		final Quantity qtyEntered = Quantitys.of(compensationLine.getQtyEntered(), compensationLine.getUomId());
 		compensationLinePO.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
 		compensationLinePO.setQtyEntered(qtyEntered.toBigDecimal());
 

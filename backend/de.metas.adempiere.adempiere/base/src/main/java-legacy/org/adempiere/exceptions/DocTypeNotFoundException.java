@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.i18n.AdMessageKey;
@@ -20,9 +21,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 
 /**
  * Throwed when desired document type was not found
@@ -53,12 +54,13 @@ public class DocTypeNotFoundException extends AdempiereException
 
 		if (docBaseType != null)
 		{
-			final IADReferenceDAO adReferenceService = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType.getCode());
 			builder.append(" - ")
 					.appendADElement("DocBaseType")
 					.append(": ")
-					.append(adReferenceService.retrieveListNameTranslatableString(DocBaseType.AD_REFERENCE_ID, docBaseType.getCode()));
+					.append(docBaseTypeName);
 		}
 
 		if (!Check.isBlank(additionalInfo))
@@ -73,9 +75,12 @@ public class DocTypeNotFoundException extends AdempiereException
 	{
 		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 		builder.appendADMessage(AdMessageKey.of("NotFound")).append(" ").appendADElement("C_DocType_ID");
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		final IADReferenceDAO adReferenceService = Services.get(IADReferenceDAO.class);
-		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(adReferenceService.retrieveListNameTranslatableString(DocBaseType.AD_REFERENCE_ID, query.getDocBaseType().getCode()));
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType().getCode());
+
+
+		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(docBaseTypeName);
 		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType());
 		builder.append(", ").appendADElement("AD_Client_ID").append(": ").append(query.getAdClientId());
 		builder.append(", ").appendADElement("AD_Org_ID").append(": ").append(query.getAdOrgId());

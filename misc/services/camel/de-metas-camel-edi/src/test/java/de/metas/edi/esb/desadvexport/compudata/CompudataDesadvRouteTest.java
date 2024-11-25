@@ -46,12 +46,16 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
 
 class CompudataDesadvRouteTest extends CamelTestSupport
 {
 	@EndpointInject("mock:fileOutputEndpoint")
 	private MockEndpoint fileOutputEndpoint;
+
+	@EndpointInject("mock:ep.rabbitmq.to.mf")
+	private MockEndpoint feedbackOutputEndpoint;
 
 	@Override
 	protected RouteBuilder createRouteBuilder()

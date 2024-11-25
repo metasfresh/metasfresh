@@ -1,6 +1,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -71,6 +72,7 @@ public class HUAssignmentBLTest
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);

@@ -234,7 +234,7 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		String sql = "DELETE FROM R_RequestProcessorLog "
 			+ "WHERE R_RequestProcessor_ID=" + getR_RequestProcessor_ID()
 			+ " AND (Created+" + getKeepLogDays() + ") < now()";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		return no;
 	}	//	deleteLog
 

@@ -48,11 +48,10 @@ import java.util.stream.Stream;
 
 /**
  * {@link DocumentId}s selection.
- *
+ * <p>
  * Basically consists of a set of {@link DocumentId}s but it all has the {@link #isAll()} flag.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 @ToString
@@ -110,7 +109,7 @@ public final class DocumentIdsSelection
 
 		final ImmutableSet<DocumentId> documentIds = intDocumentIds
 				.stream()
-				.map(idInt -> DocumentId.of(idInt))
+				.map(DocumentId::of)
 				.collect(ImmutableSet.toImmutableSet());
 		return new DocumentIdsSelection(false, documentIds);
 	}
@@ -153,7 +152,7 @@ public final class DocumentIdsSelection
 	private static final String ALL_String = "all";
 	private static final ImmutableSet<String> ALL_StringSet = ImmutableSet.of(ALL_String);
 
-	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private final boolean all;
 	private final ImmutableSet<DocumentId> documentIds;
@@ -336,5 +335,42 @@ public final class DocumentIdsSelection
 			return SelectionSize.ofAll();
 		}
 		return SelectionSize.ofSize(size());
+	}
+
+	public DocumentIdsSelection addAll(@NonNull final DocumentIdsSelection documentIdsSelection)
+	{
+		if (this.isEmpty())
+		{
+			return documentIdsSelection;
+		}
+		else if (documentIdsSelection.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.all)
+		{
+			return this;
+		}
+		else if (documentIdsSelection.all)
+		{
+			return documentIdsSelection;
+		}
+
+		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream()).collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection result = DocumentIdsSelection.of(combinedIds);
+
+		if (this.equals(result))
+		{
+			return this;
+		}
+		else if (documentIdsSelection.equals(result))
+		{
+			return documentIdsSelection;
+		}
+		else
+		{
+			return result;
+		}
 	}
 }

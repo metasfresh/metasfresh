@@ -249,6 +249,12 @@ public class UserSession
 			throw new NotLoggedInAsSysAdminException();
 		}
 	}
+	
+	public boolean isLoggedInAsSysAdmin()
+	{
+		final InternalUserSessionData data = getData();
+		return data.isLoggedIn() && data.getLoggedRoleId().isSystem();
+	}
 
 	public void assertNotLoggedIn()
 	{

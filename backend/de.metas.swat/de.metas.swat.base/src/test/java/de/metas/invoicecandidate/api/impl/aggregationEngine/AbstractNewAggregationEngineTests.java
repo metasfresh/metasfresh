@@ -27,6 +27,8 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -89,6 +91,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
@@ -138,7 +141,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterward, the ICs will be updated/revalidated once again.
 	 */
 	protected void step_updateInvoiceCandidates(
-			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
 			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		// nothing; override if you need to do something with the ICs after the inoutLines were created

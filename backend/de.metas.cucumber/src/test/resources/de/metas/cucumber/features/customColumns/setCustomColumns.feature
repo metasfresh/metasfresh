@@ -63,7 +63,7 @@ Feature: Setting customColumns via SetCustomColumns method
 
     Then validate customColumns:
       | OPT.C_Order_ID.Identifier | OPT.S_ResourceType_ID.Identifier | CustomColumnJSONValue                                                                                                              |
-      | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40Z","IsDropShip":true,"Volume":2.1234} |
+      | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40.108Z","IsDropShip":true,"Volume":2.1234} |
       |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                           |
 
     And set custom columns for C_Order expecting error:

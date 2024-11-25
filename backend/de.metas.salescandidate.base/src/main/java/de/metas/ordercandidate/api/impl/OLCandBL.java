@@ -10,6 +10,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -27,10 +29,10 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandQuery;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandSource;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.payment.PaymentRule;
@@ -41,6 +43,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -81,6 +84,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -94,19 +98,21 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public void process(@NonNull final OLCandProcessorDescriptor processor, @Nullable final AsyncBatchId asyncBatchId)
+	public void process(
+			@NonNull final OLCandProcessorDescriptor processor,
+			@NonNull final PInstanceId selectionId,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo = springContextHolder.getBean(OLCandRepository.class);
-
-		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
+		final OLCandSPIRegistry olCandSPIRegistry = springContextHolder.getBean(OLCandSPIRegistry.class);
+		final OLCandProcessingHelper olCandProcessingHelper = springContextHolder.getBean(OLCandProcessingHelper.class);
 
 		OLCandsProcessorExecutor.builder()
 				.processorDescriptor(processor)
-				.olCandListeners(olCandRegistry.getListeners())
-				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
-				.candidatesSource(candidatesSource)
+				.olCandListeners(olCandSPIRegistry.getListeners())
+				.groupingValuesProviders(olCandSPIRegistry.getGroupingValuesProviders())
+				.olCandProcessingHelper(olCandProcessingHelper)
+				.selectionId(selectionId)
 				.asyncBatchId(asyncBatchId)
 				.build()
 				.process();
@@ -209,7 +215,7 @@ public class OLCandBL implements IOLCandBL
 		{
 			return olCandInvoiceRule;
 		}
-		
+
 		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
 		{
 			return bPartnerOrderParams.getInvoiceRule().get();
@@ -224,7 +230,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 									  @Nullable final OLCandOrderDefaults orderDefaults,
-									  @Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
 				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
@@ -241,7 +247,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 										  @Nullable final OLCandOrderDefaults orderDefaults,
-										  @Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
@@ -480,11 +486,13 @@ public class OLCandBL implements IOLCandBL
 
 		final I_AD_Note note = createOLCandErrorNote(userInChargeId, olCand, ex);
 
-		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID());
+		final AdIssueId issueId = errorManager.createIssue(ex);
+		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID(), issueId);
+
 		saveCandidate(olCand);
 	}
 
-	private void saveCandidate(final OLCand cand)
+	public void saveCandidate(@NonNull final OLCand cand)
 	{
 		save(cand.unbox());
 	}
@@ -503,7 +511,7 @@ public class OLCandBL implements IOLCandBL
 
 			return note;
 		}
-		catch (RuntimeException ex2)
+		catch (final RuntimeException ex2)
 		{
 			ex2.addSuppressed(ex);
 			throw ex2;

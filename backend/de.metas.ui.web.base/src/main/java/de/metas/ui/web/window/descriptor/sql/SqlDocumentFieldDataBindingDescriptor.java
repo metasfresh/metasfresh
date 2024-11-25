@@ -62,12 +62,18 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
-			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+			return cast(descriptor);
 		}
 		else
 		{
 			return null;
 		}
+	}
+
+	@Nullable
+	public static SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	{
+		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
 	@Getter
@@ -150,12 +156,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
-	public String getColumnName() { return getSqlColumnName(); }
+	public String getColumnName() {return getSqlColumnName();}
 
-	public boolean isNumericKey() { return numericKey != null && numericKey; }
+	public boolean isNumericKey() {return numericKey != null && numericKey;}
 
 	@Override
-	public boolean isDefaultOrderBy() { return defaultOrderByPriority != 0; }
+	public boolean isDefaultOrderBy() {return defaultOrderByPriority != 0;}
 
 	@Override
 	public SqlOrderByValue getSqlOrderBy()

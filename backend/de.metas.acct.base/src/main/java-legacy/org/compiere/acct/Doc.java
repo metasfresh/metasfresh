@@ -659,7 +659,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sql.append(" AND Posted='N'");
 		}
 
-		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (updatedCount != 1)
 		{
 			final PO po = getPO();
@@ -734,7 +734,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);
 
-		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		fireDocumentChanged();
 

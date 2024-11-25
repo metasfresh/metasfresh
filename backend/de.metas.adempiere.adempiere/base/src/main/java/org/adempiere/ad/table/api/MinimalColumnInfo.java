@@ -1,6 +1,6 @@
 package org.adempiere.ad.table.api;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

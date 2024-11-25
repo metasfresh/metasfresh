@@ -78,7 +78,7 @@ public class AD_PrintPaper_Default extends JavaProcess
 			if (p_AD_Client_ID != -1) {
 				sql.append(" AND AD_Client_ID = " + p_AD_Client_ID);
 			}
-			cnt = DB.executeUpdate(sql.toString(), get_TrxName());
+			cnt = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 			log.info("Updated " + cnt + " columns");
 			log.debug("Committing ...");
 			DB.commit(true, null);

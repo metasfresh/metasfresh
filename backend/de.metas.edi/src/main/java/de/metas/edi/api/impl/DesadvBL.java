@@ -24,7 +24,6 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -107,21 +106,18 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final transient IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final EDIDesadvPackService ediDesadvPackService;
-	private final HURepository huRepository;
+	private final transient EDIDesadvPackService ediDesadvPackService;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 
 	// @VisibleForTesting
 	public DesadvBL(
 			@NonNull final EDIDesadvPackService ediDesadvPackService,
-			@NonNull final HURepository huRepository,
 			@NonNull final EDIDesadvInOutLineDAO desadvInOutLineDAO)
 	{
 		this.ediDesadvPackService = ediDesadvPackService;
-		this.huRepository = huRepository;
 		this.desadvInOutLineDAO = desadvInOutLineDAO;
 	}
 
@@ -174,7 +170,10 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_EDI_Desadv desadvRecord,
 			@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLineRecord.getLine());
+		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(
+				desadvRecord,
+				orderLineRecord.getLine(),
+				BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()));
 		if (existingDesadvLine != null)
 		{
 			return existingDesadvLine; // done
@@ -241,7 +240,7 @@ public class DesadvBL implements IDesadvBL
 				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
 			}
 		}
-		else 
+		else
 		{
 			newDesadvLine.setGTIN_CU(product.getGTIN());
 			newDesadvLine.setUPC_CU(product.getUPC());
@@ -258,8 +257,8 @@ public class DesadvBL implements IDesadvBL
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
 		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
-		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
-		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
+			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
+			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
@@ -357,7 +356,7 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-		
+
 		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
@@ -372,9 +371,8 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
-
 	private void addInOutLine(
-			@NonNull final I_M_InOutLine inOutLineRecord, 
+			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
 			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
@@ -385,7 +383,7 @@ public class DesadvBL implements IDesadvBL
 		if (desadvLineId == null)
 		{
 			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-						 orderLineRecord.getC_OrderLine_ID());
+					orderLineRecord.getC_OrderLine_ID());
 
 			return;
 		}
@@ -397,10 +395,10 @@ public class DesadvBL implements IDesadvBL
 
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
 		addOrSubtractInOutLineQty(desadvLineRecord,
-								  inOutLineQty,
-								  InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
-								  orderLineRecord,
-								  true/* add */);
+				inOutLineQty,
+				InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
+				orderLineRecord,
+				true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
@@ -444,10 +442,10 @@ public class DesadvBL implements IDesadvBL
 				InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn()));
 
 		addOrSubtractInOutLineQty(desadvLineRecord,
-								  inOutLineQty,
-								  InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
-								  null/*orderLine*/,
-								  false/* add=false, i.e. subtract */);
+				inOutLineQty,
+				InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()),
+				null/*orderLine*/,
+				false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
@@ -481,7 +479,7 @@ public class DesadvBL implements IDesadvBL
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
 		final Quantity inoutLineQtyDeliveredInUOM = desadvInOutLine.getQtyDeliveredInUOM().negateIfNot(add);
-		final Quantity desadvLineQtyDelivered = Quantitys.create(
+		final Quantity desadvLineQtyDelivered = Quantitys.of(
 				desadvLineRecord.getQtyDeliveredInUOM(),
 				UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 
@@ -495,7 +493,7 @@ public class DesadvBL implements IDesadvBL
 					.map(qty -> qty.negateIfNot(add))
 					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineBPartnerUOMId)));
 
-			final Quantity desadvLineQtyDeliveredBPartnerUOM = Quantitys.create(
+			final Quantity desadvLineQtyDeliveredBPartnerUOM = Quantitys.of(
 					desadvLineRecord.getQtyEnteredInBPartnerUOM(),
 					desadvLineBPartnerUOMId);
 
@@ -511,7 +509,7 @@ public class DesadvBL implements IDesadvBL
 					.ofNullable(desadvInOutLine.getQtyDeliveredInInvoiceUOM())
 					.map(qty -> qty.negateIfNot(add))
 					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineInvoiceUomId)));
-			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(
+			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.of(
 					desadvLineRecord.getQtyDeliveredInInvoiceUOM(),
 					desadvLineInvoiceUomId);
 
@@ -551,7 +549,7 @@ public class DesadvBL implements IDesadvBL
 				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineQtyUomId.getRepoId() + " needs to have a QtyItemCapacity in order to convert the quantity")
 						.appendParametersToMessage().setParameter("desadvLineRecord", desadvLineRecord);
 			}
-			augentQtyDeliveredInUOM = Quantitys.create(
+			augentQtyDeliveredInUOM = Quantitys.of(
 					inOutLineStockQty.toBigDecimal().divide(cusPerTU, RoundingMode.CEILING),
 					desadvLineQtyUomId);
 		}
@@ -565,9 +563,9 @@ public class DesadvBL implements IDesadvBL
 			// If both are TU or both are not, then uom-conversion will work fine.
 			// Anyway, if the desadv's quantity is in stock-UOM, then go with the inOutLine's stock-quantity.
 			final boolean desadvUomIsStockUom = inOutLineStockQty.getUomId().equals(desadvLineQtyUomId);
-			
-			augentQtyDeliveredInUOM = desadvUomIsStockUom 
-					? inOutLineStockQty 
+
+			augentQtyDeliveredInUOM = desadvUomIsStockUom
+					? inOutLineStockQty
 					: inOutLineLineQtyDelivered;
 		}
 
@@ -699,6 +697,12 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
+	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
+	{
+		return desadvDAO.retrieveAllInOutLines(desadvLine);
+	}
+
+	@Override
 	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(schedule.getC_OrderLine_ID());
@@ -714,12 +718,6 @@ public class DesadvBL implements IDesadvBL
 		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
 		desadvDAO.save(desadvLineRecord);
 	}
-	
-	@Override
-	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
-	{
-		return desadvDAO.retrieveAllInOutLines(desadvLine);
-	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
@@ -732,10 +730,10 @@ public class DesadvBL implements IDesadvBL
 	public boolean isMatchUsingOrderId(@NonNull final ClientId clientId)
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID,
-										   false,
-										   clientId.getRepoId());
+				false,
+				clientId.getRepoId());
 	}
-	
+
 	private Optional<ITranslatableString> createSingleMsg(
 			@NonNull final List<I_EDI_Desadv> desadvsToSkip,
 			@NonNull final BigDecimal minimumSumPercentage)
@@ -843,9 +841,9 @@ public class DesadvBL implements IDesadvBL
 						.desadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
 						.shipmentLineId(shipmentLineId)
 						.qtyEnteredInBPartnerUOM(Optional.of(desadvLineRecord.getC_UOM_BPartner_ID())
-														 .map(UomId::ofRepoIdOrNull)
-														 .map(bpartnerUOMId -> Quantitys.create(ZERO, bpartnerUOMId))
-														 .orElse(null)));
+								.map(UomId::ofRepoIdOrNull)
+														 .map(bpartnerUOMId -> Quantitys.of(ZERO, bpartnerUOMId))
+								.orElse(null)));
 
 		final Quantity inOutLineStockQty = inOutLineQty.getStockQty();
 		desadvInOutLineBuilder.qtyDeliveredInStockingUOM(inOutLineStockQty);
@@ -892,8 +890,8 @@ public class DesadvBL implements IDesadvBL
 	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_C_Order order)
 	{
 		final String poReference = Check.assumeNotNull(order.getPOReference(),
-											 "In the DESADV-Context, POReference is mandatory; C_Order_ID={}", order.getC_Order_ID());
-
+													   "In the DESADV-Context, POReference is mandatory; C_Order_ID={}",
+													   order.getC_Order_ID());
 		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
 				.poReference(poReference)
 				.ctxAware(InterfaceWrapperHelper.getContextAware(order));
@@ -902,7 +900,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			ediDesadvQueryBuilder.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		}
-		
+
 		if (isMatchUsingOrderId(ClientId.ofRepoId(order.getAD_Client_ID())))
 		{
 			ediDesadvQueryBuilder.orderId(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -916,7 +914,8 @@ public class DesadvBL implements IDesadvBL
 	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_M_InOut inOut)
 	{
 		final String poReference = Check.assumeNotNull(inOut.getPOReference(),
-											 "In the DESADV-Context, POReference is mandatory; M_InOut_ID={}", inOut.getM_InOut_ID());
+													   "In the DESADV-Context, POReference is mandatory; M_InOut_ID={}",
+													   inOut.getM_InOut_ID());
 		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
 				.poReference(poReference)
 				.ctxAware(InterfaceWrapperHelper.getContextAware(inOut));
@@ -929,12 +928,12 @@ public class DesadvBL implements IDesadvBL
 		return ediDesadvQueryBuilder
 				.build();
 	}
-	
+
 	private boolean isMatchUsingBPartnerId()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
-	
+
 	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());
@@ -942,4 +941,5 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setQtyEnteredInBPartnerUOM(ZERO);
 		newDesadvLine.setBPartner_QtyItemCapacity(orderLineRecord.getBPartner_QtyItemCapacity());
 	}
+
 }

@@ -578,7 +578,15 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;
+		}
+		else
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
+		}
 
 		//
 		// Allow retry processing this workpackage?
@@ -597,7 +605,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 

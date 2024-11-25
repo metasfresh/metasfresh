@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -127,7 +127,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
 
-		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
+		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName+"/-1"));
 	}
 
 	@Override

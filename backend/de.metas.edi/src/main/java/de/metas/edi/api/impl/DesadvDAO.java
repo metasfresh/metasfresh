@@ -65,6 +65,7 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final EDIDesadvQuery query)
@@ -108,14 +109,17 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(@NonNull final I_EDI_Desadv desadv, final int line)
+	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(
+			@NonNull final I_EDI_Desadv desadv,
+			final int line,
+			@NonNull final BPartnerId bPartnerId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
+		final IQueryBuilder<I_EDI_DesadvLine> query = queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line)
-				.create()
-				.firstOnly(I_EDI_DesadvLine.class);
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
+
+		return query.create().firstOnly(I_EDI_DesadvLine.class);
 	}
 
 	@Override
@@ -161,7 +165,7 @@ public class DesadvDAO implements IDesadvDAO
 				.create()
 				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
 	}
-	
+
 	@Override
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
@@ -283,7 +287,7 @@ public class DesadvDAO implements IDesadvDAO
 	@Override
 	public BigDecimal retrieveMinimumSumPercentage()
 	{
-		final String minimumPercentageAccepted_Value = Services.get(ISysConfigBL.class).getValue(
+		final String minimumPercentageAccepted_Value = sysConfigBL.getValue(
 				SYS_CONFIG_DefaultMinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
 		try
 		{

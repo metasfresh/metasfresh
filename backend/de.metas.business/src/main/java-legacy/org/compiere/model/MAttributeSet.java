@@ -380,7 +380,7 @@ public class MAttributeSet extends X_M_AttributeSet
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')"
 					+ ")";
-			int no = DB.executeUpdate(sql, get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 			{
 				log.warn("Set Instance Attribute");
@@ -400,7 +400,7 @@ public class MAttributeSet extends X_M_AttributeSet
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')";
-			int no = DB.executeUpdate(sql, get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 			{
 				log.warn("Reset Instance Attribute");

@@ -481,6 +481,13 @@ public final class TableRecordReference implements ITableRecordReference
 		return InterfaceWrapperHelper.create(getModel(context), modelClass);
 	}
 
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final IContextAware context, @NonNull final Class<T> modelClass)
+	{
+		final T model = InterfaceWrapperHelper.create(getModel(context), modelClass);
+		return Check.assumeNotNull(model, "Model for this TableRecordReference={} may not be null", this);
+	}
+
 	@Override
 	public void notifyModelStaled()
 	{
@@ -518,6 +525,12 @@ public final class TableRecordReference implements ITableRecordReference
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
+	}
+
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final Class<T> modelClass)
+	{
+		return getModelNonNull(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
 	}
 
 	public static <T> List<T> getModels(

@@ -55,7 +55,7 @@ import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
+	private static final Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/**
 	 * Log all event bus exceptions

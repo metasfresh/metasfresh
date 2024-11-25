@@ -28,9 +28,9 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_BPartner;
@@ -59,11 +59,12 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
-		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(MailService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
+		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 	}
 
 	@Override

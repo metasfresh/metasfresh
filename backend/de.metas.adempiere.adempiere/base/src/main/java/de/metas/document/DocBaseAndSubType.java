@@ -2,8 +2,12 @@ package de.metas.document;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +54,15 @@ public class DocBaseAndSubType
 	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType, @Nullable final String docSubType)
 	{
 		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
+	}
+
+	@Nullable
+	public static DocBaseAndSubType ofNullable(
+			@Nullable final String docBaseType,
+			@Nullable final String docSubType)
+	{
+		final String docBaseTypeNorm = StringUtils.trimBlankToNull(docBaseType);
+		return docBaseTypeNorm != null ? of(docBaseTypeNorm, docSubType) : null;
 	}
 
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();

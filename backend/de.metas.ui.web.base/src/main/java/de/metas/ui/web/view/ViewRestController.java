@@ -48,10 +48,8 @@ import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -360,11 +358,6 @@ public class ViewRestController
 				.andComposeWith(userSession.toEvaluatee());
 	}
 
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
-	}
-
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -386,7 +379,7 @@ public class ViewRestController
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_FilterId) final String filterId //
@@ -399,9 +392,8 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final Evaluatee ctx = createFilterParameterLookupContext(view);
 
-		return view
-				.getFilterParameterDropdown(filterId, parameterName, ctx)
-				.transform(this::toJSONLookupValuesList);
+		return view.getFilterParameterDropdown(filterId, parameterName, ctx)
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")

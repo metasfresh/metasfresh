@@ -30,7 +30,7 @@ import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInS
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DesadvBLTest
 {
@@ -46,9 +46,8 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final HURepository huRepository = new HURepository();
-		EDIDesadvPackService = new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository());
-		desadvBL = new DesadvBL(EDIDesadvPackService, huRepository, new EDIDesadvInOutLineDAO());
+		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository());
+		desadvBL = new DesadvBL(EDIDesadvPackService, new EDIDesadvInOutLineDAO());
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", 2, X12DE355.COLI).getC_UOM_ID());
@@ -81,8 +80,8 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("20.5", coliUomId))
+				.stockQty(Quantitys.of("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("20.5", coliUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -91,7 +90,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -125,7 +124,7 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -134,7 +133,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -167,8 +166,8 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("2.5", eachUomId))
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("2.5", eachUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -177,7 +176,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -221,8 +220,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
@@ -256,8 +255,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);

@@ -10,9 +10,9 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import {
   openModal,
-  setPrintingOptions,
-  resetPrintingOptions,
   openPrintingOptionsModal,
+  resetPrintingOptions,
+  setPrintingOptions,
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -32,6 +32,10 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import {
+  getDocActionElementFromState,
+  getDocSummaryDataFromState,
+} from '../../reducers/windowHandlerUtils';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -966,22 +970,15 @@ Header.propTypes = {
 const mapStateToProps = (state) => {
   const {
     indicator,
-    master: {
-      layout: { docActionElement, documentSummaryElement },
-      data,
-      saveStatus,
-    },
+    master: { saveStatus },
   } = state.windowHandler;
-
-  const docSummaryData =
-    documentSummaryElement && data[documentSummaryElement.fields[0].field];
 
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
-    docStatus: docActionElement,
-    docSummaryData,
+    docStatus: getDocActionElementFromState(state),
+    docSummaryData: getDocSummaryDataFromState(state),
     indicator,
     saveStatus,
   };

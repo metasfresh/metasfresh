@@ -390,6 +390,18 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		//
+		// Correct IsLazyLoading,
+		// i.e. Always load effective Key columns (Key or Parent)
+		for (final POInfoColumn column : m_columns)
+		{
+			if (column.IsLazyLoading && m_keyColumnNames.contains(column.getColumnName()))
+			{
+				column.IsLazyLoading = false;
+				logger.info("Column {}.{} was marked as IsLazyLoading but effectively it is an key column, we we set IsLazyLoading=false.", this.m_TableName, column.getColumnName());
+			}
+		}
+
+		//
 		// Setup some pre-built SQLs which are frequently used
 		sqlSelectColumns = buildSqlSelectColumns();
 		sqlSelect = buildSqlSelect();

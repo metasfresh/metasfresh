@@ -2,23 +2,21 @@ package de.metas.ordercandidate.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
+import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,39 +69,37 @@ public class OLCandsProcessorExecutor
 
 	private final IOLCandListener olCandListeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
+	private final OLCandProcessingHelper olCandProcessingHelper;
 
 	private final int olCandProcessorId;
 	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
-	private final InputDataSourceId processorDataDestinationId;
+	private final PInstanceId selectionId;
 	private final AsyncBatchId asyncBatchId;
 	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
-
-	private final OLCandSource candidatesSource;
 
 	@Builder
 	private OLCandsProcessorExecutor(
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			@NonNull final OLCandSource candidatesSource,
+			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
+			@NonNull final PInstanceId selectionId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
+		this.olCandProcessingHelper = olCandProcessingHelper;
+
+		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
-
-		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
-
-		this.candidatesSource = candidatesSource;
 	}
 
 	public void process()
@@ -114,11 +110,8 @@ public class OLCandsProcessorExecutor
 
 		//
 		// Get the ol-candidates to process
-		final List<OLCand> candidates = candidatesSource.streamOLCands()
-				.filter(this::isEligibleOrLog)
-				.map(this::prepareOLCandBeforeProcessing)
-				.sorted(aggregationInfo.getOrderingComparator())
-				.collect(ImmutableList.toImmutableList());
+		final List<OLCand> candidates = getEligibleOLCand();
+
 		loggable.addLog("Processing {} order line candidates", candidates.size());
 		if (candidates.isEmpty())
 		{
@@ -178,7 +171,7 @@ public class OLCandsProcessorExecutor
 				final ArrayKey groupingKey = toProcess.get(olCandId);
 				for (final OLCand candOfGroup : grouping.get(groupingKey))
 				{
-					if (currentOrder != null && isOrderSplit(candOfGroup, previousCandidate))
+					if (currentOrder != null && OLCandProcessingHelper.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
 					{
 						currentOrder.completeOrDelete();
 						currentOrder = null;
@@ -333,47 +326,16 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
-	private boolean isEligibleOrLog(final OLCand cand)
+	@NonNull
+	private List<OLCand> getEligibleOLCand()
 	{
-		if (cand.isProcessed())
-		{
-			logger.debug("Skipping processed C_OLCand: {}", cand);
-			return false;
-		}
+		final GetEligibleOLCandRequest request = GetEligibleOLCandRequest.builder()
+				.aggregationInfo(aggregationInfo)
+				.orderDefaults(orderDefaults)
+				.selection(selectionId)
+				.asyncBatchId(asyncBatchId)
+				.build();
 
-		if (cand.isError())
-		{
-			logger.debug("Skipping C_OLCand with errors: {}", cand);
-			return false;
-		}
-
-		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
-		{
-			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
-			return false;
-		}
-
-		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
-		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
-		{
-			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
-			return false;
-		}
-
-		if (cand.isImportedWithIssues())
-		{
-			// FIXME: instead of having isImportedWithIssues() implemented here, add support for using a filter that is then registered from e.g. a model validator
-			// this way, we would further decouple our modules
-			logger.debug("Skipping C_OLCand with import issues: {}", cand);
-			return false;
-		}
-
-		if (asyncBatchId != null && !cand.isAssignToBatch(asyncBatchId))
-		{
-			logger.debug("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId, cand);
-			return false;
-		}
-
-		return true;
+		return olCandProcessingHelper.getOLCandsForProcessing(request);
 	}
 }

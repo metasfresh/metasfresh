@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -538,7 +540,7 @@ public final class Fact
 			line.convert();
 			// Accounted Amount
 			Balance diff = getAcctBalance().computeDiffToBalance();
-			
+
 			diff = diff.negateAndInvertIf(BSline != null && BSline.isDrSourceBalance() == diff.isDebit());
 
 			line.setAmtAcct(diff);
@@ -617,23 +619,53 @@ public final class Fact
 	@Override
 	public String toString()
 	{
-		return "Fact[" + m_doc
-				+ "," + getAcctSchema()
-				+ ",PostType=" + getPostingType()
-				+ "]";
+		StringBuilder sb = new StringBuilder("Fact[");
+		sb.append(m_doc);
+		sb.append(",").append(getAcctSchema());
+		sb.append(",PostType=").append(getPostingType());
+		sb.append("]");
+		return sb.toString();
 	}
 
-	/**
-	 * Get Lines
-	 *
-	 * @return FactLine Array
-	 */
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty();
+	}
+
 	public FactLine[] getLines()
 	{
 		final FactLine[] temp = new FactLine[m_lines.size()];
 		m_lines.toArray(temp);
 		return temp;
 	}    // getLines
+
+	@NonNull
+	public FactLine getSingleLineByAccountId(final MAccount account)
+	{
+		FactLine lineFound = null;
+		for (FactLine line : m_lines)
+		{
+			if (line.getAccount_ID() == account.getAccount_ID())
+			{
+				if (lineFound == null)
+				{
+					lineFound = line;
+				}
+				else
+				{
+					throw new AdempiereException("More than one fact line found for " + account + ": " + lineFound + ", " + line);
+				}
+			}
+
+		}
+
+		if (lineFound == null)
+		{
+			throw new AdempiereException("No fact line found for " + account + " in " + m_lines);
+		}
+
+		return lineFound;
+	}
 
 	public void save()
 	{

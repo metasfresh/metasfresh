@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -152,6 +153,7 @@ public class WEBUI_M_HU_Transform
 		final HUEditorRow selectedRow = getSingleSelectedRow();
 
 		return WebuiHUTransformParametersFiller.builder()
+				.adReferenceService(ADReferenceService.get())
 				.view(view)
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))

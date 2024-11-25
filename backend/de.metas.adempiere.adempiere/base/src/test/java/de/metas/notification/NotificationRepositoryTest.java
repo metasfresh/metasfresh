@@ -70,28 +70,28 @@ public class NotificationRepositoryTest
 		createAD_Message("contentADMessage");
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
-				.topic(Topic.builder().name("topic1").type(Type.DISTRIBUTED).build())
-				.recipientUserId(UserId.ofRepoId(123))
-				.important(true)
-				//
-				.subjectPlain("subjectPlain")
-				.subjectADMessage(AdMessageKey.of("subjectADMessage"))
-				.subjectADMessageParam("string")
-				.subjectADMessageParam(TableRecordReference.of("MyTable", 111))
-				.subjectADMessageParam(BigDecimal.valueOf(123.44))
-				//
-				.contentPlain("contentPlain")
-				.contentADMessage(AdMessageKey.of("contentADMessage"))
-				.contentADMessageParam("string")
-				.contentADMessageParam(TableRecordReference.of("MyTable", 111))
-				.contentADMessageParam(BigDecimal.valueOf(123.44))
-				//
-				.targetAction(TargetRecordAction.builder()
-						.record(TableRecordReference.of("MyTable", 111))
-						.recordDisplayText("targetRecordDisplayText")
-						.adWindowId(AdWindowId.optionalOfRepoId(444))
-						.build())
-				.build());
+																				 .topic(Topic.builder().name("topic1").type(Type.DISTRIBUTED).build())
+																				 .recipientUserId(UserId.ofRepoId(123))
+																				 .important(true)
+																				 //
+																				 .subjectPlain("subjectPlain")
+																				 .subjectADMessage(AdMessageKey.of("subjectADMessage"))
+																				 .subjectADMessageParam("string")
+																				 .subjectADMessageParam(TableRecordReference.of("MyTable", 111))
+																				 .subjectADMessageParam(BigDecimal.valueOf(123.44))
+																				 //
+																				 .contentPlain("contentPlain")
+																				 .contentADMessage(AdMessageKey.of("contentADMessage"))
+																				 .contentADMessageParam("string")
+																				 .contentADMessageParam(TableRecordReference.of("MyTable", 111))
+																				 .contentADMessageParam(BigDecimal.valueOf(123.44))
+																				 //
+																				 .targetAction(TargetRecordAction.builder()
+																									   .record(TableRecordReference.of("MyTable", 111))
+																									   .recordDisplayText("targetRecordDisplayText")
+																									   .adWindowId(AdWindowId.optionalOfRepoId(444))
+																									   .build())
+																				 .build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), QueryLimit.NO_LIMIT);
 		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
@@ -124,12 +124,12 @@ public class NotificationRepositoryTest
 				mockedCustomizedWindowInfoMapRepository);
 
 		notificationRepo.save(UserNotificationRequest.builder()
-				.recipientUserId(UserId.ofRepoId(123))
-				.targetAction(TargetRecordAction.builder()
-						.record(TableRecordReference.of("MyTable", 111))
-						.adWindowId(AdWindowId.optionalOfRepoId(444))
-						.build())
-				.build());
+									  .recipientUserId(UserId.ofRepoId(123))
+									  .targetAction(TargetRecordAction.builder()
+															.record(TableRecordReference.of("MyTable", 111))
+															.adWindowId(AdWindowId.optionalOfRepoId(444))
+															.build())
+									  .build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), QueryLimit.NO_LIMIT);
 		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);

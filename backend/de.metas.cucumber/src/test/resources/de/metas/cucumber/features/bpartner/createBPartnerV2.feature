@@ -6,7 +6,7 @@ Feature: create or update BPartner v2
 
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: create a BPartner record

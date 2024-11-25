@@ -68,9 +68,12 @@ public class C_Order_AutoProcess_Async
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createMissingShipmentSchedules(@NonNull final I_C_Order orderRecord)
 	{
-		trxManager
-				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
-				.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
+		if (orderRecord.isSOTrx())
+		{
+			trxManager
+					.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
+					.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
+		}
 	}
 
 	private void enqueueGenerateSchedulesAfterCommit(@NonNull final I_C_Order orderRecord)
