@@ -188,7 +188,6 @@ class PickingJob_Scenarios_Test
 											.build()))
 							.build());
 		}
-
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
