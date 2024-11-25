@@ -191,7 +191,7 @@ public class MD_Cockpit_DocumentDetail_StepDef
 				.firstOnlyOptional(I_MD_Cockpit_DocumentDetail.class);
 	}
 
-	private void logCurrentContext(
+	private String logCurrentContext(
 			@NonNull final CockpitId cockpitId,
 			@NonNull final OrderLineId orderLineId)
 	{
@@ -213,6 +213,8 @@ public class MD_Cockpit_DocumentDetail_StepDef
 						.append(I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyReserved).append(" : ").append(cockpitDocumentDetailEntry.getQtyReserved()).append(" ; ")
 						.append("\n"));
 
-		logger.error("*** Error while looking for MD_Cockpit_DocumentDetail records, see current context: \n" + message);
+		final String msg = "*** Error while looking for MD_Cockpit_DocumentDetail records, see current context: \n" + message;
+		logger.error(msg);
+		return msg;
 	}
 }

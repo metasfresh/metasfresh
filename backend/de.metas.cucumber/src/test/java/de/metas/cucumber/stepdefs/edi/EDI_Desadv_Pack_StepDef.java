@@ -161,9 +161,6 @@ public class EDI_Desadv_Pack_StepDef
 
 		row.getAsOptionalInt(COLUMNNAME_SeqNo)
 				.ifPresent(line -> queryBuilder.addEqualsFilter(COLUMNNAME_SeqNo, line));
-
-		row.getAsOptionalString(COLUMNNAME_IPA_SSCC18)
-				.ifPresent(sscc -> queryBuilder.addEqualsFilter(COLUMNNAME_IPA_SSCC18, sscc));
 		
 		final I_EDI_Desadv_Pack desadvPack = StepDefUtil.tryAndWaitForItem(
 				timeoutSec,
@@ -223,13 +220,12 @@ public class EDI_Desadv_Pack_StepDef
 		row.put(COLUMNNAME_M_HU_PackagingCode_ID, record.getM_HU_PackagingCode_ID());
 		row.put(COLUMNNAME_GTIN_PackingMaterial, record.getGTIN_PackingMaterial());
 		row.put(COLUMNNAME_SeqNo, record.getSeqNo());
-		row.put(COLUMNNAME_IPA_SSCC18, record.getIPA_SSCC18());
 		return row;
 	}
 
 	private static <T extends RepoIdAware> Cell toCell(
 			@Nullable final T id,
-			@NonNull final StepDefDataGetIdAware<T, ?> lookupTable)
+			@NonNull StepDefDataGetIdAware<T, ?> lookupTable)
 	{
 		if (id == null)
 		{

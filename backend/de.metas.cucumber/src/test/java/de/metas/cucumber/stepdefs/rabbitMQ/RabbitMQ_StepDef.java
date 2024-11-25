@@ -62,7 +62,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RabbitMQ_StepDef
 {
@@ -331,8 +331,40 @@ public class RabbitMQ_StepDef
 		assertThat(topic).as("Missing eventBus for topic=%s; Topic.Identifier=%s", topic.getName(), topicIdentifier).isNotNull();
 
 		eventBus.enqueueEvent(Event.builder()
-									  .withBody(eventBody)
-									  .build());
+				.withBody(eventBody)
+				.build());
+	}
+
+	private void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis();
+		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
+
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
+
+		long messageCount;
+		do
+		{
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
+					.orElseThrow(() -> new AdempiereException("Queue does not exist!")
+							.appendParametersToMessage()
+							.setParameter("QueueName", queueName));
+
+			messageCount = queueInformation.getMessageCount();
+		}
+		while (messageCount > 0 && deadLineMillis > System.currentTimeMillis());
+
+		if (messageCount > 0)
+		{
+			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
+					.appendParametersToMessage()
+					.setParameter("QueueName", queueName)
+					.setParameter("messageCount", messageCount);
+		}
 	}
 
 	private void waitEmptyMaterialQueue() throws InterruptedException

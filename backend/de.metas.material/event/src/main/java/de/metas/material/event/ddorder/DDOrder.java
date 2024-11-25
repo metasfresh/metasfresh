@@ -54,6 +54,7 @@ public class DDOrder
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
 	@Nullable ShipperId shipperId;
+	Instant datePromised;
 	@NonNull @Singular List<DDOrderLine> lines;
 	int ddOrderId;
 	@NonNull DocStatus docStatus;

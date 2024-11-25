@@ -53,6 +53,31 @@ public interface I_EDI_DesadvLine_InOutLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_EDI_DesadvLine_InOutLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set BPartner UOM.
 	 *
 	 * <br>Type: Table
@@ -117,31 +142,6 @@ public interface I_EDI_DesadvLine_InOutLine
 	String COLUMNNAME_C_UOM_Invoice_ID = "C_UOM_Invoice_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_EDI_DesadvLine_InOutLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set DesadvLineTotalQtyDelivered.
 	 *
 	 * <br>Type: Quantity
@@ -180,11 +180,11 @@ public interface I_EDI_DesadvLine_InOutLine
 	 */
 	int getEDI_DesadvLine_ID();
 
-	I_EDI_DesadvLine getEDI_DesadvLine();
+	de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine();
 
-	void setEDI_DesadvLine(I_EDI_DesadvLine EDI_DesadvLine);
+	void setEDI_DesadvLine(de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine);
 
-	ModelColumn<I_EDI_DesadvLine_InOutLine, I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "EDI_DesadvLine_ID", I_EDI_DesadvLine.class);
+	ModelColumn<I_EDI_DesadvLine_InOutLine, de.metas.esb.edi.model.I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "EDI_DesadvLine_ID", de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	String COLUMNNAME_EDI_DesadvLine_ID = "EDI_DesadvLine_ID";
 
 	/**

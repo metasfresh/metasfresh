@@ -16,10 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.cache.CCache;
+
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import de.metas.cache.CCache;
 
 
 public class MRefTable extends X_AD_Ref_Table

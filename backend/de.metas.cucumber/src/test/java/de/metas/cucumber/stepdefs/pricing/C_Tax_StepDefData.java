@@ -20,18 +20,33 @@
  * #L%
  */
 
+<<<<<<<< HEAD:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/pricing/C_Tax_StepDefData.java
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_C_Tax;
+========
+package de.metas.cucumber.stepdefs.purchasecandidate;
+
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
+>>>>>>>> new_dawn_uat:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/purchasecandidate/C_PurchaseCandidate_Alloc_StepDefData.java
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
+<<<<<<<< HEAD:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/pricing/C_Tax_StepDefData.java
 public class C_Tax_StepDefData extends StepDefData<I_C_Tax>
 {
 	public C_Tax_StepDefData()
 	{
 		super(I_C_Tax.class);
+========
+public class C_PurchaseCandidate_Alloc_StepDefData extends StepDefData<I_C_PurchaseCandidate_Alloc>
+{
+	public C_PurchaseCandidate_Alloc_StepDefData()
+	{
+		super(I_C_PurchaseCandidate_Alloc.class);
+>>>>>>>> new_dawn_uat:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/purchasecandidate/C_PurchaseCandidate_Alloc_StepDefData.java
 	}
 }

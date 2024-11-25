@@ -188,7 +188,7 @@ public class EDIDesadvPackService
 		if (desadvLineId == null)
 		{
 			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-						 orderLineRecord.getC_OrderLine_ID());
+					orderLineRecord.getC_OrderLine_ID());
 
 			return;
 		}
@@ -354,8 +354,8 @@ public class EDIDesadvPackService
 			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, packUomId, invoiceUomId, movementQty, invoicableQtyBasedOn, uomToStockRatio);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
-															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
-															 .build());
+					.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
+					.build());
 
 			// prepare next iteration within this for-look
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
@@ -458,14 +458,14 @@ public class EDIDesadvPackService
 				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
-																   bPartnerId,
+				bPartnerId,
 																   qtyCUsPerTopLevelHU,
-																   productId,
-																   desadvLineRecord,
-																   inOutLineRecord,
-																   desadvLineWithPacks,
-																   invoicableQtyBasedOn,
-																   uomToStockRatio,
+				productId,
+				desadvLineRecord,
+				inOutLineRecord,
+				desadvLineWithPacks,
+				invoicableQtyBasedOn,
+				uomToStockRatio,
 																   sequences.getPackSeqNoSequence(),
 																   sequences.getPackItemLineSequence());
 
@@ -739,7 +739,7 @@ public class EDIDesadvPackService
 		{
 			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(packagingGTIN);
 		}
-	}
+		}
 
 	private static void setPackagingGTINsToPackItem(
 			@NonNull final ImmutableList<HU> childHUs,

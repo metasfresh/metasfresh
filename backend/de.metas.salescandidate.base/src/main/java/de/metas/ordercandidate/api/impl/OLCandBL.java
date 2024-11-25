@@ -219,7 +219,7 @@ public class OLCandBL implements IOLCandBL
 		{
 			return olCandInvoiceRule;
 		}
-		
+
 		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
 		{
 			return bPartnerOrderParams.getInvoiceRule().get();

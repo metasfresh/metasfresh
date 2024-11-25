@@ -44,7 +44,6 @@ public class StockCandidateChangedEvent implements MaterialEvent
 	MaterialDescriptor materialDescriptor;
 
 	@JsonCreator
-	@Builder
 	public StockCandidateChangedEvent(
 			@JsonProperty("eventDescriptor") final @NonNull EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final @NonNull MaterialDescriptor materialDescriptor)

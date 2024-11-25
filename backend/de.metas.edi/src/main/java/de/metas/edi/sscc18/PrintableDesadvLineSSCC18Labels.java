@@ -43,7 +43,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 	@Getter
 	private final I_M_HU_PI_Item_Product tuPIItemProduct;
-	
+
 	private final int lineNo;
 	private final String productValue;
 	private final String productName;

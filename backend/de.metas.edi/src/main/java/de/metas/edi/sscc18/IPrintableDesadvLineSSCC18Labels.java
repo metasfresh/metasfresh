@@ -54,7 +54,7 @@ public interface IPrintableDesadvLineSSCC18Labels
 	 * Needed because when creating a DESADV-Pack, we also need to set the pack's packing-Codes and packaging-GTINs
 	 */
 	I_M_HU_PI_Item_Product getTuPIItemProduct();
-	
+
 	Integer getLineNo();
 
 	String getProductValue();

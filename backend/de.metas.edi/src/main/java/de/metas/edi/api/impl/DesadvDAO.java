@@ -165,7 +165,7 @@ public class DesadvDAO implements IDesadvDAO
 				.create()
 				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
 	}
-	
+
 	@Override
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_Desadv_Pack, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1615598873L;
+	private static final long serialVersionUID = -1886649508L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack (final Properties ctx, final int EDI_Desadv_Pack_ID, @Nullable final String trxName)
@@ -178,6 +178,29 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	public java.lang.String getM_HU_PackagingCode_Text() 
 	{
 		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_Text);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	@Override
+	public void setM_InOut_ID (final int M_InOut_ID)
+	{
+		throw new IllegalArgumentException ("M_InOut_ID is virtual column");	}
+
+	@Override
+	public int getM_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override

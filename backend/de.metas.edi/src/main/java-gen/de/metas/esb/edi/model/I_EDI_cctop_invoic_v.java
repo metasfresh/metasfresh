@@ -3,19 +3,19 @@ package de.metas.esb.edi.model;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for EDI_cctop_invoic_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_cctop_invoic_v 
 {
 
-    /** TableName=EDI_cctop_invoic_v */
-    public static final String Table_Name = "EDI_cctop_invoic_v";
+	String Table_Name = "EDI_cctop_invoic_v";
 
-    /** AD_Table_ID=540462 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540462 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -26,10 +26,9 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -39,7 +38,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -49,10 +48,9 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Location.
@@ -61,7 +59,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
 	 * Get Location.
@@ -70,10 +68,9 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_Location_ID();
 
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Invoice.
@@ -83,7 +80,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_ID (int C_Invoice_ID);
+	void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
 	 * Get Invoice.
@@ -93,16 +90,14 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_ID();
+	int getC_Invoice_ID();
 
-	public org.compiere.model.I_C_Invoice getC_Invoice();
+	@Nullable org.compiere.model.I_C_Invoice getC_Invoice();
 
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
 
-    /** Column definition for C_Invoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Invoice>(I_EDI_cctop_invoic_v.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name C_Invoice_ID */
-    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+	ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
 	 * Set Sales order.
@@ -112,7 +107,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID (int C_Order_ID);
+	void setC_Order_ID (int C_Order_ID);
 
 	/**
 	 * Get Sales order.
@@ -122,16 +117,14 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Order_ID();
+	int getC_Order_ID();
 
-	public org.compiere.model.I_C_Order getC_Order();
+	@Nullable org.compiere.model.I_C_Order getC_Order();
 
-	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
 
-    /** Column definition for C_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Order>(I_EDI_cctop_invoic_v.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_ID */
-    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set ISO Country Code.
@@ -141,7 +134,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCountryCode (java.lang.String CountryCode);
+	void setCountryCode (@Nullable java.lang.String CountryCode);
 
 	/**
 	 * Get ISO Country Code.
@@ -151,12 +144,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCountryCode();
+	@Nullable java.lang.String getCountryCode();
 
-    /** Column definition for CountryCode */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CountryCode = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "CountryCode", null);
-    /** Column name CountryCode */
-    public static final String COLUMNNAME_CountryCode = "CountryCode";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CountryCode = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "CountryCode", null);
+	String COLUMNNAME_CountryCode = "CountryCode";
 
 	/**
 	 * Set ISO Ländercode 3 Stelliger.
@@ -165,7 +156,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCountryCode_3digit (java.lang.String CountryCode_3digit);
+	void setCountryCode_3digit (@Nullable java.lang.String CountryCode_3digit);
 
 	/**
 	 * Get ISO Ländercode 3 Stelliger.
@@ -174,12 +165,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCountryCode_3digit();
+	@Nullable java.lang.String getCountryCode_3digit();
 
-    /** Column definition for CountryCode_3digit */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CountryCode_3digit = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "CountryCode_3digit", null);
-    /** Column name CountryCode_3digit */
-    public static final String COLUMNNAME_CountryCode_3digit = "CountryCode_3digit";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CountryCode_3digit = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "CountryCode_3digit", null);
+	String COLUMNNAME_CountryCode_3digit = "CountryCode_3digit";
 
 	/**
 	 * Get Created.
@@ -189,12 +178,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_Created = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -204,33 +191,30 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Gutschrift Grund.
+	 * Set Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditMemoReason (java.lang.String CreditMemoReason);
+	void setCreditMemoReason (@Nullable java.lang.String CreditMemoReason);
 
 	/**
-	 * Get Gutschrift Grund.
+	 * Get Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreditMemoReason();
+	@Nullable java.lang.String getCreditMemoReason();
 
-    /** Column definition for CreditMemoReason */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CreditMemoReason = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "CreditMemoReason", null);
-    /** Column name CreditMemoReason */
-    public static final String COLUMNNAME_CreditMemoReason = "CreditMemoReason";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CreditMemoReason = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "CreditMemoReason", null);
+	String COLUMNNAME_CreditMemoReason = "CreditMemoReason";
 
 	/**
 	 * Set CreditMemoReasonText.
@@ -239,7 +223,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditMemoReasonText (java.lang.String CreditMemoReasonText);
+	void setCreditMemoReasonText (@Nullable java.lang.String CreditMemoReasonText);
 
 	/**
 	 * Get CreditMemoReasonText.
@@ -248,12 +232,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreditMemoReasonText();
+	@Nullable java.lang.String getCreditMemoReasonText();
 
-    /** Column definition for CreditMemoReasonText */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CreditMemoReasonText = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "CreditMemoReasonText", null);
-    /** Column name CreditMemoReasonText */
-    public static final String COLUMNNAME_CreditMemoReasonText = "CreditMemoReasonText";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_CreditMemoReasonText = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "CreditMemoReasonText", null);
+	String COLUMNNAME_CreditMemoReasonText = "CreditMemoReasonText";
 
 	/**
 	 * Set Accounting Date.
@@ -277,7 +259,7 @@ public interface I_EDI_cctop_invoic_v
 
 	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateAcct = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "DateAcct", null);
 	String COLUMNNAME_DateAcct = "DateAcct";
-	
+
 	/**
 	 * Set Date.
 	 * Date printed on Invoice
@@ -286,7 +268,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateInvoiced (java.sql.Timestamp DateInvoiced);
+	void setDateInvoiced (@Nullable java.sql.Timestamp DateInvoiced);
 
 	/**
 	 * Get Date.
@@ -296,12 +278,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateInvoiced();
+	@Nullable java.sql.Timestamp getDateInvoiced();
 
-    /** Column definition for DateInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateInvoiced = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "DateInvoiced", null);
-    /** Column name DateInvoiced */
-    public static final String COLUMNNAME_DateInvoiced = "DateInvoiced";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateInvoiced = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "DateInvoiced", null);
+	String COLUMNNAME_DateInvoiced = "DateInvoiced";
 
 	/**
 	 * Set Date.
@@ -311,7 +291,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateOrdered (java.sql.Timestamp DateOrdered);
+	void setDateOrdered (@Nullable java.sql.Timestamp DateOrdered);
 
 	/**
 	 * Get Date.
@@ -321,12 +301,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateOrdered();
+	@Nullable java.sql.Timestamp getDateOrdered();
 
-    /** Column definition for DateOrdered */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "DateOrdered", null);
-    /** Column name DateOrdered */
-    public static final String COLUMNNAME_DateOrdered = "DateOrdered";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_DateOrdered = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
 	 * Set eancom_doctype.
@@ -335,7 +313,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void seteancom_doctype (java.lang.String eancom_doctype);
+	void seteancom_doctype (@Nullable java.lang.String eancom_doctype);
 
 	/**
 	 * Get eancom_doctype.
@@ -344,12 +322,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String geteancom_doctype();
+	@Nullable java.lang.String geteancom_doctype();
 
-    /** Column definition for eancom_doctype */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_eancom_doctype = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "eancom_doctype", null);
-    /** Column name eancom_doctype */
-    public static final String COLUMNNAME_eancom_doctype = "eancom_doctype";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_eancom_doctype = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "eancom_doctype", null);
+	String COLUMNNAME_eancom_doctype = "eancom_doctype";
 
 	/**
 	 * Set EDI_cctop_invoic_v.
@@ -358,7 +334,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_cctop_invoic_v_ID (int EDI_cctop_invoic_v_ID);
+	void setEDI_cctop_invoic_v_ID (int EDI_cctop_invoic_v_ID);
 
 	/**
 	 * Get EDI_cctop_invoic_v.
@@ -367,12 +343,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getEDI_cctop_invoic_v_ID();
+	int getEDI_cctop_invoic_v_ID();
 
-    /** Column definition for EDI_cctop_invoic_v_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDI_cctop_invoic_v_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "EDI_cctop_invoic_v_ID", null);
-    /** Column name EDI_cctop_invoic_v_ID */
-    public static final String COLUMNNAME_EDI_cctop_invoic_v_ID = "EDI_cctop_invoic_v_ID";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDI_cctop_invoic_v_ID = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "EDI_cctop_invoic_v_ID", null);
+	String COLUMNNAME_EDI_cctop_invoic_v_ID = "EDI_cctop_invoic_v_ID";
 
 	/**
 	 * Set EDI Desadv-Nr..
@@ -381,7 +355,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDIDesadvDocumentNo (String EDIDesadvDocumentNo);
+	void setEDIDesadvDocumentNo (@Nullable java.lang.String EDIDesadvDocumentNo);
 
 	/**
 	 * Get EDI Desadv-Nr..
@@ -390,37 +364,75 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public String getEDIDesadvDocumentNo();
+	@Nullable java.lang.String getEDIDesadvDocumentNo();
 
-	/** Column definition for EDIDesadvDocumentNo */
-	public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDIDesadvDocumentNo = new org.adempiere.model.ModelColumn<>(I_EDI_cctop_invoic_v.class, "EDIDesadvDocumentNo", null);
-	/** Column name EDIDesadvDocumentNo */
-	public static final String COLUMNNAME_EDIDesadvDocumentNo = "EDIDesadvDocumentNo";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDIDesadvDocumentNo = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "EDIDesadvDocumentNo", null);
+	String COLUMNNAME_EDIDesadvDocumentNo = "EDIDesadvDocumentNo";
 
 	/**
-	 * Set Summe Gesamt.
-	 * Summe über Alles zu diesem Beleg
+	 * Set Grand Total.
+	 * Total amount of document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGrandTotal (java.math.BigDecimal GrandTotal);
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
 
 	/**
-	 * Get Summe Gesamt.
-	 * Summe über Alles zu diesem Beleg
+	 * Get Grand Total.
+	 * Total amount of document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getGrandTotal();
+	BigDecimal getGrandTotal();
 
-    /** Column definition for GrandTotal */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_GrandTotal = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "GrandTotal", null);
-    /** Column name GrandTotal */
-    public static final String COLUMNNAME_GrandTotal = "GrandTotal";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_GrandTotal = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
+
+	/**
+	 * Set GrandTotalWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrandTotalWithSurchargeAmt (BigDecimal GrandTotalWithSurchargeAmt);
+
+	/**
+	 * Get GrandTotalWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrandTotalWithSurchargeAmt();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_GrandTotalWithSurchargeAmt = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "GrandTotalWithSurchargeAmt", null);
+	String COLUMNNAME_GrandTotalWithSurchargeAmt = "GrandTotalWithSurchargeAmt";
+
+	/**
+	 * Set Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicableQtyBasedOn (@Nullable java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicableQtyBasedOn();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "InvoicableQtyBasedOn", null);
+	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set invoice_documentno.
@@ -429,7 +441,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setinvoice_documentno (java.lang.String invoice_documentno);
+	void setinvoice_documentno (@Nullable java.lang.String invoice_documentno);
 
 	/**
 	 * Get invoice_documentno.
@@ -438,12 +450,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getinvoice_documentno();
+	@Nullable java.lang.String getinvoice_documentno();
 
-    /** Column definition for invoice_documentno */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_invoice_documentno = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "invoice_documentno", null);
-    /** Column name invoice_documentno */
-    public static final String COLUMNNAME_invoice_documentno = "invoice_documentno";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_invoice_documentno = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "invoice_documentno", null);
+	String COLUMNNAME_invoice_documentno = "invoice_documentno";
 
 	/**
 	 * Set Active.
@@ -453,7 +463,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -463,62 +473,56 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set ISO Währungscode.
-	 * Dreibuchstabiger ISO 4217 Code für die Währung
+	 * Set ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setISO_Code (java.lang.String ISO_Code);
+	void setISO_Code (@Nullable java.lang.String ISO_Code);
 
 	/**
-	 * Get ISO Währungscode.
-	 * Dreibuchstabiger ISO 4217 Code für die Währung
+	 * Get ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getISO_Code();
+	@Nullable java.lang.String getISO_Code();
 
-    /** Column definition for ISO_Code */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_ISO_Code = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "ISO_Code", null);
-    /** Column name ISO_Code */
-    public static final String COLUMNNAME_ISO_Code = "ISO_Code";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_ISO_Code = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "ISO_Code", null);
+	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getMovementDate();
+	@Nullable java.sql.Timestamp getMovementDate();
 
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_MovementDate = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Order Reference.
@@ -528,7 +532,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPOReference (java.lang.String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -538,12 +542,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_POReference = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set receivergln.
@@ -552,7 +554,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setreceivergln (java.lang.String receivergln);
+	void setReceiverGLN (@Nullable java.lang.String ReceiverGLN);
 
 	/**
 	 * Get receivergln.
@@ -561,12 +563,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getreceivergln();
+	@Nullable java.lang.String getReceiverGLN();
 
-    /** Column definition for receivergln */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_receivergln = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "receivergln", null);
-    /** Column name receivergln */
-    public static final String COLUMNNAME_receivergln = "receivergln";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_ReceiverGLN = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "ReceiverGLN", null);
+	String COLUMNNAME_ReceiverGLN = "ReceiverGLN";
 
 	/**
 	 * Set sendergln.
@@ -575,7 +575,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setsendergln (java.lang.String sendergln);
+	void setSenderGLN (@Nullable java.lang.String SenderGLN);
 
 	/**
 	 * Get sendergln.
@@ -584,12 +584,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getsendergln();
+	@Nullable java.lang.String getSenderGLN();
 
-    /** Column definition for sendergln */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_sendergln = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "sendergln", null);
-    /** Column name sendergln */
-    public static final String COLUMNNAME_sendergln = "sendergln";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_SenderGLN = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "SenderGLN", null);
+	String COLUMNNAME_SenderGLN = "SenderGLN";
 
 	/**
 	 * Set shipment_documentno.
@@ -598,7 +596,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setshipment_documentno (java.lang.String shipment_documentno);
+	void setShipment_DocumentNo (@Nullable java.lang.String Shipment_DocumentNo);
 
 	/**
 	 * Get shipment_documentno.
@@ -607,37 +605,75 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getshipment_documentno();
+	@Nullable java.lang.String getShipment_DocumentNo();
 
-    /** Column definition for shipment_documentno */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_shipment_documentno = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "shipment_documentno", null);
-    /** Column name shipment_documentno */
-    public static final String COLUMNNAME_shipment_documentno = "shipment_documentno";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_Shipment_DocumentNo = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "Shipment_DocumentNo", null);
+	String COLUMNNAME_Shipment_DocumentNo = "Shipment_DocumentNo";
 
 	/**
-	 * Set Summe Zeilen.
-	 * Summe aller Zeilen zu diesem Beleg
+	 * Set SurchargeAmt.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTotalLines (java.math.BigDecimal TotalLines);
+	void setSurchargeAmt (@Nullable BigDecimal SurchargeAmt);
 
 	/**
-	 * Get Summe Zeilen.
-	 * Summe aller Zeilen zu diesem Beleg
+	 * Get SurchargeAmt.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getTotalLines();
+	BigDecimal getSurchargeAmt();
 
-    /** Column definition for TotalLines */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalLines = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "TotalLines", null);
-    /** Column name TotalLines */
-    public static final String COLUMNNAME_TotalLines = "TotalLines";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_SurchargeAmt = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "SurchargeAmt", null);
+	String COLUMNNAME_SurchargeAmt = "SurchargeAmt";
+
+	/**
+	 * Set Total Lines.
+	 * Total of all document lines
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTotalLines (@Nullable BigDecimal TotalLines);
+
+	/**
+	 * Get Total Lines.
+	 * Total of all document lines
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalLines();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalLines = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "TotalLines", null);
+	String COLUMNNAME_TotalLines = "TotalLines";
+
+	/**
+	 * Set TotalLinesWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTotalLinesWithSurchargeAmt (@Nullable BigDecimal TotalLinesWithSurchargeAmt);
+
+	/**
+	 * Get TotalLinesWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalLinesWithSurchargeAmt();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalLinesWithSurchargeAmt = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "TotalLinesWithSurchargeAmt", null);
+	String COLUMNNAME_TotalLinesWithSurchargeAmt = "TotalLinesWithSurchargeAmt";
 
 	/**
 	 * Set totaltaxbaseamt.
@@ -646,7 +682,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void settotaltaxbaseamt (java.math.BigDecimal totaltaxbaseamt);
+	void setTotalTaxBaseAmt (@Nullable BigDecimal TotalTaxBaseAmt);
 
 	/**
 	 * Get totaltaxbaseamt.
@@ -655,12 +691,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal gettotaltaxbaseamt();
+	BigDecimal getTotalTaxBaseAmt();
 
-    /** Column definition for totaltaxbaseamt */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_totaltaxbaseamt = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "totaltaxbaseamt", null);
-    /** Column name totaltaxbaseamt */
-    public static final String COLUMNNAME_totaltaxbaseamt = "totaltaxbaseamt";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalTaxBaseAmt = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "TotalTaxBaseAmt", null);
+	String COLUMNNAME_TotalTaxBaseAmt = "TotalTaxBaseAmt";
 
 	/**
 	 * Set totalvat.
@@ -669,7 +703,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void settotalvat (java.math.BigDecimal totalvat);
+	void setTotalVat (@Nullable BigDecimal TotalVat);
 
 	/**
 	 * Get totalvat.
@@ -678,12 +712,31 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal gettotalvat();
+	BigDecimal getTotalVat();
 
-    /** Column definition for totalvat */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_totalvat = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "totalvat", null);
-    /** Column name totalvat */
-    public static final String COLUMNNAME_totalvat = "totalvat";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalVat = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "TotalVat", null);
+	String COLUMNNAME_TotalVat = "TotalVat";
+
+	/**
+	 * Set TotalVatWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalVatWithSurchargeAmt (BigDecimal TotalVatWithSurchargeAmt);
+
+	/**
+	 * Get TotalVatWithSurchargeAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalVatWithSurchargeAmt();
+
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_TotalVatWithSurchargeAmt = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "TotalVatWithSurchargeAmt", null);
+	String COLUMNNAME_TotalVatWithSurchargeAmt = "TotalVatWithSurchargeAmt";
 
 	/**
 	 * Get Updated.
@@ -693,12 +746,10 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_Updated = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -708,10 +759,9 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set VAT ID.
@@ -720,7 +770,7 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setVATaxID (java.lang.String VATaxID);
+	void setVATaxID (@Nullable java.lang.String VATaxID);
 
 	/**
 	 * Get VAT ID.
@@ -729,10 +779,8 @@ public interface I_EDI_cctop_invoic_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getVATaxID();
+	@Nullable java.lang.String getVATaxID();
 
-    /** Column definition for VATaxID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_VATaxID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "VATaxID", null);
-    /** Column name VATaxID */
-    public static final String COLUMNNAME_VATaxID = "VATaxID";
+	ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_VATaxID = new ModelColumn<>(I_EDI_cctop_invoic_v.class, "VATaxID", null);
+	String COLUMNNAME_VATaxID = "VATaxID";
 }
