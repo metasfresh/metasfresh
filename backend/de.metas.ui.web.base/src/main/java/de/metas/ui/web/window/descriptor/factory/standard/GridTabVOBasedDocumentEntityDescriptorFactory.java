@@ -184,6 +184,9 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		collectSpecialFieldsDone();
 	}
 
+	@NonNull
+	public String getTableName() {return documentEntity().getTableNameNotNull();}
+
 	public ILogicExpression getTabDisplayLogic()
 	{
 		return documentEntity().getDisplayLogic();

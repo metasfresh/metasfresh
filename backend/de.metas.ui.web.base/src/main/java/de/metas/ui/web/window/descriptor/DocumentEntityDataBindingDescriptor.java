@@ -42,9 +42,9 @@ public interface DocumentEntityDataBindingDescriptor
 	}
 
 	@FunctionalInterface
-	public interface DocumentEntityDataBindingDescriptorBuilder
+	interface DocumentEntityDataBindingDescriptorBuilder
 	{
-		final DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
+		DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
 
 		@Nullable
 		DocumentEntityDataBindingDescriptor getOrBuild();
