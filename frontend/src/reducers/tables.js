@@ -1,13 +1,13 @@
-import { original, produce } from "immer";
-import { difference, get } from "lodash";
-import { createSelector } from "reselect";
-import { merge } from "merge-anything";
+import { original, produce } from 'immer';
+import { difference, get } from 'lodash';
+import { createSelector } from 'reselect';
+import { merge } from 'merge-anything';
 
-import * as types from "../constants/ActionTypes";
-import { SORT_TAB } from "../constants/ActionTypes";
-import { doesSelectionExist } from "../utils/documentListHelper";
-import { NUMERIC_FIELD_TYPES } from "../constants/Constants";
-import { shallowEqual, useSelector } from "react-redux";
+import * as types from '../constants/ActionTypes';
+import { SORT_TAB } from '../constants/ActionTypes';
+import { doesSelectionExist } from '../utils/documentListHelper';
+import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
+import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
   windowId: null,
@@ -260,30 +260,6 @@ const reducer = produce((draftState, action) => {
         rows,
         ...updatedSelected,
       };
-
-      return;
-    }
-
-    case types.PARTIAL_UPDATE_TABLE_DATA: {
-      const { tableId, rowsToUpdate } = action.payload;
-      const keyProperty = draftState[tableId].keyProperty;
-
-      const rowsToUpdateById = rowsToUpdate.reduce((acc, row) => {
-        acc[row[keyProperty]] = row;
-        return acc;
-      }, {});
-
-      draftState[tableId].rows = original(draftState[tableId].rows).map(
-        (row) => {
-          const rowId = row[keyProperty];
-          const rowToUpdate = rowsToUpdateById[rowId];
-          if (rowToUpdate != null) {
-            return merge(row, rowToUpdate);
-          } else {
-            return row;
-          }
-        }
-      );
 
       return;
     }
