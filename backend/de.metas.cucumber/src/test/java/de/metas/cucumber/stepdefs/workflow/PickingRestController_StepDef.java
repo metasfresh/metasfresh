@@ -30,15 +30,22 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
+import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
 import de.metas.cucumber.stepdefs.workflow.dto.WFActivityId;
 import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.workflow.PickingJobRestService;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,8 +64,10 @@ public class PickingRestController_StepDef
 	private final JsonWFActivity_StepDefData workflowActivityTable;
 	private final JsonWFPickingLine_StepDefData workflowPickingLineTable;
 	private final JsonWFPickingStep_StepDefData workflowPickingStepTable;
+	private final PickingSlot_StepDefData pickingSlotsTable;
 	private final JsonWFHQRCode_StepDefData qrCodeTable;
 	private final HUQRCode_StepDefData huQrCodeStorage;
+	private final PickingJobRestService pickingJobRestService;
 
 	@And("process response and extract picking step and main HU picking candidate:")
 	public void extract_picking_information(@NonNull final DataTable dataTable) throws JsonProcessingException
@@ -153,6 +162,23 @@ public class PickingRestController_StepDef
 		}
 
 		testContext.setEndpointPath(actualEndpoint);
+	}
+
+	@And("scan M_PickingSlot for PickingJob")
+	public void scan_picking_slot(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final I_M_PickingSlot slot = pickingSlotsTable.getOptional(row.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID))
+				.orElseThrow(() -> new AdempiereException("No M_PickingSlot found for identifier=" + row.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)));
+
+		final PickingJobId jobId = de.metas.workflow.rest_api.model.WFProcessId
+				.ofString(workflowProcessTable.get(row.getAsIdentifier("WorkflowProcess")).getId())
+				.getRepoId(PickingJobId::ofRepoId);
+
+		pickingJobRestService.allocateAndSetPickingSlot(pickingJobRestService.getPickingJobById(jobId), PickingSlotQRCode.builder()
+				.caption(row.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID).getAsString())
+				.pickingSlotId(PickingSlotId.ofRepoId(slot.getM_PickingSlot_ID()))
+				.build());
 	}
 
 	private JsonPickingStepEvent extractJsonPickingStepEvent(final @NonNull DataTable dataTable)

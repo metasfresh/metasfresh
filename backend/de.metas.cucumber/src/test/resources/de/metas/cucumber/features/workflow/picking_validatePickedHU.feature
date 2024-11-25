@@ -77,6 +77,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_70 | S0406_70    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -113,6 +116,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | second_wf1                 | second_a1                   | second_line1           | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_70 | S0406_70    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '422' status code
     # END
 
@@ -138,6 +144,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_80 | S0406_80    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -182,6 +191,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | second_wf1                 | second_a1                   | second_line1           | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_80 | S0406_80    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '422' status code
     # END
 
@@ -204,6 +216,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_90 | S0406_90    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -247,6 +262,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | second_wf1                 | second_a1                   | second_line1           | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | PS_S0406_90 | S0406_90    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     # END
     # BEGIN: validate the picking was successful and a new HU was created for it
@@ -287,6 +305,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot | IsDynamic |
+      | PS_S0406_100 | S0406_100   | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -309,6 +330,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 5         |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot | IsDynamic |
+      | PS_S0406_100 | S0406_100   | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule pickingShipmentSchedule can be located in specified order
       | M_ShipmentSchedule_QtyPicked_ID.Identifier     |
