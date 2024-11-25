@@ -65,6 +65,8 @@ public final class OrderedDocumentsList
 		return new OrderedDocumentsList(ImmutableList.of(document), DocumentQueryOrderByList.EMPTY);
 	}
 
+	public static OrderedDocumentsList of(@NonNull final Document document, @NonNull final DocumentQueryOrderByList orderBys) {return new OrderedDocumentsList(ImmutableList.of(document), orderBys);}
+
 	@NonNull
 	public static OrderedDocumentsList ofNullable(@Nullable final Document document)
 	{
