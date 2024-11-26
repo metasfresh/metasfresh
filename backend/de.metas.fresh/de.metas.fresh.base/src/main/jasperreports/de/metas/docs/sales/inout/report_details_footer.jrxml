@@ -57,6 +57,14 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
 		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
 	</field>
+	<field name="deliveryrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryrule"/>
+	</field>
+	<field name="deliveryviarule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryviarule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryviarule"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -72,7 +80,7 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean ($F{textcenter} != null && !$F{textcenter}.isEmpty() &&$F{textleft} != null && !$F{textleft}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryrule} != null && !$F{deliveryrule}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="36" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="cb018c89-ff6b-4237-b348-78bb875ca088"/>
 				<box>
@@ -97,12 +105,12 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 				<textElement markup="none">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{deliveryrule}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryviarule} != null && !$F{deliveryviarule}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="36" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="8610b033-e983-4fdf-808c-919db18a04ef"/>
 				<box>
@@ -127,7 +135,7 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 				<textElement markup="none">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{deliveryviarule}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">
