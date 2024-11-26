@@ -61,6 +61,10 @@ Feature: picking rest controller tests
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17497Line      | N             |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_1       | 063.1        | Y         |
+
   @from:cucumber
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
@@ -72,16 +76,15 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | step1                  | QR                           | 2         |
-
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_1       | PS_1        | Y         |
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -105,16 +108,15 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | step1                  | QR                           | 2         |
-
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_2       | PS_2        | Y         |
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -159,16 +161,15 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | step1                  | QR                           | 2         |
-
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_3       | PS_3        | Y         |
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -230,6 +231,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf2                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivityWf2  |
@@ -239,9 +243,6 @@ Feature: picking rest controller tests
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       | 2         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_3       | PS_3        | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf2/:CompletePickingActivityWf2/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
@@ -264,6 +265,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -276,9 +280,6 @@ Feature: picking rest controller tests
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_4       | PS_4        | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/logout' receives a 'POST' request with the payload from context and responds with '200' status code
     And validate M_ShipmentSchedule_Lock record for
@@ -296,12 +297,6 @@ Feature: picking rest controller tests
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier | PickingSlot | IsDynamic |
-      | PS_4       | PS_4        | Y         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_20 | S0406_20    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code

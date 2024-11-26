@@ -57,6 +57,10 @@ Feature: Picking workflow - always split HUs
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17663Line      | N             |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_S0406   | 063.2       | Y         |
+
   @from:cucumber
   @Id:S0406_10
   Scenario: AlwaysSplitHU = Y, pick less than available => split
@@ -70,15 +74,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_10 | S0406_10    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -110,15 +114,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_20 | S0406_20    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -150,15 +154,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 11        |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_30 | S0406_30    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -190,15 +194,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_40 | S0406_40    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -230,15 +234,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_50 | S0406_50    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
@@ -263,15 +267,15 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 11        |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | PS_S0406_60 | S0406_60    | Y         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |
