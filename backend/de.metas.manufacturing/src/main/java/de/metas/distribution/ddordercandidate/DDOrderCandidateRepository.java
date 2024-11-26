@@ -209,7 +209,7 @@ public class DDOrderCandidateRepository
 	{
 		toSqlQuery(query)
 				.create()
-				.delete();
+				.delete(!query.isDeleteEvenIfProceed());
 	}
 
 	private IQueryBuilder<I_DD_Order_Candidate> toSqlQuery(@NonNull final DDOrderCandidateQuery query)
@@ -253,6 +253,10 @@ public class DDOrderCandidateRepository
 		if (query.getDdOrderCandidateId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, query.getDdOrderCandidateId());
+		}
+		if (query.getPpOrderBOMLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID, query.getPpOrderBOMLineId());
 		}
 
 		return queryBuilder;

@@ -25,7 +25,8 @@ import java.util.stream.Stream;
 public class PickingJobAbortCommand
 {
 	private final static AdMessageKey ONLY_ONE_PICKING_JOB_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ONE_PICKING_JOB_ERROR_MSG");
-	
+	private final static AdMessageKey ABORT_IS_NOT_ALLOWED = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ABORT_IS_NOT_ALLOWED");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
@@ -67,6 +68,11 @@ public class PickingJobAbortCommand
 	public ImmutableList<PickingJob> execute()
 	{
 		initialPickingJobs.forEach(PickingJob::assertNotProcessed);
+		final boolean isAbortAllowed = initialPickingJobs.stream().allMatch(PickingJob::isAllowAbort);
+		if (!isAbortAllowed)
+		{
+			throw new AdempiereException(ABORT_IS_NOT_ALLOWED);
+		}
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 

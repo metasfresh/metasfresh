@@ -1,7 +1,10 @@
 package de.metas.distribution.ddordercandidate.material_dispo.interceptor;
 
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.distribution.ddordercandidate.DeleteDDOrderCandidateAllocQuery;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
@@ -21,9 +24,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DD_Order_Candidate
 {
-	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void afterNew(final I_DD_Order_Candidate record)
@@ -37,6 +40,14 @@ public class DD_Order_Candidate
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
 		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateUpdatedEvent.of(data));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_DD_Order_Candidate record)
+	{
+		ddOrderCandidateAllocRepository.deleteByQuery(DeleteDDOrderCandidateAllocQuery.builder()
+															  .ddOrderCandidateId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()))
+															  .build());
 	}
 
 	private DDOrderCandidateData toDDOrderCandidateData(final I_DD_Order_Candidate record)
