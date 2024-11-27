@@ -57,6 +57,10 @@ Feature: Picking workflow - always split HUs
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17663Line      | N             |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_S0406   | 063.2       | Y         |
+
   @from:cucumber
   @Id:S0406_10
   Scenario: AlwaysSplitHU = Y, pick less than available => split
@@ -70,6 +74,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -107,6 +114,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -144,6 +154,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -181,6 +194,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -218,6 +234,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -248,6 +267,9 @@ Feature: Picking workflow - always split HUs
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
