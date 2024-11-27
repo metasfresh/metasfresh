@@ -67,6 +67,9 @@
 	<field name="printname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
+	<field name="billtoaddress" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="billtoaddress"/>
+	</field>
 	<variable name="docno" class="java.lang.String">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA["Einkaufsbestätigung"]]></initialValueExpression>
@@ -289,7 +292,7 @@
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-5" x="307" y="205" width="117" height="13" uuid="3571102f-7e3c-480f-8314-e3988268c7d3">
-					<printWhenExpression><![CDATA[new Boolean($F{sr_name} != null && !$F{sr_name}.equals(""))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{sr_email} != null && !$F{sr_email}.equals(""))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,7 +320,7 @@
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-6" x="37" y="226" width="117" height="13" forecolor="#000000" uuid="37fe7ba3-0da3-4bea-ba88-1d72b8b6606f">
-					<printWhenExpression><![CDATA[new Boolean ($F{deliverto} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ($F{billtoaddress} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,7 +344,7 @@
 				<textElement>
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{deliverto}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{billtoaddress}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
