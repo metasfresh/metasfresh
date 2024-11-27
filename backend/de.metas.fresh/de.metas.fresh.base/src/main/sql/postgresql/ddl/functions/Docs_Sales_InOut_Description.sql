@@ -34,6 +34,7 @@ SELECT io.description                        AS description,
        io.poreference                        AS reference,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
+       bp.customernoatvendor                 AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
