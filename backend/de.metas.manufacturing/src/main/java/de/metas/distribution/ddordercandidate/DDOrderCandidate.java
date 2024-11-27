@@ -10,6 +10,7 @@ import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -156,7 +157,7 @@ public class DDOrderCandidate
 				.isSimulated(data.isSimulated())
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(data.getCustomerId()))
-				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(data.getSalesOrderId(), data.getSalesOrderLineId()))
+				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(data.getOrderIdAsRepoId(), data.getOrderLineIdAsRepoId()))
 				.forwardPPOrderRef(data.getForwardPPOrderRef())
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
@@ -220,6 +221,12 @@ public class DDOrderCandidate
 		this.qtyProcessed = qtyProcessed;
 
 		updateProcessed();
+	}
+
+	@Nullable
+	public OrderId getSalesOrderId()
+	{
+		return salesOrderLineId != null ? salesOrderLineId.getOrderId() : null;
 	}
 
 	private void updateProcessed()

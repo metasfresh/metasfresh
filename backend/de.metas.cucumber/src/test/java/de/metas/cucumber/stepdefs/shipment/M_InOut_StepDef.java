@@ -92,6 +92,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -223,7 +224,7 @@ public class M_InOut_StepDef
 
 	@And("^'generate shipments' process is invoked with QuantityType=(.*), IsCompleteShipments=(true|false) and IsShipToday=(true|false)")
 	public void invokeGenerateShipmentsProcess(
-			@NonNull final String quantityType, 
+			@NonNull final String quantityType,
 			final boolean isCompleteShipments,
 			final boolean isShipToday,
 			@NonNull final DataTable table)
@@ -262,7 +263,7 @@ public class M_InOut_StepDef
 		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue.build());
-		
+
 		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(pinstanceDAO.createSelectionId())
 				.queryFilters(queryFilter)
@@ -277,7 +278,7 @@ public class M_InOut_StepDef
 
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
 	}
-	
+
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{

@@ -24,6 +24,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
@@ -94,6 +95,7 @@ import java.util.Set;
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient HUReservationRepository huReservationRepository;
+	private final transient DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 	private final transient AgeAttributesService ageAttributesService;
 
 	@ToStringBuilder(skip = true)
@@ -159,12 +161,16 @@ import java.util.Set;
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
+	private boolean ignoreHUsScheduledInDDOrder;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
+	public HUQueryBuilder(
+			@NonNull final HUReservationRepository huReservationRepository,
+			@NonNull final AgeAttributesService ageAttributesService,
+			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository)
 	{
 		this.huReservationRepository = huReservationRepository;
-
 		this.ageAttributesService = ageAttributesService;
+		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 
 		this.locators = new HUQueryBuilder_Locator();
 		this.attributes = new HUQueryBuilder_Attributes(ageAttributesService);
@@ -174,6 +180,7 @@ import java.util.Set;
 	{
 		this.huReservationRepository = from.huReservationRepository;
 		this.ageAttributesService = from.ageAttributesService;
+		this.ddOrderMoveScheduleRepository = from.ddOrderMoveScheduleRepository;
 
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
@@ -211,6 +218,7 @@ import java.util.Set;
 
 		this._errorIfNoHUs = from._errorIfNoHUs;
 		this._errorIfNoHUs_ADMessage = from._errorIfNoHUs_ADMessage;
+		this.ignoreHUsScheduledInDDOrder = from.ignoreHUsScheduledInDDOrder;
 	}
 
 	@Override
@@ -561,6 +569,11 @@ import java.util.Set;
 		else if (_excludeReserved)
 		{
 			andFilters.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false);
+		}
+
+		if (ignoreHUsScheduledInDDOrder)
+		{
+			andFilters.addFilter(ddOrderMoveScheduleRepository.getHUsNotAlreadyScheduledToMoveFilter());
 		}
 
 		//
@@ -1208,6 +1221,13 @@ import java.util.Set;
 	public IHUQueryBuilder setExcludeReserved()
 	{
 		_excludeReserved = true;
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setIgnoreHUsScheduledInDDOrder(final boolean ignoreHUsScheduledInDDOrder)
+	{
+		this.ignoreHUsScheduledInDDOrder = ignoreHUsScheduledInDDOrder;
 		return this;
 	}
 }
