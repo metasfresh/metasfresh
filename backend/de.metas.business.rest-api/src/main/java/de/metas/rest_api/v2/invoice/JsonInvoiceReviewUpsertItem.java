@@ -43,7 +43,7 @@ public class JsonInvoiceReviewUpsertItem
 	@Schema(description = "Optional; if omitted, then `invoiceId` has to be provided. If given, then also `orgCode` has to be provided. Translates to `C_Invoice.ExternalId`. Only completed and closed invoices are considered")
 	String externalId;
 
-	@Schema(description = "To specify the `AD_Org_ID`.\n"
+	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 			+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
