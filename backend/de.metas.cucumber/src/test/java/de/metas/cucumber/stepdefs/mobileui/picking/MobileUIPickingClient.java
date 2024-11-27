@@ -34,7 +34,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-class MobileUIPickingClient
+public class MobileUIPickingClient
 {
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingClient.class);
 	private final WorkflowRestController workflowRestController = SpringContextHolder.instance.getBean(WorkflowRestController.class);

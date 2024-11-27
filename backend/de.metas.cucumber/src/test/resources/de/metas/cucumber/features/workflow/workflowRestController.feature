@@ -87,6 +87,10 @@ Feature: workflow rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_9       | PS_9        | Y         |
+
     And validate picking candidate for shipment schedule:
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
       | pickingShipmentSchedule          | 1         | A          |
