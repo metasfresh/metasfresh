@@ -616,6 +616,7 @@ public final class Check
 	/**
 	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
 	 */
+	@Contract("null -> false")
 	public static boolean isNotBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isNotBlank(str);
@@ -628,6 +629,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+	@Contract("null, _ -> true")
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		return EmptyUtil.isEmpty(str, trimWhitespaces);
@@ -636,7 +638,8 @@ public final class Check
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
-	public static boolean isEmpty(final BigDecimal bd)
+	@Contract("null -> true")
+	public static boolean isEmpty(@Nullable final BigDecimal bd)
 	{
 		return EmptyUtil.isEmpty(bd);
 	}
@@ -652,6 +655,7 @@ public final class Check
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return EmptyUtil.isEmpty(collection);
