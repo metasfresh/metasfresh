@@ -286,6 +286,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_product_name}
 +
+($F{p_description} != null ?$F{p_description} + "\n" :  "\n")
++
 ($F{description} != null ? $F{description} + "\n" :  "\n")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
