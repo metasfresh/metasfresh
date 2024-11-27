@@ -49,9 +49,11 @@ public class SwaggerDocConstants
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
 			+ "If provided, any `since` value is ignored";
 
-	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question. Can be\n"
+	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question.\n"
+			+ "Note that only completed or closed invoices are considered. Also the invoice needs to be in the organisation (`orgCode`) that is specified further up in the request-body.\n"
+			+ "Can be:\n"
 			+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-			+ "* or something like `doc-<C_Invoice.documentNo>`"
+			+ "* or something like `doc-<C_Invoice.documentNo>`\n"
 			+ "* or something like `ext-<C_Invoice.ExternalId>`";
 
 	public static final String SINCE_DOC = "Optional epoch timestamp in ms. The endpoint returns all resources that were created or modified *after* the given time.";
