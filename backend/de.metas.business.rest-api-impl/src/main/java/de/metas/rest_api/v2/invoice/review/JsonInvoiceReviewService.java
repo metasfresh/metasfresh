@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.invoice.review;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
@@ -92,7 +93,9 @@ public class JsonInvoiceReviewService
 	private static SingleInvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
 		final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
-				.orgId(orgId);
+				.orgId(orgId)
+				// For now, only consider completed or closed invoices. There might be reversed invoices with the same ExternalId
+				.docStatuses(DocStatus.completedOrClosedStatuses());
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)
 		{

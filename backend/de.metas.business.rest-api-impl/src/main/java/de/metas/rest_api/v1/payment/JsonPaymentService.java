@@ -257,7 +257,7 @@ public class JsonPaymentService
 	@NonNull
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
-		final SingleInvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
+		final SingleInvoiceQuery invoiceQuery = createInvoiceQueryBuilder(invoiceIdentifier)
 				.docType(docType)
 				.orgId(orgId)
 				.docStatuses(DocStatus.completedOrClosedStatuses())
@@ -265,7 +265,7 @@ public class JsonPaymentService
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 
-	private static SingleInvoiceQuery.SingleInvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
+	private static SingleInvoiceQuery.SingleInvoiceQueryBuilder createInvoiceQueryBuilder(@NonNull final IdentifierString identifierString)
 	{
 		final IdentifierString.Type type = identifierString.getType();
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
