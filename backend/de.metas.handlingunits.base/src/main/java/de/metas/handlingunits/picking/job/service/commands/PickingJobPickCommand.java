@@ -320,7 +320,6 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
-		_pickingJob.assertPickingSlotScanned();
 
 		validatePickFromHU();
 
@@ -690,6 +689,7 @@ public class PickingJobPickCommand
 		return childValues.size() == 1 ? childValues.iterator().next() : null;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isUpdateAttributes()
 	{
 		return isSetBestBeforeDate || isSetLotNo;
