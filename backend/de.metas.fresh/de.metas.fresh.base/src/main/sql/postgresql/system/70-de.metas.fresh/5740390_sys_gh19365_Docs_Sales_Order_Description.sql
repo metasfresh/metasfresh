@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 dt_description    text,
                 offer_documentno  character varying,
                 deliverytoaddress character varying,
-                validuntil        timestamp WITH TIME ZONE,
+                validuntil        timestamp,
                 versionno           character varying
             )
     STABLE
