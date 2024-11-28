@@ -114,7 +114,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="350" y="112" width="102" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="355" y="112" width="102" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -142,7 +142,7 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="423" y="112" width="117" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
+				<reportElement key="textField-3" x="428" y="112" width="117" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -246,7 +246,7 @@
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="350" y="138" width="102" height="13" uuid="28b2a717-1dc7-4bbc-803f-a6cd3f583363"/>
+				<reportElement key="textField-5" x="355" y="138" width="102" height="13" uuid="28b2a717-1dc7-4bbc-803f-a6cd3f583363"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -259,7 +259,7 @@
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="423" y="138" width="117" height="13" uuid="3f311758-25a1-4f1a-982f-2815141823b8"/>
+				<reportElement key="textField-3" x="428" y="138" width="117" height="13" uuid="3f311758-25a1-4f1a-982f-2815141823b8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -272,7 +272,7 @@
 				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="400" y="151" width="140" height="13" uuid="8b07589d-56c6-4101-8339-9a8730450602"/>
+				<reportElement key="textField-3" x="385" y="151" width="160" height="13" uuid="8b07589d-56c6-4101-8339-9a8730450602"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -285,7 +285,7 @@
 				<textFieldExpression><![CDATA[$F{sr_email}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="350" y="151" width="102" height="13" uuid="e71fac69-6748-474a-9e2c-0b169e8823d9"/>
+				<reportElement key="textField-5" x="355" y="151" width="102" height="13" uuid="e71fac69-6748-474a-9e2c-0b169e8823d9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -298,7 +298,7 @@
 				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="350" y="125" width="102" height="13" uuid="2884642e-a2ef-4158-9ab4-79a0fcd75424"/>
+				<reportElement key="textField-5" x="355" y="125" width="102" height="13" uuid="2884642e-a2ef-4158-9ab4-79a0fcd75424"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -311,7 +311,7 @@
 				<textFieldExpression><![CDATA[$R{DueDate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="423" y="125" width="117" height="13" uuid="d6f4da09-fc2f-48f7-b391-267010a40ae2"/>
+				<reportElement key="textField-3" x="428" y="125" width="117" height="13" uuid="d6f4da09-fc2f-48f7-b391-267010a40ae2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
