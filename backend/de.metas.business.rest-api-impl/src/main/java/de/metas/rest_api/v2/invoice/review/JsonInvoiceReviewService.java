@@ -22,10 +22,10 @@
 
 package de.metas.rest_api.v2.invoice.review;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.engine.DocStatus;
 import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
@@ -47,6 +47,11 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+
+import static de.metas.document.engine.DocStatus.Closed;
+import static de.metas.document.engine.DocStatus.Completed;
+import static de.metas.document.engine.DocStatus.Drafted;
+import static de.metas.document.engine.DocStatus.InProgress;
 
 @Service
 public class JsonInvoiceReviewService
@@ -94,8 +99,8 @@ public class JsonInvoiceReviewService
 	{
 		final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 				.orgId(orgId)
-				// For now, only consider completed or closed invoices. There might be reversed invoices with the same ExternalId
-				.docStatuses(DocStatus.completedOrClosedStatuses());
+				// There might be reversed invoices with the same ExternalId
+				.docStatuses(ImmutableList.of(Drafted, InProgress, Completed, Closed));
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)
 		{
