@@ -50,7 +50,7 @@ Feature: invoice review
 
   @from:cucumber
   @Id:S14758_100
-  # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
+  # Note: completing the invoice to exercise also the MI that might create an empty invoice review record
   Scenario: Insert review by C_Invoice_ID and update it via ExternalId, expect a review record to be created automatically on invoice completion
 #    When set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code

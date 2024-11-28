@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.invoice.review;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
@@ -46,6 +47,11 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+
+import static de.metas.document.engine.DocStatus.Closed;
+import static de.metas.document.engine.DocStatus.Completed;
+import static de.metas.document.engine.DocStatus.Drafted;
+import static de.metas.document.engine.DocStatus.InProgress;
 
 @Service
 public class JsonInvoiceReviewService
@@ -92,7 +98,9 @@ public class JsonInvoiceReviewService
 	private static SingleInvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
 		final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
-				.orgId(orgId);
+				.orgId(orgId)
+				// There might be reversed invoices with the same ExternalId
+				.docStatuses(ImmutableList.of(Drafted, InProgress, Completed, Closed));
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)
 		{
