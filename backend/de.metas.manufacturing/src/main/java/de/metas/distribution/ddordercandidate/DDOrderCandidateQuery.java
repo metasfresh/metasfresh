@@ -5,6 +5,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
@@ -23,4 +24,6 @@ public class DDOrderCandidateQuery
 	@Nullable PPOrderId excludePPOrderId;
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
 	@Nullable DDOrderCandidateId ddOrderCandidateId;
+	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
+	boolean deleteEvenIfProceed;
 }

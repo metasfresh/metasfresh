@@ -151,7 +151,6 @@ public class OrderService
 			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Order not COMPLETED!");
 			return ImmutableSet.of();
 		}
-
 		generateMissingShipmentSchedulesFromOrder(order);
 
 		return shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
