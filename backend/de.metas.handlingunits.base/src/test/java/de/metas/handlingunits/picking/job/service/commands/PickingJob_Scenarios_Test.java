@@ -15,16 +15,23 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -41,6 +48,7 @@ class PickingJob_Scenarios_Test
 	void beforeEach()
 	{
 		helper = new PickingJobTestHelper();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
 	@Disabled("Disabled because splitting of a part of top level VHU leads to something which is not physically identifiable (no QR code)")
@@ -147,7 +155,8 @@ class PickingJob_Scenarios_Test
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
 						.isAllowPickingAnyHU(false) // we need a plan built
-						.build());
+						.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 		System.out.println("Created " + pickingJob);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
@@ -179,7 +188,6 @@ class PickingJob_Scenarios_Test
 											.build()))
 							.build());
 		}
-
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
@@ -194,4 +202,95 @@ class PickingJob_Scenarios_Test
 		}
 	}
 
+	@Nested
+	class pick_GS1
+	{
+		private ProductCategoryId productCategoryId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			this.productCategoryId = BusinessTestHelper.createProductCategory("PC", null);
+		}
+
+		private ProductId createProduct(@NonNull String gtin)
+		{
+			final I_M_Product product = BusinessTestHelper.createProduct(gtin, helper.uomEach);
+			product.setGTIN(gtin);
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+			InterfaceWrapperHelper.save(product);
+			return ProductId.ofRepoId(product.getM_Product_ID());
+		}
+
+		@SuppressWarnings("SameParameterValue")
+		private PickingJob createPickingJob(final ProductId productId, String qtyToDeliver)
+		{
+			final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder");
+			helper.packageable()
+					.orderAndLineId(orderAndLineId)
+					.productId(productId)
+					.qtyToDeliver(qtyToDeliver)
+					.build();
+
+			return helper.pickingJobService.createPickingJob(
+					PickingJobCreateRequest.builder()
+							.pickerId(UserId.ofRepoId(1234))
+							.salesOrderId(orderAndLineId.getOrderId())
+							.deliveryBPLocationId(helper.shipToBPLocationId)
+							.isAllowPickingAnyHU(false) // we need a plan built
+							.build());
+		}
+		
+		@Test
+		void gs1ProductNotFound()
+		{
+			final ProductId productId = createProduct("97311876341810");
+			helper.createVHU(productId, "100");
+
+			final PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			assertThatThrownBy(
+					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+							.pickingLineId(line.getId())
+							.pickingStepId(stepId)
+							.pickFromKey(PickingJobStepPickFromKey.MAIN)
+							.eventType(PickingJobStepEventType.PICK)
+							.huQRCode(GS1HUQRCode.fromString("019731187634181131030075201527080910501"))
+							.qtyPicked(new BigDecimal("1"))
+							.qtyRejectedReasonCode(null)
+							.build())
+			)
+					.hasMessageStartingWith("NotFound M_Product_ID: GTIN 97311876341811");
+		}
+
+		@Test
+		void gs1ProductNotMatching()
+		{
+			final ProductId productId = createProduct("97311876341810");
+			helper.createVHU(productId, "100");
+
+			final PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			createProduct("97311876341811");
+
+			assertThatThrownBy(
+					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+							.pickingLineId(line.getId())
+							.pickingStepId(stepId)
+							.pickFromKey(PickingJobStepPickFromKey.MAIN)
+							.eventType(PickingJobStepEventType.PICK)
+							.huQRCode(GS1HUQRCode.fromString("019731187634181131030075201527080910501"))
+							.qtyPicked(new BigDecimal("1"))
+							.qtyRejectedReasonCode(null)
+							.build())
+			)
+					.hasMessageStartingWith("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+		}
+	}
 }

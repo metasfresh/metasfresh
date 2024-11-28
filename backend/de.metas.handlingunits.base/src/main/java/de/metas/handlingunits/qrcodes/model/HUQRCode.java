@@ -6,6 +6,7 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.product.ProductId;
 import de.metas.util.StringUtils;
@@ -14,8 +15,11 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -116,9 +120,22 @@ public class HUQRCode implements IHUQRCode
 		return result.toString();
 	}
 
-	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
+	@Override
+	public Optional<BigDecimal> getWeightInKg()
 	{
-		return getAttribute(attributeCode).map(HUQRCodeAttribute::getValue);
+		return getAttribute(Weightables.ATTR_WeightNet).map(HUQRCodeAttribute::getValueAsBigDecimal);
+	}
+
+	@Override
+	public Optional<LocalDate> getBestBeforeDate()
+	{
+		return getAttribute(AttributeConstants.ATTR_BestBeforeDate).map(HUQRCodeAttribute::getValueAsLocalDate);
+	}
+
+	@Override
+	public Optional<String> getLotNumber()
+	{
+		return getAttribute(AttributeConstants.ATTR_LotNumber).map(HUQRCodeAttribute::getValue);
 	}
 
 	private Optional<HUQRCodeAttribute> getAttribute(@NonNull final AttributeCode attributeCode)

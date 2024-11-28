@@ -40,7 +40,7 @@ public class ReleasePickingSlotRequest
 	}
 
 	@NonNull PickingSlotId pickingSlotId;
-	boolean abortOngoingPickingJobs;
+	boolean isForceRemoveForOngoingJobs;
 	boolean removeUnprocessedHUsFromSlot;
 	boolean removeQueuedHUsFromSlot;
 }

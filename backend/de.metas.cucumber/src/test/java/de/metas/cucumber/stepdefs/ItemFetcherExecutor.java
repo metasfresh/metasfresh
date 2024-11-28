@@ -225,7 +225,7 @@ public class ItemFetcherExecutor<T>
 			{
 				final ArrayList<T> validItems = new ArrayList<>();
 				final ArrayList<String> notValidErrors = new ArrayList<>();
-				for (T item : items)
+				for (final T item : items)
 				{
 					final ProviderResult<T> valid = checkValid(item);
 					if (valid.isResultFound())

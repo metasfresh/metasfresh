@@ -14,8 +14,8 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
@@ -154,16 +154,16 @@ public class MobileUI_Picking_StepDef
 		}
 
 		//
-		final LMQRCode itemQRCode = row.getAsOptionalString("LMQRCode").map(LMQRCode::fromGlobalQRCodeJsonString).orElse(null);
+		final IHUQRCode itemQRCode = row.getAsOptionalString("QRCode").map(HUQRCodesService::toHUQRCode).orElse(null);
 		if (itemQRCode != null)
 		{
 			requestBuilder
 					.qtyPicked(BigDecimal.ONE)
-					.catchWeight(itemQRCode.getWeightInKg())
+					.catchWeight(itemQRCode.getWeightInKg().orElse(null))
 					.setBestBeforeDate(true)
-					.bestBeforeDate(itemQRCode.getBestBeforeDate())
+					.bestBeforeDate(itemQRCode.getBestBeforeDate().orElse(null))
 					.setLotNo(true)
-					.lotNo(itemQRCode.getLotNumber());
+					.lotNo(itemQRCode.getLotNumber().orElse(null));
 		}
 		else
 		{

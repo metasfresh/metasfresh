@@ -56,6 +56,9 @@ Feature: Picking workflow - validate picked HU
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17663Line      | N             |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_S0406   | 063.3       | Y         |
 
 
   @from:cucumber
@@ -71,6 +74,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -108,6 +114,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | second_wf1                 | second_a1                   | second_line1           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | second_wf1                 | PS_S0406                    |
     # END
     # BEGIN: post a picking event using the already picked HU for the second picking job
     And create JsonPickingEventsList and store it in context as request payload:
@@ -129,6 +138,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -177,6 +189,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | second_wf1                 | second_a1                   | second_line1           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | second_wf1                 | PS_S0406                    |
     # END
     # BEGIN: post a picking event using the already shipped HU for the second picking job
     And create JsonPickingEventsList and store it in context as request payload:
@@ -198,6 +213,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And generate QR Codes for HUs
       | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17663 | huToPickQR          |
@@ -242,6 +260,9 @@ Feature: Picking workflow - validate picked HU
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | second_wf1                 | second_a1                   | second_line1           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | second_wf1                 | PS_S0406                    |
     # END
     # BEGIN: post a picking event using the destroyed HU for the second picking job
     And create JsonPickingEventsList and store it in context as request payload:
@@ -287,6 +308,9 @@ Feature: Picking workflow - validate picked HU
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0406                    |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And M_HU are validated:
       | M_HU_ID.Identifier     | HUStatus | IsActive |

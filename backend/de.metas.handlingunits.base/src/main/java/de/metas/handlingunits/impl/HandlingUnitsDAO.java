@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
@@ -1056,9 +1057,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		final HUReservationRepository huReservationRepository = getHUReservationRepository();
-		final AgeAttributesService ageAttributesService = getAgeAttributeService();
-		return new HUQueryBuilder(huReservationRepository, ageAttributesService);
+		return new HUQueryBuilder(getHUReservationRepository(),
+								  getAgeAttributeService(),
+								  getDDOrderMoveScheduleRepository());
 	}
 
 	private HUReservationRepository getHUReservationRepository()
@@ -1079,6 +1080,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			return new AgeAttributesService();
 		}
 		return SpringContextHolder.instance.getBean(AgeAttributesService.class);
+	}
+
+	private DDOrderMoveScheduleRepository getDDOrderMoveScheduleRepository()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new DDOrderMoveScheduleRepository();
+		}
+		return SpringContextHolder.instance.getBean(DDOrderMoveScheduleRepository.class);
 	}
 
 	@Override

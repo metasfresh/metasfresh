@@ -6,8 +6,14 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
@@ -27,7 +33,7 @@ import org.junit.Test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -75,7 +81,12 @@ public class DistributeAndMoveReceiptCreatorTest
 						new DDOrderMoveScheduleService(
 								ddOrderLowLevelDAO,
 								new DDOrderMoveScheduleRepository(),
-								huReservationService)));
+								huReservationService,
+								new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+														   new PPOrderIssueScheduleService(
+																   new PPOrderIssueScheduleRepository(),
+																   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+														   )))));
 	}
 
 	@Test
