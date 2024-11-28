@@ -26,6 +26,9 @@
 	<field name="dateinvoiced" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
 	</field>
+	<field name="duedate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
+	</field>
 	<field name="vataxid" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="vataxid"/>
 	</field>
@@ -76,9 +79,6 @@
 	</field>
 	<field name="creditmemo_docno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="creditmemo_docno"/>
-	</field>
-	<field name="duedate" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>

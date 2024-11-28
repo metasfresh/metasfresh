@@ -87,7 +87,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="150" y="0" width="372" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -117,7 +117,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean( $F{paymentterm} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="150" y="0" width="372" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -160,7 +160,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 				<textFieldExpression><![CDATA[$R{Incoterms}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="4ff3f6fe-0ee7-41b9-ae0e-7999cd7b1343"/>
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff3f6fe-0ee7-41b9-ae0e-7999cd7b1343"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -189,7 +189,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 				<textFieldExpression><![CDATA[$R{DeliveryRule}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="a223c019-d0c8-4677-a962-e3b4e06ee2d6"/>
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="a223c019-d0c8-4677-a962-e3b4e06ee2d6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -215,10 +215,10 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{deliveryviarule}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DeliveryViaRule}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="33e2a39b-782d-4ebc-8d3c-98729a75b205"/>
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="33e2a39b-782d-4ebc-8d3c-98729a75b205"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -235,7 +235,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean( ($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty()) || ($R{showdetailsfooter}.equals( "Y" )))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -251,7 +251,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 		<band height="27">
 			<printWhenExpression><![CDATA[$F{taxnote} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="160adfff-5e3e-4047-9307-7736dd9418e1"/>
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="160adfff-5e3e-4047-9307-7736dd9418e1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -267,7 +267,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("de_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +287,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="12" width="485" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<reportElement key="textField-16" x="37" y="12" width="483" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
