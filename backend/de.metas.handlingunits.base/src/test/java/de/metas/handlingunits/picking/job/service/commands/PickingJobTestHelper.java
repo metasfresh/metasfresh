@@ -129,6 +129,7 @@ public class PickingJobTestHelper
 	public final I_C_UOM uomEach;
 	public final LocatorId shipFromLocatorId;
 	public final BPartnerLocationId shipToBPLocationId;
+	public final PickingSlotId pickingSlotId;
 
 	public PickingJobTestHelper()
 	{
@@ -208,6 +209,16 @@ public class PickingJobTestHelper
 		shipToBPLocationId = createBPartnerAndLocationId("BPartner1");
 		shipFromLocatorId = createLocatorId(createWarehouseId("warehouse"), "wh_loc");
 		createPickingConfigV2(true);
+		this.pickingSlotId = createPickingSlot();
+	}
+
+	private PickingSlotId createPickingSlot()
+	{
+		final I_M_PickingSlot pickingSlot = InterfaceWrapperHelper.newInstance(I_M_PickingSlot.class);
+		pickingSlot.setPickingSlot("PICKING_SLOT");
+		InterfaceWrapperHelper.save(pickingSlot);
+
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 	}
 
 	@NonNull

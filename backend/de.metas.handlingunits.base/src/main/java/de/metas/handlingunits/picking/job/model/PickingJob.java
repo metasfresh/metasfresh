@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static de.metas.handlingunits.picking.job.service.PickingJobService.MISSING_PICKING_SLOT_ID_ERROR_MSG;
 import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKING_JOB_PROCESSED_ERROR_MSG;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -160,6 +161,14 @@ public final class PickingJob
 		if (isProcessed())
 		{
 			throw new AdempiereException(PICKING_JOB_PROCESSED_ERROR_MSG);
+		}
+	}
+
+	public void assertPickingSlotScanned()
+	{
+		if (!pickingSlot.isPresent())
+		{
+			throw new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG);
 		}
 	}
 

@@ -61,6 +61,10 @@ Feature: picking rest controller tests
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17497Line      | N             |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_1       | 063.1        | Y         |
+
   @from:cucumber
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
@@ -72,6 +76,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -101,6 +108,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -151,6 +161,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -218,6 +231,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf2                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivityWf2  |
@@ -249,6 +265,9 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
