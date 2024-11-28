@@ -313,6 +313,7 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
+		_pickingJob.assertPickingSlotScanned();
 
 		validatePickFromHU();
 
