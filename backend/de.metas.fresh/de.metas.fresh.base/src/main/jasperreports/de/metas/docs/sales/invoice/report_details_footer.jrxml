@@ -127,7 +127,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{paymentterm}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{paymentrule}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="189d2cc2-5fed-4122-8a35-30265f378fd6"/>
