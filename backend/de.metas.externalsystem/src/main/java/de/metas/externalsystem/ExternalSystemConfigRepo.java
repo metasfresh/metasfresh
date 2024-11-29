@@ -32,6 +32,7 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -860,6 +861,7 @@ public class ExternalSystemConfigRepo
 				.productBaseFolderName(config.getProduct_BaseFolderName())
 				.tcpPort(config.getTCP_PortNumber())
 				.tcpHost(config.getTCP_Host())
+				.pluType(PLUType.ofCode(config.getCU_TU_PLU()))
 				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
 				.build();
 	}
