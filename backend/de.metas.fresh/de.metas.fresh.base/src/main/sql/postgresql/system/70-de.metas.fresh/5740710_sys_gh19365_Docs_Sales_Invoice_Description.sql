@@ -6,28 +6,29 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice
                                                                                              p_language character varying)
     RETURNS TABLE
             (
-                description      character varying,
-                documentno       character varying,
-                reference        character varying,
-                dateinvoiced     timestamp WITHOUT TIME ZONE,
+                description        character varying,
+                documentno         character varying,
+                reference          character varying,
+                dateinvoiced       timestamp WITHOUT TIME ZONE,
                 duedate          timestamp WITH TIME ZONE,
-                vataxid          character varying,
-                bp_value         character varying,
-                eori             character varying,
-                cont_name        text,
-                cont_phone       character varying,
-                cont_fax         character varying,
-                cont_email       character varying,
-                sr_name          text,
-                sr_phone         character varying,
-                sr_fax           character varying,
-                sr_email         character varying,
-                printname        character varying,
-                order_docno      text,
-                inout_docno      text,
-                io_movementdate  date,
-                iscreditmemo     character,
-                creditmemo_docno character varying
+                vataxid            character varying,
+                bp_value           character varying,
+                eori               character varying,
+                customernoatvendor character varying,
+                cont_name          text,
+                cont_phone         character varying,
+                cont_fax           character varying,
+                cont_email         character varying,
+                sr_name            text,
+                sr_phone           character varying,
+                sr_fax             character varying,
+                sr_email           character varying,
+                printname          character varying,
+                order_docno        text,
+                inout_docno        text,
+                io_movementdate    date,
+                iscreditmemo       character,
+                creditmemo_docno   character varying
             )
     STABLE
     LANGUAGE sql
@@ -39,8 +40,9 @@ SELECT i.description                                                            
        i.dateinvoiced                                                                   AS dateinvoiced,
        paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
        bp.VATaxID,
-       bp.value                                                                         AS bp_value,
-       bp.eori                                                                          AS eori,
+       bp.value                              AS bp_value,
+       bp.eori                               AS eori,
+       bp.customernoatvendor                 AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
