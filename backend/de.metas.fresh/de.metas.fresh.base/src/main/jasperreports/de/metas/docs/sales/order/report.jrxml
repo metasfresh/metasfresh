@@ -128,7 +128,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="340" y="155" width="210" height="127" uuid="3d2f2844-1477-4ddb-8ae2-07c7b2e23bfa">
+				<reportElement key="subreport-8" x="330" y="155" width="210" height="127" uuid="3d2f2844-1477-4ddb-8ae2-07c7b2e23bfa">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
