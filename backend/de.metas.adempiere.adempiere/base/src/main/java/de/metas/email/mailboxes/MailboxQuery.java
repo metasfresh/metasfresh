@@ -1,6 +1,7 @@
 package de.metas.email.mailboxes;
 
-import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -42,7 +43,8 @@ public class MailboxQuery
 	@NonNull ClientId clientId;
 	@NonNull @Builder.Default OrgId orgId = ProcessExecutor.getCurrentOrgId();
 	@Nullable @Builder.Default AdProcessId adProcessId = ProcessExecutor.getCurrentProcessIdOrNull();
-	@Nullable DocBaseAndSubType docBaseAndSubType;
+	@Nullable DocBaseType docBaseType;
+	@Nullable DocSubType docSubType;
 	@Nullable EMailCustomType customType;
 
 	@Nullable UserId fromUserId;

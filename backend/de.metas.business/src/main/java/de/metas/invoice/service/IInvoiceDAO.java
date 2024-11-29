@@ -31,6 +31,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -74,7 +75,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
-	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 

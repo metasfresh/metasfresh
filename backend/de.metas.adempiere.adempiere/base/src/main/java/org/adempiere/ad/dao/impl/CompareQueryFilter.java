@@ -97,7 +97,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	@Getter
 	private final IQueryFilterModifier operand2Modifier;
 
-	/* package */ CompareQueryFilter(
+	public CompareQueryFilter(
 			final String columnName,
 			@NonNull final Operator operator,
 			@Nullable final Object value,
@@ -113,7 +113,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
-	/* package */ CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
+	public CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}

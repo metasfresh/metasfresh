@@ -775,6 +775,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void deleteAll(@NonNull final Collection<?> models, final boolean failIfProcessed)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(model -> InterfaceWrapperHelper.delete(model, failIfProcessed));
+	}
+
 	public static void deleteAll(@NonNull final Collection<?> models)
 	{
 		if (models.isEmpty())

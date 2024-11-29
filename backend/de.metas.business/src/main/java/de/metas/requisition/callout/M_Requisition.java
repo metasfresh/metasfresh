@@ -1,15 +1,14 @@
 package de.metas.requisition.callout;
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Requisition;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Requisition;
 
 /*
  * #%L
@@ -45,7 +44,7 @@ public class M_Requisition
 			return;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)

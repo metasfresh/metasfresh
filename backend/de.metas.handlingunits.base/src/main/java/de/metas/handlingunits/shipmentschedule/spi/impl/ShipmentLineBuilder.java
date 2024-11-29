@@ -259,7 +259,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(productId);
 		if (catchUOMId.isPresent())
 		{
-			catchQty = Quantitys.createZero(catchUOMId.get());
+			catchQty = Quantitys.zero(catchUOMId.get());
 		}
 
 		//

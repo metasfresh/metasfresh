@@ -72,8 +72,8 @@ public class OrderedDataLoader
 
 		if (hasInvalidOrder)
 		{
-			result.qty(Quantitys.createZero(icUomId));
-			result.qtyInStockUom(Quantitys.createZero(stockUomId));
+			result.qty(Quantitys.zero(icUomId));
+			result.qtyInStockUom(Quantitys.zero(stockUomId));
 		}
 		else
 		{

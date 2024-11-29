@@ -28,6 +28,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -120,7 +122,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final DocTypeId newDocTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		final I_C_DocType newDocType = newDocTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(newDocTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(newDocTypeId)
 				: null;
 
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
@@ -655,8 +657,8 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+																						 .docBaseType(DocBaseType.SalesOrder)
+																						 .docSubType(DocSubType.StandardOrder)
 																						 .adClientId(adClientId)
 																						 .adOrgId(adOrgId)
 																						 .build());

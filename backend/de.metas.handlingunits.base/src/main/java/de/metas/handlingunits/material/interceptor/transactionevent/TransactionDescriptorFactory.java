@@ -22,26 +22,23 @@
 
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
-import static org.compiere.util.TimeUtil.asInstant;
-import static org.compiere.util.TimeUtil.getDay;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-
-import org.adempiere.mmovement.MovementLineId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Transaction;
-import org.eevolution.api.PPCostCollectorId;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Transaction;
+import org.eevolution.api.PPCostCollectorId;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+
+import static org.compiere.util.TimeUtil.asInstant;
+import static org.compiere.util.TimeUtil.getDay;
 
 public final class TransactionDescriptorFactory
 {

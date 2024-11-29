@@ -1,8 +1,13 @@
 package de.metas.inout;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
@@ -20,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,6 +63,11 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
 	/**
+	 * @see #getStockQtyAndQtyInUOM(I_M_InOutLine)
+	 */
+	Quantity getMovementQty(I_M_InOutLine inoutLine);
+
+	/**
 	 * @return the quantity, with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present <b>only</b> if the given line effectively has a catch quantity.
 	 */
 	StockQtyAndUOMQty getStockQtyAndCatchQty(I_M_InOutLine inoutLine);
@@ -67,6 +78,14 @@ public interface IInOutBL extends ISingletonService
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
+
+	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -194,4 +213,12 @@ public interface IInOutBL extends ISingletonService
 	String getPOReference(@NonNull InOutId inOutId);
 
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
+
+	Money getCOGSBySalesOrderId(
+			@NonNull OrderLineId salesOrderLineId,
+			@NonNull AcctSchemaId acctSchemaId);
 }

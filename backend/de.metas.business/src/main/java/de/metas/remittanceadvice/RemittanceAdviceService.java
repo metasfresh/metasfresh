@@ -190,7 +190,7 @@ public class RemittanceAdviceService
 
 		overUnderAmt = overUnderAmt.subtract(invoiceAmtInREMADVCurrency);
 
-		final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+		final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
 
 		return RemittanceAdviceLineInvoiceDetails.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))

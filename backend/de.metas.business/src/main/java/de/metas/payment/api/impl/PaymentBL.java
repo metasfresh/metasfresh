@@ -661,7 +661,7 @@ public class PaymentBL implements IPaymentBL
 		{
 			return;
 		}
-		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
+		final I_C_DocType docType = docTypeDAO.getRecordById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
 		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
 	}
 

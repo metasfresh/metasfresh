@@ -26,8 +26,11 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -53,6 +56,14 @@ public class AcctSchemaBL implements IAcctSchemaBL
 {
 	private final Logger logger = LogManager.getLogger(AcctSchemaBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+
+	@Override
+	public CurrencyId getAcctCurrencyId(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
+		return acctSchema.getCurrencyId();
+	}
 
 	@Override
 	public void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)

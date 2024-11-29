@@ -489,7 +489,7 @@ class DDOrderCandidateProcessCommand
 		public LineAggregate(@NonNull final LineAggregationKey key)
 		{
 			this.key = key;
-			this.qty = Quantitys.createZero(key.getUomId());
+			this.qty = Quantitys.zero(key.getUomId());
 		}
 
 		public void add(@NonNull final DDOrderCandidate candidate)

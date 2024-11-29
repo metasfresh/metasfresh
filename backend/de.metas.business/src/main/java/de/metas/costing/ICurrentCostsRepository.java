@@ -1,14 +1,18 @@
 package de.metas.costing;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyId;
+import lombok.NonNull;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -20,12 +24,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,4 +62,10 @@ public interface ICurrentCostsRepository
 	List<CurrentCost> getByCostSegmentAndCostElements(CostSegment costSegment, Set<CostElementId> costElementIds);
 
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
+
+	Stream<CurrentCost> stream(CurrentCostQuery query);
+
+	ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query);
+
+	boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId);
 }

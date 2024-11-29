@@ -22,6 +22,7 @@
 
 package de.metas.acct.api;
 
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -31,6 +32,9 @@ import javax.annotation.Nullable;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
+
+	CurrencyId getAcctCurrencyId(@NonNull AcctSchemaId acctSchemaId);
+
 	void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable OrgId orgId);
 
 	void updateDebitorCreditorIds(@NonNull AcctSchema acctSchema, @NonNull I_C_BPartner bpartner);

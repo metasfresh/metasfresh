@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
@@ -233,7 +234,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)
 				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
-				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
+				.costingLevel(CostingLevel.ofCode(acctSchemaRecord.getCostingLevel()))
 				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
 				.postOnlyCostElementIds(postOnlyCostElementIds)
 				.build();
@@ -270,25 +271,31 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private AcctSchemaGeneralLedger toAcctSchemaGeneralLedger(final I_C_AcctSchema_GL acctSchemaGL)
 	{
 		final boolean suspenseBalancing = acctSchemaGL.isUseSuspenseBalancing() && acctSchemaGL.getSuspenseBalancing_Acct() > 0;
-		final AccountId suspenseBalancingAcctId = suspenseBalancing ? AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()) : null;
+		final Account suspenseBalancingAcct = suspenseBalancing
+				? Account.of(AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_SuspenseBalancing_Acct)
+				: null;
 
 		final boolean useCurrencyBalancing = acctSchemaGL.isUseCurrencyBalancing();
-		final AccountId currencyBalancingAcctId = useCurrencyBalancing ? AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()) : null;
+		final Account currencyBalancingAcct = useCurrencyBalancing
+				? Account.of(AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CurrencyBalancing_Acct)
+				: null;
 
 		return AcctSchemaGeneralLedger.builder()
 				.suspenseBalancing(suspenseBalancing)
-				.suspenseBalancingAcctId(suspenseBalancingAcctId)
+				.suspenseBalancingAcct(suspenseBalancingAcct)
 				//
 				.currencyBalancing(useCurrencyBalancing)
-				.currencyBalancingAcctId(currencyBalancingAcctId)
+				.currencyBalancingAcct(currencyBalancingAcct)
 				//
-				.intercompanyDueToAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()))
-				.intercompanyDueFromAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()))
+				.intercompanyDueToAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueTo_Acct))
+				.intercompanyDueFromAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueFrom_Acct))
 				//
-				.incomeSummaryAcctId(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()))
-				.retainedEarningAcctId(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()))
+				.incomeSummaryAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IncomeSummary_Acct))
+				.retainedEarningAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()), I_C_AcctSchema_GL.COLUMNNAME_RetainedEarning_Acct))
 				//
-				.purchasePriceVarianceOffsetAcctId(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()))
+				.purchasePriceVarianceOffsetAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()), I_C_AcctSchema_GL.COLUMNNAME_PPVOffset_Acct))
+				//
+				.cashRoundingAcct(acctSchemaGL.getCashRounding_Acct() > 0 ? Account.of(AccountId.ofRepoId(acctSchemaGL.getCashRounding_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CashRounding_Acct) : null)
 				//
 				.build();
 	}
@@ -317,10 +324,10 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private static AcctSchemaDefaultAccounts toAcctSchemaDefaults(@NonNull final I_C_AcctSchema_Default record)
 	{
 		return AcctSchemaDefaultAccounts.builder()
-				.realizedGainAcctId(AccountId.ofRepoId(record.getRealizedGain_Acct()))
-				.realizedLossAcctId(AccountId.ofRepoId(record.getRealizedLoss_Acct()))
-				.unrealizedGainAcctId(AccountId.ofRepoId(record.getUnrealizedGain_Acct()))
-				.unrealizedLossAcctId(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()))
+				.realizedGainAcct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedGain_Acct))
+				.realizedLossAcct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedLoss_Acct))
+				.unrealizedGainAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedGain_Acct))
+				.unrealizedLossAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedLoss_Acct))
 				.build();
 	}
 

@@ -12,6 +12,7 @@ import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -341,9 +342,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 	}
 
-	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);
+	}
+
+	public BigDecimal calculateTaxAmt(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	{
+		return calculateTax(tax, amount, taxIncluded, scale).getTaxAmount();
 	}
 
 	@Override

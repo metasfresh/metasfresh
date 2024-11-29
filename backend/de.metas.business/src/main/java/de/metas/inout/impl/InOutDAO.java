@@ -13,6 +13,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -237,6 +238,22 @@ public class InOutDAO implements IInOutDAO
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

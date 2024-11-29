@@ -1,12 +1,11 @@
 package de.metas.acct.api;
 
-import java.util.Properties;
-
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 /*
  * #%L
@@ -57,4 +56,6 @@ public interface IAccountDAO extends ISingletonService
 	 */
 	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
 
+	@NonNull
+	AccountId getOrCreate(@NonNull AccountDimension dimension);
 }

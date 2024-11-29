@@ -169,7 +169,7 @@ public class CalloutInvoice extends CalloutEngine
 					if (docTypeId > 0)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-						final I_C_DocType invoiceDocType = docTypeDAO.getById(docTypeId);
+						final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(docTypeId);
 
 						final String docBaseType = invoiceDocType.getDocBaseType();
 
@@ -770,7 +770,7 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt()).getTaxAmount();
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

@@ -16,16 +16,18 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -33,7 +35,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -124,24 +125,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	}	//	setClientOrg
 
 	/**
-	 * 	Set Accounting Date.
-	 * 	Set also Period if not set earlier
-	 *	@param DateAcct date
-	 */
-	@Override
-	public void setDateAcct (Timestamp DateAcct)
-	{
-		super.setDateAcct(DateAcct);
-		if (DateAcct == null)
-			return;
-	}	//	setDateAcct
-
-	/**
 	 * 	Get Journal Lines
-	 * 	@param requery requery
-	 *	@return Array of lines
+	 *    @return Array of lines
 	 */
-	public MJournal[] getJournals (boolean requery)
+	private MJournal[] getJournals ()
 	{
 		ArrayList<MJournal> list = new ArrayList<>();
 		String sql = "SELECT * FROM GL_Journal WHERE GL_JournalBatch_ID=? ORDER BY DocumentNo";
@@ -225,14 +212,14 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
 		}
 
 		//	Add up Amounts & prepare them
-		MJournal[] journals = getJournals(false);
+		MJournal[] journals = getJournals();
 		if (journals.length == 0)
 		{
 			throw AdempiereException.noLines();
@@ -337,7 +324,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		approveIt();
 
 		//	Add up Amounts & complete them
-		MJournal[] journals = getJournals(true);
+		MJournal[] journals = getJournals();
 		BigDecimal TotalDr = BigDecimal.ZERO;
 		BigDecimal TotalCr = BigDecimal.ZERO;		
 		for (final MJournal journal : journals)
@@ -445,7 +432,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals(true);
+		MJournal[] journals = getJournals();
 		for (MJournal journal2 : journals)
 		{
 			MJournal journal = journal2;
@@ -502,7 +489,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals(true);
+		MJournal[] journals = getJournals();
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -585,7 +572,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals(true);
+		MJournal[] journals = getJournals();
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -649,7 +636,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		for (MJournal journal : getJournals(true))
+		for (MJournal journal : getJournals())
 		{
 			if (DOCSTATUS_Completed.equals(journal.getDocStatus()))
 			{
@@ -691,7 +678,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		.append(msgBL.translate(getCtx(),"TotalDr")).append("=").append(getTotalDr())
 		.append(" ")
 		.append(msgBL.translate(getCtx(),"TotalCR")).append("=").append(getTotalCr())
-		.append(" (#").append(getJournals(false).length).append(")");
+		.append(" (#").append(getJournals().length).append(")");
 		//	 - Description
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
@@ -699,9 +686,9 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	}	//	getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateDoc());
+		return InstantAndOrgId.ofTimestamp(getDateDoc(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

@@ -1,13 +1,13 @@
 package de.metas.error;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -63,4 +63,6 @@ public class AdIssueId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable final AdIssueId id1, @Nullable final AdIssueId id2) {return Objects.equals(id1, id2);}
 }

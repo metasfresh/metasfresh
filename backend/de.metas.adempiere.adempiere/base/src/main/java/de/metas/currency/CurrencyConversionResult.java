@@ -22,19 +22,18 @@ package de.metas.currency;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * The result of a currency conversion.
@@ -68,4 +67,9 @@ public class CurrencyConversionResult
 	private ClientId clientId;
 	@NonNull
 	private OrgId orgId;
+
+	public Money getAmountAsMoney()
+	{
+		return Money.of(amount, currencyId);
+	}
 }

@@ -11,7 +11,10 @@ import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
@@ -22,6 +25,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -117,6 +121,10 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
 			docLineDR.setAccount(glJournalLine.getAccount_DR());
 
+			docLineDR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getDR_M_Product_ID()));
+			docLineDR.setOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getDR_C_Order_ID()));
+
+
 			docLines.add(docLineDR);
 		}
 		if (glJournalLine.isAllowAccountCR())
@@ -126,6 +134,9 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
 			docLineCR.setAccount(glJournalLine.getAccount_CR());
+
+			docLineCR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getCR_M_Product_ID()));
+			docLineCR.setOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getCR_C_Order_ID()));
 
 			docLines.add(docLineCR);
 		}
@@ -273,7 +284,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
 
 		// GLJ
-		if (getDocumentType().equals(DOCTYPE_GLJournal))
+		if (DocBaseType.GLJournal.equals(getDocBaseType()))
 		{
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
@@ -287,25 +298,19 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line,
 						as.getCurrencyId());
 
-				final FactLine factLine = fact.createLine(line,
-						line.getAccount(),
-						line.getCurrencyId(),
-						line.getAmtSourceDr(),
-						line.getAmtSourceCr());
-				if (factLine == null)
-				{
-					continue;
-				}
-
-				factLine.setCurrencyConversionCtx(currencyConversionCtx);
-				factLine.convert();
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount())
+						.setAmtSource(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr())
+						.setCurrencyConversionCtx(currencyConversionCtx)
+						.buildAndAdd();
 			}    // for all lines
 		}
 		else
 		{
 			throw newPostingException()
 					.setAcctSchema(as)
-					.setDetailMessage("DocumentType unknown: " + getDocumentType());
+					.setDetailMessage("DocumentType unknown: " + getDocBaseType());
 		}
 		//
 		return ImmutableList.of(fact);
@@ -316,7 +321,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			@NonNull final CurrencyId acctSchemaCurrencyId)
 	{
 		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
-				line.getDateAcct(),
+				TimeUtil.asLocalDate(line.getDateAcct()),
 				line.getCurrencyConversionTypeId(),
 				line.getClientId(),
 				line.getOrgId());

@@ -60,7 +60,7 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		{
 			record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Consumption_Summary.class);
 
-			final Quantity zero = Quantitys.createZero(groupingKey.getUomId());
+			final Quantity zero = Quantitys.zero(groupingKey.getUomId());
 			summary = ServiceRepairProjectConsumptionSummary.builder()
 					.groupingKey(groupingKey)
 					.qtyReserved(zero)

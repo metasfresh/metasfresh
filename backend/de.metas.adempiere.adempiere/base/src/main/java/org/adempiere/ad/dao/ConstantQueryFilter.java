@@ -22,14 +22,12 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
+import lombok.EqualsAndHashCode;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.concurrent.Immutable;
-
-import lombok.EqualsAndHashCode;
 
 /**
  * Constant {@link IQueryFilter} implementation (with {@link ISqlQueryFilter} support).
@@ -77,6 +75,11 @@ public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 	@Override
 	public List<Object> getSqlParams(Properties ctx)
+	{
+		return Collections.emptyList();
+	}
+
+	public List<Object> getSqlParams()
 	{
 		return Collections.emptyList();
 	}

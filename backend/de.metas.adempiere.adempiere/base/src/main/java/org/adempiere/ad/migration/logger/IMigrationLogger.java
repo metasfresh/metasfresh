@@ -25,14 +25,14 @@ package org.adempiere.ad.migration.logger;
  * #L%
  */
 
-
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.session.MFSession;
+import org.adempiere.service.ClientId;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
-import de.metas.util.ISingletonService;
+import java.util.Collection;
 
 /**
  * @author tsa
@@ -40,7 +40,7 @@ import de.metas.util.ISingletonService;
  */
 public interface IMigrationLogger extends ISingletonService
 {
-	boolean isLogTableName(String tableName);
+	boolean isLogTableName(String tableName, final ClientId clientId);
 
 	/**
 	 * Create migration step using the current {@link IMigrationLoggerContext} for the specified {@link PO}
@@ -65,26 +65,16 @@ public interface IMigrationLogger extends ISingletonService
 	/**
 	 * Create a raw SQL migration step for the specified {@link PO}
 	 * 
-	 * @param session
-	 * @param po
-	 * @param info
-	 * @param event
 	 */
 	void logMigrationSQL(PO contextPO, String sql);
 
 	/**
-	 * Add table to ignore list (ignore specified table when logging migration steps).
+	 * Add tables to ignore list (ignore specified tables when logging migration steps).
 	 * 
-	 * @param tableName
 	 */
-	void addTableToIgnoreList(String tableName);
+	void addTablesToIgnoreList(final String... tableNames);
 
-	/**
-	 * Remove table from ignore list (do not ignore specified table when logging migration steps).
-	 * 
-	 * @param tableName
-	 */
-	void removeTableFromIgnoreList(String tableName);
+	void addTablesToIgnoreList(final Collection<String> tableNames);
 
 	/**
 	 * Gets a list of table names that shall be ignored when creating migration scripts.
@@ -97,5 +87,5 @@ public interface IMigrationLogger extends ISingletonService
 	 * 
 	 * @return list of table names
 	 */
-	Set<String> getTablesToIgnoreUC();
+	ImmutableSet<String> getTablesToIgnoreUC(ClientId clientId);
 }

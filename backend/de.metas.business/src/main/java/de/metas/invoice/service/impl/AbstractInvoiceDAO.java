@@ -15,10 +15,12 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -128,7 +130,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	public I_C_InvoiceLine retrieveLineById(final InvoiceAndLineId invoiceLineId)
 	{
 		return load(invoiceLineId, I_C_InvoiceLine.class);
 	}
@@ -536,12 +538,16 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 		final DocBaseType docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
-		final String docSubType = docType.getDocSubType();
+		final DocSubType docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-		if (Check.isNotBlank(docSubType))
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
 		{
 			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
@@ -629,7 +635,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				DocTypeId.ofRepoIdOrNull(serviceFeeInvoiceCandidate.getC_DocType_ID()),
 				DocTypeId.ofRepoId(serviceFeeInvoiceCandidate.getC_DocTypeTarget_ID()));
 
-		final I_C_DocType docTypeRecord = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(docTypeId);
 
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 

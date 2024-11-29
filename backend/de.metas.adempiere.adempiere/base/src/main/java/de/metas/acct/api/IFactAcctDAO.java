@@ -22,14 +22,14 @@ package de.metas.acct.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_Fact_Acct;
 
-import de.metas.document.engine.IDocument;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
 
 public interface IFactAcctDAO extends ISingletonService
 {
@@ -38,6 +38,8 @@ public interface IFactAcctDAO extends ISingletonService
 	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
 
 	I_Fact_Acct getById(int factAcctId);
+
+	void save(I_Fact_Acct factAcct);
 
 	/**
 	 * Deletes all accounting records for given document.
@@ -88,4 +90,8 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @return how many {@link I_Fact_Acct} records were updated
 	 */
 	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+
+	List<I_Fact_Acct> list(@NonNull List<FactAcctQuery> queries);
+
+	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
 }

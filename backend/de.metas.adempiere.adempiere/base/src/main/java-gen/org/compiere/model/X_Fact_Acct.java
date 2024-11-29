@@ -82,6 +82,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+	@Override
+	public void setAccountConceptualName (final java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName()
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+
 //	@Override
 //	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
 //	{
@@ -575,6 +587,33 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1)
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
 
 	@Override
@@ -1235,6 +1274,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+	@Override
+	public void setIsOpenItemsReconciled (final boolean IsOpenItemsReconciled)
+	{
+		set_Value (COLUMNNAME_IsOpenItemsReconciled, IsOpenItemsReconciled);
+	}
+
+	@Override
+	public boolean isOpenItemsReconciled()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItemsReconciled);
+	}
+
 	/** Set Line ID.
 		@param Line_ID 
 		Transaction line ID (internal)
@@ -1332,6 +1383,77 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public void setOI_OpenAmount (final @Nullable BigDecimal OI_OpenAmount)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmount, OI_OpenAmount);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmount()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setOI_OpenAmountSource (final @Nullable BigDecimal OI_OpenAmountSource)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmountSource, OI_OpenAmountSource);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmountSource()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmountSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/**
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType()
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
+	}
+
+	@Override
+	public void setOpenItemKey (final @Nullable java.lang.String OpenItemKey)
+	{
+		set_Value (COLUMNNAME_OpenItemKey, OpenItemKey);
+	}
+
+	@Override
+	public java.lang.String getOpenItemKey()
+	{
+		return get_ValueAsString(COLUMNNAME_OpenItemKey);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	/** 

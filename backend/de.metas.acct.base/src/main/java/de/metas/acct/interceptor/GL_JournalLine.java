@@ -13,7 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
@@ -35,20 +34,15 @@ public class GL_JournalLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_GL_JournalLine glJournalLine, final ModelChangeType timing)
+	public void beforeSave(final I_GL_JournalLine glJournalLine, final int timing)
 	{
-		final boolean newRecord = timing.isNew();
+		final boolean newRecord = ModelChangeType.valueOf(timing).isNew();
 
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
 
 		if (newRecord && glJournalBL.isComplete(glJournal))
 		{
 			throw new AdempiereException("@ParentComplete@");
-		}
-
-		if(newRecord || InterfaceWrapperHelper.isValueChanged(glJournalLine, I_GL_JournalLine.COLUMNNAME_DateAcct))
-		{
-			glJournalBL.assertSamePeriod(glJournal, glJournalLine);
 		}
 
 		// Set LineNo if not already set
@@ -77,6 +71,10 @@ public class GL_JournalLine
 		// Set Line Org to Acct Org (from parent)
 		glJournalLine.setAD_Org_ID(glJournal.getAD_Org_ID());
 
+		if(newRecord)
+		{
+			glJournalLine.setM_SectionCode_ID(glJournalLine.getGL_Journal().getM_SectionCode_ID());
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

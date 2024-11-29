@@ -152,7 +152,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ProductCategoryAccounts.builder()
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingLevel(CostingLevel.ofNullableCode(record.getCostingLevel()))
 				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
 				.accountIdsByColumnName(accountIds)
 				.build();

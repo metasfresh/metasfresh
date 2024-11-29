@@ -41,8 +41,7 @@ import java.math.BigDecimal;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
-	@Nullable
-	private BigDecimal explicitCostPriceBD;
+	@Nullable private final BigDecimal explicitCostPriceBD;
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
@@ -81,12 +80,12 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-															  .acctSchemaId(as.getId())
-															  .reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-															  .date(getDateAcct())
-															  .build())
-					.getTotalAmountToPost(as);
+							.acctSchemaId(as.getId())
+							.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+							.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+							.date(getDateAcctAsInstant())
+							.build())
+					.getMainAmountToPost(as);
 		}
 		else
 		{
@@ -101,9 +100,9 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 									.qty(getQty())
 									.amt(CostAmount.zero(as.getCurrencyId()))
 									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
-									.date(getDateAcct())
+									.date(getDateAcctAsInstant())
 									.build())
-					.getTotalAmountToPost(as);
+					.getMainAmountToPost(as);
 		}
 	}
 

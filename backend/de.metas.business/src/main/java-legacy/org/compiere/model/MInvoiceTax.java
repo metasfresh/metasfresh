@@ -264,7 +264,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				}
 				else
 				{
-					amt = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+					amt = taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision());
 				}
 				//
 				taxAmt = taxAmt.add(amt);
@@ -294,7 +294,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		// Calculate Tax
 		if (documentLevel || taxAmt.signum() == 0)
 		{
-			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
 		}
 		setTaxAmt(taxAmt);
 

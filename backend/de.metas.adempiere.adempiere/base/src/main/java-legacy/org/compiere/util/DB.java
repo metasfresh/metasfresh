@@ -2505,8 +2505,7 @@ public class DB
 
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+		if (Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
 			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
 			return false;

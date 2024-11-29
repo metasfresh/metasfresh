@@ -28,7 +28,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;

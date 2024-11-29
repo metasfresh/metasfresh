@@ -30,14 +30,27 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
 
 
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
-    p_C_AcctSchema_ID  numeric,
-    p_M_CostElement_ID numeric,
-    p_M_Product_ID     numeric,
-    p_M_Product_IDs    numeric[],
-    p_ReorderDocs      char(1),
-    p_StartDateAcct    timestamp WITH TIME ZONE,
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE,
     p_DryRun           char(1))
 ;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_m_product_selection_id     numeric,
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID            numeric,
@@ -48,7 +61,7 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_ReorderDocs                char(1) = 'Y',
     p_ReorderDocs_DateAcct_Trunc varchar = 'DD',
     p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01',
-    p_DryRun                     char(1) = 'N')
+    p_DryRun           char(1) = 'N')
     RETURNS text
 AS
 $BODY$

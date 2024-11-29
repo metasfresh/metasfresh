@@ -56,7 +56,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
 			final boolean isRestAPICustomColumn,
-			@NonNull final ColumnCloningStrategy cloningStrategy)
+			@NonNull final ColumnCloningStrategy cloningStrategy,
+			final boolean isIdentifier)
 	{
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
@@ -115,6 +116,7 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		IsIdentifier = isIdentifier;
 		this.cloningStrategy = cloningStrategy;
 	}   // Column
 
@@ -263,6 +265,8 @@ public final class POInfoColumn implements Serializable
 	 */
 	final BigDecimal ValueMax_BD;
 
+	final boolean IsIdentifier;
+
 	final boolean IsRestAPICustomColumn;
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
@@ -394,6 +398,11 @@ public final class POInfoColumn implements Serializable
 	public boolean isLookup()
 	{
 		return org.compiere.util.DisplayType.isLookup(DisplayType);
+	}
+
+	public boolean isIdentifier()
+	{
+		return this.IsIdentifier;
 	}
 
 	public boolean isRestAPICustomColumn()

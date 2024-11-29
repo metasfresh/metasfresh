@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -74,6 +75,8 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
 
 	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
+
+	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.

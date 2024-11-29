@@ -1,16 +1,16 @@
 package de.metas.email.mailboxes;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
@@ -75,25 +75,13 @@ class MailboxRoutingTable
 
 	private static boolean isMatching_DocBaseType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final String routingDocBaseType = routing.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(routing.getDocBaseType()) : null;
-		if (routingDocBaseType == null)
-		{
-			return true;
-		}
-
-		final String queryDocBaseType = query.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(query.getDocBaseAndSubType().getDocBaseType().getCode()) : null;
-		return Objects.equals(routingDocBaseType, queryDocBaseType);
+		final DocBaseType queryDocBaseType = query.getDocBaseType();
+		return queryDocBaseType == null || DocBaseType.equals(queryDocBaseType, routing.getDocBaseType());
 	}
 
 	private static boolean isMatching_DocSubType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final String routingDocSubType = routing.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(routing.getDocBaseAndSubType().getDocSubType()) : null;
-		if (routingDocSubType == null)
-		{
-			return true;
-		}
-
-		final String queryDocSubType = query.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(query.getDocBaseAndSubType().getDocSubType()) : null;
-		return Objects.equals(routingDocSubType, queryDocSubType);
+		final DocSubType queryDocSubType = query.getDocSubType();
+		return queryDocSubType.isAny() || DocSubType.equals(queryDocSubType, routing.getDocSubType());
 	}
 }

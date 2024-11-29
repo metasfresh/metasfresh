@@ -22,6 +22,9 @@
 
 package de.metas.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
@@ -42,6 +45,9 @@ public class Dimension implements Comparable<Dimension>
 
 	@With
 	@Nullable ActivityId activityId;
+	@With @Nullable OrderId salesOrderId;
+	@With @Nullable ProductId productId;
+	@Nullable BPartnerId bpartnerId2;
 
 	// todo propagation for these 2
 	int user1_ID;
@@ -72,8 +78,19 @@ public class Dimension implements Comparable<Dimension>
 	}
 
 	@Override
-	public int compareTo(@Nullable final Dimension o)
+	public int compareTo(@Nullable final Dimension other)
 	{
-		return this.equals(o) ? 0 : -1;
+		if (other == null)
+		{
+			return -1;
+		}
+		else if (this.equals(other))
+		{
+			return 0;
+		}
+		else
+		{
+			return this.toString().compareTo(other.toString());
+		}
 	}
 }
