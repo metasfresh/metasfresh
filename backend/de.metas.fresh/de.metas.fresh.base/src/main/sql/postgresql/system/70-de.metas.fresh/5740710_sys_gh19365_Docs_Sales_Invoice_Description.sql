@@ -40,8 +40,9 @@ SELECT i.description                                                            
        i.dateinvoiced                                                                   AS dateinvoiced,
        paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
        bp.VATaxID,
-       bp.value                                                                         AS bp_value,
-       bp.eori                                                                          AS eori,
+       bp.value                              AS bp_value,
+       bp.eori                               AS eori,
+       bp.customernoatvendor                 AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
