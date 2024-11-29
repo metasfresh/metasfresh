@@ -51,6 +51,18 @@ class DatePicker extends PureComponent {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    const { datePatched } = this.state;
+
+    // If "value" property changed then update the "datePatched" state variable.
+    if (
+      !this.isSameMoment(prevProps.value, this.props.value) &&
+      !this.isSameMoment(datePatched, this.props.value)
+    ) {
+      this.setState({ datePatched: this.props.value });
+    }
+  }
+
   handleDateChange = (dateObj) => {
     // console.log('handleDateChange', { dateObj });
     if (!dateObj) {
