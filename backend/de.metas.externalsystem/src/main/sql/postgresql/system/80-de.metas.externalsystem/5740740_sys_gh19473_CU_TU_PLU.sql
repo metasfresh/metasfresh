@@ -200,3 +200,13 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP(
 -- 2024-11-29T10:10:47.390Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2024-11-29 12:10:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621268
 ;
+
+-- Column: ExternalSystem_Config_LeichMehl_ProductMapping.PLU_File
+-- Column: ExternalSystem_Config_LeichMehl_ProductMapping.PLU_File
+-- 2024-12-01T16:03:27.145Z
+UPDATE AD_Column SET AD_Reference_ID=10,Updated=TO_TIMESTAMP('2024-12-01 18:03:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583482
+;
+
+-- 2024-12-01T16:03:29.435Z
+INSERT INTO t_alter_column values('externalsystem_config_leichmehl_productmapping','PLU_File','VARCHAR(1024)',null,null)
+;
