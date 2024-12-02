@@ -2,7 +2,6 @@ package de.metas.banking.callout;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
-import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -25,7 +24,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -64,7 +63,6 @@ public class C_BankStatementLine_Test
 		final BankStatementBL bankStatementBL = new BankStatementBL(
 				new BankAccountService(
 						bankRepo = new BankRepository(),
-						new BankAccountAcctRepository(),
 						new CurrencyRepository()),
 				new MoneyService(new CurrencyRepository()));
 		callout = new C_BankStatementLine(bankStatementBL);

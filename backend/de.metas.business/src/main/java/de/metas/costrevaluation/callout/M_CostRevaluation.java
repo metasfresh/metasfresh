@@ -93,7 +93,7 @@ public class M_CostRevaluation implements ITabCallout
 
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(docTypeDAO.getRecordById(docTypeId))
+				.setNewDocType(docTypeDAO.getById(docTypeId))
 				.setOldDocumentNo(costRevaluation.getDocumentNo())
 				.setDocumentModel(costRevaluation)
 				.buildOrNull();

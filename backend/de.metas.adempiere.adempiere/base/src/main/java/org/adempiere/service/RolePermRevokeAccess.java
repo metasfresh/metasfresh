@@ -159,7 +159,7 @@ public class RolePermRevokeAccess
 					.docActionRefListId(docActionRefListId)
 					.build());
 
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 			logRevoked(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName());
 		}
 		else

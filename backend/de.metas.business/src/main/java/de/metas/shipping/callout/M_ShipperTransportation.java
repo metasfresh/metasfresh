@@ -91,7 +91,7 @@ public class M_ShipperTransportation
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(shipperTransporationRecord.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: null;
 	}
 }

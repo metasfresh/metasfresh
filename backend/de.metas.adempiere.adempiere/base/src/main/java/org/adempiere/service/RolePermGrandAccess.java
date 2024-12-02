@@ -241,7 +241,7 @@ public class RolePermGrandAccess
 						.readWrite(request.isReadWrite())
 						.build());
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		logGranted(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName() + "/" + docAction);
 	}
 

@@ -278,7 +278,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
 		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
-		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
+		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType().getCode());
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 

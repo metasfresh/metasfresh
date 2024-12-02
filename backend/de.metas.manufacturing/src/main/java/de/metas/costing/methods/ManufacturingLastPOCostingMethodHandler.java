@@ -63,8 +63,11 @@ import java.util.Set;
  */
 
 @Component
-public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
+public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
+			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
+			.build();
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
@@ -73,24 +76,16 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
-	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
-
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
-			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
-			.build();
-
-	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
+	public ManufacturingLastPOCostingMethodHandler(
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.utils = utils;
-		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
 	}
 
 	@Override
 	public CostingMethod getCostingMethod()
 	{
-		return CostingMethod.AveragePO;
+		return CostingMethod.LastPOPrice;
 	}
 
 	@Override
@@ -109,14 +104,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
 			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
 		}
-		else
-		{
-			return createCost(request);
-		}
-	}
 
-	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
-	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
@@ -144,7 +132,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -267,8 +255,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest ignoredRequest,
-			final Duration ignoredTotalDuration)
+			final CostDetailCreateRequest request,
+			final Duration totalDuration)
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Computing activity costs is not yet supported");
@@ -282,15 +270,15 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return null;
+	}
+
+	@Override
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
-	{
-		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

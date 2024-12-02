@@ -132,7 +132,7 @@ public class BankStatementDocumentHandlerTest
 
 		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
-		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
 		createMasterData();
 	}

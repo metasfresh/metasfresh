@@ -737,7 +737,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
 		final I_C_DocType dt = docTypeId != null
-				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: null;
 		final String docTypeName = dt != null ? dt.getName() : null;
 		return Joiner.on(" ").skipNulls().join(docTypeName, getDocumentNo());

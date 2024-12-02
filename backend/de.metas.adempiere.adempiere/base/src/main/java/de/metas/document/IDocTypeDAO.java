@@ -41,10 +41,10 @@ import java.util.Properties;
 public interface IDocTypeDAO extends ISingletonService
 {
 	@NonNull
-	I_C_DocType getRecordById(int docTypeId);
+	I_C_DocType getById(int docTypeId);
 
 	@NonNull
-	I_C_DocType getRecordById(DocTypeId docTypeId);
+	I_C_DocType getById(DocTypeId docTypeId);
 
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);

@@ -1,6 +1,6 @@
 package de.metas.acct.accounts;
 
-import de.metas.banking.accounting.BankAccountAcctRepository;
+import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;

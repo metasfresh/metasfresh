@@ -60,7 +60,7 @@ public class M_Inventory
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(inventoryRecord.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: null;
 	}
 }

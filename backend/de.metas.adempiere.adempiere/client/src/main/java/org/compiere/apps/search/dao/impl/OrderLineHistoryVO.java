@@ -78,7 +78,7 @@ public class OrderLineHistoryVO
 		partnerName = Services.get(IBPartnerDAO.class).getBPartnerNameById(bpartnerId);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		docBaseType = docType.getDocBaseType();
 
 		documentNo = new StringBuilder(docType.getPrintName())

@@ -71,14 +71,14 @@ public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaVa
 		// First check for doc type.
 		if (docTypeId != null)
 		{
-			final String docBaseType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId).getDocBaseType();
+			final String docBaseType = Services.get(IDocTypeDAO.class).getById(docTypeId).getDocBaseType();
 			return warehousesRepo.isDocTypeAllowed(warehouseId, docBaseType);
 		}
 
 		// For orders, also check doc type target
 		if (docTypeTargetId != null)
 		{
-			final String docBaseType = Services.get(IDocTypeDAO.class).getRecordById(docTypeTargetId).getDocBaseType();
+			final String docBaseType = Services.get(IDocTypeDAO.class).getById(docTypeTargetId).getDocBaseType();
 			return warehousesRepo.isDocTypeAllowed(warehouseId, docBaseType);
 		}
 

@@ -24,7 +24,9 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -37,85 +39,25 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Set;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Component
-public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
+@RequiredArgsConstructor
+public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements CostingMethodHandler
 {
 	// services
-	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+	@NonNull private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
-	private final CostingMethodHandlerUtils utils;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final MovingAverageInvoiceCostingMethodHandler movingAverageInvoiceCostingMethodHandler;
 
-	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
-
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
-			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
-			.build();
-
-	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
-	{
-		this.utils = utils;
-		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
-	}
-
-	@Override
-	public CostingMethod getCostingMethod()
-	{
-		return CostingMethod.AveragePO;
-	}
-
-	@Override
-	public Set<String> getHandledTableNames()
-	{
-		return HANDLED_TABLE_NAMES;
-	}
+	@NonNull @Getter private final CostingMethod costingMethod = CostingMethod.MovingAverageInvoice;
+	@NonNull @Getter private final ImmutableSet<String> handledTableNames = ImmutableSet.of(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector);
 
 	@Override
 	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
-	{
-		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		if (!existingCostDetails.isEmpty())
-		{
-			// make sure DateAcct is up-to-date
-			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
-			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
-		}
-		else
-		{
-			return createCost(request);
-		}
-	}
-
-	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -127,11 +69,20 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final CurrentCost currentCost;
 
 		final CostDetailCreateResult result;
-		if (costCollectorType.isMaterialReceiptOrCoProduct())
+		if (costCollectorType.isMaterialReceipt())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCost(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+		}
+		else if (costCollectorType.isCoOrByProductReceipt())
+		{
+			// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
+			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
+			
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(requestEffective);
+			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
@@ -142,11 +93,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if (actualResourceId.isNoResource())
-			{
-				return null;
-			}
-
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -291,6 +237,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
 	{
-		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+		return movingAverageInvoiceCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

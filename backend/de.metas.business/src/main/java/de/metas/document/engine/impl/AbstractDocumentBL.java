@@ -409,7 +409,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		}
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getRecordById(docTypeId);
+		return docTypeDAO.getById(docTypeId);
 	}
 
 	@Override

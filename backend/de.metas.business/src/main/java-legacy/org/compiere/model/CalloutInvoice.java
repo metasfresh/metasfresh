@@ -169,7 +169,7 @@ public class CalloutInvoice extends CalloutEngine
 					if (docTypeId > 0)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-						final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(docTypeId);
+						final I_C_DocType invoiceDocType = docTypeDAO.getById(docTypeId);
 
 						final String docBaseType = invoiceDocType.getDocBaseType();
 

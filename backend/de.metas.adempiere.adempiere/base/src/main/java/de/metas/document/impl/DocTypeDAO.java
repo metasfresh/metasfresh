@@ -77,14 +77,14 @@ public class DocTypeDAO implements IDocTypeDAO
 
 	@Override
 	@NonNull
-	public I_C_DocType getRecordById(final int docTypeId)
+	public I_C_DocType getById(final int docTypeId)
 	{
-		return getRecordById(DocTypeId.ofRepoId(docTypeId));
+		return getById(DocTypeId.ofRepoId(docTypeId));
 	}
 
 	@Override
 	@NonNull
-	public I_C_DocType getRecordById(@NonNull final DocTypeId docTypeId)
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
@@ -340,14 +340,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public DocBaseType getDocBaseTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docTypeRecord = getRecordById(docTypeId);
+		final I_C_DocType docTypeRecord = getById(docTypeId);
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docTypeRecord = getRecordById(docTypeId);
+		final I_C_DocType docTypeRecord = getById(docTypeId);
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 	}
 

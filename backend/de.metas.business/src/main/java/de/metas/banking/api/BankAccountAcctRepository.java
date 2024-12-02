@@ -1,31 +1,8 @@
-package de.metas.banking.accounting;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.acct.Account;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.banking.BankAccountId;
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_BP_BankAccount_Acct;
-import org.compiere.util.DB;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,6 +19,30 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.banking.api;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcct;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_BP_BankAccount_Acct;
+import org.compiere.util.DB;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class BankAccountAcctRepository

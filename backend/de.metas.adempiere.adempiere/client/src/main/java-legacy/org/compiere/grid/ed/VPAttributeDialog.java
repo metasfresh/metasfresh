@@ -756,7 +756,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		final DocTypeId docTypeId = attributeContext.getDocTypeId();
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 			String docBaseType = docType.getDocBaseType();
 			if (MDocType.DOCBASETYPE_MaterialReceipt.equals(docBaseType))
 			{

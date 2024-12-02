@@ -114,7 +114,7 @@ public class DocTypeService
 			return Optional.empty();
 		}
 		
-		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
+		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 		final DocBaseType docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
 		if (!docBaseType.isSalesOrder())
 		{
