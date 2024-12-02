@@ -52,11 +52,15 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -107,10 +111,12 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class PP_Order_StepDef
 {
+	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
+	
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
@@ -118,6 +124,8 @@ public class PP_Order_StepDef
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
@@ -317,6 +325,30 @@ public class PP_Order_StepDef
 		final ExternalSystemLeichMehlConfigId leichMehlConfigId = ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
 
 		exportPPOrderToExternalSystem.exportToExternalSystem(leichMehlConfigId, ppOrderRecordReference, pinstanceDAO.createSelectionId());
+	}
+
+	@And("export PP_Order to LeichMehl external system and expect MissingPLUConfigForProduct exception")
+	public void export_PP_Order_LeichMehl_expect_exception(@NonNull final DataTable dataTable)
+	{
+		try
+		{
+			export_PP_Order_LeichMehl(dataTable);
+
+			assertThat(false).as("ExportPPOrderToLeichMehlService.buildParameters should throw error!").isTrue();
+		}
+		catch (final AdempiereException adempiereException)
+		{
+			final String adLanguage = Env.getAD_Language();
+			
+			final Map<String, String> row = dataTable.asMaps().get(0);
+			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+			final String productName = productBL.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID()));
+			
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MISSING_PRODUCT_PLU_CONFIG, productName);
+
+			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
+		}
 	}
 
 	@And("validate I_PP_Order_Qty")

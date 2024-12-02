@@ -140,6 +140,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "productBaseFolderName" : "productBaseFolderName",
         "tcpPort" : 8080,
         "tcpHost" : "tcpHost",
+        "pluType" : "CU",
         "pluFileExportAuditEnabled" : false
       },
       "writeAudit" : true,
@@ -157,6 +158,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "productBaseFolderName" : "productBaseFolderName",
     "tcpPort" : 8080,
     "tcpHost" : "tcpHost",
+    "pluType" : "CU",
     "pluFileExportAuditEnabled" : false
   }
 ]
@@ -176,6 +178,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "productBaseFolderName" : "productBaseFolderName",
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
+      "pluType" : "CU",
       "pluFileExportAuditEnabled" : false
     },
     "writeAudit" : true,
@@ -502,6 +505,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "productBaseFolderName" : "productBaseFolderName",
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
+      "pluType" : "CU",
       "pluFileExportAuditEnabled" : false
     },
     "writeAudit" : true,
@@ -538,4 +542,3 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "auditFileFolder" : "auditFileFolder"
   }
 ]
-
