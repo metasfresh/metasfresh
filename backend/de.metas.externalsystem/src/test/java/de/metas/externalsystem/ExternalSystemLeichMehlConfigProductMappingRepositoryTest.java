@@ -237,7 +237,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -295,7 +295,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 	
 }
