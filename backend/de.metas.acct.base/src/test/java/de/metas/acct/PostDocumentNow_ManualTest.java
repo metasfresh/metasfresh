@@ -27,7 +27,7 @@ import de.metas.ad_reference.AdRefTableRepositoryOverJdbc;
 import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
-import de.metas.cache.model.impl.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;

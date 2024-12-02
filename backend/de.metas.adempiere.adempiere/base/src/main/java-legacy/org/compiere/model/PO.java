@@ -19,9 +19,9 @@ package org.compiere.model;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.CacheSourceModelFactory;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -283,6 +283,7 @@ public abstract class PO
 
 	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
+	private final POServicesFacade services = new POServicesFacade();
 	/** Context */
 	private Properties p_ctx;
 	/** Model Info */
@@ -3030,10 +3031,11 @@ public abstract class PO
 		{
 			try
 			{
-				final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-				cacheInvalidationService.invalidateForModel(
-						POCacheSourceModel.of(this),
-						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
+				final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+						: null;
 			}
 			catch (final Exception ex)
 			{
@@ -4087,11 +4089,10 @@ public abstract class PO
 		//
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
-		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
-				p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(POCacheSourceModel.of(this), ModelCacheInvalidationTiming.DELETE)
-						: null;
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
+				: null;
 
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
@@ -4130,7 +4131,7 @@ public abstract class PO
 		{
 			try
 			{
-				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.AFTER_DELETE);
 			}
 			catch (final Exception ex)
 			{

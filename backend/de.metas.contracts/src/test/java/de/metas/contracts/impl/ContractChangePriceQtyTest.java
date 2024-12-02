@@ -51,7 +51,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 

@@ -30,7 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
@@ -151,7 +151,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService;
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
@@ -206,7 +206,7 @@ public class AcctDocRequiredServicesFacade
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void runInThreadInheritedTrx(@NonNull final TrxRunnable2 runnable)
