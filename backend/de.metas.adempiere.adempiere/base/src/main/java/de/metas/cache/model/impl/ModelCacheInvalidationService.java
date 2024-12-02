@@ -1,18 +1,8 @@
 package de.metas.cache.model.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -26,6 +16,16 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.slf4j.Logger;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -51,12 +51,29 @@ import lombok.NonNull;
 
 public class ModelCacheInvalidationService implements IModelCacheInvalidationService
 {
+
+	public static ModelCacheInvalidationService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModelCacheInvalidationService(Optional.empty());
+	}
+
 	private static final Logger logger = LogManager.getLogger(ModelCacheInvalidationService.class);
 	private final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
 
 	private static final ImmutableSet<ModelCacheInvalidateRequestFactory> DEFAULT_REQUEST_FACTORIES = ImmutableSet.of(DirectModelCacheInvalidateRequestFactory.instance);
 
-	private final CopyOnWriteArrayList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups = new CopyOnWriteArrayList<>();
+	private final ImmutableList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups;
+
+	public ModelCacheInvalidationService(final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
+	{
+		this.factoryGroups = factoryGroups.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
+
+		final CacheMgt cacheMgt = CacheMgt.get();
+		this.factoryGroups.forEach(factoryGroup -> cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation()));
+
+		logger.info("Registered {}", this.factoryGroups); // calling it last to make sure cache was warmed up, so we have more info to show
+	}
 
 	@Override
 	public void registerFactoryGroup(@NonNull final IModelCacheInvalidateRequestFactoryGroup factoryGroup)

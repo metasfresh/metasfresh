@@ -155,7 +155,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		setAmount(Doc.AMTTYPE_Gross, invoice.getGrandTotal());
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
-		setAmount(Doc.AMTTYPE_CashRounding, invoice.getCashRoundingAmt());
+		setAmount(Doc.AMTTYPE_CashRounding, BigDecimal.ZERO);
 
 		setDocLines(loadLines());
 	}

@@ -13,8 +13,6 @@ import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
@@ -120,9 +118,6 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
 			docLineDR.setAccount(glJournalLine.getAccount_DR());
 
-			docLineDR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getDR_M_Product_ID()));
-			docLineDR.setOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getDR_C_Order_ID()));
-
 
 			docLines.add(docLineDR);
 		}
@@ -133,9 +128,6 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
 			docLineCR.setAccount(glJournalLine.getAccount_CR());
-
-			docLineCR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getCR_M_Product_ID()));
-			docLineCR.setOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getCR_C_Order_ID()));
 
 			docLines.add(docLineCR);
 		}

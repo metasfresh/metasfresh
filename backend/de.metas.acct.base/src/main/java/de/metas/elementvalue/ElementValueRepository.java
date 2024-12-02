@@ -41,12 +41,9 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
 import org.adempiere.ad.dao.impl.StringToNumericModifier;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -69,8 +66,6 @@ public class ElementValueRepository
 	{
 		return getMap().getById(id);
 	}
-
-	ImmutableSet<ElementValueId> getOpenItemIds() {return getMap().getOpenItemIds();}
 
 	private ElementValuesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
 
@@ -137,7 +132,6 @@ public class ElementValueRepository
 				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
-				.isOpenItem(record.isOpenItem())
 				.build();
 	}
 
@@ -275,11 +269,6 @@ public class ElementValueRepository
 				.list();
 	}
 
-	public IValidationRule isOpenItemRule()
-	{
-		return SQLValidationRule.ofSqlWhereClause(I_C_ElementValue.COLUMNNAME_IsOpenItem + "=" + DB.TO_BOOLEAN(true));
-	}
-
 	//
 	//
 	//
@@ -306,18 +295,5 @@ public class ElementValueRepository
 			return elementValue;
 		}
 
-		public ImmutableSet<ElementValueId> getOpenItemIds()
-		{
-			ImmutableSet<ElementValueId> openItemIds = this._openItemIds;
-			if (openItemIds == null)
-			{
-				openItemIds = this._openItemIds = byId.values()
-						.stream()
-						.filter(ElementValue::isOpenItem)
-						.map(ElementValue::getId)
-						.collect(ImmutableSet.toImmutableSet());
-			}
-			return openItemIds;
-		}
 	}
 }

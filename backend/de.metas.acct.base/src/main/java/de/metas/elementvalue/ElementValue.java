@@ -52,7 +52,6 @@ public class ElementValue
 	@Nullable ElementValueId parentId;
 	int seqNo;
 	@Nullable String defaultAccountName;
-	boolean isOpenItem;
 
 	public String toShortString() {return value + "_" + name;}
 

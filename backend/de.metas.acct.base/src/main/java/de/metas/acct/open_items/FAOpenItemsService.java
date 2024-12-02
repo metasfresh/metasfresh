@@ -7,7 +7,6 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.handlers.Generic_OIHandler;
-import de.metas.elementvalue.ElementValueService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,11 +35,10 @@ public class FAOpenItemsService
 	private final Generic_OIHandler genericOIHandler;
 
 	public FAOpenItemsService(
-			@NonNull final ElementValueService elementValueService,
 			@NonNull Optional<List<FAOpenItemsHandler>> handlers)
 	{
 		this.handlersByKey = indexByKey(handlers);
-		this.genericOIHandler = new Generic_OIHandler(elementValueService);
+		this.genericOIHandler = new Generic_OIHandler();
 
 		logger.info("Handlers: {}, {}", this.handlersByKey, genericOIHandler);
 	}

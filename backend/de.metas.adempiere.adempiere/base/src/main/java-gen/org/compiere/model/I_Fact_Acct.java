@@ -362,6 +362,26 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Identifies a Business Partner
 	 *
@@ -389,6 +409,26 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Werbemassnahme.
@@ -1171,6 +1211,33 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Line_ID", null);
     /** Column name Line_ID */
     public static final String COLUMNNAME_Line_ID = "Line_ID";
+
+	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_Fact_Acct.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
 	 * Set Lagerort.

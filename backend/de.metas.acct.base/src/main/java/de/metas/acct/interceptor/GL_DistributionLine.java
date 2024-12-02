@@ -62,10 +62,6 @@ public class GL_DistributionLine
 		{
 			line.setC_Activity_ID(-1);
 		}
-		if (!line.isOverwriteOrder() && line.getC_Order_ID() > 0)
-		{
-			line.setC_Order_ID(-1);
-		}
 		if (!line.isOverwriteBPartner() && line.getC_BPartner_ID() > 0)
 		{
 			line.setC_BPartner_ID(-1);

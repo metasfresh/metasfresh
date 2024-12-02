@@ -1,24 +1,3 @@
-/*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 package de.metas.acct;
 
@@ -48,7 +27,7 @@ import de.metas.ad_reference.AdRefTableRepositoryOverJdbc;
 import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.impl.ModelCacheInvalidationService;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -118,7 +97,10 @@ public class PostDocumentNow_ManualTest
 	private final AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
 	private final List<AcctSchema> acctSchemas;
 
-	public static void main(String[] args) {new PostDocumentNow_ManualTest().run();}
+	public static void main(String[] args)
+	{
+		new PostDocumentNow_ManualTest().run();
+	}
 
 	PostDocumentNow_ManualTest()
 	{
@@ -203,7 +185,7 @@ public class PostDocumentNow_ManualTest
 				new InvoiceAcctRepository(),
 				matchInvoiceService,
 				orderCostService,
-				new FAOpenItemsService(elementValueService, Optional.empty()),
+				new FAOpenItemsService(Optional.empty()),
 				costingService,
 				new DimensionService(ImmutableList.of()),
 				new SalesRegionService(new SalesRegionRepository()),
@@ -250,7 +232,6 @@ public class PostDocumentNow_ManualTest
 	{
 		return new POAcctDocModel(LegacyAdapters.convertToPO(record));
 	}
-
 
 	@SuppressWarnings("unused")
 	private void postC_AllocationHdr(@NonNull final Integer... ids)

@@ -2,17 +2,14 @@ package de.metas.acct.gljournal_sap.service;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
-import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.document.engine.DocStatus;
-import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -200,21 +197,7 @@ public class SAPGLJournalService
 			@NonNull final AccountId accountId,
 			@NonNull final SAPGLJournalLineId sapGLJournalLineId)
 	{
-		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(accountId);
-		final ElementValue elementValue = elementValueService.getById(elementValueId);
-		if (elementValue.isOpenItem())
-		{
-			return faOpenItemsService.computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
-					.elementValueId(elementValueId)
-					.tableName(I_SAP_GLJournal.Table_Name)
-					.recordId(sapGLJournalLineId.getGlJournalId().getRepoId())
-					.lineId(sapGLJournalLineId.getRepoId())
-					.build());
-		}
-		else
-		{
-			return Optional.empty();
-		}
+		return Optional.empty();
 	}
 
 	public void fireAfterComplete(final I_SAP_GLJournal record)

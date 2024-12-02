@@ -42,6 +42,6 @@ public class DocLine_Order extends DocLine<Doc_Order>
 	protected OrderId getSalesOrderId()
 	{
 		final I_C_OrderLine orderLine = getOrderLine();
-		return OrderId.ofRepoIdOrNull(orderLine.getC_OrderSO_ID());
+		return OrderId.ofRepoIdOrNull(orderLine.getC_Order_ID());
 	}
 }

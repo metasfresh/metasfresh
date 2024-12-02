@@ -33,7 +33,6 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -201,7 +200,4 @@ public class ElementValueService
 		return AccountValueComparisonMode.ofNullableString(sysConfigBL.getValue(SYSCONFIG_AccountValueComparisonMode));
 	}
 
-	public ImmutableSet<ElementValueId> getOpenItemIds() {return elementValueRepository.getOpenItemIds();}
-
-	public IValidationRule isOpenItemRule() {return elementValueRepository.isOpenItemRule();}
 }
