@@ -215,6 +215,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "pluFileExportAuditEnabled": false,
         "productBaseFolderName": "productBaseFolderName",
         "tcpHost": "tcpHost",
+        "pluType" : "CU",
         "tcpPort": 8080,
         "value": "testLeichMehlValue"
       },
@@ -236,6 +237,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "productBaseFolderName": "productBaseFolderName",
     "tcpHost": "tcpHost",
     "tcpPort": 8080,
+    "pluType" : "CU",
     "value": "testLeichMehlValue"
   }
 ]
@@ -251,6 +253,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "pluFileExportAuditEnabled": false,
       "productBaseFolderName": "productBaseFolderName",
       "tcpHost": "tcpHost",
+      "pluType" : "CU",
       "tcpPort": 8080,
       "value": "testLeichMehlValue"
     },
@@ -955,6 +958,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "productBaseFolderName": "productBaseFolderName",
       "tcpHost": "tcpHost",
       "tcpPort": 8080,
+      "pluType" : "CU",
       "value": "LeichMehl"
     },
     "id": 100001,

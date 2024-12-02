@@ -31,6 +31,7 @@ import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
@@ -1175,6 +1176,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1202,6 +1204,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1230,6 +1233,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1254,6 +1258,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1282,6 +1287,7 @@ class ExternalSystemConfigRepoTest
 		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
 		configLeichMehl.setTCP_PortNumber(8080);
 		configLeichMehl.setTCP_Host("tcpHost");
+		configLeichMehl.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehl);
 
@@ -1297,6 +1303,7 @@ class ExternalSystemConfigRepoTest
 		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
 		configLeichMehlInactive.setTCP_PortNumber(8080);
 		configLeichMehlInactive.setTCP_Host("tcpHost");
+		configLeichMehlInactive.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehlInactive);
 

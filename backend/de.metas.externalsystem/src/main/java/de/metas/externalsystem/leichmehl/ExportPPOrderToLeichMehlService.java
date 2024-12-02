@@ -37,6 +37,7 @@ import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
+import de.metas.externalsystem.ExternalSystemLeichConfigProductMappingQuery;
 import de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -87,7 +88,7 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 
-		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = matchProductMappingConfig(ppOrder).orElse(null);
+		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = matchProductMappingConfig(ppOrder, leichMehlConfig.getPluType()).orElse(null);
 
 		if (productMappingConfig == null)
 		{
@@ -130,14 +131,19 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 	@NonNull
 	private Optional<ExternalSystemLeichMehlConfigProductMapping> matchProductMappingConfig(
-			@NonNull final I_PP_Order ppOrder)
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final PLUType pluType)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
 
-		return externalSystemLeichMehlConfigProductMappingRepository.getByProductIdAndPartnerId(ppOrderProductId, bPartnerId);
+		return externalSystemLeichMehlConfigProductMappingRepository.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+																						.productId(ppOrderProductId)
+																						.bPartnerId(bPartnerId)
+																						.pluType(pluType)
+																						.build());
 	}
 
 	@NonNull

@@ -31,6 +31,7 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroup;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
@@ -42,7 +43,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,12 +59,13 @@ public class ExternalSystemLeichMehlConfigProductMappingRepository
 			.build();
 
 	@NonNull
-	public Optional<ExternalSystemLeichMehlConfigProductMapping> getByProductIdAndPartnerId(@NonNull final ProductId productId, @Nullable final BPartnerId bPartnerId)
+	public Optional<ExternalSystemLeichMehlConfigProductMapping> getByQuery(@NonNull final ExternalSystemLeichConfigProductMappingQuery query)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID, bPartnerId, null)
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_M_Product_ID, query.getProductId())
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMN_CU_TU_PLU, query.getPluType().getCode())
+				.addInArrayFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID, query.getBPartnerId(), null)
 				.orderBy(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.firstOptional(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
@@ -80,6 +81,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.leichMehlPluFileConfigGroup(getConfigGroupById(LeichMehlPluFileConfigGroupId.ofRepoId(record.getLeichMehl_PluFile_ConfigGroup_ID())))
+				.pluType(PLUType.ofCode(record.getCU_TU_PLU()))
 				.build();
 	}
 
