@@ -49,6 +49,9 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	@NonNull
 	String tcpHost;
 
+	@NonNull
+	PLUType pluType;
+
 	boolean pluFileExportAuditEnabled;
 
 	@Builder
@@ -59,6 +62,7 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 			@NonNull final String productBaseFolderName,
 			@NonNull final Integer tcpPort,
 			@NonNull final String tcpHost,
+			@NonNull final PLUType pluType,
 			final boolean pluFileExportAuditEnabled)
 	{
 		this.id = id;
@@ -67,6 +71,7 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		this.productBaseFolderName = productBaseFolderName;
 		this.tcpPort = tcpPort;
 		this.tcpHost = tcpHost;
+		this.pluType = pluType;
 		this.pluFileExportAuditEnabled = pluFileExportAuditEnabled;
 	}
 
