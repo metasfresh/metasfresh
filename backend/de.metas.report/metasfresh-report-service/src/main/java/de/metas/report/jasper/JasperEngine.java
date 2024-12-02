@@ -6,8 +6,8 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.report.jasper.class_loader.JasperClassLoader;
-import de.metas.report.jasper.data_source.ReportDataSource;
 import de.metas.report.jasper.data_source.JasperDataSourceProvider;
+import de.metas.report.jasper.data_source.ReportDataSource;
 import de.metas.report.jasper.exporter.MetasJRXlsExporter;
 import de.metas.report.server.AbstractReportEngine;
 import de.metas.report.server.OutputType;
@@ -303,7 +303,6 @@ public class JasperEngine extends AbstractReportEngine
 				return ReportResult.builder()
 						.outputType(outputType)
 						.reportContentBase64(Util.encodeBase64(data))
-						.reportFilename(buildReportFilename(jasperPrint, outputType))
 						.build();
 			}
 			else if (OutputType.HTML == outputType)
