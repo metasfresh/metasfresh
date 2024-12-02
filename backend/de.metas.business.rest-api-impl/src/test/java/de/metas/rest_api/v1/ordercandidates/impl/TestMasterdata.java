@@ -87,7 +87,7 @@ final class TestMasterdata
 	{
 		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
 		docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
-		docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
+		docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
 		saveRecord(docTypeRecord);
 	}
 

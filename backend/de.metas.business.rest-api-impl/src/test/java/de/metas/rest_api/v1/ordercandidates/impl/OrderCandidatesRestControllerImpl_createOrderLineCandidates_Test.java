@@ -32,6 +32,8 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -151,8 +153,8 @@ public class
 OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
-					.atTime(LocalTime.parse("23:07:16.193"))
-					.atZone(ZoneId.of("Europe/Berlin"));
+			.atTime(LocalTime.parse("23:07:16.193"))
+			.atZone(ZoneId.of("Europe/Berlin"));
 
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
@@ -1071,7 +1073,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.ANY));
 
 		final JsonOLCandCreateRequest request = JsonOLCandUtil.loadJsonOLCandCreateRequest(RESOURCE_PATH + "OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
@@ -1103,7 +1105,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.ANY));
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
 				.orgId(defaultOrgId)

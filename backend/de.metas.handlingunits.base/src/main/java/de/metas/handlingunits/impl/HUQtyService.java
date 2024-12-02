@@ -24,6 +24,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,7 +45,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inventory.AggregationType;
-import de.metas.inventory.InventoryDocSubType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -207,7 +207,7 @@ public class HUQtyService
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docSubType(DocSubType.SingleHUInventory)
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());

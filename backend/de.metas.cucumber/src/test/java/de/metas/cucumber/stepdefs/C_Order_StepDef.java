@@ -28,14 +28,13 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
-import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
-import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -129,8 +128,6 @@ public class C_Order_StepDef
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Org_StepDefData orgTable;
-	private final AD_Message_StepDefData messageTable;
-	private final M_InOut_StepDefData inoutTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -139,9 +136,7 @@ public class C_Order_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final AD_Message_StepDefData messageTable,
-			@NonNull final M_InOut_StepDefData inoutTable)
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
@@ -150,8 +145,6 @@ public class C_Order_StepDef
 		this.pricingSystemDataTable = pricingSystemDataTable;
 		this.warehouseTable = warehouseTable;
 		this.orgTable = orgTable;
-		this.messageTable = messageTable;
-		this.inoutTable = inoutTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -517,7 +510,7 @@ public class C_Order_StepDef
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 						.docBaseType(docBaseType)
-						.docSubType(docSubType)
+						.docSubType(DocSubType.ofNullableCode(docSubType))
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())
 						.build();

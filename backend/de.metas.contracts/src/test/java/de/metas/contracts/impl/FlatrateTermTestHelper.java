@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -23,9 +24,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -213,7 +212,8 @@ public class FlatrateTermTestHelper
 				documentLocationBL,
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
-				new CallOrderContractService());
+				new CallOrderContractService(),
+				new GLCategoryRepository());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

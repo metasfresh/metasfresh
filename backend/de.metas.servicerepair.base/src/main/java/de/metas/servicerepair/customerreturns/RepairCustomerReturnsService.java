@@ -47,6 +47,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.IOrgDAO;
