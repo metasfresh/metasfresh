@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -121,7 +123,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return acctSchemaId;
 	}
 
-	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}
@@ -152,6 +154,62 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	public List<AcctSchema> getByChartOfAccountsId(@NonNull final ChartOfAccountsId chartOfAccountsId)
 	{
 		return getAcctSchemasMap().getByChartOfAccountsId(chartOfAccountsId);
+	}
+
+	@Override
+	@NonNull
+	public AcctSchema getByClientAndName(
+			@NonNull final ClientId clientId,
+			@NonNull final String name)
+	{
+		final ImmutableList<AcctSchema> schemas = getAllByClient(clientId)
+				.stream()
+				.filter(schema -> name.equals(schema.getName()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (schemas.isEmpty())
+		{
+			throw new AdempiereException("No AcctSchema record found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		if (schemas.size() > 1)
+		{
+			throw new AdempiereException("Multiple AcctSchema records found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		return schemas.get(0);
+	}
+
+	@Override
+	public void saveAcctSchemaElement(@NonNull final AcctSchemaElement acctSchemaElement)
+	{
+		final I_C_AcctSchema_Element record;
+		if (acctSchemaElement.getId() == null)
+		{
+			record = newInstance(I_C_AcctSchema_Element.class);
+		}
+		else
+		{
+			record = load(acctSchemaElement.getId(), I_C_AcctSchema_Element.class);
+		}
+		final ChartOfAccountsId chartOfAccountsId = acctSchemaElement.getChartOfAccountsId();
+
+		record.setName(acctSchemaElement.getName());
+		record.setC_AcctSchema_ID(acctSchemaElement.getAcctSchemaId().getRepoId());
+		record.setC_Element_ID(chartOfAccountsId !=null ? chartOfAccountsId.getRepoId() : -1);
+		record.setElementType(acctSchemaElement.getElementType().getCode());
+		record.setIsBalanced(acctSchemaElement.isBalanced());
+		record.setIsDisplayInEditor(acctSchemaElement.isDisplayedInEditor());
+		record.setSeqNo(acctSchemaElement.getSeqNo());
+		record.setOrg_ID(acctSchemaElement.getOrgId().getRepoId());
+		saveRecord(record);
+
 	}
 
 	private AcctSchemasMap getAcctSchemasMap()
@@ -357,6 +415,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	{
 		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
 		final AcctSchemaElement element = AcctSchemaElement.builder()
+				.id(AcctSchemaElementId.ofRepoId(record.getC_AcctSchema_Element_ID()))
 				.elementType(elementType)
 				.name(record.getName())
 				.seqNo(record.getSeqNo())
@@ -370,6 +429,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.displayedInEditor(record.isDisplayInEditor())
 				.balanced(record.isBalanced())
 				//
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
+				.OrgId(OrgId.ofRepoId(record.getOrg_ID()))
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{

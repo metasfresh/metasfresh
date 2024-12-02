@@ -35,6 +35,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -43,13 +44,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Objects;
 
 @Service
@@ -90,7 +92,16 @@ public class MoneyService
 
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
-			@Nullable final LocalDate convDate,
+			@NonNull final LocalDateAndOrgId convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId)
+	{
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
+	}
+
+	@NonNull
+	public CurrencyConversionContext createConversionContext(
+			@Nullable final Instant convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
@@ -112,7 +123,7 @@ public class MoneyService
 		}
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
-				SystemTime.asLocalDate(),
+				SystemTime.asInstant(),
 				ConversionTypeMethod.Spot,
 				Env.getClientId(),
 				Env.getOrgId());

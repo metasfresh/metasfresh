@@ -31,18 +31,18 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 /**
@@ -214,7 +214,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 				toLine.setDR_C_Order_ID(fromLine.getDR_C_Order_ID());
 				toLine.setDR_M_Product_ID(fromLine.getDR_M_Product_ID());
-				toLine.setDR_M_SectionCode_ID(fromLine.getDR_M_SectionCode_ID());
 				//
 				toLine.setCR_AutoTaxAccount(fromLine.isCR_AutoTaxAccount());
 				toLine.setCR_Tax_ID(fromLine.getCR_Tax_ID());
@@ -225,7 +224,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 				toLine.setCR_C_Order_ID(fromLine.getCR_C_Order_ID());
 				toLine.setCR_M_Product_ID(fromLine.getCR_M_Product_ID());
-				toLine.setCR_M_SectionCode_ID(fromLine.getCR_M_SectionCode_ID());
 			}
 			else if (typeCR == 'R')        // reverse
 			{
@@ -831,9 +829,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 	}    // getSummary
 
 	@Override
-	public InstantAndOrgId getDocumentDate()
+	public LocalDate getDocumentDate()
 	{
-		return InstantAndOrgId.ofTimestamp(getDateDoc(), OrgId.ofRepoId(getAD_Org_ID()));
+		return TimeUtil.asLocalDate(getDateDoc());
 	}
 
 	/**

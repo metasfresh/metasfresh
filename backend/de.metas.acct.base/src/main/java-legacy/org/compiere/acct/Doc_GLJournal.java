@@ -25,7 +25,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -321,10 +320,9 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			@NonNull final CurrencyId acctSchemaCurrencyId)
 	{
 		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(line.getDateAcct()),
+				line.getDateAcct(),
 				line.getCurrencyConversionTypeId(),
-				line.getClientId(),
-				line.getOrgId());
+				line.getClientId());
 
 		final BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)

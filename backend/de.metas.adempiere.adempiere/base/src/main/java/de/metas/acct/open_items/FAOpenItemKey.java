@@ -178,7 +178,7 @@ public final class FAOpenItemKey
 	public Optional<InvoiceId> getInvoiceId()
 	{
 		return I_C_Invoice.Table_Name.equals(tableName)
-				? InvoiceId.ofRepoIdOptional(recordId)
+				? InvoiceId.optionalOfRepoId(recordId)
 				: Optional.empty();
 	}
 

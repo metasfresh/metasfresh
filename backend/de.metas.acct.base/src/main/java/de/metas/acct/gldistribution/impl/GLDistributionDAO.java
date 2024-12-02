@@ -131,10 +131,6 @@ public class GLDistributionDAO implements IGLDistributionDAO
 			{
 				continue;
 			}
-			if (!glDistribution.isAnySectionCode() && glDistribution.getM_SectionCode_ID() != dimension.getM_SectionCode_ID())
-			{
-				continue;
-			}
 			if (!glDistribution.isAnyOrgTrx() && glDistribution.getAD_OrgTrx_ID() != dimension.getAD_OrgTrx_ID())
 			{
 				continue;

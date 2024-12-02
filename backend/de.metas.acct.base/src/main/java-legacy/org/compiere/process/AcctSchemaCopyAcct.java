@@ -234,10 +234,6 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			{
 				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
 			}
-			else if (elementType.equals(AcctSchemaElementType.SectionCode))
-			{
-				M_SectionCode_ID = sourceAccount.getM_SectionCode_ID();
-			}
 
 			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 			{
@@ -280,14 +276,6 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				UserElement2_ID = sourceAccount.getUserElement2_ID();
 				// No UserElement
 			}
-			else if (elementType.equals(AcctSchemaElementType.HarvestingCalendar))
-			{
-				C_Harvesting_Calendar_ID = sourceAccount.getC_Harvesting_Calendar_ID();
-			}
-			else if (elementType.equals(AcctSchemaElementType.HarvestingYear))
-			{
-				Harvesting_Year_ID = sourceAccount.getHarvesting_Year_ID();
-			}
 		}
 
 		final MAccount account = MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
@@ -296,9 +284,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
 				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
-				OrderId.toRepoId(C_OrderSO_ID),
-				C_Harvesting_Calendar_ID, Harvesting_Year_ID,
-				M_SectionCode_ID);
+				OrderId.toRepoId(C_OrderSO_ID));
 
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
 	}    // createAccount

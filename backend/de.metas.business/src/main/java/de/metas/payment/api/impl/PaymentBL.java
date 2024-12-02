@@ -31,6 +31,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.FixedConversionRate;
@@ -52,6 +53,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -86,7 +88,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -181,7 +182,7 @@ public class PaymentBL implements IPaymentBL
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate ConvDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant ConvDate = payment.getDateTrx().toInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -300,7 +301,7 @@ public class PaymentBL implements IPaymentBL
 		// Get Currency Info
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate convDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant convDate = payment.getDateTrx() != null ? payment.getDateTrx().toInstant() : SystemTime.asInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -531,6 +532,27 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void scheduleUpdateIsAllocated(@NonNull final PaymentId paymentId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"paymentBL.scheduleUpdateIsAllocated",
+				ImmutableSet.of(paymentId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<PaymentId> paymentIds)
+	{
+		paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds))
+				.forEach(payment -> {
+					final boolean updated = testAllocation(payment);
+					if (updated)
+					{
+						paymentDAO.save(payment);
+					}
+				});
+	}
+
+	@Override
 	public void testAllocation(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = getById(paymentId);
@@ -623,7 +645,7 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final I_C_Payment payment,
 			@NonNull final Money writeOffAmt,
 			@NonNull final Instant writeOffDate,
-			@Nullable String description)
+			@Nullable final String description)
 	{
 		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
@@ -666,6 +688,12 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void markNotReconciled(@NonNull final PaymentId paymentId)
+	{
+		markNotReconciled(ImmutableSet.of(paymentId));
+	}
+
+	@Override
 	public void markNotReconciled(
 			@NonNull final Collection<PaymentId> paymentIds)
 	{
@@ -689,6 +717,12 @@ public class PaymentBL implements IPaymentBL
 		payment.setC_BankStatement_ID(-1);
 		payment.setC_BankStatementLine_ID(-1);
 		payment.setC_BankStatementLine_Ref_ID(-1);
+	}
+
+	@Override
+	public void markReconciled(@NonNull final PaymentReconcileRequest request)
+	{
+		markReconciled(ImmutableList.of(request), ImmutableList.of());
 	}
 
 	@Override
@@ -852,10 +886,9 @@ public class PaymentBL implements IPaymentBL
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(payment.getDateAcct()),
+				InstantAndOrgId.ofTimestamp(payment.getDateAcct(), OrgId.ofRepoId(payment.getAD_Org_ID())),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
-				ClientId.ofRepoId(payment.getAD_Client_ID()),
-				OrgId.ofRepoId(payment.getAD_Org_ID()));
+				ClientId.ofRepoId(payment.getAD_Client_ID()));
 
 		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)
@@ -879,7 +912,7 @@ public class PaymentBL implements IPaymentBL
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
 		// Invoice
-		final I_C_Invoice invoice = InvoiceId.ofRepoIdOptional(payment.getC_Invoice_ID())
+		final I_C_Invoice invoice = InvoiceId.optionalOfRepoId(payment.getC_Invoice_ID())
 				.map(invoiceBL::getById)
 				.orElse(null);
 

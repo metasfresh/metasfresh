@@ -98,7 +98,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	public String getDocumentNo()
 	{
 		final ProjectId projectId = ProjectId.ofRepoId(m_issue.getC_Project_ID());
-		final I_C_Project project = projectRepository.getRecordById(projectId);
+		final I_C_Project project = projectRepository.getById(projectId);
 		if (project != null)
 		{
 			return project.getValue() + " #" + m_issue.getLine();

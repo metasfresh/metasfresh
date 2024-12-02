@@ -3,18 +3,18 @@ package de.metas.acct.gljournal_sap.document;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
-import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_GL_Journal;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class SAPGLJournalDocumentHandler implements DocumentHandler
 {
@@ -47,10 +47,10 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(final DocumentTableFields docFields)
 	{
 		final I_SAP_GLJournal record = extractRecord(docFields);
-		return InstantAndOrgId.ofTimestamp(record.getDateDoc(), record.getAD_Org_ID());
+		return TimeUtil.asLocalDate(record.getDateDoc());
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public DocStatus completeIt(final DocumentTableFields docFields)
+	public String completeIt(final DocumentTableFields docFields)
 	{
 		final I_SAP_GLJournal glJournalRecord = extractRecord(docFields);
 
@@ -95,7 +95,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 		);
 
 		glJournalRecord.setDocAction(IDocument.ACTION_None);
-		return DocStatus.Completed;
+		return IDocument.STATUS_Completed;
 	}
 
 	private static void assertPeriodOpen(final I_SAP_GLJournal glJournalRecord)

@@ -16,10 +16,16 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.compiere.model.MAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MGLCategory;
@@ -31,16 +37,9 @@ import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -154,7 +153,7 @@ public class InvoiceNGL extends JavaProcess
 		}
 		
 		//	Insert Trx
-		String dateStr = DB.TO_DATE(p_DateReval, true);
+		String dateStr = DB.TO_DATE(p_DateReval);
 		sql = "INSERT INTO T_InvoiceGL (AD_Client_ID, AD_Org_ID, IsActive, Created,CreatedBy, Updated,UpdatedBy,"
 			+ " AD_PInstance_ID, C_Invoice_ID, GrandTotal, OpenAmt, "
 			+ " Fact_Acct_ID, AmtSourceBalance, AmtAcctBalance, "

@@ -85,9 +85,15 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
+	public @NonNull MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
 	{
 		return getById(ctx, accountId.getRepoId());
+	}
+
+	@Override
+	public ElementValueId getElementValueIdByAccountId(@NonNull final AccountId accountId)
+	{
+		return getById(Env.getCtx(), accountId).getElementValueId();
 	}
 
 	@Override

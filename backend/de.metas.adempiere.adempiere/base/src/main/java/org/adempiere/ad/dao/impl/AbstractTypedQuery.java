@@ -48,9 +48,8 @@ import java.util.function.IntFunction;
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
  *
- * @author tsa
- *
  * @param <T> model type
+ * @author tsa
  */
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
@@ -73,6 +72,13 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	{
 		final boolean throwExIfMoreThenOneFound = false;
 		return firstOnly(clazz, throwExIfMoreThenOneFound);
+	}
+
+	@NonNull
+	@Override
+	public final T firstOnlyNotNull()
+	{
+		return firstOnlyNotNull(getModelClass());
 	}
 
 	@NonNull
@@ -105,7 +111,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	/**
-	 *
 	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
@@ -156,7 +161,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
-	 * @param distinct true if the value rows shall be district
+	 * @param distinct    true if the value rows shall be district
 	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
 	 */
@@ -168,6 +173,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		final List<ET> list = list(modelClass);
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
+
 	@Override
 	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
 	{
@@ -178,7 +184,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	@Override
 	public <ET extends T> Map<Integer, ET> mapToId(final Class<ET> modelClass)
 	{
-		return map(modelClass, Model2IdFunction.<ET> getInstance());
+		return map(modelClass, Model2IdFunction.<ET>getInstance());
 	}
 
 	@Override
@@ -213,7 +219,9 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return new QueryInsertExecutor<>(toModelClass, this);
 	}
 
-	/** Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}. */
+	/**
+	 * Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}.
+	 */
 	protected boolean isReadOnlyRecords()
 	{
 		return Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));

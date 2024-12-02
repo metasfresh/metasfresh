@@ -27,7 +27,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -88,7 +87,7 @@ public class C_Order
 		final BigDecimal grandTotal = currencyBL.convertBase(
 				order.getGrandTotal(),
 				CurrencyId.ofRepoId(order.getC_Currency_ID()),
-				TimeUtil.asLocalDate(order.getDateOrdered()),
+				order.getDateOrdered().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));
@@ -124,7 +123,7 @@ public class C_Order
 			return false;
 		}
 
-		final I_C_DocType dt = docTypeDAO.getById(order.getC_DocTypeTarget_ID());
+		final I_C_DocType dt = docTypeDAO.getRecordById(order.getC_DocTypeTarget_ID());
 		final PaymentRule paymentRule = PaymentRule.ofCode(order.getPaymentRule());
 		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
 				&& paymentRule.isCash()

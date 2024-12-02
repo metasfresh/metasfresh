@@ -51,7 +51,7 @@ public class InvoiceId implements RepoIdAware
 	}
 
 	@NonNull
-	public static Optional<InvoiceId> ofRepoIdOptional(final int repoId)
+	public static Optional<InvoiceId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}

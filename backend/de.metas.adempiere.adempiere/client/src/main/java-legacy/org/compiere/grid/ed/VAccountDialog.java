@@ -16,31 +16,22 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.lang.ref.WeakReference;
-import java.util.Properties;
-
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.JToolBar;
-import javax.swing.border.TitledBorder;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDimensionValidator;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,21 +57,17 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaElementsMap;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
-import de.metas.acct.api.IAccountDimensionValidator;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.Properties;
 
 /**
  * Dialog to enter Account Info
@@ -951,7 +938,7 @@ public final class VAccountDialog extends CDialog
 		if (f_C_SalesRegion_ID != null && f_C_SalesRegion_ID.getValue() != null)
 		{
 			int C_SRegion_ID = ((Integer)f_C_SalesRegion_ID.getValue()).intValue();
-			accountDimension.setC_SalesRegion_ID(C_SRegion_ID);
+			accountDimension.setC_SalesRegion_ID(SalesRegionId.ofRepoIdOrNull(C_SRegion_ID));
 		}
 		if (f_C_Project_ID != null && f_C_Project_ID.getValue() != null)
 		{

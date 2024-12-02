@@ -1325,7 +1325,7 @@ public class OrderBL implements IOrderBL
 	public CurrencyConversionContext getCurrencyConversionContext(final I_C_Order order)
 	{
 		return currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(order.getDateOrdered()),
+				order.getDateOrdered().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));

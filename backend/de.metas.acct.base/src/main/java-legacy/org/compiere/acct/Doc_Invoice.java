@@ -30,16 +30,15 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice_gateway.spi.model.InvoiceTax;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -300,7 +299,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	private Fact newFact(@NonNull final AcctSchema as)
 	{
-		return new Fact(this, as, getPostingType())
+		return new Fact(this, as, PostingType.Actual)
 				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance)
 				.setCurrencyConversionContext(getCurrencyConversionContext(as));
 	}
@@ -1037,21 +1036,4 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		InterfaceWrapperHelper.save(invoice);
 	}
 
-	@NonNull
-	private PostingType getPostingType()
-	{
-		final DocTypeId docTypeId = getC_DocType_ID();
-
-		if(docTypeId == null)
-		{
-			return PostingType.Actual;
-		}
-
-		if(docTypeBL.isInternalVendorInvoice(docTypeId))
-		{
-			return PostingType.Statistical;
-		}
-
-		return PostingType.Actual;
-	}
 }   // Doc_Invoice

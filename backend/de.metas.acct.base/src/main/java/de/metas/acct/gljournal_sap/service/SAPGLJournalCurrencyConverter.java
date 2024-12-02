@@ -9,7 +9,6 @@ import de.metas.money.Money;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -42,7 +41,7 @@ public class SAPGLJournalCurrencyConverter
 	public CurrencyConversionContext toCurrencyConversionContext(@NonNull final SAPGLJournalCurrencyConversionCtx ctx)
 	{
 		CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(ctx.getDate()),
+				ctx.getDate(),
 				ctx.getConversionTypeId(),
 				ctx.getClientAndOrgId().getClientId(),
 				ctx.getClientAndOrgId().getOrgId());

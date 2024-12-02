@@ -274,7 +274,7 @@ public class AcctDocRequiredServicesFacade
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final ClientId clientId)
 	{
-		return currencyConversionBL.createCurrencyConversionContext(convDate.toLocalDate(), conversionTypeId, clientId, convDate.getOrgId());
+		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
 	}
 
 	public CurrencyRate getCurrencyRate(

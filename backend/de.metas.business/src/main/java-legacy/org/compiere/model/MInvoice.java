@@ -1137,7 +1137,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						amt,
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						TimeUtil.asLocalDate(getDateAcct()),
+						getDateAcct().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));

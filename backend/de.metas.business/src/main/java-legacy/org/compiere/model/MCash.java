@@ -433,7 +433,7 @@ public class MCash extends X_C_Cash implements IDocument
 						line.getAmount(),
 						lineCurrencyId,
 						currencyId,
-						TimeUtil.asLocalDate(getDateAcct()),
+						getDateAcct().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));

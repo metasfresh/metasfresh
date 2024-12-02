@@ -47,10 +47,6 @@ public class GL_Distribution
 		{
 			glDistribution.setC_Order_ID(-1);
 		}
-		if (glDistribution.isAnySectionCode() && glDistribution.getM_SectionCode_ID() > 0)
-		{
-			glDistribution.setM_SectionCode_ID(-1);
-		}
 		if (glDistribution.isAnyBPartner() && glDistribution.getC_BPartner_ID() > 0)
 		{
 			glDistribution.setC_BPartner_ID(-1);

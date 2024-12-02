@@ -33,7 +33,7 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 /**
  * The result of a currency conversion.
@@ -60,7 +60,7 @@ public class CurrencyConversionResult
 	private BigDecimal conversionRateOrNull;
 
 	@NonNull
-	private LocalDate conversionDate;
+	private Instant conversionDate;
 	@NonNull
 	private CurrencyConversionTypeId conversionTypeId;
 	@NonNull

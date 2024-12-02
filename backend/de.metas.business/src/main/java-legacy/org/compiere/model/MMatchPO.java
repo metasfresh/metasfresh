@@ -36,7 +36,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -116,7 +115,7 @@ public class MMatchPO extends X_M_MatchPO
 					priceActual, 
 					CurrencyId.ofRepoId(invoiceCurrency_ID), 
 					CurrencyId.ofRepoId(orderCurrency_ID),
-					TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+					invoice.getDateInvoiced().toInstant(),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					ClientId.ofRepoId(getAD_Client_ID()), 
 					OrgId.ofRepoId(getAD_Org_ID()));

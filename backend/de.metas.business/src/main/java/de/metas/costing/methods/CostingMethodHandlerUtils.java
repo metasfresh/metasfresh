@@ -31,7 +31,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -244,7 +243,7 @@ public class CostingMethodHandlerUtils
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> currencyConversionContext,
 				() -> currencyBL.createCurrencyConversionContext(
-						TimeUtil.asLocalDate(request.getDate()),
+						request.getDate(),
 						(CurrencyConversionTypeId)null,
 						request.getClientId(),
 						request.getOrgId()));

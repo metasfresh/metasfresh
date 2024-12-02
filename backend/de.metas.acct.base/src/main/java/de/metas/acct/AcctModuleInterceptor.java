@@ -56,11 +56,10 @@ import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Properties;
 import java.util.Set;
 
@@ -214,7 +213,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			try
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(adOrgRepoId);
-				final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
+				final Instant date = Env.getDate(ctx).toInstant();
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}

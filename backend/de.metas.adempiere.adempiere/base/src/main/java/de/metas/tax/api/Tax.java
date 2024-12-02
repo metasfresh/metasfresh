@@ -48,6 +48,7 @@ public class Tax
 	public static final int C_TAX_ID_NO_TAX_FOUND = 100;
 
 	@NonNull TaxId taxId;
+	@NonNull String name;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
 	@Nullable
@@ -65,6 +66,7 @@ public class Tax
 	Boolean isFiscalRepresentation;
 	@Nullable
 	Boolean isSmallBusiness;
+	boolean isSalesTax;
 	boolean isWholeTax;
 	boolean isReverseCharge;
 	boolean isDocumentLevel;
@@ -74,6 +76,7 @@ public class Tax
 
 	@Builder
 	public Tax(final @NonNull TaxId taxId,
+			@NonNull final String name,
 			final @NonNull OrgId orgId,
 			final @NonNull Timestamp validFrom,
 			final @Nullable CountryId countryId,
@@ -85,6 +88,7 @@ public class Tax
 			final boolean isTaxExempt,
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
+			final boolean isSalesTax,
 			final boolean isWholeTax,
 			final boolean isReverseCharge,
 			final boolean isDocumentLevel,
@@ -93,10 +97,10 @@ public class Tax
 			final @NonNull Integer seqNo)
 	{
 		this.taxId = taxId;
+		this.name = name;
 		this.orgId = orgId;
 		this.validFrom = validFrom;
 		this.countryId = countryId;
-
 		this.toCountryId = toCountryId;
 		this.typeOfDestCountry = typeOfDestCountry;
 		this.taxCategoryId = taxCategoryId;
@@ -105,6 +109,7 @@ public class Tax
 		this.isTaxExempt = isTaxExempt;
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
+		this.isSalesTax = isSalesTax;
 		this.isWholeTax = isWholeTax;
 		this.isReverseCharge = isReverseCharge;
 		this.isDocumentLevel = isDocumentLevel;

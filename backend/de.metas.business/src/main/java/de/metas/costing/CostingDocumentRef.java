@@ -5,6 +5,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.MatchPOId;
+import de.metas.project.ProjectIssueId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -120,6 +121,11 @@ public class CostingDocumentRef
 	public static CostingDocumentRef ofInboundMovementLineId(final MovementLineId movementLineId)
 	{
 		return new CostingDocumentRef(TABLE_NAME_M_MovementLine, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, false);
+	}
+
+	public static CostingDocumentRef ofProjectIssueId(final int projectIssueId)
+	{
+		return new CostingDocumentRef(TABLE_NAME_C_ProjectIssue, ProjectIssueId.ofRepoId(projectIssueId), I_M_CostDetail.COLUMNNAME_C_ProjectIssue_ID, null);
 	}
 
 	public static CostingDocumentRef ofCostCollectorId(final int ppCostCollectorId)

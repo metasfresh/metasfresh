@@ -71,10 +71,6 @@ public class GL_JournalLine
 		// Set Line Org to Acct Org (from parent)
 		glJournalLine.setAD_Org_ID(glJournal.getAD_Org_ID());
 
-		if(newRecord)
-		{
-			glJournalLine.setM_SectionCode_ID(glJournalLine.getGL_Journal().getM_SectionCode_ID());
-		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

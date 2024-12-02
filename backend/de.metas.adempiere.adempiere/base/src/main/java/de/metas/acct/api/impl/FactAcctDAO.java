@@ -2,10 +2,12 @@ package de.metas.acct.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -19,11 +21,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -147,6 +151,19 @@ public class FactAcctDAO implements IFactAcctDAO
 				.execute();
 
 		return countUpdated;
+	}
+
+	@Override
+	public void updatePOReference(@NonNull final TableRecordReference recordRef, @Nullable final String poReference)
+	{
+		queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_POReference, poReference)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_POReference, poReference)
+				.execute();
 	}
 
 	@Override
@@ -349,5 +366,26 @@ public class FactAcctDAO implements IFactAcctDAO
 	public static void setAccountConceptualName(@NonNull final I_Fact_Acct record, @Nullable final AccountConceptualName accountConceptualName)
 	{
 		record.setAccountConceptualName(accountConceptualName != null ? accountConceptualName.getAsString() : ACCOUNTCONCEPTUALNAME_NULL_MARKER);
+	}
+
+	@Override
+	public void setOpenItemTrxInfo(@NonNull final FAOpenItemTrxInfo openItemTrxInfo, @NonNull final FactAcctQuery query)
+	{
+		toSqlQuery(query)
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OI_TrxType, openItemTrxInfo.getTrxType().getCode())
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemTrxInfo.getKey().getAsString())
+				.execute();
+	}
+
+	@Override
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Instant dateAcctFrom, @NonNull final Instant dateAcctTo)
+	{
+		return queryBL
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateAcctFrom, dateAcctTo)
+				.create()
+				.listDistinct(I_Fact_Acct.COLUMNNAME_Account_ID, ElementValueId.class);
 	}
 }

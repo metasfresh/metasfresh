@@ -15,6 +15,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -40,6 +41,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -132,6 +134,12 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
+
 	/**
 	 * Create a credit memo for the given invoice.
 	 * <p>
@@ -165,6 +173,10 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.
 	 */
 	I_C_InvoiceLine createLine(I_C_Invoice invoice);
+
+	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
+
+	void testAllocated(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Test Allocation (and set paid flag)

@@ -765,7 +765,7 @@ public class InOutBL implements IInOutBL
 	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
 	{
 		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(inout.getDateAcct()),
+				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
 				OrgId.ofRepoId(inout.getAD_Org_ID()));

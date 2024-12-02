@@ -35,6 +35,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -146,6 +147,10 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
 
+	List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId);
+
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
@@ -187,7 +192,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 
 	/**
-	 * Be sure to check the code! The method might return {@code true} at unexpected times! 
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
 	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
 	 */
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);

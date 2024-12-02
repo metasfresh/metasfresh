@@ -19,7 +19,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -116,7 +115,7 @@ public class GL_Journal
 			currencyRate = Services.get(ICurrencyBL.class).getCurrencyRateIfExists(
 					currencyId,
 					acctSchema.getCurrencyId(),
-					TimeUtil.asLocalDate(dateAcct),
+					dateAcct,
 					conversionTypeId,
 					adClientId,
 					adOrgId)

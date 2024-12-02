@@ -46,7 +46,6 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -102,7 +101,7 @@ public class GL_JournalLine
 		final BigDecimal currencyRate = Services.get(ICurrencyBL.class).getCurrencyRateIfExists(
 				currencyId,
 				acctSchema.getCurrencyId(),
-				TimeUtil.asLocalDate(dateAcct),
+				dateAcct,
 				conversionTypeId,
 				adClientId,
 				adOrgId)
