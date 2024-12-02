@@ -18,57 +18,59 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
       "name": "testGroupName"
     },
     "pluFile": "pluFilePartner",
-    "pluType" : "CU",
+    "pluType": "CU",
     "productId": 1
   }
-  
+]
+
+
 de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getCUOne=[
-    {
-      "id" : 1,
-      "pluFile" : "pluFile",
-      "productId" : 1,
-      "bPartnerId" : 1,
-      "leichMehlPluFileConfigGroup" : {
-        "id" : 1,
-        "name" : "testGroupName",
-        "externalSystemLeichMehlPluFileConfigs" : [
-          {
-            "id" : 1,
-            "leichMehlPluFileConfigGroupId" : 1,
-            "targetFieldName" : "targetFileName",
-            "targetFieldType" : "Date",
-            "replaceRegExp" : "replacePattern",
-            "replacement" : "replacement",
-            "replacementSource" : "PPOrder"
-          }
-        ]
-      },
-      "pluType" : "CU"
-    }
-  ]
-  
-  
+  {
+    "bPartnerId": 1,
+    "id": 1,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFile",
+    "pluType": "CU",
+    "productId": 1
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getTUOne=[
-    {
-      "id" : 2,
-      "pluFile" : "pluFilePartner",
-      "productId" : 1,
-      "bPartnerId" : 1,
-      "leichMehlPluFileConfigGroup" : {
-        "id" : 1,
-        "name" : "testGroupName",
-        "externalSystemLeichMehlPluFileConfigs" : [
-          {
-            "id" : 1,
-            "leichMehlPluFileConfigGroupId" : 1,
-            "targetFieldName" : "targetFileName",
-            "targetFieldType" : "Date",
-            "replaceRegExp" : "replacePattern",
-            "replacement" : "replacement",
-            "replacementSource" : "PPOrder"
-          }
-        ]
-      },
-      "pluType" : "TU"
-    }
+  {
+    "bPartnerId": 1,
+    "id": 2,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFilePartner",
+    "pluType": "TU",
+    "productId": 1
+  }
 ]
