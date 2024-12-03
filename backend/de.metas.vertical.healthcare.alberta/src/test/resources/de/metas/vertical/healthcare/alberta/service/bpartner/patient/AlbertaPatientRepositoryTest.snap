@@ -1,66 +1,40 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepositoryTest.save_allFields=[
   {
-    "bPartnerAlbertaPatientId" : 100001,
-    "bPartnerId" : 1,
-    "hospitalId" : 2,
-    "dischargeDate" : {
-      "year" : 2019,
-      "month" : 11,
-      "day" : 22,
-      "leapYear" : false
-    },
-    "payerId" : 3,
-    "payerType" : "ProfessionalAssociation",
-    "numberOfInsured" : "numberOfInsured",
-    "copaymentFrom" : {
-      "year" : 2019,
-      "month" : 11,
-      "day" : 23,
-      "leapYear" : false
-    },
-    "copaymentTo" : {
-      "year" : 2019,
-      "month" : 11,
-      "day" : 24,
-      "leapYear" : false
-    },
-    "isTransferPatient" : true,
-    "isIVTherapy" : false,
-    "fieldNurseId" : 4,
-    "deactivationReason" : "AllTherapiesEnded",
-    "deactivationDate" : {
-      "year" : 2019,
-      "month" : 11,
-      "day" : 25,
-      "leapYear" : false
-    },
-    "deactivationComment" : "deactivationComment",
-    "classification" : "classification",
-    "careDegree" : 2.2,
-    "createdAt" : {
-      "seconds" : 1574726400,
-      "nanos" : 0
-    },
-    "createdById" : 5,
-    "updatedAt" : {
-      "seconds" : 1574812800,
-      "nanos" : 0
-    },
-    "updatedById" : 6,
-    "transferPatient" : true,
-    "ivtherapy" : false
+    "bPartnerAlbertaPatientId": 100001,
+    "bPartnerId": 1,
+    "careDegree": 2.2,
+    "classification": "classification",
+    "copaymentFrom": "2019-11-23",
+    "copaymentTo": "2019-11-24",
+    "createdAt": "2019-11-26T00:00:00Z",
+    "createdById": 5,
+    "deactivationComment": "deactivationComment",
+    "deactivationDate": "2019-11-25",
+    "deactivationReason": "AllTherapiesEnded",
+    "dischargeDate": "2019-11-22",
+    "fieldNurseId": 4,
+    "hospitalId": 2,
+    "isIVTherapy": false,
+    "isTransferPatient": true,
+    "ivtherapy": false,
+    "numberOfInsured": "numberOfInsured",
+    "payerId": 3,
+    "payerType": "ProfessionalAssociation",
+    "transferPatient": true,
+    "updatedAt": "2019-11-27T00:00:00Z",
+    "updatedById": 6
   }
 ]
 
 
 de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepositoryTest.save_onlyMandatory=[
   {
-    "bPartnerAlbertaPatientId" : 100001,
-    "bPartnerId" : 1,
-    "isTransferPatient" : false,
-    "isIVTherapy" : false,
-    "careDegree" : 0,
-    "transferPatient" : false,
-    "ivtherapy" : false
+    "bPartnerAlbertaPatientId": 100001,
+    "bPartnerId": 1,
+    "careDegree": 0,
+    "isIVTherapy": false,
+    "isTransferPatient": false,
+    "ivtherapy": false,
+    "transferPatient": false
   }
 ]
