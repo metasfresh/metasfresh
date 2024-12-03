@@ -1,9 +1,11 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.IDocTypeDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -19,6 +21,7 @@ import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -28,7 +31,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_TaxCategory;
@@ -39,6 +41,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_BPartner;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
@@ -85,10 +88,14 @@ final class TestMasterdata
 
 	public void createDocType(final DocBaseAndSubType docBaseAndSubType)
 	{
-		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-		docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
-		docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
-		saveRecord(docTypeRecord);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
+				.ctx(Env.getCtx())
+				.name(docBaseAndSubType.toString())
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.glCategoryId(GLCategoryId.ofRepoId(123))
+				.build());
 	}
 
 	@Builder(builderMethodName = "prepareBPartnerAndLocation", builderClassName = "_BPartnerAndLocationBuilder")

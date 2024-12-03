@@ -4,6 +4,9 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -35,7 +38,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
-import de.metas.document.DocSubType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -80,6 +82,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -179,6 +182,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
@@ -187,6 +191,8 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
+		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
@@ -223,11 +229,9 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			testMasterdata.createSalesRep("SalesRep");
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_StandardOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder));
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}
@@ -614,7 +618,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 
 		final I_C_OLCand olCandRecord = load(olCand.getId(), I_C_OLCand.class);
 		assertThat(olCandRecord.getM_PricingSystem_ID()).isEqualByComparingTo(pricingSystemId.getRepoId());
@@ -699,7 +703,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -799,7 +803,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -917,7 +921,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -1043,7 +1047,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerLocationId.getBpartnerId().getRepoId(), expectedDropShipLocationId.getRepoId()));
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	/**
@@ -1059,7 +1063,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.ANY));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final JsonOLCandCreateRequest request = JsonOLCandUtil.loadJsonOLCandCreateRequest(RESOURCE_PATH + "OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
@@ -1091,7 +1095,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.ANY));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
 				.orgId(defaultOrgId)
