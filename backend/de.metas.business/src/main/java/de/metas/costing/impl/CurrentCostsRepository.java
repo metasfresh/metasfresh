@@ -16,6 +16,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostId;
+import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -29,6 +30,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -145,6 +147,42 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.addEqualsFilter(I_M_Cost.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId())
 				.addEqualsFilter(I_M_Cost.COLUMN_M_CostType_ID, costSegment.getCostTypeId())
 				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID, costSegment.getAcctSchemaId());
+	}
+
+	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
+	{
+		final IQueryBuilder<I_M_Cost> queryBuilder = queryBL.createQueryBuilder(I_M_Cost.class);
+
+		if (query.getClientId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Client_ID, query.getClientId());
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (!query.getProductIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Product_ID, query.getProductIds());
+		}
+		if (query.getAttributeSetInstanceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
+		}
+		if (query.getCostTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostType_ID, query.getCostTypeId());
+		}
+		if (query.getAcctSchemaId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+		}
+		if (!query.getCostElementIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, query.getCostElementIds());
+		}
+
+		return queryBuilder;
 	}
 
 	@Override
@@ -345,6 +383,18 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				InterfaceWrapperHelper.delete(costRecord);
 			}
 		});
+	}
+
+	@Override
+	public void updateUOMForProduct(final I_M_Product product)
+	{
+		final ICompositeQueryUpdater<I_M_Cost> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_M_Cost.class)
+				.addSetColumnValue(I_M_Cost.COLUMNNAME_C_UOM_ID, product.getC_UOM_ID());
+
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.update(queryUpdater));
 	}
 
 	private void forEachCostSegmentAndElement(
