@@ -40,6 +40,7 @@ DocumentNo]]>
 	</queryString>
 	<field name="iso_code" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
+	<field name="poreference" class="java.lang.String"/>
 	<field name="dateinvoiced" class="java.sql.Date"/>
 	<field name="dateacct" class="java.sql.Date"/>
 	<field name="netdays" class="java.math.BigDecimal"/>
@@ -143,7 +144,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{open_currency}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-102" x="135" y="0" width="123" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105"/>
+					<reportElement key="textField-102" x="169" y="0" width="90" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -248,7 +249,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-106" x="136" y="0" width="123" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
+					<reportElement key="textField-106" x="169" y="0" width="90" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -261,7 +262,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-105" x="91" y="0" width="45" height="12" uuid="dcb44f86-c136-4486-a3e9-99c25410903b"/>
+					<reportElement key="textField-105" x="129" y="0" width="40" height="12" uuid="dcb44f86-c136-4486-a3e9-99c25410903b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +288,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{paid_bpartner}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-102" x="45" y="0" width="46" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105"/>
+					<reportElement key="textField-102" x="89" y="0" width="40" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -383,7 +384,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$R{invoice}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-67" x="45" y="0" width="46" height="12" forecolor="#FFFFFF" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
+				<reportElement key="textField-67" x="89" y="0" width="40" height="12" forecolor="#FFFFFF" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -396,7 +397,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-68" x="91" y="0" width="45" height="12" forecolor="#FFFFFF" uuid="56fc55f7-e408-480c-82fb-c08909c1a770"/>
+				<reportElement key="textField-68" x="129" y="0" width="40" height="12" forecolor="#FFFFFF" uuid="56fc55f7-e408-480c-82fb-c08909c1a770"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -409,7 +410,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-69" x="136" y="0" width="123" height="12" forecolor="#FFFFFF" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
+				<reportElement key="textField-69" x="169" y="0" width="90" height="12" forecolor="#FFFFFF" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -571,7 +572,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-118" x="136" y="13" width="123" height="12" uuid="ab3ca240-f266-41bb-81e6-426a51426e67">
+				<reportElement key="textField-118" x="169" y="13" width="90" height="12" uuid="ab3ca240-f266-41bb-81e6-426a51426e67">
 					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -661,6 +662,19 @@ DocumentNo]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{instruction}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-66" x="45" y="0" width="44" height="12" forecolor="#FFFFFF" uuid="a9636665-00a9-45f2-9303-cf861e99e2fe"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{POReference}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -670,7 +684,7 @@ DocumentNo]]>
 		<band height="24" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<rectangle>
-				<reportElement key="rectangle-4" x="0" y="0" width="782" height="10" backcolor="#FFFFCC" uuid="5ad7fde6-8544-43fd-80f2-0d0dbba8345c">
+				<reportElement key="rectangle-4" stretchType="ContainerHeight" x="0" y="0" width="782" height="10" backcolor="#FFFFCC" uuid="5ad7fde6-8544-43fd-80f2-0d0dbba8345c">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{BPartner_COUNT}.intValue()%2)==1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -699,7 +713,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-104" x="45" y="-1" width="46" height="12" isRemoveLineWhenBlank="true" uuid="7fb32cf6-4457-4232-992b-5073a68ea260"/>
+				<reportElement key="textField-104" x="89" y="-1" width="40" height="12" isRemoveLineWhenBlank="true" uuid="7fb32cf6-4457-4232-992b-5073a68ea260"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -712,7 +726,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-105" x="91" y="-1" width="45" height="12" uuid="dcb44f86-c136-4486-a3e9-99c25410903b"/>
+				<reportElement key="textField-105" x="129" y="-1" width="40" height="12" uuid="dcb44f86-c136-4486-a3e9-99c25410903b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -725,7 +739,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-106" x="136" y="-1" width="123" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
+				<reportElement key="textField-106" x="169" y="-1" width="90" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -908,6 +922,19 @@ DocumentNo]]>
 				</textElement>
 				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-103" x="45" y="-1" width="44" height="12" uuid="e1421581-c856-48db-9c9a-c1e26478bdd8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{poreference}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
@@ -955,7 +982,7 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-120" x="135" y="0" width="123" height="12" uuid="dcb0f44c-dfdd-466e-ad15-b6a771774fcd"/>
+				<reportElement key="textField-120" x="169" y="0" width="90" height="12" uuid="dcb0f44c-dfdd-466e-ad15-b6a771774fcd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
