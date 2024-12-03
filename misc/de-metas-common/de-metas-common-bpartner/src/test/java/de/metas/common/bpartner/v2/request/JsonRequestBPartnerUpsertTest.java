@@ -29,7 +29,7 @@ import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestContact;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SnapshotExtension.class)
 public class JsonRequestBPartnerUpsertTest
 {
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 	private Expect expect;
 	
 	@Test

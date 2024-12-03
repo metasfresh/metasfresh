@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
@@ -38,8 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SnapshotExtension.class)
 public class JsonRequestBPartnerUpsertItemTest
 {
-
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 	private Expect expect;
 
 	@Test

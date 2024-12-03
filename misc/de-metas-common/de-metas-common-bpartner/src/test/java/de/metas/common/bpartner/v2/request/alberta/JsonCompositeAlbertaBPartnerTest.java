@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
@@ -42,14 +42,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SnapshotExtension.class)
 public class JsonCompositeAlbertaBPartnerTest
 {
+	private Expect expect;
 	private final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
-
-	private Expect expect;
-
 
 	@Test
 	public void serializeDeserialize() throws IOException

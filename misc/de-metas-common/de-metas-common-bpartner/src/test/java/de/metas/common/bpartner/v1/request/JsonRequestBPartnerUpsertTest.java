@@ -27,7 +27,7 @@ import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SnapshotExtension.class)
 public class JsonRequestBPartnerUpsertTest
 {
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 	private Expect expect;
 	
 	@Test

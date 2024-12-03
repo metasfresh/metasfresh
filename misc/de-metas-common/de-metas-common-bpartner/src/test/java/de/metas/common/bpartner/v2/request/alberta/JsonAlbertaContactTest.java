@@ -28,15 +28,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.time.Instant;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static shadow.org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SnapshotExtension.class)
+@ExtendWith({SnapshotExtension.class})
 public class JsonAlbertaContactTest
 {
 	private Expect expect;
