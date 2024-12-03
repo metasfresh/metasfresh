@@ -684,7 +684,7 @@ DocumentNo]]>
 		<band height="24" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<rectangle>
-				<reportElement key="rectangle-4" x="0" y="0" width="782" height="10" backcolor="#FFFFCC" uuid="5ad7fde6-8544-43fd-80f2-0d0dbba8345c">
+				<reportElement key="rectangle-4" stretchType="ContainerHeight" x="0" y="0" width="782" height="10" backcolor="#FFFFCC" uuid="5ad7fde6-8544-43fd-80f2-0d0dbba8345c">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{BPartner_COUNT}.intValue()%2)==1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
