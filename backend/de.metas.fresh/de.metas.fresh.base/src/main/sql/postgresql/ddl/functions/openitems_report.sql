@@ -1,10 +1,29 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
-                                                                            character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
+(
+    date
+)
 ;
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
+(
+    Reference_Date date,
+    switchDate     character varying
+)
+;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN p_Reference_Date date DEFAULT NOW(),
-                                                                               IN p_SwitchDate     character varying DEFAULT 'N')
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
+(
+    Reference_Date  date,
+    switchDate      character varying,
+    p_C_BPartner_ID numeric(10)
+)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(
+    IN p_Reference_Date date = NOW(), -- 1
+    IN p_switchDate     character varying = 'N', -- 2
+    IN p_C_BPartner_ID  numeric(10) = NULL -- 3
+)
     RETURNS table
             (
                 CurrencyCode          char(3),
@@ -96,39 +115,43 @@ FROM (SELECT i.AD_Org_ID,
                      FROM C_PaySelectionLine psl
                               JOIN C_PaySelection ps ON psl.C_PaySelection_ID = ps.C_PaySelection_ID
                      WHERE ps.docstatus IN ('CO', 'CL')
-                       AND psl.C_Invoice_ID = i.C_Invoice_ID
-                       AND psl.isActive = 'Y')                                                                                 AS IsInPaySelection,
-             COALESCE(p.NetDays, DaysBetween(ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone)) AS NetDays,
+                       AND psl.C_Invoice_ID = i.C_Invoice_ID)                                                                AS IsInPaySelection,
+             COALESCE(p.NetDays, DaysBetween(i.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone)) AS NetDays,
              p.DiscountDays,
-             COALESCE(PaymentTermDueDate(p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone), ips.DueDate)           AS DueDate,
+             i.DueDate                                                                                                       AS DueDate,
              COALESCE(
-                     PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, p_Reference_Date),
+                     EXTRACT(DAY FROM (TRUNC(p_Reference_Date) - i.DueDate)),
                      DaysBetween(p_Reference_Date, ips.DueDate::timestamp with time zone)
-             )                                                                                                                 AS DaysDue,
-             COALESCE(AddDays(i.DateInvoiced::timestamp with time zone, p.DiscountDays), ips.DiscountDate)                     AS DiscountDate,
-             COALESCE(ROUND(i.GrandTotal * p.Discount / 100::numeric, 2), ips.DiscountAmt)                                     AS DiscountAmt,
-             COALESCE(ips.DueAmt, i.GrandTotal)                                                                                AS GrandTotal,
+             )::integer                                                                                                      AS DaysDue,
+             COALESCE(AddDays(i.DateInvoiced::timestamp with time zone, p.DiscountDays), ips.DiscountDate)                   AS DiscountDate,
+             COALESCE(ROUND(i.GrandTotal * p.Discount / 100::numeric, 2), ips.DiscountAmt)                                   AS DiscountAmt,
+             COALESCE(ips.DueAmt, i.GrandTotal)                                                                              AS GrandTotal,
 
              (SELECT openamt
               FROM invoiceOpenToDate(
                       i.C_Invoice_ID
                   , COALESCE(ips.C_InvoicePaySchedule_ID, 0::numeric)
-                  , (CASE WHEN p_SwitchDate = 'Y' THEN 'A' ELSE 'T' END)
-                  , p_Reference_Date))                                                                                         AS OpenAmt,
+                  , (CASE WHEN p_switchDate = 'Y' THEN 'A' ELSE 'T' END)
+                  , p_Reference_Date))                                                                                       AS OpenAmt,
              i.InvoiceCollectionType,
              i.C_Currency_ID,
              i.C_Invoice_ID,
              i.MultiplierAP,
-             c.C_Currency_ID                                                                                                   AS main_currency,
-             c.iso_code                                                                                                        AS main_iso_code
+             c.C_Currency_ID                                                                                                 AS main_currency,
+             c.iso_code                                                                                                      AS main_iso_code
       FROM C_Invoice_v i
                LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
                LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
                LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = i.ad_client_id
                LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID = c.C_Currency_ID
+
+
       WHERE TRUE
-        AND i.DocStatus IN ('CO', 'CL', 'RE')) AS oi
+        AND i.DocStatus IN ('CO', 'CL', 'RE')
+        AND (p_C_BPartner_ID IS NULL OR i.C_BPartner_ID = p_C_BPartner_ID)
+         --
+     ) AS oi
          INNER JOIN C_BPartner bp ON oi.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_Currency c ON oi.C_Currency_ID = c.C_Currency_ID
 WHERE TRUE
