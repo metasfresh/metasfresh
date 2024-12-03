@@ -49,12 +49,24 @@ class M_Product
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Product.COLUMNNAME_C_UOM_ID)
 	public void assertNoCosts(final I_M_Product product)
 	{
+		assertNoCost(product);
+	}
+
+	private void assertNoCost(final I_M_Product product)
+	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
 		if (costDetailsService.hasCostDetailsForProductId(productId))
 		{
 			throw new AdempiereException("@CannotDeleteProductsWithCostDetails@");
 		}
+	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Product.COLUMNNAME_C_UOM_ID)
+	public void updateCostUom(final I_M_Product product)
+	{
+		assertNoCost(product);
+		currentCostsRepository.updateUOMForProduct(product);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Product.COLUMNNAME_M_Product_Category_ID)
