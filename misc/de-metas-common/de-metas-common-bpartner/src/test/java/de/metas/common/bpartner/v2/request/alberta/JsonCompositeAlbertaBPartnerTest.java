@@ -22,23 +22,24 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class JsonCompositeAlbertaBPartnerTest
 {
 	private final ObjectMapper mapper = new ObjectMapper()
@@ -47,11 +48,8 @@ public class JsonCompositeAlbertaBPartnerTest
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
-	@BeforeClass
-	public static void beforeAll()
-	{
-		start();
-	}
+	private Expect expect;
+
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -104,6 +102,6 @@ public class JsonCompositeAlbertaBPartnerTest
 		final JsonCompositeAlbertaBPartner result = mapper.readValue(string, JsonCompositeAlbertaBPartner.class);
 
 		assertThat(result).isEqualTo(compositeAlbertaBPartner);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

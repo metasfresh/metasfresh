@@ -1,18 +1,18 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
-import org.adempiere.test.SnapshotHelper;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -22,9 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 /*
@@ -49,22 +46,11 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 public class Invoice440RequestConversionServiceTest
 {
-
 	private Invoice440RequestConversionService invoice440RequestConversionService;
-
-	@BeforeClass
-	public static void initStatic()
-	{
-		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
-	}
-
-	@AfterClass
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@Before
 	public void init()
@@ -177,7 +163,7 @@ public class Invoice440RequestConversionServiceTest
 	{
 		final String exportXmlString = new String(outputStream.toByteArray());
 
-		expect(exportXmlString).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	@Test
