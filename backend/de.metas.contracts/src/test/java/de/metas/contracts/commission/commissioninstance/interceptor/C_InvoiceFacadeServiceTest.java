@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.GLCategoryId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.business.TestInvoice;
@@ -174,6 +175,7 @@ class C_InvoiceFacadeServiceTest
 									   .ctx(Env.getCtx())
 									   .name("creditmemo")
 									   .docBaseType(DocBaseType.SalesCreditMemo)
+						.glCategoryId(GLCategoryId.ofRepoId(123))
 									   .build());
 
 		HierarchyCommissionConfigFactoryTest.flatrateConditionsBuilder()
