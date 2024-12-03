@@ -4,6 +4,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.ProductConstants;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.impl.ProductDAO;
@@ -55,7 +56,6 @@ public class M_Product
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
-	private static final AdMessageKey MSG_PRODUCT_ALREADY_USED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.MSG_PRODUCT_ALREADY_USED");
 
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
@@ -148,7 +148,7 @@ public class M_Product
 	{
 		if (productBL.isProductUsed(productId))
 		{
-			return Optional.of(MSG_PRODUCT_ALREADY_USED);
+			return Optional.of(ProductConstants.MSG_PRODUCT_ALREADY_USED);
 		}
 
 		return Optional.empty();
