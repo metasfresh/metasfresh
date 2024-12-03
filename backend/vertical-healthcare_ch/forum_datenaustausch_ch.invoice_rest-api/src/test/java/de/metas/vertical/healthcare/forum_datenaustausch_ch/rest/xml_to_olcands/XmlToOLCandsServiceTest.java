@@ -34,7 +34,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Impor
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,7 +47,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
-public class XmlToOLCandsServiceTest
+class XmlToOLCandsServiceTest
 {
 	private Expect expect;
 
@@ -63,7 +63,7 @@ public class XmlToOLCandsServiceTest
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",

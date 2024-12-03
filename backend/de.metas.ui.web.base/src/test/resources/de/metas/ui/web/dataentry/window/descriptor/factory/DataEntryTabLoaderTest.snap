@@ -84,7 +84,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1111",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -113,7 +112,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1111_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -179,7 +177,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1112",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -208,7 +205,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1112_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -266,7 +262,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1113",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -295,7 +290,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1113_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -377,7 +371,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1121",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -406,7 +399,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1121_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -464,7 +456,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1122",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -493,7 +484,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1122_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -551,7 +541,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1123",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -580,7 +569,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1123_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -694,7 +682,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1211",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -723,7 +710,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1211_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -789,7 +775,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1212",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -818,7 +803,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1212_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -876,7 +860,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1213",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -905,7 +888,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1213_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -987,7 +969,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1221",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1016,7 +997,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1221_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1074,7 +1054,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1222",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1103,7 +1082,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1222_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1161,7 +1139,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                       "value": ""
                                     },
                                     "field": "1223",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1190,7 +1167,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "field": "1223_Info",
                                     "fieldType": "Tooltip",
-                                    "forbidNewRecordCreation": false,
                                     "listNullItemCaption": {
                                       "defaultValue": "none",
                                       "trlMap": {
@@ -1780,7 +1756,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       },
       "detailId": "DataEntry_Tab-1",
       "displayLogic": "1=1",
-      "documentDecorators": [ ],
       "documentType": "Window",
       "documentTypeId": "5",
       "fields": { },
@@ -1814,14 +1789,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "detailId": "DataEntry_SubTab-11",
           "displayLogic": "1=1",
-          "documentDecorators": [ ],
           "documentType": "Window",
           "documentTypeId": "5",
           "fields": {
             "1111": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1852,13 +1825,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1111",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1871,7 +1842,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1111_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1902,13 +1872,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1111_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1921,7 +1889,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1112": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1952,13 +1919,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1112",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1971,7 +1936,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1112_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2002,13 +1966,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1112_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2021,7 +1983,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1113": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2052,13 +2013,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1113",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2071,7 +2030,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1113_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2102,13 +2060,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1113_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2121,7 +2077,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1121": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2152,13 +2107,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1121",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2171,7 +2124,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1121_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2202,13 +2154,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1121_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2221,7 +2171,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1122": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": true,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2252,13 +2201,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1122",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2271,7 +2218,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1122_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2302,13 +2248,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1122_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2321,7 +2265,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1123": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2352,7 +2295,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1123",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "lookupDescriptor": {
@@ -2393,7 +2335,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": true
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2406,7 +2347,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1123_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2437,13 +2377,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1123_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2456,7 +2394,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "DataEntry_SubTab_ID": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2486,13 +2423,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "DataEntry_SubTab_ID",
-              "forbidNewRecordCreation": false,
               "key": true,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -2505,7 +2440,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "documentLinkColumnName": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2535,13 +2469,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "documentLinkColumnName",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=1",
-              "minPrecision": 0,
               "parentLink": true,
               "parentLinkFieldName": "documentLinkColumnName",
               "readonlyLogic": "1=1",
@@ -2559,7 +2491,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2589,13 +2520,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "DataEntry_SubTab_ID",
-              "forbidNewRecordCreation": false,
               "key": true,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -2611,7 +2540,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "parentLinkField": {
             "allowShowPassword": false,
             "alwaysUpdateable": false,
-            "booleanWidgetType": false,
             "calculated": false,
             "callouts": [ ],
             "caption": {
@@ -2641,13 +2569,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "displayLogic": "1=0",
             "fieldMaxLength": 0,
             "fieldName": "documentLinkColumnName",
-            "forbidNewRecordCreation": false,
             "key": false,
             "lookupDescriptorProvider": {
               "numericKey": false
             },
             "mandatoryLogic": "1=1",
-            "minPrecision": 0,
             "parentLink": true,
             "parentLinkFieldName": "documentLinkColumnName",
             "readonlyLogic": "1=1",
@@ -2659,7 +2585,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "widgetType": "Integer"
           },
           "printable": false,
-          "queryIfNoFilters": true,
           "readonlyLogic": "1=0",
           "refreshViewOnChangeEvents": false,
           "soTrx": null,
@@ -2691,14 +2616,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "detailId": "DataEntry_SubTab-12",
           "displayLogic": "1=1",
-          "documentDecorators": [ ],
           "documentType": "Window",
           "documentTypeId": "5",
           "fields": {
             "1211": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2729,13 +2652,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1211",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2748,7 +2669,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1211_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2779,13 +2699,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1211_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2798,7 +2716,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1212": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2829,13 +2746,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1212",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2848,7 +2763,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1212_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2879,13 +2793,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1212_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2898,7 +2810,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1213": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2929,13 +2840,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1213",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2948,7 +2857,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1213_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2979,13 +2887,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1213_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2998,7 +2904,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1221": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3029,13 +2934,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1221",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3048,7 +2951,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1221_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3079,13 +2981,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1221_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3098,7 +2998,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1222": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": true,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3129,13 +3028,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1222",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3148,7 +3045,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1222_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3179,13 +3075,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1222_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3198,7 +3092,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1223": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3229,7 +3122,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1223",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "lookupDescriptor": {
@@ -3270,7 +3162,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": true
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3283,7 +3174,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1223_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3314,13 +3204,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=1",
               "fieldMaxLength": 0,
               "fieldName": "1223_Info",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3333,7 +3221,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "DataEntry_SubTab_ID": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3363,13 +3250,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "DataEntry_SubTab_ID",
-              "forbidNewRecordCreation": false,
               "key": true,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -3382,7 +3267,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "documentLinkColumnName": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3412,13 +3296,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "documentLinkColumnName",
-              "forbidNewRecordCreation": false,
               "key": false,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=1",
-              "minPrecision": 0,
               "parentLink": true,
               "parentLinkFieldName": "documentLinkColumnName",
               "readonlyLogic": "1=1",
@@ -3436,7 +3318,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
-              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3466,13 +3347,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "displayLogic": "1=0",
               "fieldMaxLength": 0,
               "fieldName": "DataEntry_SubTab_ID",
-              "forbidNewRecordCreation": false,
               "key": true,
               "lookupDescriptorProvider": {
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
-              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -3488,7 +3367,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "parentLinkField": {
             "allowShowPassword": false,
             "alwaysUpdateable": false,
-            "booleanWidgetType": false,
             "calculated": false,
             "callouts": [ ],
             "caption": {
@@ -3518,13 +3396,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "displayLogic": "1=0",
             "fieldMaxLength": 0,
             "fieldName": "documentLinkColumnName",
-            "forbidNewRecordCreation": false,
             "key": false,
             "lookupDescriptorProvider": {
               "numericKey": false
             },
             "mandatoryLogic": "1=1",
-            "minPrecision": 0,
             "parentLink": true,
             "parentLinkFieldName": "documentLinkColumnName",
             "readonlyLogic": "1=1",
@@ -3536,7 +3412,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "widgetType": "Integer"
           },
           "printable": false,
-          "queryIfNoFilters": true,
           "readonlyLogic": "1=0",
           "refreshViewOnChangeEvents": false,
           "soTrx": null,
@@ -3545,7 +3420,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       },
       "internalName": "dataEntryTab_internalName",
       "printable": false,
-      "queryIfNoFilters": true,
       "readonlyLogic": "1=0",
       "refreshViewOnChangeEvents": false,
       "soTrx": null,
