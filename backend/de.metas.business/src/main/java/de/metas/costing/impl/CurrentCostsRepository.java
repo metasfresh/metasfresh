@@ -29,6 +29,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -345,6 +346,18 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				InterfaceWrapperHelper.delete(costRecord);
 			}
 		});
+	}
+
+	@Override
+	public void updateUOMForProduct(final I_M_Product product)
+	{
+		final ICompositeQueryUpdater<I_M_Cost> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_M_Cost.class)
+				.addSetColumnValue(I_M_Cost.COLUMNNAME_C_UOM_ID, product.getC_UOM_ID());
+
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.update(queryUpdater));
 	}
 
 	private void forEachCostSegmentAndElement(
