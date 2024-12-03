@@ -73,4 +73,5 @@ FROM C_Invoice i
 WHERE i.C_Invoice_ID = p_Invoice_ID
 
 $$
-LANGUAGE sql STABLE;
+    LANGUAGE sql STABLE
+;
