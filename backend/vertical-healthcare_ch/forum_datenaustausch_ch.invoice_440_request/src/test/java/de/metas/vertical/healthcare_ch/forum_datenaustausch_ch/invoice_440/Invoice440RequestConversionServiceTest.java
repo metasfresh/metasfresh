@@ -8,10 +8,9 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
@@ -49,11 +48,12 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
 @ExtendWith(SnapshotExtension.class)
 public class Invoice440RequestConversionServiceTest
 {
-	private Invoice440RequestConversionService invoice440RequestConversionService;
+
+	private static Invoice440RequestConversionService invoice440RequestConversionService;
 	private Expect expect;
 
-	@Before
-	public void init()
+	@BeforeAll
+	public static void init()
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
 		invoice440RequestConversionService.setUsePrettyPrint(true);
@@ -61,7 +61,6 @@ public class Invoice440RequestConversionServiceTest
 
 	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
 	@Test
-	@Ignore
 	public void localFile()
 	{
 		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
@@ -156,7 +155,9 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
-		assertExportMatchesSnapshot(outputStream);
+
+		final String exportXmlString = new String(outputStream.toByteArray());
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	private void assertExportMatchesSnapshot(final ByteArrayOutputStream outputStream)
@@ -215,6 +216,6 @@ public class Invoice440RequestConversionServiceTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 }

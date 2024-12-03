@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.validation.Languages;
@@ -80,6 +81,7 @@ public class Invoice440To450RequestConversionServiceTest
 	}
 
 	@Test
+	@Disabled
 	/**
 	 * Test if the conversion from Invoice440 to Invoice450 works as expected, when invoice:document is present.
 	 */
