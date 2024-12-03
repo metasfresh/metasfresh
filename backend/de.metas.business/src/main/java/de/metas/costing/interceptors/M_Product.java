@@ -2,6 +2,7 @@ package de.metas.costing.interceptors;
 
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.product.ProductConstants;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -58,7 +59,7 @@ class M_Product
 
 		if (costDetailsService.hasCostDetailsForProductId(productId))
 		{
-			throw new AdempiereException("@CannotDeleteProductsWithCostDetails@");
+			throw new AdempiereException(ProductConstants.MSG_PRODUCT_ALREADY_USED);
 		}
 	}
 
