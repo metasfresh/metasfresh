@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Detai
                 P_Cond            text,
                 paymentrule       character varying(60),
                 textcenter        text,
-                p_term            character varying(60),
+                paymentterm       character varying(60),
                 discount1         numeric,
                 discount2         numeric,
                 discount_date1    text,
@@ -44,7 +44,7 @@ SELECT i.descriptionbottom,
                ELSE ''
        END || COALESCE(dtt.documentnote, dt.documentnote)                                             AS textcenter,
 
-       COALESCE(ptt.name, pt.name)                                                                    AS p_term,
+       COALESCE(ptt.name, pt.name)                                                                    AS paymentterm,
        (CASE WHEN pt.DiscountDays > 0 THEN (i.grandtotal - (i.grandtotal * pt.discount / 100)) END)   AS discount1,
        (CASE WHEN pt.DiscountDays2 > 0 THEN (i.grandtotal - (i.grandtotal * pt.discount2 / 100)) END) AS discount2,
        TO_CHAR((i.DateInvoiced + DiscountDays), 'dd.MM.YYYY')                                         AS discount_date1,
