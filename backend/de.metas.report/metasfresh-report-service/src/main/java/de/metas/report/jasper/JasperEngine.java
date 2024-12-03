@@ -303,6 +303,7 @@ public class JasperEngine extends AbstractReportEngine
 				return ReportResult.builder()
 						.outputType(outputType)
 						.reportContentBase64(Util.encodeBase64(data))
+						// do not provide a filename because ReportStarter.extractReportFilename will do a better job of it
 						.build();
 			}
 			else if (OutputType.HTML == outputType)
