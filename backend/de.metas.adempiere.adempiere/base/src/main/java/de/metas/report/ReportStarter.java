@@ -137,7 +137,7 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = CoalesceUtil.coalesce(
+				outputType = CoalesceUtil.coalesceNotNull(
 						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
 						processInfo.getJRDesiredOutputType(),
 						desiredOutputType,
