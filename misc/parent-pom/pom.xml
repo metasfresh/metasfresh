@@ -80,6 +80,18 @@
     </modules>
 
     <dependencies>
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-junit5</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-plugin-jackson</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Using our own artifact, see
             https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
             and

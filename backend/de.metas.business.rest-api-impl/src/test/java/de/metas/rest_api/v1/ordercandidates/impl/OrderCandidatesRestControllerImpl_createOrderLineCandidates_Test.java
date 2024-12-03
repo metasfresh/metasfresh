@@ -1,5 +1,6 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -148,9 +149,8 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  * #L%
  */
 
-@ExtendWith(AdempiereTestWatcher.class)
-public class
-OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
+@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
+public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
 			.atTime(LocalTime.parse("23:07:16.193"))
