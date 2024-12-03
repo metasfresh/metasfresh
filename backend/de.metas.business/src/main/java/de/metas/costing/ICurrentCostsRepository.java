@@ -57,5 +57,7 @@ public interface ICurrentCostsRepository
 
 	List<CurrentCost> getByCostSegmentAndCostElements(CostSegment costSegment, Set<CostElementId> costElementIds);
 
+	void updateUOMForProduct(I_M_Product product);
+
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
 }
