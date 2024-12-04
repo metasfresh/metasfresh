@@ -12,7 +12,9 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -41,9 +43,11 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		this.evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
 	}
 
-	public ValidationRuleQueryFilter(@NonNull final Object model, final int adValRuleId)
+	public ValidationRuleQueryFilter(@NonNull final String tableName, @NonNull final AdValRuleId adValRuleId)
 	{
-		this(model, AdValRuleId.ofRepoId(adValRuleId));
+		this.tableName = tableName;
+		this.adValRuleId = adValRuleId;
+		this.evaluatee = Evaluatees.ofCtx(Env.getCtx());
 	}
 
 	@Override
@@ -70,7 +74,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		if (prefilterWhereClauseExpr.isNoResult(prefilterWhereClause))
 		{
 			final String prefilterWhereClauseDefault = "1=0";
-			logger.warn("Cannot evaluate {} using {}. Returing {}.", prefilterWhereClauseExpr, evalCtx, prefilterWhereClauseDefault);
+			logger.warn("Cannot evaluate {} using {}. Returning {}.", prefilterWhereClauseExpr, evalCtx, prefilterWhereClauseDefault);
 			return prefilterWhereClauseDefault;
 		}
 

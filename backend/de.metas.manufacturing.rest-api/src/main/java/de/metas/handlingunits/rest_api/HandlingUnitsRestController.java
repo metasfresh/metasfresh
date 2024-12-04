@@ -320,6 +320,19 @@ public class HandlingUnitsRestController
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 
+	@PostMapping("/huLabels/print")
+	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		handlingUnitsService.printHULabels(request);
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
+	}
+
 	@Deprecated
 	@PutMapping("/byId/{M_HU_ID}/qty")
 	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(

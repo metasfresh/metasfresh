@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.TableRefInfo;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
@@ -105,9 +106,10 @@ public class ValRuleAutoApplier
 		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(tableRefInfo.getTableName());
 
-		if (column.getAD_Val_Rule_ID() > 0)
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID());
+		if (adValRuleId != null)
 		{
-			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, column.getAD_Val_Rule_ID());
+			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, adValRuleId);
 			queryBuilder.filter(validationRuleQueryFilter);
 		}
 		final IQuery<Object> query = queryBuilder
