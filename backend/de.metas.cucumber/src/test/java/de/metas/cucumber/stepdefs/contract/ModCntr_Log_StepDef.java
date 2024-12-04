@@ -101,7 +101,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefUtil.writeRowAsString;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class ModCntr_Log_StepDef
@@ -541,7 +541,7 @@ public class ModCntr_Log_StepDef
 				final IQueryFilter<I_C_Flatrate_Term> filter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 						.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID());
 
-				recomputeLogsService.recomputeForFlatrate(filter);
+				recomputeLogsService.recomputeForFlatrateInNewTrx(filter);
 			}
 			case I_M_Shipping_Notification.Table_Name ->
 			{
