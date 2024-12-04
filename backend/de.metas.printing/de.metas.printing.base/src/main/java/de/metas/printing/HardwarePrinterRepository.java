@@ -22,14 +22,20 @@
 
 package de.metas.printing;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.cache.CCache;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.util.List;
 
 @Repository
 public class HardwarePrinterRepository
@@ -44,24 +50,60 @@ public class HardwarePrinterRepository
 
 	public HardwarePrinter getById(@NonNull final HardwarePrinterId id)
 	{
-		return cache.getOrLoad(id, key -> getById0(key));
+		return cache.getOrLoad(id, this::retrieveById);
 	}
 
-	private HardwarePrinter getById0(@NonNull final HardwarePrinterId id)
+	private HardwarePrinter retrieveById(@NonNull final HardwarePrinterId id)
 	{
-		final I_AD_PrinterHW adPrinterHW = printingDAO.retrieveHardwarePrinter(id);
+		final I_AD_PrinterHW printerRecord = printingDAO.retrieveHardwarePrinter(id);
+		final List<I_AD_PrinterHW_MediaTray> trayRecords = printingDAO.retrieveMediaTrays(id);
 
-		final HardwarePrinter.HardwarePrinterBuilder printer = HardwarePrinter.builder()
-				.id(id)
-				.name(adPrinterHW.getName())
-				.outputType(OutputType.ofCode(adPrinterHW.getOutputType()))
-				.externalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(adPrinterHW.getExternalSystem_Config_ID()));
-
-		for (final I_AD_PrinterHW_MediaTray printerHWMediaTray : printingDAO.retrieveMediaTrays(id))
-		{
-			final HardwareTrayId trayId = HardwareTrayId.ofRepoId(id, printerHWMediaTray.getAD_PrinterHW_MediaTray_ID());
-			printer.tray(new HardwareTray(trayId, printerHWMediaTray.getName(), printerHWMediaTray.getTrayNumber()));
-		}
-		return printer.build();
+		return fromRecord(printerRecord, trayRecords);
 	}
+
+	public static void validateOnBeforeSave(@NonNull final I_AD_PrinterHW printerRecord)
+	{
+		fromRecord(printerRecord, ImmutableList.of());
+	}
+
+	@NonNull
+	private static HardwarePrinter fromRecord(
+			@NonNull final I_AD_PrinterHW printerRecord,
+			@NonNull final List<I_AD_PrinterHW_MediaTray> trayRecords)
+	{
+		return HardwarePrinter.builder()
+				.id(HardwarePrinterId.ofRepoId(printerRecord.getAD_PrinterHW_ID()))
+				.name(printerRecord.getName())
+				.outputType(OutputType.ofCode(printerRecord.getOutputType()))
+				.externalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(printerRecord.getExternalSystem_Config_ID()))
+				.ippUrl(extractIPPUrl(printerRecord))
+				.trays(trayRecords.stream()
+						.map(HardwarePrinterRepository::fromRecord)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@Nullable
+	private static URI extractIPPUrl(final @NonNull I_AD_PrinterHW printerRecord)
+	{
+		final String ippUrl = StringUtils.trimBlankToNull(printerRecord.getIPP_URL());
+		if (ippUrl == null)
+		{
+			return null;
+		}
+		return URI.create(ippUrl);
+	}
+
+	@NonNull
+	private static HardwareTray fromRecord(@NonNull final I_AD_PrinterHW_MediaTray trayRecord)
+	{
+		final HardwareTrayId trayId = HardwareTrayId.ofRepoId(trayRecord.getAD_PrinterHW_ID(), trayRecord.getAD_PrinterHW_MediaTray_ID());
+		return new HardwareTray(trayId, trayRecord.getName(), trayRecord.getTrayNumber());
+	}
+
+	public void deleteCalibrations(@NonNull final HardwarePrinterId printerId) {printingDAO.deleteCalibrations(printerId);}
+
+	public void deleteMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId) {printingDAO.deleteMediaTrays(hardwarePrinterId);}
+
+	public void deleteMediaSizes(@NonNull final HardwarePrinterId hardwarePrinterId) {printingDAO.deleteMediaSizes(hardwarePrinterId);}
 }

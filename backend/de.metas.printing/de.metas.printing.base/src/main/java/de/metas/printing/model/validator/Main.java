@@ -8,6 +8,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.async.spi.impl.AutomaticallyInvoicePdfPrintinAsyncBatchListener;
@@ -40,6 +41,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -54,6 +56,7 @@ import java.util.Properties;
 public class Main extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(Main.class);
+	@NonNull private final HardwarePrinterRepository hardwarePrinterRepository = SpringContextHolder.instance.getBean(HardwarePrinterRepository.class);
 
 	private Boolean enabled;
 	private boolean loggedThatPrintingIsNotEnabled = false;
@@ -128,7 +131,7 @@ public class Main extends AbstractModuleInterceptor
 		//engine.addModelValidator(new AD_Printer_Config()); added by spring
 		engine.addModelValidator(new AD_Printer_Matching());
 		engine.addModelValidator(new AD_PrinterRouting());
-		engine.addModelValidator(new AD_PrinterHW());
+		engine.addModelValidator(new AD_PrinterHW(hardwarePrinterRepository));
 		engine.addModelValidator(new AD_PrinterHW_Calibration());
 		engine.addModelValidator(new AD_PrinterHW_MediaTray());
 		engine.addModelValidator(new AD_PrinterTray_Matching());

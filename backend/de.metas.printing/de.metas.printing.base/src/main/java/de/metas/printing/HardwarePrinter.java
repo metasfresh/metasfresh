@@ -33,19 +33,17 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 
 @Value
 public class HardwarePrinter
 {
-	HardwarePrinterId id;
-
-	String name;
-
-	OutputType outputType;
-
+	@NonNull HardwarePrinterId id;
+	@NonNull String name;
+	@NonNull OutputType outputType;
 	@Nullable ExternalSystemParentConfigId externalSystemParentConfigId;
-
-	ImmutableMap<HardwareTrayId, HardwareTray> trays;
+	@Nullable URI ippUrl;
+	@NonNull ImmutableMap<HardwareTrayId, HardwareTray> trays;
 
 	@Builder
 	private HardwarePrinter(
@@ -53,12 +51,14 @@ public class HardwarePrinter
 			@NonNull final String name,
 			@NonNull final OutputType outputType,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
+			@Nullable final URI ippUrl,
 			@Singular final ImmutableList<HardwareTray> trays)
 	{
 		this.id = id;
 		this.name = name;
 		this.outputType = outputType;
 		this.externalSystemParentConfigId = externalSystemParentConfigId;
+		this.ippUrl = ippUrl;
 		this.trays = Maps.uniqueIndex(trays, HardwareTray::getId);
 	}
 

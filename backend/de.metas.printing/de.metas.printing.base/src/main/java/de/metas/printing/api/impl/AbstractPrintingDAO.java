@@ -174,30 +174,30 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final void removeMediaSizes(final List<I_AD_PrinterHW_MediaSize> sizes)
+	public void deleteCalibrations(@NonNull final HardwarePrinterId hardwarePrinterId)
 	{
-		for (final I_AD_PrinterHW_MediaSize si : sizes)
-		{
-			InterfaceWrapperHelper.delete(si);
-		}
+		queryBL.createQueryBuilder(I_AD_PrinterHW_Calibration.class)
+				.addEqualsFilter(I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
+				.create()
+				.delete();
 	}
 
 	@Override
-	public final void removeCalibrations(final List<I_AD_PrinterHW_Calibration> calibrations)
+	public void deleteMediaSizes(@NonNull HardwarePrinterId hardwarePrinterId)
 	{
-		for (final I_AD_PrinterHW_Calibration cal : calibrations)
-		{
-			InterfaceWrapperHelper.delete(cal);
-		}
+		queryBL.createQueryBuilder(I_AD_PrinterHW_MediaSize.class)
+				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
+				.create()
+				.delete();
 	}
 
 	@Override
-	public final void removeMediaTrays(final List<I_AD_PrinterHW_MediaTray> trays)
+	public final void deleteMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId)
 	{
-		for (final I_AD_PrinterHW_MediaTray tr : trays)
-		{
-			InterfaceWrapperHelper.delete(tr);
-		}
+		queryBL.createQueryBuilder(I_AD_PrinterHW_MediaTray.class, hardwarePrinterId)
+				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
+				.create()
+				.delete();
 	}
 
 	@Nullable

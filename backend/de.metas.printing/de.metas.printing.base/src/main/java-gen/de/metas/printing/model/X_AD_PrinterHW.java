@@ -89,6 +89,18 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	}
 
 	@Override
+	public void setIPP_URL (final @Nullable java.lang.String IPP_URL)
+	{
+		set_Value (COLUMNNAME_IPP_URL, IPP_URL);
+	}
+
+	@Override
+	public java.lang.String getIPP_URL() 
+	{
+		return get_ValueAsString(COLUMNNAME_IPP_URL);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_ValueNoCheck (COLUMNNAME_Name, Name);
