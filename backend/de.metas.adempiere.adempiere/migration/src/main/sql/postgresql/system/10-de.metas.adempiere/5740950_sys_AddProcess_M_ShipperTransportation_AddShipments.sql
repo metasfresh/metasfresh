@@ -121,3 +121,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,734071,0,540097,540666,627381,'F',TO_TIMESTAMP('2024-12-04 10:25:23.185','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','N','Y','N','N','TU Anzahl',5,60,0,TO_TIMESTAMP('2024-12-04 10:25:23.185','YYYY-MM-DD HH24:MI:SS.US'),100,'L')
 ;
 
+
+-- Value: M_ShipperTransportation_AddShipments
+-- Classname: de.metas.handlingunits.shipping.process.M_ShipperTransportation_AddShipments
+-- 2024-12-04T13:35:17.200Z
+UPDATE AD_Process SET EntityType='METAS_SHIPPING', IsFormatExcelFile='N',Updated=TO_TIMESTAMP('2024-12-04 15:35:17.199','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585438
+;
+

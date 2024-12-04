@@ -40,7 +40,7 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 	{
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(ShipperTransportationId.ofRepoId(getRecord_ID()));
 
-		final ImmutableList<InOutId> inOutIds = inOutDAO.retrieveShipmentsWithoutShipperTransportation(shipperTransportation.getDateToBeFetched());
+		final ImmutableList<InOutId> inOutIds = inOutDAO.retrieveShipmentsWithoutShipperTransportation(shipperTransportation.getDateDoc());
 
 		final InOutToTransportationOrderService service = SpringContextHolder.instance.getBean(InOutToTransportationOrderService.class);
 		service.addShipmentsToTransportationOrder(ShipperTransportationId.ofRepoId(getRecord_ID()), inOutIds);
