@@ -699,7 +699,7 @@ DocumentNo]]>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-103" x="0" y="-1" width="45" height="12" uuid="c15719e2-b986-4199-b6f7-4118679e7c17"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
