@@ -448,28 +448,29 @@ UNION ALL
    AND cr.docstatus IN ('CO', 'CL', 'RE')
    AND cr.processed = 'Y')
 --
-UNION ALL
---
-(SELECT sn.ad_client_id,
-        sn.ad_org_id,
-        sn.created,
-        sn.createdby,
-        sn.updated,
-        sn.updatedby,
-        sn.isactive,
-        sn.documentno,
-        sn.dateacct                   AS datedoc,
-        sn.dateacct,
-        542365                        AS ad_table_id,
-        sn.m_shipping_notification_id AS record_id,
-        'Y'::char(1)                  AS issotrx,
-        sn.posted,
-        sn.PostingError_Issue_ID      AS PostingError_Issue_ID,
-        sn.processing,
-        sn.processed,
-        sn.docstatus
- FROM m_shipping_notification sn
- WHERE sn.posted <> 'Y'
-   AND sn.docstatus IN ('CO', 'CL', 'RE')
-   AND sn.processed = 'Y')
+--NEW_DAWN_MERGE_ARTIFACT
+-- UNION ALL
+-- --
+-- (SELECT sn.ad_client_id,
+--         sn.ad_org_id,
+--         sn.created,
+--         sn.createdby,
+--         sn.updated,
+--         sn.updatedby,
+--         sn.isactive,
+--         sn.documentno,
+--         sn.dateacct                   AS datedoc,
+--         sn.dateacct,
+--         542365                        AS ad_table_id,
+--         sn.m_shipping_notification_id AS record_id,
+--         'Y'::char(1)                  AS issotrx,
+--         sn.posted,
+--         sn.PostingError_Issue_ID      AS PostingError_Issue_ID,
+--         sn.processing,
+--         sn.processed,
+--         sn.docstatus
+--  FROM m_shipping_notification sn
+--  WHERE sn.posted <> 'Y'
+--    AND sn.docstatus IN ('CO', 'CL', 'RE')
+--    AND sn.processed = 'Y')
 ;

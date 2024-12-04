@@ -80,11 +80,12 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546538,550193,TO_TIMESTAMP('2022-12-17 15:57:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','dimension',10,TO_TIMESTAMP('2022-12-17 15:57:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+--NEW_DAWN_MERGE_ARTIFACT
 -- UI Element: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)(546731,de.metas.acct) -> main -> 20 -> dimension.Section Code
 -- Column: SAP_GLJournalLine.M_SectionCode_ID
 -- 2022-12-17T13:57:23.173Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710042,0,546731,550193,614560,'F',TO_TIMESTAMP('2022-12-17 15:57:23','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Section Code',10,0,0,TO_TIMESTAMP('2022-12-17 15:57:23','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710042,0,546731,550193,614560,'F',TO_TIMESTAMP('2022-12-17 15:57:23','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Section Code',10,0,0,TO_TIMESTAMP('2022-12-17 15:57:23','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- UI Element: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)(546731,de.metas.acct) -> main -> 20 -> dimension.Product
 -- Column: SAP_GLJournalLine.M_Product_ID

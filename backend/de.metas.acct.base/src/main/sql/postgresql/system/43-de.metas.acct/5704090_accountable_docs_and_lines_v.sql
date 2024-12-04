@@ -51,31 +51,32 @@ UNION ALL
  FROM c_invoiceline il
           INNER JOIN c_invoice i ON il.c_invoice_id = i.c_invoice_id
           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id)
-UNION ALL
-(SELECT 'M_Shipping_Notification'                                                    AS TableName,
-        90::integer                                                                  AS tablename_prio,
-        sn.m_shipping_notification_id                                                AS Record_ID,
-        sn.reversal_id                                                               AS reversal_id,
-        snl.m_shipping_notificationline_id                                           AS Line_ID,
-        snl.reversal_id                                                              AS reversalline_id,
-        'Y'                                                                          AS issotrx,
-        sn.docstatus,
-        sn.posted,
-        sn.dateacct                                                                  AS dateacct,
-        sn.ad_client_id                                                              AS ad_client_id,
-        sn.ad_org_id                                                                 AS ad_org_id,
-        --
-        dt.c_doctype_id                                                              AS c_doctype_id,
-        dt.docbasetype                                                               AS docbasetype,
-        --
-        snl.m_product_id,
-        NULL                                                                         AS c_currency_id,
-        NULL                                                                         AS price,
-        (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = snl.m_product_id) AS c_uom_id,
-        snl.movementqty                                                              AS qty
- FROM m_shipping_notificationline snl
-          INNER JOIN m_shipping_notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
-          INNER JOIN c_doctype dt ON dt.c_doctype_id = sn.c_doctype_id)
+--NEW_DAWN_MERGE_ARTIFACT
+-- UNION ALL
+-- (SELECT 'M_Shipping_Notification'                                                    AS TableName,
+--         90::integer                                                                  AS tablename_prio,
+--         sn.m_shipping_notification_id                                                AS Record_ID,
+--         sn.reversal_id                                                               AS reversal_id,
+--         snl.m_shipping_notificationline_id                                           AS Line_ID,
+--         snl.reversal_id                                                              AS reversalline_id,
+--         'Y'                                                                          AS issotrx,
+--         sn.docstatus,
+--         sn.posted,
+--         sn.dateacct                                                                  AS dateacct,
+--         sn.ad_client_id                                                              AS ad_client_id,
+--         sn.ad_org_id                                                                 AS ad_org_id,
+--         --
+--         dt.c_doctype_id                                                              AS c_doctype_id,
+--         dt.docbasetype                                                               AS docbasetype,
+--         --
+--         snl.m_product_id,
+--         NULL                                                                         AS c_currency_id,
+--         NULL                                                                         AS price,
+--         (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = snl.m_product_id) AS c_uom_id,
+--         snl.movementqty                                                              AS qty
+--  FROM m_shipping_notificationline snl
+--           INNER JOIN m_shipping_notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
+--           INNER JOIN c_doctype dt ON dt.c_doctype_id = sn.c_doctype_id)
 UNION ALL
 (SELECT 'M_InOut'                                                                    AS TableName,
         (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                   AS tablename_prio,

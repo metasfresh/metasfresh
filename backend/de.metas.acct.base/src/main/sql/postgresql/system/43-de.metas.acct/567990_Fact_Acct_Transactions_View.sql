@@ -63,7 +63,6 @@ CREATE VIEW Fact_Acct_Transactions_View
              userelementstring5,
              userelementstring6,
              userelementstring7,
-             m_sectioncode_id,
              c_order_id,
              balance,
              m_costelement_id
@@ -130,7 +129,6 @@ SELECT fact.fact_acct_id,
        fact.userelementstring5,
        fact.userelementstring6,
        fact.userelementstring7,
-       fact.m_sectioncode_id,
        fact.c_order_id,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
        fact.m_costelement_id

@@ -273,18 +273,19 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(213) 
 ;
 
+--NEW_DAWN_MERGE_ARTIFACT
 -- Column: SAP_GLJournalLine.M_SectionCode_ID
 -- 2022-12-15T15:38:04.474Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585398,581238,0,30,542276,'M_SectionCode_ID',TO_TIMESTAMP('2022-12-15 17:38:04','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.acct',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Section Code',0,0,TO_TIMESTAMP('2022-12-15 17:38:04','YYYY-MM-DD HH24:MI:SS'),100,0)
-;
-
--- 2022-12-15T15:38:04.475Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585398 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
-
--- 2022-12-15T15:38:04.478Z
-/* DDL */  select update_Column_Translation_From_AD_Element(581238) 
-;
+-- INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585398,581238,0,30,542276,'M_SectionCode_ID',TO_TIMESTAMP('2022-12-15 17:38:04','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.acct',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Section Code',0,0,TO_TIMESTAMP('2022-12-15 17:38:04','YYYY-MM-DD HH24:MI:SS'),100,0)
+-- ;
+--
+-- -- 2022-12-15T15:38:04.475Z
+-- INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585398 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+-- ;
+--
+-- -- 2022-12-15T15:38:04.478Z
+-- /* DDL */  select update_Column_Translation_From_AD_Element(581238)
+-- ;
 
 -- Column: SAP_GLJournalLine.M_Product_ID
 -- 2022-12-15T15:39:45.544Z
@@ -338,9 +339,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(439) 
 ;
 
+--NEW_DAWN_MERGE_ARTIFACT
 -- 2022-12-15T16:04:39.729Z
-/* DDL */ CREATE TABLE public.SAP_GLJournalLine (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Amount NUMERIC NOT NULL, AmtAcct NUMERIC NOT NULL, C_Activity_ID NUMERIC(10), C_Order_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, C_Tax_ID NUMERIC(10), C_ValidCombination_ID NUMERIC(10) NOT NULL, Description TEXT, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Line NUMERIC(10) NOT NULL, M_Product_ID NUMERIC(10), M_SectionCode_ID NUMERIC(10), PostingSign CHAR(1) NOT NULL, SAP_GLJournal_ID NUMERIC(10) NOT NULL, SAP_GLJournalLine_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CActivity_SAPGLJournalLine FOREIGN KEY (C_Activity_ID) REFERENCES public.C_Activity DEFERRABLE INITIALLY DEFERRED, CONSTRAINT COrder_SAPGLJournalLine FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CTax_SAPGLJournalLine FOREIGN KEY (C_Tax_ID) REFERENCES public.C_Tax DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CValidCombination_SAPGLJournalLine FOREIGN KEY (C_ValidCombination_ID) REFERENCES public.C_ValidCombination DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MProduct_SAPGLJournalLine FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSectionCode_SAPGLJournalLine FOREIGN KEY (M_SectionCode_ID) REFERENCES public.M_SectionCode DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAPGLJournal_SAPGLJournalLine FOREIGN KEY (SAP_GLJournal_ID) REFERENCES public.SAP_GLJournal DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAP_GLJournalLine_Key PRIMARY KEY (SAP_GLJournalLine_ID))
+/* DDL */ CREATE TABLE public.SAP_GLJournalLine (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Amount NUMERIC NOT NULL, AmtAcct NUMERIC NOT NULL, C_Activity_ID NUMERIC(10), C_Order_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, C_Tax_ID NUMERIC(10), C_ValidCombination_ID NUMERIC(10) NOT NULL, Description TEXT, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Line NUMERIC(10) NOT NULL, M_Product_ID NUMERIC(10), PostingSign CHAR(1) NOT NULL, SAP_GLJournal_ID NUMERIC(10) NOT NULL, SAP_GLJournalLine_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CActivity_SAPGLJournalLine FOREIGN KEY (C_Activity_ID) REFERENCES public.C_Activity DEFERRABLE INITIALLY DEFERRED, CONSTRAINT COrder_SAPGLJournalLine FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CTax_SAPGLJournalLine FOREIGN KEY (C_Tax_ID) REFERENCES public.C_Tax DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CValidCombination_SAPGLJournalLine FOREIGN KEY (C_ValidCombination_ID) REFERENCES public.C_ValidCombination DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MProduct_SAPGLJournalLine FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAPGLJournal_SAPGLJournalLine FOREIGN KEY (SAP_GLJournal_ID) REFERENCES public.SAP_GLJournal DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAP_GLJournalLine_Key PRIMARY KEY (SAP_GLJournalLine_ID))
 ;
+-- /* DDL */ CREATE TABLE public.SAP_GLJournalLine (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Amount NUMERIC NOT NULL, AmtAcct NUMERIC NOT NULL, C_Activity_ID NUMERIC(10), C_Order_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, C_Tax_ID NUMERIC(10), C_ValidCombination_ID NUMERIC(10) NOT NULL, Description TEXT, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Line NUMERIC(10) NOT NULL, M_Product_ID NUMERIC(10), M_SectionCode_ID NUMERIC(10), PostingSign CHAR(1) NOT NULL, SAP_GLJournal_ID NUMERIC(10) NOT NULL, SAP_GLJournalLine_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CActivity_SAPGLJournalLine FOREIGN KEY (C_Activity_ID) REFERENCES public.C_Activity DEFERRABLE INITIALLY DEFERRED, CONSTRAINT COrder_SAPGLJournalLine FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CTax_SAPGLJournalLine FOREIGN KEY (C_Tax_ID) REFERENCES public.C_Tax DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CValidCombination_SAPGLJournalLine FOREIGN KEY (C_ValidCombination_ID) REFERENCES public.C_ValidCombination DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MProduct_SAPGLJournalLine FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSectionCode_SAPGLJournalLine FOREIGN KEY (M_SectionCode_ID) REFERENCES public.M_SectionCode DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAPGLJournal_SAPGLJournalLine FOREIGN KEY (SAP_GLJournal_ID) REFERENCES public.SAP_GLJournal DEFERRABLE INITIALLY DEFERRED, CONSTRAINT SAP_GLJournalLine_Key PRIMARY KEY (SAP_GLJournalLine_ID))
+-- ;
 
 -- Tab: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)
 -- Table: SAP_GLJournalLine
@@ -605,19 +609,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710041
 /* DDL */ select AD_Element_Link_Create_Missing_Field(710041)
 ;
 
+--NEW_DAWN_MERGE_ARTIFACT
 -- Field: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)(546731,de.metas.acct) -> Section Code
 -- Column: SAP_GLJournalLine.M_SectionCode_ID
 -- 2022-12-15T16:08:09.628Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585398,710042,0,546731,TO_TIMESTAMP('2022-12-15 18:08:09','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.acct','Y','N','N','N','N','N','N','N','Section Code',TO_TIMESTAMP('2022-12-15 18:08:09','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-12-15T16:08:09.630Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710042 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2022-12-15T16:08:09.631Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
-;
+-- INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585398,710042,0,546731,TO_TIMESTAMP('2022-12-15 18:08:09','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.acct','Y','N','N','N','N','N','N','N','Section Code',TO_TIMESTAMP('2022-12-15 18:08:09','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
+--
+-- -- 2022-12-15T16:08:09.630Z
+-- INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710042 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
+--
+-- -- 2022-12-15T16:08:09.631Z
+-- /* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
+-- ;
 
 -- 2022-12-15T16:08:09.635Z
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=710042
@@ -769,11 +774,12 @@ UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2022
 UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2022-12-15 18:21:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710040
 ;
 
+--NEW_DAWN_MERGE_ARTIFACT
 -- Field: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)(546731,de.metas.acct) -> Section Code
 -- Column: SAP_GLJournalLine.M_SectionCode_ID
 -- 2022-12-15T16:21:38.898Z
-UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2022-12-15 18:21:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710042
-;
+-- UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2022-12-15 18:21:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710042
+-- ;
 
 -- Field: GL Journal (SAP)(541656,de.metas.acct) -> GL Journal Line (SAP)(546731,de.metas.acct) -> Product
 -- Column: SAP_GLJournalLine.M_Product_ID
