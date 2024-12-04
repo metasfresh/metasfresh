@@ -85,4 +85,7 @@ public class ArchiveRequest
 
 	@Nullable
 	String poReference;
+
+	boolean isDirectEnqueue;
+	boolean isDirectProcessQueueItem;
 }

@@ -212,6 +212,11 @@ public class DDOrderLowLevelDAO
 			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_IsSimulated, deleteOrdersQuery.isOnlySimulated());
 		}
 
+		if (deleteOrdersQuery.getPpOrderBOMLineId() != null)
+		{
+			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, deleteOrdersQuery.getPpOrderBOMLineId());
+		}
+
 		if (deleteOrdersQuery.getSalesOrderLineId() != null)
 		{
 			final IQuery<I_DD_OrderLine> orderLineQuery = queryBL.createQueryBuilder(I_DD_OrderLine.class)

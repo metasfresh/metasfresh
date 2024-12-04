@@ -29,8 +29,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -109,7 +110,7 @@ public class SupplyProposalEvaluatorTests
 								.businessCase(CandidateBusinessCase.DISTRIBUTION)
 								.businessCaseDetail(DistributionDetail.builder().qty(BigDecimal.valueOf(1)).build()) // just a dummy detail that currently doesn't play a role in the actual test
 								.materialDescriptor(MaterialDescriptor.builder()
-										.date(t3)
+										.date(t2)
 										.productDescriptor(createProductDescriptor())
 										.quantity(BigDecimal.valueOf(10))
 										.warehouseId(supplyWarehouseId)
@@ -147,6 +148,8 @@ public class SupplyProposalEvaluatorTests
 						.demandWarehouseId(WH_A)
 						.supplyWarehouseId(WH_B)
 						.demandDetail(demandDetail)
+						.date(t2)
+						.productId(PRODUCT_ID)
 						.build())
 		).isTrue();
 		assertThat(supplyProposalEvaluator.isProposalAccepted(
@@ -154,6 +157,8 @@ public class SupplyProposalEvaluatorTests
 						.demandWarehouseId(WH_B)
 						.supplyWarehouseId(WH_A)
 						.demandDetail(demandDetail)
+						.date(t2)
+						.productId(PRODUCT_ID)
 						.build())
 		).isTrue();
 	}
@@ -168,6 +173,8 @@ public class SupplyProposalEvaluatorTests
 						.demandWarehouseId(WH_A)
 						.supplyWarehouseId(WH_B)
 						.demandDetail(demandDetail)
+						.date(t2)
+						.productId(PRODUCT_ID)
 						.build())
 		).isTrue();
 	}
@@ -185,6 +192,8 @@ public class SupplyProposalEvaluatorTests
 						.demandWarehouseId(WH_B)
 						.supplyWarehouseId(WH_A)
 						.demandDetail(demandDetail)
+						.date(t2)
+						.productId(PRODUCT_ID)
 						.build())
 		).isFalse();
 	}
@@ -202,7 +211,28 @@ public class SupplyProposalEvaluatorTests
 				.supplyWarehouseId(WH_C)
 				.demandWarehouseId(WH_A)
 				.demandDetail(demandDetail)
+				.date(t2)
+				.productId(PRODUCT_ID)
 				.build();
 		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isFalse();
+	}
+
+	/**
+	 * Create a chain <code>A <- B <- C</code> on date t2. Then verify that it's ok to add a proposal of <code>C <- A</code> in t3
+	 */
+	@Test
+	public void testWithChainOpposite_onDifferentDate()
+	{
+		simpleDemandSupply().supplyWarehouseId(WH_A).demandWarehouseId(WH_B).build();
+		simpleDemandSupply().supplyWarehouseId(WH_B).demandWarehouseId(WH_C).build();
+
+		final SupplyProposal supplyProposal = SupplyProposal.builder()
+				.supplyWarehouseId(WH_C)
+				.demandWarehouseId(WH_A)
+				.demandDetail(demandDetail)
+				.date(t3)
+				.productId(PRODUCT_ID)
+				.build();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 }

@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -19,6 +21,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -294,7 +297,11 @@ public class MRPTestHelper
 				new PPOrderBOMBL(),
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
 				new ProductBOMVersionsDAO(),
-				new ProductBOMService(new ProductBOMVersionsDAO()));
+				new ProductBOMService(new ProductBOMVersionsDAO()),
+				new DDOrderCandidateRepository(),
+				new DDOrderCandidateAllocRepository(),
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository());
 	}
 
 	public Timestamp getToday()

@@ -116,7 +116,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Account_manager}]]></textFieldExpression>
@@ -148,14 +148,14 @@
 				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" mode="Transparent" x="412" y="47" width="129" height="13" uuid="4a94d3bb-94c8-4277-a8d5-7272721b870a"/>
+				<reportElement key="textField-3" mode="Transparent" x="380" y="47" width="161" height="13" uuid="4a94d3bb-94c8-4277-a8d5-7272721b870a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Account_manager_mail}]]></textFieldExpression>

@@ -61,6 +61,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
 		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
 	</field>
+	<field name="deliveryrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryrule"/>
+	</field>
+	<field name="deliveryviarule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryviarule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryviarule"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -76,7 +84,7 @@
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean ($F{paymentterm} != null && !$F{paymentterm}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryrule} != null && !$F{deliveryrule}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="150" y="0" width="368" height="12" isPrintWhenDetailOverflows="true" uuid="cbe72182-272a-4b4f-ab5a-aebd741001fd"/>
 				<box>
@@ -88,7 +96,7 @@
 				<textElement markup="html">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{paymentterm}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{deliveryrule}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="d3d0d667-3df0-4455-9f6b-b36979be48a6"/>
@@ -101,14 +109,72 @@
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
+				<textFieldExpression><![CDATA[$R{DeliveryRule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryviarule} != null && !$F{deliveryviarule}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="89a5f549-07ce-44a0-8d93-51e73347d240"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DeliveryViaRule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="368" height="12" isPrintWhenDetailOverflows="true" uuid="b24bc8e3-d6c4-4616-836a-1b69f7685269"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliveryviarule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<printWhenExpression><![CDATA[new Boolean ($F{paymentterm} != null && !$F{paymentterm}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="c493c11c-7503-49ef-8b1e-b7bbd433798e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{PaymentCond}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="368" height="12" isPrintWhenDetailOverflows="true" uuid="3e1bc318-5e9e-475f-839c-be7118d53bd1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paymentterm}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="7b29aa1c-47ac-4ddd-9798-19bbbc35e484"/>
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="368" height="12" isPrintWhenDetailOverflows="true" uuid="7b29aa1c-47ac-4ddd-9798-19bbbc35e484"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

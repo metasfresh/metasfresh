@@ -384,7 +384,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_S0317_030 | ol_1_S0317_030            | N             |
       | s_s_2_S0317_030 | ol_2_S0317_030            | N             |
-    
+
       ## set catch-weight values! note that they exceed the weight to be expected from the C_UOM_Conversion
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
