@@ -477,12 +477,11 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date, @NonNull final BPartnerId bpartnerId)
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
 	{
 		return queryBL
 				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
 				.create()

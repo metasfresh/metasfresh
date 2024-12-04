@@ -2,7 +2,6 @@ package de.metas.handlingunits.shipping.process;
 
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -41,7 +40,7 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 	{
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(ShipperTransportationId.ofRepoId(getRecord_ID()));
 
-		final ImmutableList<InOutId> inOutIds = inOutDAO.retrieveShipmentsWithoutShipperTransportation(shipperTransportation.getDateToBeFetched(), BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID()));
+		final ImmutableList<InOutId> inOutIds = inOutDAO.retrieveShipmentsWithoutShipperTransportation(shipperTransportation.getDateToBeFetched());
 
 		final InOutToTransportationOrderService service = SpringContextHolder.instance.getBean(InOutToTransportationOrderService.class);
 		service.addShipmentsToTransportationOrder(ShipperTransportationId.ofRepoId(getRecord_ID()), inOutIds);
