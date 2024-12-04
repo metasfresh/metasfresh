@@ -1,5 +1,5 @@
 
--- Field: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Pauschale - Vertragsperiode
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Pauschale - Vertragsperiode
 -- Column: C_Invoice_Candidate.C_Flatrate_Term_ID
 -- 2024-12-04T14:07:00.319Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,579362,734073,0,540279,TO_TIMESTAMP('2024-12-04 15:07:00.189','YYYY-MM-DD HH24:MI:SS.US'),100,10,'de.metas.invoicecandidate','Y','N','N','N','N','N','N','N','Pauschale - Vertragsperiode',TO_TIMESTAMP('2024-12-04 15:07:00.189','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -21,7 +21,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=734073
 /* DDL */ select AD_Element_Link_Create_Missing_Field(734073)
 ;
 
--- UI Element: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Pauschale - Vertragsperiode
+-- UI Element: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.Pauschale - Vertragsperiode
 -- Column: C_Invoice_Candidate.C_Flatrate_Term_ID
 -- 2024-12-04T14:07:28.849Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,734073,0,540279,540056,627383,'F',TO_TIMESTAMP('2024-12-04 15:07:28.725','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Pauschale - Vertragsperiode',1095,0,0,TO_TIMESTAMP('2024-12-04 15:07:28.725','YYYY-MM-DD HH24:MI:SS.US'),100)
