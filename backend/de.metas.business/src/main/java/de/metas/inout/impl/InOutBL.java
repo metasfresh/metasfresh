@@ -248,6 +248,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public Quantity getQtyEntered(@NonNull final I_M_InOutLine inoutLine)
+	{
+		return Quantitys.of(inoutLine.getQtyEntered(), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+	}
+
+	@Override
 	public Quantity getMovementQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());

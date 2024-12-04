@@ -76,7 +76,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
-	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceLineId);
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
@@ -97,7 +97,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
-	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
@@ -189,7 +189,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
 
-	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
+	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
 	/**
 	 * Be sure to check the code! The method might return {@code true} at unexpected times!

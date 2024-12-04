@@ -238,7 +238,7 @@ public class RegisteredValidationRuleTest
 		}
 
 		@Override
-		public boolean accept(IValidationContext evalCtx, NamePair item)
+		public boolean accept(final IValidationContext evalCtx, final NamePair item)
 		{
 			return false; // always reject
 		}
@@ -283,6 +283,7 @@ public class RegisteredValidationRuleTest
 	{
 		final I_AD_Val_Rule registeredValRule = InterfaceWrapperHelper.newInstance(I_AD_Val_Rule.class);
 		registeredValRule.setCode(validationCode);
+		registeredValRule.setName(validationCode); // name is mandatory
 		registeredValRule.setType(X_AD_Val_Rule.TYPE_SQL);
 		InterfaceWrapperHelper.save(registeredValRule);
 

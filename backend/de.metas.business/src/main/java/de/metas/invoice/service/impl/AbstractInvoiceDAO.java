@@ -503,11 +503,11 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)
+	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		final IQueryBL queryBL = this.queryBL;
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceAndLineId)
 				.create()
 				.list();
 	}
@@ -648,13 +648,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id)
+	public Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceLineId.ofRepoId(id, lineId));
+				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)

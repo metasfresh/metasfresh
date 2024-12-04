@@ -62,6 +62,8 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
+	Quantity getQtyEntered(@NonNull I_M_InOutLine inoutLine);
+
 	/**
 	 * @see #getStockQtyAndQtyInUOM(I_M_InOutLine)
 	 */
