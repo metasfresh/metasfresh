@@ -583,6 +583,28 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ProductValue = new ModelColumn<>(I_M_ShippingPackage.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
+
+	/**
+	 * Set Number of LUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyLU (@Nullable BigDecimal QtyLU);
+
+	/**
+	 * Get Number of LUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyLU();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_QtyLU = new ModelColumn<>(I_M_ShippingPackage.class, "QtyLU", null);
+	String COLUMNNAME_QtyLU = "QtyLU";
+
 	/**
 	 * Set Number of TUs.
 	 *
