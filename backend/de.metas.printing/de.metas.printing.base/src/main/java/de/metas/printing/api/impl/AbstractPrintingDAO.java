@@ -51,7 +51,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -84,6 +86,17 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	 */
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private WorkplaceService _workplaceService; // lazy
+
+	private WorkplaceService workplaceService()
+	{
+		WorkplaceService workplaceService = this._workplaceService;
+		if (workplaceService == null)
+		{
+			workplaceService = this._workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
+		}
+		return workplaceService;
+	}
 
 	@Override
 	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
@@ -204,12 +217,15 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId)
 	{
-		final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
-		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
-				.map(Workplace::getId)
-				.orElse(null);
-
+		final WorkplaceId workplaceId = getWorkplaceId(userToPrintId).orElse(null);
 		return retrievePrinterConfig(hostKey, userToPrintId, workplaceId);
+	}
+
+	private Optional<WorkplaceId> getWorkplaceId(@Nullable final UserId userToPrintId)
+	{
+		return userToPrintId != null
+				? workplaceService().getWorkplaceByUserId(userToPrintId).map(Workplace::getId)
+				: Optional.empty();
 	}
 
 	@Nullable
@@ -299,15 +315,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final List<I_AD_Printer_Matching> retrievePrinterMatchings(final I_AD_PrinterHW printerHW)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Printer_Config.class)
+		return queryBL.createQueryBuilder(I_AD_Printer_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, printerHW.getHostKey())
 				.andCollectChildren(I_AD_Printer_Matching.COLUMN_AD_Printer_Config_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, printerHW.getAD_PrinterHW_ID())
-				.orderBy()
-				.addColumnAscending(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Matching_ID).endOrderBy()
+				.orderBy(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Matching_ID)
 				.create()
 				.list();
 	}
@@ -522,18 +536,34 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public I_AD_PrinterHW retrieveHardwarePrinter(@NonNull final HardwarePrinterId hardwarePrinterId)
+	public Stream<I_AD_PrinterHW> streamActiveHardwarePrinters()
 	{
-		return InterfaceWrapperHelper.loadOutOfTrx(hardwarePrinterId, I_AD_PrinterHW.class);
+		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID)
+				.create()
+				.stream();
 	}
 
 	@Override
 	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
+		return queryBL.createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
 				.create()
 				.list();
 	}
+
+	@Override
+	public Stream<I_AD_PrinterHW_MediaTray> streamActiveMediaTrays()
+	{
+		return queryBL.createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID)
+				.orderBy(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_MediaTray_ID)
+				.create()
+				.stream();
+	}
+
 }

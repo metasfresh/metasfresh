@@ -49,6 +49,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
+import de.metas.printing.frontend.FrontendPrinter;
+import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
@@ -321,9 +323,17 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/huLabels/print")
-	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	public JsonPrintHULabelResponse printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
 	{
-		handlingUnitsService.printHULabels(request);
+		try (final FrontendPrinter frontendPrinter = FrontendPrinter.start())
+		{
+			handlingUnitsService.printHULabels(request);
+
+			final FrontendPrinterData printData = frontendPrinter.getDataAndClear();
+			return JsonPrintHULabelResponse.builder()
+					.printData(JsonPrintHULabelResponse.JsonPrintDataItem.of(printData))
+					.build();
+		}
 	}
 
 	@GetMapping("/huLabels/printingOptions")

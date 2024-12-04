@@ -57,6 +57,7 @@ import javax.print.attribute.standard.MediaSize;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IPrintingDAO extends ISingletonService
 {
@@ -172,7 +173,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	void deleteCalibrations(HardwarePrinterId hardwarePrinterId);
 
-	I_AD_PrinterHW retrieveHardwarePrinter(@NonNull HardwarePrinterId hardwarePrinterId);
+	Stream<I_AD_PrinterHW> streamActiveHardwarePrinters();
 
 	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull HardwarePrinterId hardwarePrinterId);
 
@@ -225,4 +226,6 @@ public interface IPrintingDAO extends ISingletonService
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
+
+	Stream<I_AD_PrinterHW_MediaTray> streamActiveMediaTrays();
 }

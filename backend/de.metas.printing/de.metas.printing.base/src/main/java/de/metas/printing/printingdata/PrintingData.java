@@ -23,6 +23,7 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.lowagie.text.pdf.PdfReader;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -43,7 +44,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 
 @ToString(exclude = { "data" })
 public class PrintingData
@@ -207,8 +207,8 @@ public class PrintingData
 	}
 
 	private static int skipBackward(final boolean[] pagesCovered,
-			final int pageTo,
-			final int limit)
+									final int pageTo,
+									final int limit)
 	{
 		int pageToFinal = pageTo;
 		for (int i = pageTo; i >= limit; i--)
@@ -223,8 +223,8 @@ public class PrintingData
 	}
 
 	private static int skipForward(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int limit)
+								   final int pageFrom,
+								   final int limit)
 	{
 		final int limitToUse = Math.min(limit, pagesCovered.length);
 
@@ -241,8 +241,8 @@ public class PrintingData
 	}
 
 	private static void markCovered(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int pageTo)
+									final int pageFrom,
+									final int pageTo)
 	{
 		for (int i = pageFrom; i <= pageTo; i++)
 		{
@@ -262,8 +262,8 @@ public class PrintingData
 		{
 			numberOfPages = this._numberOfPages = computeNumberOfPages();
 		}
-			return numberOfPages;
-		}
+		return numberOfPages;
+	}
 
 	private int computeNumberOfPages()
 	{
@@ -300,25 +300,7 @@ public class PrintingData
 	public PrintingData onlyWithType(@NonNull final OutputType outputType)
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> OutputType.equals(s.getPrinter().getOutputType(), outputType))
-				.collect(ImmutableList.toImmutableList());
-
-		return PrintingData.builder()
-				.pInstanceId(this.pInstanceId)
-				.adjustSegmentPageRanges(false)
-				.data(this.data)
-				.documentFileName(this.documentFileName)
-				.orgId(this.orgId)
-				.printingQueueItemId(this.printingQueueItemId)
-				.segments(filteredSegments)
-				.build();
-	}
-
-	public PrintingData onlyQueuedForExternalSystems()
-	{
-		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), OutputType.Queue))
-				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
+				.filter(segment -> segment.isMatchingOutputType(outputType))
 				.collect(ImmutableList.toImmutableList());
 
 		return toBuilder()
@@ -326,5 +308,29 @@ public class PrintingData
 				.segments(filteredSegments)
 				.adjustSegmentPageRanges(false)
 				.build();
+	}
+
+	public PrintingData onlyQueuedForExternalSystems()
+	{
+		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
+				.filter(PrintingSegment::isQueuedForExternalSystems)
+				.collect(ImmutableList.toImmutableList());
+
+		return toBuilder()
+				.clearSegments()
+				.segments(filteredSegments)
+				.adjustSegmentPageRanges(false)
+				.build();
+	}
+
+	public boolean hasSegments() {return !getSegments().isEmpty();}
+
+	public int getSegmentsCount() {return getSegments().size();}
+	
+	public ImmutableSet<String> getPrinterNames()
+	{
+		return segments.stream()
+				.map(segment -> segment.getPrinter().getName())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

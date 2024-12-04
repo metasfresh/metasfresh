@@ -53,4 +53,6 @@ public enum OutputType implements ReferenceListAwareEnum
 	public static boolean equals(@Nullable final OutputType type1, @Nullable final OutputType type2) {return Objects.equals(type1, type2);}
 
 	public boolean isStore() {return this == Store;}
+
+	public boolean isFrontend() {return this == Frontend;}
 }

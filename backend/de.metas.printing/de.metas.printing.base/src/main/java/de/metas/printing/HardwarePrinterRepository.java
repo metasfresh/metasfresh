@@ -23,63 +23,87 @@
 package de.metas.printing;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.cache.CCache;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Repository
 public class HardwarePrinterRepository
 {
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-	private final CCache<HardwarePrinterId, HardwarePrinter> cache = CCache.<HardwarePrinterId, HardwarePrinter>builder()
-			.cacheName("HardwarePrinterCache")
+	private final CCache<Integer, HardwarePrinterMap> cache = CCache.<Integer, HardwarePrinterMap>builder()
 			.tableName(I_AD_PrinterHW.Table_Name)
 			.additionalTableNameToResetFor(I_AD_PrinterHW_MediaTray.Table_Name)
 			.build();
 
 	public HardwarePrinter getById(@NonNull final HardwarePrinterId id)
 	{
-		return cache.getOrLoad(id, this::retrieveById);
+		return getMap().getById(id);
 	}
 
-	private HardwarePrinter retrieveById(@NonNull final HardwarePrinterId id)
+	public Collection<HardwarePrinter> getByIds(@NonNull final Collection<HardwarePrinterId> ids)
 	{
-		final I_AD_PrinterHW printerRecord = printingDAO.retrieveHardwarePrinter(id);
-		final List<I_AD_PrinterHW_MediaTray> trayRecords = printingDAO.retrieveMediaTrays(id);
+		return getMap().getByIds(ids);
+	}
 
-		return fromRecord(printerRecord, trayRecords);
+	public Stream<HardwarePrinter> streamByIds(@NonNull final Collection<HardwarePrinterId> ids)
+	{
+		return getMap().streamByIds(ids);
+	}
+
+	private HardwarePrinterMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
+
+	private HardwarePrinterMap retrieveMap()
+	{
+		final ImmutableListMultimap<HardwarePrinterId, HardwareTray> traysByPrinterId = printingDAO.streamActiveMediaTrays()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						trayRecord -> HardwarePrinterId.ofRepoId(trayRecord.getAD_PrinterHW_ID()),
+						HardwarePrinterRepository::fromRecord
+				));
+
+		return printingDAO.streamActiveHardwarePrinters()
+				.map(printerRecord -> fromRecord(printerRecord, traysByPrinterId))
+				.collect(GuavaCollectors.collectUsingListAccumulator(HardwarePrinterMap::new));
 	}
 
 	public static void validateOnBeforeSave(@NonNull final I_AD_PrinterHW printerRecord)
 	{
-		fromRecord(printerRecord, ImmutableList.of());
+		fromRecord(printerRecord, ImmutableListMultimap.of());
 	}
 
 	@NonNull
 	private static HardwarePrinter fromRecord(
 			@NonNull final I_AD_PrinterHW printerRecord,
-			@NonNull final List<I_AD_PrinterHW_MediaTray> trayRecords)
+			@NonNull final ImmutableListMultimap<HardwarePrinterId, HardwareTray> traysByPrinterId)
 	{
+		final HardwarePrinterId id = HardwarePrinterId.ofRepoId(printerRecord.getAD_PrinterHW_ID());
+
 		return HardwarePrinter.builder()
-				.id(HardwarePrinterId.ofRepoId(printerRecord.getAD_PrinterHW_ID()))
+				.id(id)
 				.name(printerRecord.getName())
 				.outputType(OutputType.ofCode(printerRecord.getOutputType()))
 				.externalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(printerRecord.getExternalSystem_Config_ID()))
 				.ippUrl(extractIPPUrl(printerRecord))
-				.trays(trayRecords.stream()
-						.map(HardwarePrinterRepository::fromRecord)
-						.collect(ImmutableList.toImmutableList()))
+				.trays(traysByPrinterId.get(id))
 				.build();
 	}
 
@@ -106,4 +130,48 @@ public class HardwarePrinterRepository
 	public void deleteMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId) {printingDAO.deleteMediaTrays(hardwarePrinterId);}
 
 	public void deleteMediaSizes(@NonNull final HardwarePrinterId hardwarePrinterId) {printingDAO.deleteMediaSizes(hardwarePrinterId);}
+
+	//
+	//
+	//
+	//
+	//
+
+	private static class HardwarePrinterMap
+	{
+		private final ImmutableMap<HardwarePrinterId, HardwarePrinter> byId;
+
+		private HardwarePrinterMap(final List<HardwarePrinter> list)
+		{
+			this.byId = Maps.uniqueIndex(list, HardwarePrinter::getId);
+		}
+
+		public HardwarePrinter getById(@NonNull final HardwarePrinterId id)
+		{
+			final HardwarePrinter hardwarePrinter = byId.get(id);
+			if (hardwarePrinter == null)
+			{
+				throw new AdempiereException("No active hardware printer found for id " + id);
+			}
+			return hardwarePrinter;
+		}
+
+		public Collection<HardwarePrinter> getByIds(final @NonNull Collection<HardwarePrinterId> ids)
+		{
+			return streamByIds(ids).collect(ImmutableList.toImmutableList());
+		}
+
+		public Stream<HardwarePrinter> streamByIds(final @NonNull Collection<HardwarePrinterId> ids)
+		{
+			if (ids.isEmpty())
+			{
+				return Stream.empty();
+			}
+
+			return ids.stream()
+					.map(byId::get)
+					.filter(Objects::nonNull);
+		}
+
+	}
 }
