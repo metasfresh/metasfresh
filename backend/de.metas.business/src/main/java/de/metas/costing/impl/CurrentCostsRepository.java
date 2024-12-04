@@ -187,6 +187,42 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return queryBuilder;
 	}
 
+	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
+	{
+		final IQueryBuilder<I_M_Cost> queryBuilder = queryBL.createQueryBuilder(I_M_Cost.class);
+
+		if (query.getClientId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Client_ID, query.getClientId());
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (!query.getProductIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Product_ID, query.getProductIds());
+		}
+		if (query.getAttributeSetInstanceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
+		}
+		if (query.getCostTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostType_ID, query.getCostTypeId());
+		}
+		if (query.getAcctSchemaId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+		}
+		if (!query.getCostElementIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, query.getCostElementIds());
+		}
+
+		return queryBuilder;
+	}
+
 	@Override
 	public CurrentCost getOrCreate(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
@@ -336,6 +372,18 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
 				.create()
 				.delete());
+	}
+
+	@Override
+	public void updateUOMForProduct(final I_M_Product product)
+	{
+		final ICompositeQueryUpdater<I_M_Cost> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_M_Cost.class)
+				.addSetColumnValue(I_M_Cost.COLUMNNAME_C_UOM_ID, product.getC_UOM_ID());
+
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.update(queryUpdater));
 	}
 
 	@Override
