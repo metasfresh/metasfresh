@@ -17,6 +17,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -132,4 +133,6 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
+
+	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 }

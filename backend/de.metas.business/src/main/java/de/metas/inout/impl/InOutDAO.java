@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -473,5 +474,19 @@ public class InOutDAO implements IInOutDAO
 		}
 
 		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+	}
+
+	@Override
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
 	}
 }
