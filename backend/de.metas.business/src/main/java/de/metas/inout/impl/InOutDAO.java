@@ -483,6 +483,7 @@ public class InOutDAO implements IInOutDAO
 				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
 				.create()
 				.listIds(InOutId::ofRepoId)

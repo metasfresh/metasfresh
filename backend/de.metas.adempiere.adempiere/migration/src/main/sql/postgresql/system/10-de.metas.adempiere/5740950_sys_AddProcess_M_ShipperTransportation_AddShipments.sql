@@ -121,3 +121,39 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,734071,0,540097,540666,627381,'F',TO_TIMESTAMP('2024-12-04 10:25:23.185','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','N','Y','N','N','TU Anzahl',5,60,0,TO_TIMESTAMP('2024-12-04 10:25:23.185','YYYY-MM-DD HH24:MI:SS.US'),100,'L')
 ;
 
+
+-- Value: M_ShipperTransportation_AddShipments
+-- Classname: de.metas.handlingunits.shipping.process.M_ShipperTransportation_AddShipments
+-- 2024-12-04T13:35:17.200Z
+UPDATE AD_Process SET EntityType='METAS_SHIPPING', IsFormatExcelFile='N',Updated=TO_TIMESTAMP('2024-12-04 15:35:17.199','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585438
+;
+
+
+-- Field: Transport Auftrag(540020,METAS_SHIPPING) -> Speditionslieferung(540096,METAS_SHIPPING) -> Assign anonymously picked HUs
+-- Column: M_ShipperTransportation.AssignAnonymouslyPickedHUs
+-- 2024-12-04T15:23:45.551Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,578273,734075,0,540096,0,TO_TIMESTAMP('2024-12-04 17:23:45.378','YYYY-MM-DD HH24:MI:SS.US'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Assign anonymously picked HUs',0,190,0,1,1,TO_TIMESTAMP('2024-12-04 17:23:45.378','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-12-04T15:23:45.559Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=734075 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-12-04T15:23:45.565Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580175)
+;
+
+-- 2024-12-04T15:23:45.574Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=734075
+;
+
+-- 2024-12-04T15:23:45.579Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(734075)
+;
+
+-- UI Element: Transport Auftrag(540020,METAS_SHIPPING) -> Speditionslieferung(540096,METAS_SHIPPING) -> advanced edit -> 10 -> advanced edit.Assign anonymously picked HUs
+-- Column: M_ShipperTransportation.AssignAnonymouslyPickedHUs
+-- 2024-12-04T15:24:00.515Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,734075,0,540096,540665,627386,'F',TO_TIMESTAMP('2024-12-04 17:24:00.397','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Assign anonymously picked HUs',170,0,0,TO_TIMESTAMP('2024-12-04 17:24:00.397','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
