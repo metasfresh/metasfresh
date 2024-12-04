@@ -29,17 +29,16 @@
 		<property name="com.jaspersoft.studio.field.name" value="p_cond"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_cond"/>
 	</field>
-	<field name="p_term" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
+	<field name="paymentrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="paymentrule"/>
 	</field>
 	<field name="textcenter" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="textcenter"/>
 		<property name="com.jaspersoft.studio.field.label" value="textcenter"/>
 	</field>
-	<field name="paymentterm" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="paymentterm"/>
-		<property name="com.jaspersoft.studio.field.label" value="paymentterm"/>
+	<field name="p_term" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
+		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
 	</field>
 	<field name="discount1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
@@ -66,8 +65,14 @@
 		<property name="com.jaspersoft.studio.field.label" value="incoterms"/>
 	</field>
 	<field name="incotermlocation" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
 		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
+		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
+	</field>
+	<field name="deliveryrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="deliveryrule"/>
+	</field>
+	<field name="deliveryviarule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="deliveryviarule"/>
 	</field>
 	<detail>
 		<band height="15" splitType="Stretch">
