@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShippingPackage
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_M_ShippingPackage 
@@ -180,7 +180,6 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_ShippingPackage.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
-
 	/**
 	 * Set Orderline.
 	 *
@@ -584,6 +583,26 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ProductValue = new ModelColumn<>(I_M_ShippingPackage.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
+	/**
+	 * Set Number of TUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU (@Nullable BigDecimal QtyTU);
+
+	/**
+	 * Get Number of TUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_QtyTU = new ModelColumn<>(I_M_ShippingPackage.class, "QtyTU", null);
+	String COLUMNNAME_QtyTU = "QtyTU";
 
 	/**
 	 * Get Updated.
