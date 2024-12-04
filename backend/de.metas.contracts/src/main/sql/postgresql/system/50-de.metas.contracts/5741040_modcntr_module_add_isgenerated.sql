@@ -66,3 +66,8 @@ UPDATE AD_Tab SET WhereClause='IsGenerated=''N''',Updated=TO_TIMESTAMP('2024-12-
 UPDATE AD_Tab SET WhereClause='IsGenerated=''Y''',Updated=TO_TIMESTAMP('2024-12-03 12:53:58.13','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547697
 ;
 
+-- Tab: Einstellungen für modulare Verträge(541712,de.metas.contracts) -> Automatische Bausteine
+-- Table: ModCntr_Module
+-- 2024-12-04T16:18:24.771Z
+UPDATE AD_Tab SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-12-04 17:18:24.771','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547697
+;
