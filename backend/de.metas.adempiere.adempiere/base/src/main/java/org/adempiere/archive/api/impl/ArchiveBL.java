@@ -35,7 +35,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
@@ -56,7 +55,6 @@ import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -64,17 +62,7 @@ import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
-	@Override
-	@Nullable
-	public I_AD_Archive archive(final Resource data,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
-	{
-		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
-		return archive(request).getArchiveRecord();
-	}
+	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
 	@Override
 	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
@@ -90,40 +78,12 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	private static ArchiveRequest createArchiveRequest(
-			final Resource data,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
-	{
-		final ArchiveRequest.ArchiveRequestBuilder requestBuilder = ArchiveRequest.builder()
-				.ctx(Env.getCtx())
-				.data(data)
-				.force(force)
-				.save(save)
-				.trxName(trxName);
-
-		if (archiveInfo != null)
-		{
-			requestBuilder
-					.isReport(archiveInfo.isReport())
-					.recordRef(archiveInfo.getRecordRef())
-					.processId(archiveInfo.getProcessId())
-					.pinstanceId(archiveInfo.getPInstanceId())
-					.archiveName(archiveInfo.getName())
-					.bpartnerId(archiveInfo.getBpartnerId());
-		}
-
-		return requestBuilder.build();
-	}
-
 	private ArchiveResult archive0(@NonNull final ArchiveRequest request)
 	{
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
 		final Properties ctxToUse = createContext(request);
 
-		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
+		final IArchiveStorage storage = archiveStorageFactory.getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse, request.getTrxName());
 		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
@@ -150,6 +110,18 @@ public class ArchiveBL implements IArchiveBL
 		//FRESH-349: Set ad_pinstance
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
 
+		// Printing:
+		{
+			archive.setIsDirectEnqueue(request.isDirectEnqueue());
+			archive.setIsDirectProcessQueueItem(request.isDirectProcessQueueItem()); // create the print job or store PDF; not only enqueue to printing queue
+
+			// NOTE: It doesn't make sense to persist this value, but it needs to be available in case the system has to create a printing queue item for this archive
+			// (task https://github.com/metasfresh/metasfresh/issues/1240)
+			COPIES_PER_ARCHIVE.setValue(archive, request.getCopies());
+		}
+
+		//
+		// Save
 		if (request.isSave())
 		{
 			InterfaceWrapperHelper.save(archive);
@@ -179,7 +151,7 @@ public class ArchiveBL implements IArchiveBL
 	 * Return the BPartner's language, in case the request has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
 	 * in the given context
 	 * <p>
-	 * Task https://metasfresh.atlassian.net/browse/FRESH-218
+	 * Task <a href="https://metasfresh.atlassian.net/browse/FRESH-218">FRESH-218</a>
 	 */
 	private String getLanguageFromReport(
 			@NonNull final Properties ctx,
@@ -341,19 +313,19 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public byte[] getBinaryData(final I_AD_Archive archive)
 	{
-		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryData(archive);
+		return archiveStorageFactory.getArchiveStorage(archive).getBinaryData(archive);
 	}
 
 	@Override
 	public void setBinaryData(final I_AD_Archive archive, final byte[] data)
 	{
-		Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).setBinaryData(archive, data);
+		archiveStorageFactory.getArchiveStorage(archive).setBinaryData(archive, data);
 	}
 
 	@Override
 	public InputStream getBinaryDataAsStream(final I_AD_Archive archive)
 	{
-		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryDataAsStream(archive);
+		return archiveStorageFactory.getArchiveStorage(archive).getBinaryDataAsStream(archive);
 	}
 
 	@Override

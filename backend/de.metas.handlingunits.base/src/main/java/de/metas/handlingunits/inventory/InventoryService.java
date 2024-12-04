@@ -22,6 +22,7 @@ import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
@@ -87,7 +88,10 @@ public class InventoryService
 		return new InventoryService(
 				new InventoryRepository(),
 				SourceHUsService.get(),
-				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())
+				new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance)
+				)
 		);
 	}
 
