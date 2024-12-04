@@ -42,14 +42,17 @@ export const printHULabels = ({ huId, huLabelProcessId, nrOfCopies }) => {
     })
     .then((response) => {
       if (response?.printData?.length > 0) {
-        response.printData.forEach((printDataItem) => {
-          console.log('printHULabels - item:', { printDataItem });
-          postToAndroidPrinterProxy({
-            printerUri: printDataItem.printerURI,
-            fileName: printDataItem.filename,
-            dataBase64Encoded: printDataItem.dataBase64Encoded,
-          });
-        });
+        return Promise.all(
+          response.printData.map((printDataItem) => {
+            return postToAndroidPrinterProxy({
+              printerUri: printDataItem.printerURI,
+              fileName: printDataItem.filename,
+              dataBase64Encoded: printDataItem.dataBase64Encoded,
+            });
+          })
+        );
+      } else {
+        return response;
       }
     });
 };
