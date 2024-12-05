@@ -259,7 +259,7 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * Set the POReference of the C_Order, in case of Sales Orders
+	 * Set the POReference of the C_Order
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updatePOReference(final I_C_Invoice_Candidate ic)

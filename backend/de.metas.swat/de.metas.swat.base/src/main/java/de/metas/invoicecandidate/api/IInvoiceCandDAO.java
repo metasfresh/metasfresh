@@ -90,6 +90,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
+	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine, boolean onlyActive);
+
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(InvoiceId invoiceId);
 
 	/**

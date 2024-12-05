@@ -45,5 +45,5 @@ public class ModuleConfigCreateRequest
 
 	@NonNull ModularContractType modularContractType;
 
-	boolean processed ;
+	boolean generated;
 }
