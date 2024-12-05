@@ -1,3 +1,11 @@
+-- Delete just in case 5689660_sys_C_InvoiceCandidate_UserElementStrings_Fields.sql is already applied (field only added there)
+-- 2024-12-03T12:19:43.726Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=716043
+;
+
+-- 2024-12-03T12:19:43.729Z
+DELETE FROM AD_Field WHERE AD_Field_ID=716043
+;
 
 -- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Pauschale - Vertragsperiode
 -- Column: C_Invoice_Candidate.C_Flatrate_Term_ID
