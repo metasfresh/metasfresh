@@ -243,15 +243,6 @@ public class ModularContractSettingsRepository
 				.build();
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
-	{
-		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
-				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)
-				.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
-				.anyMatch();
-	}
-
 	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
 	{
 		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
@@ -464,7 +455,7 @@ public class ModularContractSettingsRepository
 		module.setModCntr_Type_ID(request.getModularContractType().getId().getRepoId());
 		module.setSeqNo(request.getSeqNo().toInt());
 		module.setName(request.getName());
-		module.setProcessed(request.isProcessed());
+		module.setIsGenerated(request.isGenerated());
 		saveRecord(module);
 	}
 
@@ -526,10 +517,10 @@ public class ModularContractSettingsRepository
 			existingModuleConfig.setInvoicingGroup(invoicingGroupType.getCode());
 		}
 
-		final Boolean processed = request.getProcessed();
-		if(processed != null)
+		final Boolean generated = request.getGenerated();
+		if(generated != null)
 		{
-			existingModuleConfig.setProcessed(processed);
+			existingModuleConfig.setIsGenerated(generated);
 		}
 
 		saveRecord(existingModuleConfig);
@@ -708,6 +699,6 @@ public class ModularContractSettingsRepository
 				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, deleteRequest.getModularContractSettingsId())
 				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, deleteRequest.getModularContractTypeId())
 				.create()
-				.delete(false);
+				.delete();
 	}
 }

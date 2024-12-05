@@ -68,7 +68,7 @@ public class C_Invoice
 		contractService.afterInvoiceReverse(invoiceRecord, logHandlerRegistry);
 		invokeHandlerForEachLine(invoiceRecord, REVERSED);
 
-		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) && !invoiceRecord.isSOTrx())
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
 			final FlatrateTermId flatrateTermId = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 			logsRecomputationService.recomputeAllFinalInvoiceRelatedLogsLinkedTo(flatrateTermId);

@@ -255,7 +255,7 @@ public class ComputingMethodService
 		{
 			return false;
 		}
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord, false);
 
 		if (invoiceCandidates.isEmpty())
 		{
