@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,25 @@
  * #L%
  */
 
-package de.metas.externalsystem.leichmehl;
+package de.metas.common.rest_api.v2.adprocess;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
 @Value
 @Builder
-public class LeichMehlPluFileConfigGroup
+@JsonDeserialize(builder = JsonAdProcessResponse.JsonAdProcessResponseBuilder.class)
+public class JsonAdProcessResponse
 {
-	@NonNull
-	LeichMehlPluFileConfigGroupId id;
+	public static JsonAdProcessResponse of(@NonNull final JsonMetasfreshId createdBOMProductId)
+	{
+		return new JsonAdProcessResponse(createdBOMProductId);
+	}
 
-	@NonNull
-	String name;
-
-	/**
-	 * {@code AD_Process.Value} of the optional postgREST-Process which we can instruct externalSystems to invoke via the metasfresh process-API.
-	 * Supposed to return additional {@code PP_Order} related data.
-	 */
-	@Nullable
-	String customQueryProcessValue;
-	
-	@NonNull
-	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigs;
+	@JsonProperty("createdBOMProductId")
+	JsonMetasfreshId createdBOMProductId;
 }

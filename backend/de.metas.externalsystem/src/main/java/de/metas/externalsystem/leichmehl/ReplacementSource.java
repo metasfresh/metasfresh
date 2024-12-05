@@ -35,7 +35,8 @@ import javax.annotation.Nullable;
 public enum ReplacementSource implements ReferenceListAwareEnum
 {
 	Product(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_Product),
-	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder);
+	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder),
+	CustomPRocessResult(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_CustomProcessResult);
 
 	@Getter
 	@NonNull

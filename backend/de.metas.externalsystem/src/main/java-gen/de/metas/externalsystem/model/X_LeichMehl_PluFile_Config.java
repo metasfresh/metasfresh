@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements I_LeichMehl_PluFile_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 847609254L;
+	private static final long serialVersionUID = 1246126167L;
 
     /** Standard Constructor */
     public X_LeichMehl_PluFile_Config (final Properties ctx, final int LeichMehl_PluFile_Config_ID, @Nullable final String trxName)
@@ -109,6 +109,8 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	public static final String REPLACEMENTSOURCE_Product = "P";
 	/** PPOrder = PP */
 	public static final String REPLACEMENTSOURCE_PPOrder = "PP";
+	/** CustomProcessResult = CP */
+	public static final String REPLACEMENTSOURCE_CustomProcessResult = "CP";
 	@Override
 	public void setReplacementSource (final java.lang.String ReplacementSource)
 	{

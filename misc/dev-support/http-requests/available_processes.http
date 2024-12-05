@@ -1,0 +1,18 @@
+
+#GET localhost:8282/api/v2/processes/available
+#Authorization: 2ac8d2ac2c0d485c970db5d96f89d809
+
+###
+
+POST localhost:8282/api/v2/processes/ExternalSystem_Config_LeichMehl_CustomQuery/invoke
+Authorization: 2ac8d2ac2c0d485c970db5d96f89d809
+Content-Type: application/json
+
+{
+  "processParameters": [
+    {
+      "name": "PP_Order_ID",
+      "value": "1234"
+    }
+  ]
+}
