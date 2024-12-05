@@ -611,15 +611,25 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveIcForIl(final I_C_InvoiceLine invoiceLine)
+	public List<I_C_Invoice_Candidate> retrieveIcForIl(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		return retrieveIcForIl(invoiceLine, true);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveIcForIl(@NonNull final I_C_InvoiceLine invoiceLine, final boolean onlyActive)
 	{
 		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID());
 
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = ilaQueryBuilder
-				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
-				.addOnlyActiveRecordsFilter();
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID);
+
+		if(onlyActive)
+		{
+			icQueryBuilder.addOnlyActiveRecordsFilter();
+		}
 
 		icQueryBuilder.orderBy()
 				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID);

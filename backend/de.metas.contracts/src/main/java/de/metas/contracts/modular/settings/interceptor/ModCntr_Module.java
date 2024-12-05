@@ -72,7 +72,6 @@ import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_SALES_METH
 @AllArgsConstructor
 public class ModCntr_Module
 {
-	private static final AdMessageKey MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = AdMessageKey.of("ModCntr_Settings_cannot_be_changed");
 	private static final AdMessageKey productNotInPS = AdMessageKey.of("de.metas.pricing.ProductNotInPriceSystem");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresRawProduct = AdMessageKey.of("ComputingMethodTypeRequiresRawProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresProcessedProduct = AdMessageKey.of("ComputingMethodTypeRequiresProcessedProduct");
@@ -107,17 +106,6 @@ public class ModCntr_Module
 		modularContractSettingsService.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
-	public void validateSettingsNotUsedAlready(@NonNull final I_ModCntr_Module type)
-	{
-		final ModularContractSettingsId modCntrSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
-
-		if (modularContractSettingsService.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
-		{
-			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
-		}
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateSettings(@NonNull final I_ModCntr_Module record)
 	{
@@ -136,7 +124,7 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, skipIfCopying = true)
 	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
 	{
 		final ModuleConfig module = modularContractSettingsRepository.fromRecord(record);
@@ -145,7 +133,6 @@ public class ModCntr_Module
 		final ComputingMethodType computingMethodType = type.getComputingMethodType();
 		final ModularContractSettings settings = modularContractSettingsService.getById(modularContractSettingsId);
 		final ProductId productId = module.getProductId();
-		final Optional<InvoicingGroupId> invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId());
 
 		final boolean hasAlreadyComputingTypeAndProduct = settings.countMatching(computingMethodType, productId) > 1;
 		if (hasAlreadyComputingTypeAndProduct)
@@ -222,14 +209,30 @@ public class ModCntr_Module
 				{
 					throw new AdempiereException(ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM, InvoicingGroupType.COSTS.getDisplayName());
 				}
-				if (invoicingGroupId.isEmpty())
-				{
-					throw new AdempiereException(ERROR_INV_GROUP_NOT_FOUND);
-				}
 			}
 			case PurchaseAverageAddedValueOnShippedQuantity, PurchaseStorageCost -> modularContractSettingsService.upsertDefinitiveModule(module);
 		}
 		deleteDefinitiveModulesIfNeeded(record);
+	}
+
+	// separate interceptor, because this needs also be checked on clone and doesn't need to be checked before deleteDefinitiveModulesIfNeeded
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void validateNewInvoicingGroupExists(@NonNull final I_ModCntr_Module record)
+	{
+		final ModuleConfig module = modularContractSettingsRepository.fromRecord(record);
+		final ModularContractSettingsId modularContractSettingsId = module.getModularContractSettingsId();
+		final ComputingMethodType computingMethodType = module.getComputingMethodType();
+		if (!computingMethodType.isInterestSpecificMethod())
+		{
+			return;
+		}
+
+		final ModularContractSettings settings = modularContractSettingsService.getById(modularContractSettingsId);
+		final Optional<InvoicingGroupId> invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId());
+		if (invoicingGroupId.isEmpty())
+		{
+			throw new AdempiereException(ERROR_INV_GROUP_NOT_FOUND);
+		}
 	}
 
 	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)

@@ -40,5 +40,5 @@ public class ModularContractModuleUpdateRequest
 	@Nullable String moduleName;
 	@Nullable SeqNo seqno;
 	@Nullable InvoicingGroupType invoicingGroupType;
-	@Nullable Boolean processed;
+	@Nullable Boolean generated;
 }

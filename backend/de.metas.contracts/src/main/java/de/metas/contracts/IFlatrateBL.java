@@ -129,6 +129,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
 
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
 	/**
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>

@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
@@ -82,7 +82,7 @@ public class LogsRecomputationService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	@NonNull
@@ -94,7 +94,7 @@ public class LogsRecomputationService
 
 	public void recomputeAllFinalInvoiceRelatedLogsLinkedTo(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.getById(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTerm = flatrateBL.getById(flatrateTermId);
 
 		final OrderId flatrateTermOrderId = OrderId.ofRepoId(flatrateTerm.getC_Order_Term_ID());
 		inOutDAO.retrieveByQuery(InOutQuery.builder()
@@ -132,6 +132,8 @@ public class LogsRecomputationService
 					.map(I_PP_Order::getPP_Order_ID)
 					.map(PPOrderId::ofRepoId)
 					.forEach(this::recomputeForPPOrder);
+
+			recomputeForFlatrate(flatrateTerm);
 		}
 	}
 
@@ -168,6 +170,17 @@ public class LogsRecomputationService
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.userInChargeId(Env.getLoggedUserId())
 								.build())
+		);
+	}
+
+	private void recomputeForFlatrate(@NonNull final I_C_Flatrate_Term term)
+	{
+		modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(term))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()
 		);
 	}
 
@@ -215,10 +228,10 @@ public class LogsRecomputationService
 				.forEach(this::recomputeForOrder);
 	}
 
-	public void recomputeForFlatrate(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	public void recomputeForFlatrateInNewTrx(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
-		flatrateDAO.stream(filter)
-				.forEach(this::recomputeForFlatrate);
+		flatrateBL.stream(filter)
+				.forEach(this::recomputeForFlatrateInNewTrx);
 	}
 
 	public void recomputeForInventory(@NonNull final IQueryFilter<I_M_Inventory> filter)
@@ -302,7 +315,7 @@ public class LogsRecomputationService
 		);
 	}
 
-	private void recomputeForFlatrate(@NonNull final I_C_Flatrate_Term term)
+	private void recomputeForFlatrateInNewTrx(@NonNull final I_C_Flatrate_Term term)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
