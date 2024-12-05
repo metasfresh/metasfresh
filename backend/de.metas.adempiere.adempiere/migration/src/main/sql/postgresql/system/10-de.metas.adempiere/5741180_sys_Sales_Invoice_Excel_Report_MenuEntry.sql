@@ -31,3 +31,78 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540384, SeqNo=7, Updated=now(), UpdatedBy=100
 -- 2024-12-05T15:54:44.873539083Z
 UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2024-12-05 16:54:44.873','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Menu_ID=542186
 ;
+
+
+-- Run mode: SWING_CLIENT
+
+-- Reordering children of `Fakturierung`
+-- Node name: `Rechnung-Überprüfung`
+-- 2024-12-05T16:38:38.937Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541712 AND AD_Tree_ID=10
+;
+
+-- Node name: `Rechnungsdisposition (C_Invoice_Candidate)`
+-- 2024-12-05T16:38:38.942Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000104 AND AD_Tree_ID=10
+;
+
+-- Node name: `Rechnungsdisposition Einkauf (C_Invoice_Candidate)`
+-- 2024-12-05T16:38:38.943Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541537 AND AD_Tree_ID=10
+;
+
+-- Node name: `Debitoren Rechnung (C_Invoice)`
+-- 2024-12-05T16:38:38.944Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000085 AND AD_Tree_ID=10
+;
+
+-- Node name: `Kreditoren Rechnung (C_Invoice)`
+-- 2024-12-05T16:38:38.945Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000086 AND AD_Tree_ID=10
+;
+
+-- Node name: `Zollrechnung (C_Customs_Invoice)`
+-- 2024-12-05T16:38:38.945Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541271 AND AD_Tree_ID=10
+;
+
+-- Node name: `Lieferung-Zollrechnung Zuordnung (M_InOutLine_To_C_Customs_Invoice_Line)`
+-- 2024-12-05T16:38:38.947Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541418 AND AD_Tree_ID=10
+;
+
+-- Node name: `Aktionen`
+-- 2024-12-05T16:38:38.947Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000059 AND AD_Tree_ID=10
+;
+
+-- Node name: `Berichte`
+-- 2024-12-05T16:38:38.948Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000067 AND AD_Tree_ID=10
+;
+
+-- Node name: `Einstellungen`
+-- 2024-12-05T16:38:38.949Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000077 AND AD_Tree_ID=10
+;
+
+-- Node name: `Rechnungspool (C_DocType_Invoicing_Pool)`
+-- 2024-12-05T16:38:38.950Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542033 AND AD_Tree_ID=10
+;
+
+-- Node name: `Auswahl einreihen für Fakturierung und PDF-Druck (de.metas.printing.process.C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating)`
+-- 2024-12-05T16:38:38.951Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541886 AND AD_Tree_ID=10
+;
+
+-- Node name: `Mahnungen verarbeiten und PDF-Druck auslösen (de.metas.dunning.process.C_Dunning_Candidate_Process_AutomaticallyPDFPrinting)`
+-- 2024-12-05T16:38:38.952Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541929 AND AD_Tree_ID=10
+;
+
+-- Node name: `Umsatz mit Gutschriften (Excel) (de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)`
+-- 2024-12-05T16:38:38.953Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542186 AND AD_Tree_ID=10
+;
+

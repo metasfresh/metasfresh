@@ -1,7 +1,7 @@
 
 -- Value: Sales Invoice Excel Report
 -- 2024-12-05T15:12:38.369474986Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Created,CreatedBy,DoNotQuoteRows,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,StoreProcessResultFileOn,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585439,'Y',TO_TIMESTAMP('2024-12-05 16:12:38.367','YYYY-MM-DD HH24:MI:SS.US'),100,'N','D','Y','N','N','N','Y','N','N','N','N','Y','N','Y','Umsatz mit Gutschriften (Excel)','json','N','N','xls','D','Java',TO_TIMESTAMP('2024-12-05 16:12:38.367','YYYY-MM-DD HH24:MI:SS.US'),100,'Sales Invoice Excel Report')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585439,'Y',TO_TIMESTAMP('2024-12-05 16:12:38.367','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','N','N','Y','N','N','N','N','Y','N','Y','Umsatz mit Gutschriften (Excel)','json','N','N','xls','Java',TO_TIMESTAMP('2024-12-05 16:12:38.367','YYYY-MM-DD HH24:MI:SS.US'),100,'Sales Invoice Excel Report')
 ;
 
 -- 2024-12-05T15:12:38.379102174Z
@@ -60,14 +60,6 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- ParameterName: DateInvoiced
 -- 2024-12-05T15:16:42.996442487Z
 UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2024-12-05 16:16:42.996','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542908
-;
-
--- 2024-12-05T15:16:43.021761231Z
-INSERT INTO T_WEBUI_ViewSelection_ToDelete(View_UUID) VALUES (?)
-;
-
--- 2024-12-05T15:16:43.024286664Z
-INSERT INTO T_WEBUI_ViewSelection_ToDelete(View_UUID) VALUES (?)
 ;
 
 -- Process: Sales Invoice Excel Report(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
@@ -239,3 +231,37 @@ UPDATE AD_Element_Trl SET PrintName='Sales Invoice Report (Excel)',Updated=TO_TI
 -- 2024-12-05T15:55:16.250714723Z
 UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2024-12-05 16:55:16.25','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585439
 ;
+
+
+
+
+
+
+-- Value: Sales Invoice Report (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2024-12-05T16:49:03.374Z
+UPDATE AD_Process SET SQLStatement='SELECT sales_invoice_excel_report(''@DateInvoiced@''::date, ''@DeliveryDate@''::date)',Updated=TO_TIMESTAMP('2024-12-05 18:49:03.372','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585439
+;
+
+
+-- Value: Sales Invoice Report (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2024-12-05T16:54:05.797Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM sales_invoice_excel_report(''@DateInvoiced@''::date, ''@DeliveryDate@''::date)',Updated=TO_TIMESTAMP('2024-12-05 18:54:05.796','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585439
+;
+
+
+-- Value: Sales Invoice Report (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2024-12-05T16:58:30.111Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM sales_invoice_excel_report(''@DateInvoiced/NULL@''::date, ''@DeliveryDate/NULL@''::date)',Updated=TO_TIMESTAMP('2024-12-05 18:58:30.109','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585439
+;
+
+
+-- Value: Sales Invoice Report (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2024-12-05T17:07:50.550Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM sales_invoice_excel_report(@DateInvoiced/quotedIfNotDefault/NULL@, @DeliveryDate/quotedIfNotDefault/NULL@)',Updated=TO_TIMESTAMP('2024-12-05 19:07:50.549','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585439
+;
+
+

@@ -101,3 +101,22 @@ UPDATE AD_Element_Trl SET PrintName='BP Group Name',Updated=TO_TIMESTAMP('2024-1
 -- 2024-12-05T14:13:32.001588526Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583386,'fr_CH') 
 ;
+
+
+
+-- 2024-12-05T17:14:19.985Z
+UPDATE AD_Element SET ColumnName='BPGroupName',Updated=TO_TIMESTAMP('2024-12-05 19:14:19.985','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583386
+;
+
+-- 2024-12-05T17:14:19.986Z
+UPDATE AD_Column SET ColumnName='BPGroupName' WHERE AD_Element_ID=583386
+;
+
+-- 2024-12-05T17:14:19.987Z
+UPDATE AD_Process_Para SET ColumnName='BPGroupName' WHERE AD_Element_ID=583386
+;
+
+-- 2024-12-05T17:14:20.023Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583386,'de_DE')
+;
+
