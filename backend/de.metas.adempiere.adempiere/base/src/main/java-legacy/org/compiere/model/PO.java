@@ -2976,6 +2976,15 @@ public abstract class PO
 					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
 
+		//
+		// Create cache invalidation request
+		// (we have to do it here, before we reset all fields)
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+				: null;
+
 		final int columnsCount = p_info.getColumnCount();
 
 		// OK
@@ -3027,15 +3036,11 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if (p_info.isSingleKeyColumnName())
+		if (cacheInvalidateRequest != null)
 		{
 			try
 			{
-				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
-				final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
-						: null;
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, cacheInvalidationTiming);
 			}
 			catch (final Exception ex)
 			{
