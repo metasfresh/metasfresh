@@ -79,7 +79,6 @@ public class PasswordGenerator implements IComponentGenerator
 	@VisibleForTesting
 	static final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
 			AttributeConstants.RouterPassword,
-			AttributeConstants.RouterPassword1,
 			AttributeConstants.RouterPassword2,
 			AttributeConstants.RouterPassword3,
 			AttributeConstants.RouterPassword4,
