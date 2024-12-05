@@ -48,8 +48,8 @@ FROM
 			INNER JOIN C_BPartner_Location bpl ON sp.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
 			INNER JOIN M_Package_HU phu ON sp.M_Package_ID = phu.M_Package_ID AND phu.isActive = 'Y'
 			INNER JOIN M_HU hu ON phu.M_HU_ID = hu.M_HU_ID
-			INNER JOIN M_HU_PI_Item hupii ON hu.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID AND itemtype = 'PM' AND hupii.isActive = 'Y'
-			INNER JOIN M_HU_PackingMaterial hupm ON hupii.M_HU_PackingMaterial_ID = hupm.M_HU_PackingMaterial_ID AND hupm.isActive = 'Y'
+			LEFT OUTER JOIN M_HU_PI_Item hupii ON hu.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID AND itemtype = 'PM' AND hupii.isActive = 'Y'
+			LEFT OUTER JOIN M_HU_PackingMaterial hupm ON hupii.M_HU_PackingMaterial_ID = hupm.M_HU_PackingMaterial_ID AND hupm.isActive = 'Y'
 			LEFT OUTER JOIN M_Tour_Instance ti ON sp.M_ShipperTransportation_ID = ti.M_ShipperTransportation_ID AND ti.isActive = 'Y'
 			LEFT OUTER JOIN M_DeliveryDay dd ON ti.M_Tour_Instance_ID = dd.M_Tour_Instance_ID 
 				AND sp.C_BPartner_ID = dd.C_BPartner_ID AND sp.C_BPartner_Location_ID = dd.C_BPartner_Location_ID
@@ -123,35 +123,37 @@ GROUP BY
 				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="266" y="0" width="64" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb"/>
+				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="330" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
+				<reportElement key="textField-16" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="435" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
+				<reportElement key="textField-16" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="480" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<reportElement key="textField-16" x="482" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="365" y="0" width="35" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+				<reportElement key="textField-16" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -169,14 +171,14 @@ GROUP BY
 	<detail>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="1b4cc2a7-14ad-4b21-8275-fda17943337b"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="149a75da-bec3-4688-8c75-bf3603956ed6"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
@@ -184,28 +186,30 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="480" y="0" width="110" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+				<reportElement key="textField-16" x="482" y="0" width="110" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="330" y="0" width="35" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="266" y="0" width="64" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f"/>
+				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deliverydatetimemax}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="435" y="0" width="45" height="12" forecolor="#000000" uuid="056e2312-4c94-44aa-b184-d3066e7a8b83"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="056e2312-4c94-44aa-b184-d3066e7a8b83"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -213,14 +217,14 @@ GROUP BY
     ($F{qty}.intValue() == 1? $R{Palette}: $R{Palettes}):
     ($F{qty}.intValue() == 1? $R{Unit}: $R{Units})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="365" y="0" width="35" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtytu}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-16" x="400" y="0" width="35" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
