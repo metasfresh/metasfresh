@@ -108,22 +108,22 @@ GROUP BY
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
-				<reportElement key="textField-16" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPName}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -131,36 +131,36 @@ GROUP BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="482" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="482" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-16" x="400" y="0" width="35" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
+			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="400" y="0" width="35" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
