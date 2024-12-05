@@ -5,12 +5,14 @@ FROM metasfresh/metas-db:$REFNAME as db
 # https://cadu.dev/creating-a-docker-image-with-database-preloaded/
 # dirty but works
 
+# TODO: see how RunMigrationScriptsTest.java does it using our own java-tool. It's better for different reasons.
+
 FROM db as init
 
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
 RUN /usr/local/bin/docker-entrypoint.sh postgres
 
-FROM postgres:15.1 as final
+FROM postgres:15.4 as final
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
 

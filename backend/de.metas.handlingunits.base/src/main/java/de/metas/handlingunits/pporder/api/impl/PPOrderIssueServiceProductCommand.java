@@ -43,7 +43,6 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -171,13 +170,6 @@ class PPOrderIssueServiceProductCommand
 				.build());
 	}
 
-	private I_PP_Order getPPOrderRecord()
-	{
-		return _ppOrderRecord == null
-				? _ppOrderRecord = ppOrderBL.getById(request.getPpOrderId())
-				: _ppOrderRecord;
-	}
-
 	private I_PP_Order_BOMLine getBOMLineRecord()
 	{
 		return _bomLineRecord == null
@@ -204,8 +196,16 @@ class PPOrderIssueServiceProductCommand
 	@NonNull
 	private Quantity getQtyToIssueForOneFinishedGood()
 	{
-		final I_PP_Order_BOMLine bomLine = getBOMLineRecord(); 
-		return Quantitys.create(bomLine.getQtyRequiered(), UomId.ofRepoId(bomLine.getC_UOM_ID()));
+		return _qtyToIssueForOneFinishedGood == null
+				? _qtyToIssueForOneFinishedGood = computeQtyToIssueForOneFinishedGood()
+				: _qtyToIssueForOneFinishedGood;
+	}
+
+	@NonNull
+	private Quantity computeQtyToIssueForOneFinishedGood()
+	{
+		return ppOrderBOMBL.getQuantities(getBOMLineRecord())
+				.getQtyRequired();
 	}
 
 	private List<I_M_HU> splitToOneItemPerHU(final I_PP_Order_Qty finishedGoodsReceiveCandidate)
