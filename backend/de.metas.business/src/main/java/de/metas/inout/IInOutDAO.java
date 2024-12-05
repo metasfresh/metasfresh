@@ -21,6 +21,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -162,4 +163,6 @@ public interface IInOutDAO extends ISingletonService
 	Stream<I_M_InOut> stream(@NonNull IQueryFilter<I_M_InOut> inOutFilter);
 
 	Stream<I_M_InOut> retrieveByQuery(@NonNull InOutQuery query);
+
+	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 }
