@@ -21,16 +21,9 @@
  */
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.product.ProductCategoryId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
@@ -333,6 +326,14 @@ public class MProduct extends X_M_Product
 				log.info("This M_Product is created via CopyRecordSupport; -> don't insert the default _acct records");
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
+		}
+
+		// Product category changed, then update the accounts
+		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+		{
+			update_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
+					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 		}
 		
 		return true;

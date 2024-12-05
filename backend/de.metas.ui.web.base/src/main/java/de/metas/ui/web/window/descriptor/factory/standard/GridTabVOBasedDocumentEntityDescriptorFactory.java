@@ -707,7 +707,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Generic ZoomInto button
 		if (tableName != null)
 		{
-			if (adColumnBL.isRecordIdColumnName(fieldName))
+			if (IColumnBL.isRecordIdColumnName(fieldName))
 			{
 				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)

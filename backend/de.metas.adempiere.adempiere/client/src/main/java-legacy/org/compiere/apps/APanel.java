@@ -2876,7 +2876,7 @@ public class APanel extends CPanel
 		}
 	}
 
-	private final void actionButton0(final VButton vButton) throws Exception
+	private void actionButton0(final VButton vButton) throws Exception
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
@@ -2890,7 +2890,7 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
-		if (columnBL.isRecordIdColumnName (columnName))
+		if (IColumnBL.isRecordIdColumnName (columnName))
 		{
 			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
 			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);

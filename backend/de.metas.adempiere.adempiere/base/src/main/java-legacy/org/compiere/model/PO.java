@@ -16,14 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -51,7 +50,6 @@ import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
@@ -60,8 +58,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -83,7 +79,6 @@ import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -697,17 +692,6 @@ public abstract class PO
 		return get_Value(index);
 	}   // get_Value
 
-	/**
-	 * Get Encrypted Value
-	 *
-	 * @param columnName column name
-	 * @return value or null
-	 */
-	protected final Object get_ValueE(final String columnName)
-	{
-		return get_Value(columnName);
-	}   // get_ValueE
-
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
 	{
@@ -1077,14 +1061,12 @@ public abstract class PO
 			else if (oldValue != null)
 			{
 				// task 09266: be strict but allow an admin to declare exceptions from the stric rule via AD_SysConfig
-				final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
-				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 				// Value was changed and oldValue was already set
 				// That's an error because user shall not be allowed to change the value of this column
 				final String sysConfigName = "org.compiere.PO." + get_TableName() + "_" + ColumnName + ".ThrowExIfNotUpdateable";
-				final boolean throwException = developerModeBL.isEnabled()
-						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
+				final boolean throwException = services.isDeveloperMode()
+						|| services.getSysConfigBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
 						+ "Note to developer: to bypass this checking you can:\n"
@@ -1192,20 +1174,14 @@ public abstract class PO
 				}
 			}
 			// Validate reference list [1762461]
-			if (p_info.getColumn(index).DisplayType == DisplayType.List &&
-					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
+			if (p_info.getColumn(index).getDisplayType() == DisplayType.List &&
+					p_info.getColumn(index).AD_Reference_Value_ID != null &&
 					valueToUse instanceof String)
 			{
-				final boolean hasListValue = ADReferenceService.get().existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)valueToUse);
-				if (!hasListValue)
+				final ADRefList adRefList = services.getRefListById(p_info.getColumn(index).AD_Reference_Value_ID);
+				if (!adRefList.containsValue((String)valueToUse))
 				{
-					final StringBuilder validValues = new StringBuilder();
-					for (final ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
-					{
-						validValues.append(" - ").append(vp.getValue());
-					}
-					throw new IllegalArgumentException(ColumnName + " Invalid value - "
-							+ valueToUse + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
+					throw new AdempiereException(get_TableName() + "." + ColumnName + " Invalid value - " + valueToUse + " - " + adRefList);
 				}
 			}
 			if (log.isTraceEnabled())
@@ -1453,53 +1429,6 @@ public abstract class PO
 	}   // getColumnName
 
 	/**
-	 * Is Column Mandatory
-	 *
-	 * @param index index
-	 * @return true if column mandatory
-	 */
-	protected final boolean isColumnMandatory(final int index)
-	{
-		return p_info.isColumnMandatory(index);
-	}   // isColumnNandatory
-
-	/**
-	 * Is Column Updateable
-	 *
-	 * @param index index
-	 * @return true if column updateable
-	 */
-	protected final boolean isColumnUpdateable(final int index)
-	{
-		return p_info.isColumnUpdateable(index);
-	}    // isColumnUpdateable
-
-	/**
-	 * Get Column DisplayType
-	 *
-	 * @param index index
-	 * @return display type
-	 */
-	protected final int get_ColumnDisplayType(final int index)
-	{
-		return p_info.getColumnDisplayType(index);
-	}	// getColumnDisplayType
-
-	/**
-	 * Get Lookup
-	 *
-	 * @param index index
-	 * @return Lookup or null
-	 */
-	protected final Lookup get_ColumnLookup(final int index)
-	{
-		// NOTE: in case the PO was saved/deleted from a UI window then WindowNo is available
-		final int windowNo = get_WindowNo();
-
-		return p_info.getColumnLookup(getCtx(), windowNo, index);
-	}   // getColumnLookup
-
-	/**
 	 * Get Column Index
 	 *
 	 * @param columnName column name
@@ -1509,42 +1438,6 @@ public abstract class PO
 	{
 		return p_info.getColumnIndex(columnName);
 	}   // getColumnIndex
-
-	/**
-	 * Get Display Value of value
-	 *
-	 * @param columnName columnName
-	 * @param currentValue current value
-	 * @return String value with "./." as null
-	 */
-	public final String get_DisplayValue(final String columnName, final boolean currentValue)
-	{
-		final Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
-		if (value == null)
-		{
-			return "./.";
-		}
-		final String retValue = value.toString();
-		final int index = get_ColumnIndex(columnName);
-		if (index < 0)
-		{
-			return retValue;
-		}
-		final int dt = get_ColumnDisplayType(index);
-		if (DisplayType.isText(dt) || DisplayType.YesNo == dt)
-		{
-			return retValue;
-		}
-		// Lookup
-		final Lookup lookup = get_ColumnLookup(index);
-		if (lookup != null)
-		{
-			final IValidationContext evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(this);
-			return lookup.getDisplay(evalCtx, value);
-		}
-		// Other
-		return retValue;
-	}	// get_DisplayValue
 
 	/**
 	 * Copy old values of From to new values of To.
@@ -1691,7 +1584,13 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
+
+			if (!services.isPerfMonActive())
+			{
+				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
+			}
+			return services.performanceMonitoringServiceLoad(
+					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
 		}
 		finally
 		{
@@ -1788,8 +1687,6 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		loadComplete(success);
@@ -1927,8 +1824,6 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return success;
 	}
@@ -2300,33 +2195,6 @@ public abstract class PO
 			}
 		}
 	}	// setKeyInfo
-
-	/**************************************************************************
-	 * Are all mandatory Fields filled (i.e. can we save)?.
-	 * Stops at first null mandatory field
-	 *
-	 * @return true if all mandatory fields are ok
-	 */
-	protected final boolean isMandatoryOK()
-	{
-		final int size = get_ColumnCount();
-		for (int i = 0; i < size; i++)
-		{
-			if (p_info.isColumnMandatory(i))
-			{
-				if (p_info.isVirtualColumn(i))
-				{
-					continue;
-				}
-				if (get_Value(i) == null || get_Value(i).equals(Null.NULL))
-				{
-					// log.info(p_info.getColumnName(i));
-					return false;
-				}
-			}
-		}
-		return true;
-	}   // isMandatoryOK
 
 	/**************************************************************************
 	 * Set AD_Client
@@ -2701,7 +2569,7 @@ public abstract class PO
 					.setAD_PInstance_ID(adPInstanceId) // FRESH-314
 					.setTrxName(m_trxName)
 					.setAD_Table_ID(adTableId)
-					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID())
+					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID().getRepoId())
 					.setRecord_ID(recordId)
 					.setAD_Client_ID(adClientId)
 					.setAD_Org_ID(adOrgId)
@@ -2788,6 +2656,18 @@ public abstract class PO
 	 * @see #save()
 	 */
 	public final void saveEx() throws AdempiereException
+	{
+		if (!services.isPerfMonActive())
+		{
+			saveEx0();
+		}
+		else
+		{
+			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+		}
+	}
+
+	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -2900,6 +2780,22 @@ public abstract class PO
 
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
 		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
+
+		//
+		// Create cache invalidation request
+		if (p_info.isSingleKeyColumnName())
+		{
+			try
+			{
+				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.BEFORE_NEW : ModelCacheInvalidationTiming.BEFORE_CHANGE;
+				cacheInvalidationService.invalidateForModel(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on before new/change failed for {}. Ignored.", this, ex);
+			}
+		}
 
 		// Save
 		if (newRecord)
@@ -3049,10 +2945,9 @@ public abstract class PO
 			}
 		}
 
-		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
-
 		if (get_ID() > 0)
 		{
+			final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
 			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
 		}
 
@@ -3210,9 +3105,9 @@ public abstract class PO
 				continue;
 			}
 			// Update Document No
-			if (columnName.equals("DocumentNo"))
+			if (columnName.equals("DocumentNo") && p_info.isUseDocSequence(i))
 			{
-				final String documentNo = (String)value;
+				final String documentNo = (String)Null.unbox(value);
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -3222,7 +3117,7 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
-					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
@@ -3247,7 +3142,10 @@ public abstract class PO
 				}
 				else
 				{
-					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+					if (is_ValueChanged(i))
+					{
+						log.warn("DocumentNo updated: {} -> {}", m_oldValues[i], value);
+					}
 				}
 			}
 
@@ -3332,9 +3230,6 @@ public abstract class PO
 				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
-			/**
-			 * @todo status locking goes here
-			 */
 
 			//
 			// Execute UPDATE SQL
@@ -3506,7 +3401,7 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
-					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
@@ -3529,7 +3424,7 @@ public abstract class PO
 					}
 					set_ValueNoCheck(columnName, value);
 
-					Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
+					services.fireDocumentNoChange(this, value); // task 09776
 				}
 			}
 		}
@@ -4070,6 +3965,14 @@ public abstract class PO
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
 		//
+		// Create cache invalidation request
+		// We have to do it here, before we actually delete in case we have to compute what rows are "disappearing" from a view because this record was deleted.
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
+				: null;
+
+		//
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
 				.append(p_info.getTableName())
@@ -4091,14 +3994,6 @@ public abstract class PO
 
 		// Save ID
 		m_idOld = get_ID();
-
-		//
-		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields)
-		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
-				: null;
 
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
@@ -4349,6 +4244,67 @@ public abstract class PO
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
+
+
+
+	public final boolean update_Accounting(
+			@NonNull final String acctTable,
+			@NonNull final String acctBaseTable,
+			@Nullable final String whereClause)
+	{
+		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
+		if(acctInfo == null)
+		{
+			log.warn("No accounting info found for {}. Skipping", acctTable);
+			return false;
+		}
+
+		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
+
+		// Create SQL Statement - UPDATE
+		final StringBuilder sb = new StringBuilder("UPDATE ")
+				.append(acctTable)
+				.append(" SET ")
+				.append("( Updated, UpdatedBy ");
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			sb.append("\n, ").append(acctColumnName);
+		}
+		// .. SELECT
+		sb.append("\n) = (SELECT ")
+				.append(" now(),")
+				.append(getUpdatedBy());
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			{
+				sb.append("\n, p.").append(acctColumnName);
+			}
+			else
+			{
+				sb.append("\n, NULL /* missing ").append(acctBaseTable).append(".").append(acctColumnName).append(" */");
+			}
+		}
+		// .. FROM
+		sb.append("\n FROM ").append(acctBaseTable)
+				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
+
+		if (whereClause != null && whereClause.length() > 0)
+		{
+			sb.append(" AND ").append(whereClause);
+		}
+
+		sb.append("\n AND EXISTS (SELECT 1 FROM ").append(acctTable)
+				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
+				.append(get_TableName()).append("_ID=").append(get_ID()).append("))");
+
+		sb.append("\n WHERE ")
+				.append(get_TableName()).append("_ID=").append(get_ID());
+		//
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
+		return no > 0;
+	}	// update_Accounting
+
 
 	/**
 	 * Delete Accounting records.

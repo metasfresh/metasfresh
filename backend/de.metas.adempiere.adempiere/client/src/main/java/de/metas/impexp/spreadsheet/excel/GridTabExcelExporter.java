@@ -21,12 +21,9 @@
  */
 package de.metas.impexp.spreadsheet.excel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import de.metas.adempiere.service.IColumnBL;
+import lombok.Builder;
+import lombok.NonNull;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabLayoutMode;
@@ -36,10 +33,10 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Excel Exporter Adapter for GridTab
@@ -175,7 +172,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
-		if (mField.getColumnName().endsWith("_ID") && !Services.get(IColumnBL.class).isRecordIdColumnName(mField.getColumnName()))
+		if (mField.getColumnName().endsWith("_ID") && !IColumnBL.isRecordIdColumnName(mField.getColumnName()))
 		{
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);

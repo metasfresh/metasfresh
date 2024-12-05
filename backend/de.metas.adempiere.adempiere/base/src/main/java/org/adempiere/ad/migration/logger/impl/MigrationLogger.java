@@ -27,6 +27,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.logger.TableNamesSkipList;
@@ -175,7 +176,7 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
-		data.setAD_Column_ID(infoColumn.getAD_Column_ID());
+		data.setAD_Column_ID(AdColumnId.toRepoId(infoColumn.getAD_Column_ID()));
 		boolean create = false;
 
 		//

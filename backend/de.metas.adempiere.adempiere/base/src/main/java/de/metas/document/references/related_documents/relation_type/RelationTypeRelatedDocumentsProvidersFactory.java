@@ -35,6 +35,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -189,7 +190,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 
 		final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
-		final int keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
+		final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
 
 		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
 

@@ -595,7 +595,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
 	{
 		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
-		final ReferenceId paymentRuleReferenceId = ReferenceId.ofRepoId(invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule));
+		final ReferenceId paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
 		final Set<String> paymentRules = adReferenceService.getRefListById(paymentRuleReferenceId).getValues();
 		if (paymentRules == null || paymentRules.isEmpty())
