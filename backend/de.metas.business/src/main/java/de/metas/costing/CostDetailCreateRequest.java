@@ -19,7 +19,6 @@ import org.adempiere.service.ClientId;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -67,7 +66,6 @@ public class CostDetailCreateRequest
 	@Nullable String description;
 
 	@Nullable CostAmount explicitCostPrice;
-	@Nullable CostAmountAndQty externallyOwned;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -85,8 +83,7 @@ public class CostDetailCreateRequest
 			@Nullable final CurrencyConversionContext currencyConversionContext,
 			@NonNull final Instant date,
 			@Nullable final String description,
-			@Nullable final CostAmount explicitCostPrice,
-			@Nullable final CostAmountAndQty externallyOwned)
+			@Nullable final CostAmount explicitCostPrice)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
@@ -103,7 +100,6 @@ public class CostDetailCreateRequest
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
-		this.externallyOwned = externallyOwned;
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -271,6 +267,4 @@ public class CostDetailCreateRequest
 
 		return costDetail;
 	}
-
-	public Optional<CostAmountAndQty> getExternallyOwned() {return Optional.ofNullable(externallyOwned);}
 }

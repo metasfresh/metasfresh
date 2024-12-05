@@ -1,58 +1,33 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Value
 public class ShipmentCosts
 {
 	//
-	// P_ExternallyOwnedStock -> P_COGS
-	@NonNull CostAmountAndQty shippedAndNotified;
-
-	//
 	// P_Asset -> P_COGS
 	@NonNull CostAmountAndQty shippedButNotNotified;
 
-	//
-	// P_ExternallyOwnedStock -> P_Asset
-	@NonNull CostAmountAndQty notifiedButNotShipped;
-
 	@Builder
 	private ShipmentCosts(
-			@Nullable CostAmountAndQty shippedAndNotified,
-			@Nullable CostAmountAndQty shippedButNotNotified,
-			@Nullable CostAmountAndQty notifiedButNotShipped)
+			@NonNull final CostAmountAndQty shippedButNotNotified)
 	{
-		if (CoalesceUtil.isAllNotNulls(shippedAndNotified, shippedButNotNotified, notifiedButNotShipped))
-		{
-			this.shippedAndNotified = Check.assumeNotNull(shippedAndNotified, "shippedAndNotified");
-			this.shippedButNotNotified = Check.assumeNotNull(shippedButNotNotified, "shippedButNotNotified");
-			this.notifiedButNotShipped = Check.assumeNotNull(notifiedButNotShipped, "notifiedButNotShipped");
-		}
-		else
-		{
-			final CostAmountAndQty ZERO = CoalesceUtil.coalesceNotNull(shippedAndNotified, shippedButNotNotified, notifiedButNotShipped).toZero();
-			this.shippedAndNotified = CoalesceUtil.coalesceNotNull(shippedAndNotified, ZERO);
-			this.shippedButNotNotified = CoalesceUtil.coalesceNotNull(shippedButNotNotified, ZERO);
-			this.notifiedButNotShipped = CoalesceUtil.coalesceNotNull(notifiedButNotShipped, ZERO);
-		}
+		this.shippedButNotNotified = Check.assumeNotNull(shippedButNotNotified, "shippedButNotNotified");
 	}
 
 	public static ShipmentCosts extractAccountableFrom(@NonNull final CostDetailCreateResultsList results, @NonNull final AcctSchema acctSchema)
 	{
 		return builder()
-				.shippedAndNotified(results.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, acctSchema).map(CostAmountAndQty::negate).orElse(null))
-				.shippedButNotNotified(results.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).map(CostAmountAndQty::negate).orElse(null))
-				.notifiedButNotShipped(results.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, acctSchema).orElse(null))
+				.shippedButNotNotified(Objects.requireNonNull(results.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).map(CostAmountAndQty::negate).orElse(null)))
 				.build();
 	}
 
@@ -60,30 +35,20 @@ public class ShipmentCosts
 	{
 		final CostAmountAndQty amtAndQty = CostAmountAndQty.of(request.getAmt(), request.getQty());
 		final ShipmentCosts shipmentCosts;
-		switch (request.getAmtType())
+		if (request.getAmtType() == CostAmountType.MAIN)
 		{
-			case ALREADY_SHIPPED:
-				shipmentCosts = builder().shippedAndNotified(amtAndQty.negate()).build();
-				break;
-			case MAIN:
-				shipmentCosts = builder().shippedButNotNotified(amtAndQty.negate()).build();
-				break;
-			case ADJUSTMENT:
-				shipmentCosts = builder().notifiedButNotShipped(amtAndQty).build();
-				break;
-			default:
-				throw new IllegalArgumentException();
+			shipmentCosts = builder().shippedButNotNotified(amtAndQty.negate()).build();
+		}
+		else
+		{
+			throw new IllegalArgumentException();
 		}
 		return shipmentCosts;
 	}
 
 	public interface CostAmountAndQtyAndTypeMapper
 	{
-		CostDetailCreateResult shippedAndNotified(CostAmountAndQty amtAndQty, CostAmountType type);
-
 		CostDetailCreateResult shippedButNotNotified(CostAmountAndQty amtAndQty, CostAmountType type);
-
-		CostDetailCreateResult notifiedButNotShipped(CostAmountAndQty amtAndQty, CostAmountType type);
 	}
 
 	public CostDetailCreateResultsList toCostDetailCreateResultsList(@NonNull final CostAmountAndQtyAndTypeMapper mapper)
@@ -92,18 +57,6 @@ public class ShipmentCosts
 
 		{
 			final CostDetailCreateResult result = mapper.shippedButNotNotified(shippedButNotNotified, CostAmountType.MAIN);
-			resultsList.add(Check.assumeNotNull(result, "result shall not be null"));
-		}
-
-		if (!shippedAndNotified.isZero())
-		{
-			final CostDetailCreateResult result = mapper.shippedAndNotified(shippedAndNotified, CostAmountType.ALREADY_SHIPPED);
-			resultsList.add(Check.assumeNotNull(result, "result shall not be null"));
-		}
-
-		if (!notifiedButNotShipped.isZero())
-		{
-			final CostDetailCreateResult result = mapper.notifiedButNotShipped(notifiedButNotShipped, CostAmountType.ADJUSTMENT);
 			resultsList.add(Check.assumeNotNull(result, "result shall not be null"));
 		}
 

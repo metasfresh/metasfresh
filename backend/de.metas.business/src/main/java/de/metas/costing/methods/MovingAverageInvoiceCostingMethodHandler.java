@@ -51,7 +51,6 @@ import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.costs.OrderCostService;
@@ -101,10 +100,16 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+	{
+		return createCostForMatchInvoice(request);
+	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		return createCostForMatchInvoice(request);
+	}
 
 	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
@@ -263,94 +268,31 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				return shippedButNotNotifiedResult;
 			}
 
-			@Override
-			public CostDetailCreateResult shippedAndNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
-			{
-				return utils.createCostDetailRecordNoCostsChanged(
-						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
-						CostDetailPreviousAmounts.of(currentCosts));
-			}
-
-			@Override
-			public CostDetailCreateResult notifiedButNotShipped(final CostAmountAndQty amtAndQty, final CostAmountType type)
-			{
-				final CostDetailCreateResult notifiedButNotShippedResult = utils.createCostDetailRecordWithChangedCosts(
-						request.withAmountAndTypeAndQty(amtAndQty, type),
-						CostDetailPreviousAmounts.of(currentCosts));
-				currentCosts.addWeightedAverage(notifiedButNotShippedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
-				return notifiedButNotShippedResult;
-			}
 		};
 	}
 
-	@SuppressWarnings("UnnecessaryLocalVariable")
 	private ShipmentCosts computeShipmentCosts(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCosts)
 	{
-		final CurrencyPrecision precision = currentCosts.getPrecision();
 		final CostAmount currentCostPrice = currentCosts.getCostPrice().toCostAmount();
-		final CurrencyId currencyId = currentCostPrice.getCurrencyId();
 		final UomId uomId = currentCosts.getUomId();
 		final ProductId productId = request.getProductId();
 
 		@NonNull final Quantity qtyShipped = utils.convertToUOM(request.getQty(), uomId, productId).negate(); // negate to get positive
 
-		@NonNull final CostAmountAndQty costAndQtyNotified = request.getExternallyOwned() // already positive
-				.map(amtAndQty -> amtAndQty.mapQty(utils.convertQuantityToUOM(uomId, productId)))
-				.orElseGet(() -> CostAmountAndQty.zero(currencyId, uomId));
-		@NonNull final CostAmount costNotified = costAndQtyNotified.getAmt();
-		@NonNull final Quantity qtyNotified = costAndQtyNotified.getQty();
-		@NonNull final CostAmount costPriceNotified = costNotified.divideIfNotZero(qtyNotified, precision).orElse(currentCostPrice);
-
-		@NonNull final Quantity qtyShippedButNotNotified = qtyShipped.subtract(qtyNotified);
-
-		//
-		// Shipped less than notified
-		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
-		// => P_ExternallyOwnedStock -> P_Asset (cost of qty notified but not shipped)
-		if (qtyShippedButNotNotified.signum() < 0)
-		{
-			final Quantity qtyShippedAndNotified = qtyShipped;
-			final CostAmount costShippedAndNotified = costPriceNotified.multiply(qtyShippedAndNotified).roundToPrecisionIfNeeded(precision);
-
-			final Quantity qtyNotifiedButNotShipped = qtyNotified.subtract(qtyShipped);
-			final CostAmount costNotifiedButNotShipped = costNotified.subtract(costShippedAndNotified);
-
-			return ShipmentCosts.builder()
-					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
-					.notifiedButNotShipped(CostAmountAndQty.of(costNotifiedButNotShipped, qtyNotifiedButNotShipped))
-					.build();
-		}
-		//
-		// Shipped exactly as much as notified
-		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
-		else if (qtyShippedButNotNotified.signum() == 0)
-		{
-			final Quantity qtyShippedAndNotified = qtyNotified;
-			final CostAmount costShippedAndNotified = costNotified;
-
-			return ShipmentCosts.builder()
-					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
-					.build();
-		}
 		//
 		// Shipped more than notified
 		// NOTE: that's also the case when we don't use a shipping notification
 		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
 		// => P_Asset -> P_COGS (cost of qty shipped but not notified)
-		else // qtyShippedButNotNotified.signum() > 0
-		{
-			final Quantity qtyShippedAndNotified = qtyNotified;
-			final CostAmount costShippedAndNotified = costNotified;
+		// qtyShipped.signum() > 0
 
-			final CostAmount costShippedButNotNotified = currentCostPrice.multiply(qtyShippedButNotNotified);
+		final CostAmount costShippedButNotNotified = currentCostPrice.multiply(qtyShipped);
 
-			return ShipmentCosts.builder()
-					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
-					.shippedButNotNotified(CostAmountAndQty.of(costShippedButNotNotified, qtyShippedButNotNotified))
-					.build();
-		}
+		return ShipmentCosts.builder()
+				.shippedButNotNotified(CostAmountAndQty.of(costShippedButNotNotified, qtyShipped))
+				.build();
 	}
 
 	@Override
