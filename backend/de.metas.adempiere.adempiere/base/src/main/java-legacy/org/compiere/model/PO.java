@@ -45,6 +45,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -755,7 +756,7 @@ public abstract class PO
 	 * @param AD_Column_ID column
 	 * @return value or null
 	 */
-	public final Object get_ValueOfColumn(final int AD_Column_ID)
+	public final Object get_ValueOfColumn(@NonNull final AdColumnId AD_Column_ID)
 	{
 		final int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
