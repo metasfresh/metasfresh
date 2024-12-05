@@ -9,7 +9,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
@@ -226,7 +225,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.currencyConversionContext(getCurrencyConversionContext(as))
 							.date(getDateAcctAsInstant())
-							.externallyOwned(computeAmtAndQtyExternallyOwned(as))
 							.build());
 		}
 
@@ -282,14 +280,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return null;
 		}
-	}
-
-	private CostAmountAndQty computeAmtAndQtyExternallyOwned(final AcctSchema as)
-	{
-		final Quantity qtyExternallyOwned = getQty().toZero();
-		final CostAmount costsExternallyOwned = CostAmount.zero(as.getCurrencyId());
-
-		return CostAmountAndQty.of(costsExternallyOwned, qtyExternallyOwned);
 	}
 
 }

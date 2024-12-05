@@ -60,15 +60,13 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
 					+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
 					+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
-					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct,"
-					+ " P_ExternallyOwnedStock_Acct)="
+					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct)="
 					//
 					+ " (SELECT P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
 					+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
 					+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
 					+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
-					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct,"
-					+ " pca.P_ExternallyOwnedStock_Acct"
+					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct"
 					+ " FROM M_Product_Category_Acct pca"
 					+ " WHERE pca.M_Product_Category_ID=" + fromProductCategoryId.getRepoId()
 					+ " AND pca.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId()
@@ -92,8 +90,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " P_PurchasePriceVariance_Acct, P_InvoicePriceVariance_Acct,"
 					+ " P_TradeDiscountRec_Acct, P_TradeDiscountGrant_Acct, "
 					+ " P_WIP_Acct,P_FloorStock_Acct, P_MethodChangeVariance_Acct, P_UsageVariance_Acct, P_RateVariance_Acct,"
-					+ " P_MixVariance_Acct, P_Labor_Acct, P_Burden_Acct, P_CostOfProduction_Acct, P_OutsideProcessing_Acct, P_Overhead_Acct, P_Scrap_Acct,"
-					+ " P_ExternallyOwnedStock_Acct) "
+					+ " P_MixVariance_Acct, P_Labor_Acct, P_Burden_Acct, P_CostOfProduction_Acct, P_OutsideProcessing_Acct, P_Overhead_Acct, P_Scrap_Acct) "
 					//
 					+ " SELECT "
 					+ " p.M_Product_ID,"
@@ -103,8 +100,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " acct.P_PurchasePriceVariance_Acct, acct.P_InvoicePriceVariance_Acct,"
 					+ " acct.P_TradeDiscountRec_Acct, acct.P_TradeDiscountGrant_Acct, "
 					+ " acct.P_WIP_Acct, acct.P_FloorStock_Acct, acct.P_MethodChangeVariance_Acct, acct.P_UsageVariance_Acct, acct.P_RateVariance_Acct,"
-					+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct,"
-					+ " acct.P_ExternallyOwnedStock_Acct"
+					+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct"
 					+ " FROM M_Product p"
 					+ " INNER JOIN M_Product_Category_Acct acct ON (acct.M_Product_Category_ID=" + fromProductCategoryId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
 					+ " WHERE 1=1"

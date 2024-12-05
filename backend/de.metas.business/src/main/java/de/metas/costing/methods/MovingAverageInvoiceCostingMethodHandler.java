@@ -282,11 +282,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		@NonNull final Quantity qtyShipped = utils.convertToUOM(request.getQty(), uomId, productId).negate(); // negate to get positive
 
 		//
-		// Shipped more than notified
-		// NOTE: that's also the case when we don't use a shipping notification
-		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
-		// => P_Asset -> P_COGS (cost of qty shipped but not notified)
-		// qtyShipped.signum() > 0
+		// Shipped Qty
+		// => P_Asset -> P_COGS (cost of qty shipped)
 
 		final CostAmount costShippedButNotNotified = currentCostPrice.multiply(qtyShipped);
 
