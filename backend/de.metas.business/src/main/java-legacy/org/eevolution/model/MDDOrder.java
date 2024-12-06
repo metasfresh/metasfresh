@@ -17,6 +17,7 @@
 package org.eevolution.model;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -492,7 +493,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateOrdered(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateOrdered(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		// Lines
 		final MDDOrderLine[] lines = getLines(true, I_DD_OrderLine.COLUMNNAME_M_Product_ID);

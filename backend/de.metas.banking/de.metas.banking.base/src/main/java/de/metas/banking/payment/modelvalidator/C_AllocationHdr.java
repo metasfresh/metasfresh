@@ -7,7 +7,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -83,8 +83,8 @@ public class C_AllocationHdr
 			return;
 		}
 
-		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.CHANGE);
+		final ModelCacheInvalidationService cacheInvalidationService = ModelCacheInvalidationService.get();
+		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	private static Set<PaymentId> extractPaymentIds(final List<I_C_AllocationLine> lines)

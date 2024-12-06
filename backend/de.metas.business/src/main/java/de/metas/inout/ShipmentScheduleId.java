@@ -52,11 +52,11 @@ public class ShipmentScheduleId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	// NOTE: we need this object deserializer in order to use ShipmentScheduleId as a map key in a map that needs to deserialized from json
+	// NOTE: we need this String deserializer in order to use ShipmentScheduleId as a map key in a map that needs to deserialized from json
 	@JsonCreator
-	public static ShipmentScheduleId ofObject(@NonNull final Object repoIdObj)
+	public static ShipmentScheduleId ofString(@NonNull final String repoIdStr)
 	{
-		return RepoIdAwares.ofObject(repoIdObj, ShipmentScheduleId.class, ShipmentScheduleId::ofRepoId);
+		return RepoIdAwares.ofObject(repoIdStr, ShipmentScheduleId.class, ShipmentScheduleId::ofRepoId);
 	}
 
 	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<ShipmentScheduleId> ids)
@@ -102,6 +102,8 @@ public class ShipmentScheduleId implements RepoIdAware
 	{
 		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, getRepoId());
 	}
+
+	public static boolean equals(@Nullable final ShipmentScheduleId id1, @Nullable final ShipmentScheduleId id2) {return Objects.equals(id1, id2);}
 
 	public static TableRecordReferenceSet toTableRecordReferenceSet(@NonNull final Collection<ShipmentScheduleId> ids)
 	{

@@ -50,7 +50,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -280,6 +279,21 @@ public class WarehouseBL implements IWarehouseBL
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 	}
+
+	@Override
+	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
+	{
+		final WarehouseId warehouseId = getIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return Optional.ofNullable(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()));
+	}
+
+	@Override
+	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
+	{
+		return warehouseDAO.retrieveOrgIdByLocatorId(locatorId);
+	}
+
 
 	@Override
 	@NonNull

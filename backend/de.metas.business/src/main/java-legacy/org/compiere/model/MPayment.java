@@ -21,28 +21,6 @@
  */
 package org.compiere.model;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.cache.CacheMgt;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -53,7 +31,9 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.cache.CacheMgt;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -75,6 +55,26 @@ import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -1135,7 +1135,7 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
-				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1882,7 +1882,7 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
-				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}

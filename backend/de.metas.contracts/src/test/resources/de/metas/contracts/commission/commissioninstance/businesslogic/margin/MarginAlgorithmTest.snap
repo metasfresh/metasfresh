@@ -1,38 +1,35 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.margin.MarginAlgorithmTest.givenValidRequest_whenCreateCommissionShares_thenReturnOneShare=[
   {
-    "config" : {
-      "@type" : "MarginConfig",
-      "commissionProductId" : 1,
-      "tradedPercent" : 10,
-      "pointsPrecision" : 2,
-      "marginContract" : {
-        "@type" : "MarginContract",
-        "id" : 1,
-        "contractOwnerBPartnerId" : 1,
-        "simulation" : false
+    "beneficiary": {
+      "bPartnerId": 1
+    },
+    "config": {
+      "@type": "MarginConfig",
+      "commissionProductId": 1,
+      "customerTradeMarginLineId": 1,
+      "marginContract": {
+        "@type": "MarginContract",
+        "contractOwnerBPartnerId": 1,
+        "id": 1,
+        "simulation": false
       },
-      "customerTradeMarginLineId" : 1
+      "pointsPrecision": 2,
+      "tradedPercent": 10
     },
-    "level" : 0,
-    "beneficiary" : {
-      "bPartnerId" : 1
-    },
-    "facts" : [
+    "facts": [
       {
-        "timestamp" : {
-          "seconds" : 1630454400,
-          "nanos" : 0
-        },
-        "state" : "FORECASTED",
-        "points" : 50.00
+        "points": 50.00,
+        "state": "FORECASTED",
+        "timestamp": "2021-09-01T00:00:00Z"
       }
     ],
-    "payer" : {
-      "bPartnerId" : 1
+    "level": 0,
+    "payer": {
+      "bPartnerId": 1
     },
-    "soTrx" : "PURCHASE",
-    "forecastedPointsSum" : 50.00,
-    "invoiceablePointsSum" : 0,
-    "invoicedPointsSum" : 0
+    "soTrx": "PURCHASE",
+    "forecastedPointsSum": 50.00,
+    "invoiceablePointsSum": 0,
+    "invoicedPointsSum": 0
   }
 ]

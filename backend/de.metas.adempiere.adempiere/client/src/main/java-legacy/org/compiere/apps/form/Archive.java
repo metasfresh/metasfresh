@@ -13,9 +13,11 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.model.I_AD_Archive;
@@ -26,11 +28,8 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.RoleId;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.List;
 
 public class Archive {
 
@@ -230,7 +229,7 @@ public class Archive {
 		//	Created
 		if (createdFrom != null)
 		{
-			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom, true));
+			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom));
 		}
 		if (createdTo != null)
 		{

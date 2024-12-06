@@ -16,7 +16,7 @@ DECLARE
     v_AD_Client_ID numeric;
     v_AD_Org_ID    numeric;
 BEGIN
-    RAISE NOTICE 'Checking document %/% if period is open', p_TableName, p_Record_ID;
+    RAISE DEBUG 'Checking document %/% if period is open', p_TableName, p_Record_ID;
 
     IF (p_TableName = 'C_Order') THEN
         SELECT o.dateacct, dt.docbasetype, o.ad_client_id, o.ad_org_id
@@ -86,6 +86,24 @@ BEGIN
         FROM pp_cost_collector cc
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id
         WHERE cc.pp_cost_collector_id = p_Record_ID;
+    ELSIF (p_TableName = 'M_CostRevaluation') THEN
+        SELECT cr.dateacct, dt.docbasetype, cr.ad_client_id, cr.ad_org_id
+        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
+        FROM m_costrevaluation cr
+                 INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id
+        WHERE cr.m_costrevaluation_id = p_Record_ID;
+    ELSIF (p_TableName = 'SAP_GLJournal') THEN
+        SELECT glj.dateacct, dt.docbasetype, glj.ad_client_id, glj.ad_org_id
+        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
+        FROM SAP_GLJournal glj
+                 INNER JOIN c_doctype dt ON dt.c_doctype_id = glj.c_doctype_id
+        WHERE glj.SAP_GLJournal_ID = p_Record_ID;
+    ELSIF (p_TableName = 'M_Shipping_Notification') THEN
+        SELECT sn.dateacct, dt.docbasetype, sn.ad_client_id, sn.ad_org_id
+        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
+        FROM M_Shipping_Notification sn
+                 INNER JOIN c_doctype dt ON dt.c_doctype_id = sn.c_doctype_id
+        WHERE sn.M_Shipping_Notification_ID = p_Record_ID;
     ELSE
         RAISE EXCEPTION 'Document %/% is not handled when checking if the period is open', p_TableName, p_Record_ID;
     END IF;

@@ -25,22 +25,20 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import de.metas.util.Check;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.Check;
-
 /**
  * @author cg
  *
  */
-/* package */ class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 
 	private String columnName;

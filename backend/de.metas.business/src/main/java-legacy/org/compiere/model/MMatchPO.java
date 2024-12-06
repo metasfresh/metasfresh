@@ -16,34 +16,33 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Match PO Model.
@@ -116,7 +115,7 @@ public class MMatchPO extends X_M_MatchPO
 					priceActual, 
 					CurrencyId.ofRepoId(invoiceCurrency_ID), 
 					CurrencyId.ofRepoId(orderCurrency_ID),
-					TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+					invoice.getDateInvoiced().toInstant(),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					ClientId.ofRepoId(getAD_Client_ID()), 
 					OrgId.ofRepoId(getAD_Org_ID()));
@@ -340,7 +339,7 @@ public class MMatchPO extends X_M_MatchPO
 	{
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_MatchPO, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.MatchPO, getAD_Org_ID());
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}

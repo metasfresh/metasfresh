@@ -64,11 +64,13 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -90,7 +92,7 @@ import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -98,7 +100,7 @@ public class PaymentsViewAllocateCommandTest
 	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
 	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = true;
 
-	private final OrgId orgId = OrgId.ofRepoId(1);
+	private final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 	private final LocalDate dateInvoiced = LocalDate.parse("2020-04-01");
 	private final LocalDate paymentDateTrx = LocalDate.parse("2020-04-25");
 
@@ -107,6 +109,7 @@ public class PaymentsViewAllocateCommandTest
 	private IInvoiceDAO invoicesDAO;
 	private IAllocationDAO allocationDAO;
 
+	private OrgId orgId;
 	private CurrencyId euroCurrencyId;
 	private BPartnerId bpartnerId;
 
@@ -128,6 +131,7 @@ public class PaymentsViewAllocateCommandTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		bpartnerId = createBPartnerId();
+		orgId = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 
 		SpringContextHolder.registerJUnitBean(moneyService);
 	}
@@ -209,9 +213,16 @@ public class PaymentsViewAllocateCommandTest
 
 		final InvoiceId invoiceId;
 		{
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
 			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
+			invoiceRecord.setC_DocType_ID(docType.getC_DocType_ID());
+			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 			saveRecord(invoiceRecord);
@@ -248,6 +259,32 @@ public class PaymentsViewAllocateCommandTest
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
+	}
+
+	private DocTypeId serviceInvoiceDocTypeId;
+	private ProductId serviceFeeProductId;
+
+	@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
+	private void createConfig(
+			@NonNull final String feePercentageOfGrandTotal,
+			@NonNull final BPartnerId customerId,
+			@NonNull final ZonedDateTime validFrom,
+			@NonNull final BPartnerId serviceCompanyBPartnerId)
+	{
+		final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
+		configRecord.setIsActive(true);
+		configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
+		configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
+		configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(configRecord);
+
+		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+		assignmentRecord.setIsActive(true);
+		assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
+		assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+		assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+		saveRecord(assignmentRecord);
 	}
 
 	@Nested
@@ -324,8 +361,6 @@ public class PaymentsViewAllocateCommandTest
 		@Nested
 		public class WithServiceFee
 		{
-			private DocTypeId serviceInvoiceDocTypeId;
-			private ProductId serviceFeeProductId;
 			private BPartnerId feeCompanyId1;
 
 			@BeforeEach
@@ -341,29 +376,6 @@ public class PaymentsViewAllocateCommandTest
 						.feePercentageOfGrandTotal("1")
 						.serviceCompanyBPartnerId(feeCompanyId1)
 						.build();
-			}
-
-			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
-			private void createConfig(
-					@NonNull final String feePercentageOfGrandTotal,
-					@NonNull final BPartnerId customerId,
-					@NonNull final ZonedDateTime validFrom,
-					@NonNull final BPartnerId serviceCompanyBPartnerId)
-			{
-				final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
-				configRecord.setIsActive(true);
-				configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
-				configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
-				configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
-				configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
-				saveRecord(configRecord);
-
-				final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
-				assignmentRecord.setIsActive(true);
-				assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
-				assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
-				assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
-				saveRecord(assignmentRecord);
 			}
 
 			@ParameterizedTest
@@ -385,6 +397,7 @@ public class PaymentsViewAllocateCommandTest
 
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
+						.ignoringFields("reference.modelRef")
 						.isEqualTo(PayableDocument.builder()
 										   .invoiceId(invoiceRow.getInvoiceId())
 										   .bpartnerId(bpartnerId)
@@ -433,7 +446,7 @@ public class PaymentsViewAllocateCommandTest
 				// Check output
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
-						.ignoringFields("reference.modelRef.timestamp")
+						.ignoringFields("reference.modelRef")
 						.isEqualTo(PayableDocument.builder()
 										   .invoiceId(invoiceRow.getInvoiceId())
 										   .bpartnerId(bpartnerId)
@@ -513,7 +526,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -549,7 +562,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -589,7 +602,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -631,7 +644,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -647,7 +660,7 @@ public class PaymentsViewAllocateCommandTest
 									   .build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -685,7 +698,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -701,7 +714,7 @@ public class PaymentsViewAllocateCommandTest
 									   .build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -738,7 +751,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 									   .orgId(orgId)

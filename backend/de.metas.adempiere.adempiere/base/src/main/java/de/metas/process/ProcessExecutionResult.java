@@ -580,6 +580,10 @@ public class ProcessExecutionResult
 		setReportData(ReportResultData.ofFile(file));
 	}
 
+	public void setReportData(@NonNull final File file, @NonNull final String fileName)
+	{
+		setReportData(ReportResultData.ofFile(file, fileName));
+	}
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;

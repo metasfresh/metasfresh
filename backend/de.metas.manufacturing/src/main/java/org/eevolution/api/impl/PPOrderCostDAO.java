@@ -170,13 +170,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
 		final CostPrice price = from.getPrice();
-		record.setCurrentCostPrice(price.getOwnCostPrice().getValue());
-		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
+		record.setCurrentCostPrice(price.getOwnCostPrice().toBigDecimal());
+		record.setCurrentCostPriceLL(price.getComponentsCostPrice().toBigDecimal());
 
-		record.setCumulatedAmt(from.getAccumulatedAmount().getValue());
+		record.setCumulatedAmt(from.getAccumulatedAmount().toBigDecimal());
 		record.setC_UOM_ID(from.getAccumulatedQty().getUomId().getRepoId());
 		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
-		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
+		record.setPostCalculationAmt(from.getPostCalculationAmount().toBigDecimal());
 
 		if (from.getTrxType().isCoProduct() && from.getCoProductCostDistributionPercent() != null)
 		{

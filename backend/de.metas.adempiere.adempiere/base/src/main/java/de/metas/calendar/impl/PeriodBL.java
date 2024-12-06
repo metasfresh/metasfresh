@@ -22,13 +22,10 @@ package de.metas.calendar.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.DocBaseType;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -41,9 +38,11 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.calendar.IPeriodBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 public class PeriodBL implements IPeriodBL
 {
@@ -51,7 +50,7 @@ public class PeriodBL implements IPeriodBL
 	private static final Logger s_log = LogManager.getLogger(PeriodBL.class);
 
 	@Override
-	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
+	public boolean isOpen(Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID)
 	{
 		if (DateAcct == null)
 		{
@@ -78,7 +77,7 @@ public class PeriodBL implements IPeriodBL
 	}
 
 	@Override
-	public void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException
+	public void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID) throws PeriodClosedException
 	{
 		if (!isOpen(ctx, dateAcct, docBaseType, AD_Org_ID))
 		{

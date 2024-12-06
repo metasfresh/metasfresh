@@ -34,15 +34,15 @@ import javax.annotation.Nullable;
 @Builder
 public class DocTypeQuery
 {
-	public static final String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
-	public static final String DOCSUBTYPE_NONE = null;
+	public static final DocSubType DOCSUBTYPE_Any = DocSubType.ANY;
+	public static final DocSubType DOCSUBTYPE_NONE = DocSubType.NONE;
 
 	@NonNull
 	DocBaseType docBaseType;
 
-	@Nullable
+	@NonNull
 	@Default
-	String docSubType = DOCSUBTYPE_Any;
+	DocSubType docSubType = DOCSUBTYPE_Any;
 
 	@NonNull
 	Integer adClientId;
@@ -81,6 +81,7 @@ public class DocTypeQuery
 
 		public DocTypeQueryBuilder docSubTypeAny()
 		{
+
 			return docSubType(DOCSUBTYPE_Any);
 		}
 

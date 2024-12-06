@@ -1,7 +1,9 @@
 package de.metas.handlingunits.weighting;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.HUItemType;
@@ -31,7 +33,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
-import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -136,9 +137,10 @@ public class WeightHUCommandTest
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
-				.docBaseType(DocBaseType.MaterialPhysicalInventory.getCode())
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
+				.docSubType(DocSubType.SingleHUInventory)
 				.name("inventory")
+				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());
 
 		//
@@ -259,7 +261,7 @@ public class WeightHUCommandTest
 						.create());
 	}
 
-	private void weight(final HuId huId, PlainWeightable targetWeight)
+	private void weight(final HuId huId, final PlainWeightable targetWeight)
 	{
 		WeightHUCommand.builder()
 				.huQtyService(huQtyService)

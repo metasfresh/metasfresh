@@ -968,7 +968,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, TaxUtils.from(cTax));
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
@@ -1137,7 +1137,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						amt,
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						TimeUtil.asLocalDate(getDateAcct()),
+						getDateAcct().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));

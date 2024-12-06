@@ -135,7 +135,7 @@ public class WebRestApiApplication
 
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
-		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+		Services.get(IMigrationLogger.class).addTablesToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
 		return Env.getSingleAdempiereInstance(applicationContext);
 	}

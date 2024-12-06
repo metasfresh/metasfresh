@@ -24,7 +24,7 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -77,11 +77,10 @@ class IssueImporterServiceTest
 		AdempiereTestHelper.get().init();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ADReferenceService adReferenceService = ADReferenceService.newMocked();
 
-		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
 		final ExternalSystems externalSystems = new ExternalSystems();
 		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);

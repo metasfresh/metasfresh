@@ -1,16 +1,15 @@
 package de.metas.currency.impl;
 
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.Objects;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.Objects;
 
 /*
  * #%L
@@ -45,7 +44,7 @@ class CurrencyConversionTypeRouting
 	OrgId orgId;
 
 	@NonNull
-	LocalDate validFrom;
+	Instant validFrom;
 
 	@NonNull
 	CurrencyConversionTypeId conversionTypeId;
@@ -53,7 +52,7 @@ class CurrencyConversionTypeRouting
 	public boolean isMatching(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
-			@NonNull final LocalDate date)
+			@NonNull final Instant date)
 	{
 		return (this.clientId.isSystem() || ClientId.equals(this.clientId, clientId))
 				&& (this.orgId.isAny() || OrgId.equals(this.orgId, orgId))

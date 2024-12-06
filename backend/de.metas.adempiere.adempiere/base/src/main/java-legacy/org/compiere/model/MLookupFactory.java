@@ -37,6 +37,7 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -290,7 +291,7 @@ public class MLookupFactory
 		info.setDisplayType(AD_Reference_ID);
 		//info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID, ctxTableName, ctxColumnName));
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AdValRuleId.ofRepoIdOrNull(AD_Val_Rule_ID), ctxTableName, ctxColumnName));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
 		// Direct Query - NO Validation/Security

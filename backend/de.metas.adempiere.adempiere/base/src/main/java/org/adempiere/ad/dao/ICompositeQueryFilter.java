@@ -38,7 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
+public interface ICompositeQueryFilter<T> extends ICompositeQueryFilterBase<T>, IQueryFilter<T>
 {
 	/**
 	 * Creates a copy of this object.

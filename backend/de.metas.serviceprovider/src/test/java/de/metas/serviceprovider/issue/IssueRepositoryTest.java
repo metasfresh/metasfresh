@@ -22,7 +22,7 @@
 
 package de.metas.serviceprovider.issue;
 
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,15 +33,13 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static de.metas.serviceprovider.issue.IssueServiceTest.prepareDataContext;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class IssueRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
-
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+	private IQueryBL queryBL;
+	private IssueRepository issueRepository;
 
 	private IssueEntity MOCK_ISSUE_ENTITY;
 
@@ -51,6 +49,8 @@ public class IssueRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
+		queryBL = Services.get(IQueryBL.class);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
 	}
 

@@ -24,7 +24,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -143,6 +142,10 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 */
@@ -197,17 +200,26 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive)
+		{
+			doWork0();
+		}
+		else
+		{
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitorTransaction(
-				this::doWork0,
-				TransactionMetadata.builder()
-						.name("Scheduler - " + m_model.getName())
-						.type(Type.SCHEDULER)
-						.label("scheduler.name", m_model.getName())
-						.build());
+			service.monitor(
+					this::doWork0,
+					PerformanceMonitoringService.Metadata.builder()
+							.className("Scheduler")
+							.functionName("doWork")
+							.type(Type.SCHEDULER)
+							.label("scheduler.name", m_model.getName())
+							.build());
+		}
 	}
 
 	private void doWork0()

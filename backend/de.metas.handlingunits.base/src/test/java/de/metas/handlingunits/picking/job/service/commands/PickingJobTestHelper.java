@@ -69,7 +69,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
-import de.metas.test.SnapshotFunctionFactory;
+import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -98,7 +98,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -106,7 +105,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PickingJobTestHelper
 {
-	public static final Function<Object, String> snapshotSerializeFunction = SnapshotFunctionFactory.newFunction();
+	public static final MetasfreshSnapshotFunction snapshotSerializer = new MetasfreshSnapshotFunction();
 
 	//
 	// Services
@@ -454,12 +453,12 @@ public class PickingJobTestHelper
 
 	public TestRecorder newTestRecorder()
 	{
-		return new TestRecorder(huTracer, snapshotSerializeFunction);
+		return new TestRecorder(huTracer, snapshotSerializer::toJson);
 	}
 
 	public String toJson(final Object obj)
 	{
-		return snapshotSerializeFunction.apply(obj);
+		return snapshotSerializer.toJson(obj);
 	}
 
 	public void dumpHU(final String title, final HuId huId)
