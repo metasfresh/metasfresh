@@ -40,19 +40,15 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.session.ChangeLogRecord;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -62,7 +58,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.copy.POValuesCopyStrategies;
@@ -600,15 +595,6 @@ public abstract class PO
 		this.p_ctx = ctx;
 	}
 
-	/**
-	 * @return logger that is still used in some legacy classes
-	 */
-	@Deprecated
-	public final Logger get_Logger()
-	{
-		return log;
-	}	// getLogger
-
 	/**************************************************************************
 	 * Get Value
 	 *
@@ -890,80 +876,6 @@ public abstract class PO
 		}
 		return is_ValueChanged(index);
 	}   // is_ValueChanged
-
-	/**
-	 * Return new - old.
-	 * - New Value if Old Value is null
-	 * - New Value - Old Value if Number
-	 * - otherwise null
-	 *
-	 * @param index index
-	 * @return new - old or null if not appropriate or not changed
-	 */
-	public final Object get_ValueDifference(final int index)
-	{
-		if (index < 0 || index >= get_ColumnCount())
-		{
-			log.warn("Index invalid - " + index);
-			return null;
-		}
-
-		//
-		// Check if object is stalled
-		// In case is stalled then there is no change so we return null
-		// because it's the same as having m_newValues[index] == null
-		if (m_stale)  // metas: 01537
-		{
-			return null;
-		}
-
-		final Object nValue = m_newValues[index];
-		// No new Value or NULL
-		if (nValue == null || nValue == Null.NULL)
-		{
-			return null;
-		}
-		//
-		final Object oValue = m_oldValues[index];
-		if (oValue == null || oValue == Null.NULL)
-		{
-			return nValue;
-		}
-		if (nValue instanceof BigDecimal)
-		{
-			final BigDecimal obd = (BigDecimal)oValue;
-			return ((BigDecimal)nValue).subtract(obd);
-		}
-		else if (nValue instanceof Integer)
-		{
-			int result = ((Integer)nValue).intValue();
-			result -= ((Integer)oValue).intValue();
-			return result;
-		}
-		//
-		log.warn("Invalid type - New=" + nValue);
-		return null;
-	}   // get_ValueDifference
-
-	/**
-	 * Return new - old.
-	 * - New Value if Old Value is null
-	 * - New Value - Old Value if Number
-	 * - otherwise null
-	 *
-	 * @param columnName column name
-	 * @return new - old or null if not appropriate or not changed
-	 */
-	public final Object get_ValueDifference(final String columnName)
-	{
-		final int index = get_ColumnIndex(columnName);
-		if (index < 0)
-		{
-			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
-			return null;
-		}
-		return get_ValueDifference(index);
-	}   // get_ValueDifference
 
 	/**************************************************************************
 	 * Set Value
@@ -2443,7 +2355,7 @@ public abstract class PO
 
 		//
 		// Don't create change logs if they are not activated in ChangeLog system/BL
-		if (!Services.get(ISessionBL.class).isChangeLogEnabled())
+		if (!services.isChangeLogEnabled())
 		{
 			return;
 		}
@@ -2467,7 +2379,7 @@ public abstract class PO
 		if (isInsertChangeLogEvent)
 		{
 			// note that i never needed this value to be Y, so i'm now setting the default to N
-			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
+			final String insertChangeLogType = services.getInsertChangeLogType(adClientId);
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed
@@ -2590,7 +2502,7 @@ public abstract class PO
 		// Save change log records
 		if (changeLogRecords != null)
 		{
-			Services.get(ISessionDAO.class).saveChangeLogs(changeLogRecords);
+			services.saveChangeLogs(changeLogRecords);
 		}
 	}
 
@@ -2606,7 +2518,7 @@ public abstract class PO
 			return;
 		}
 
-		Services.get(IMigrationLogger.class).logMigration(session, this, p_info, actionType);
+		services.logMigration(session, this, p_info, actionType);
 	}
 
 	/*
@@ -2828,14 +2740,7 @@ public abstract class PO
 		// Translations
 		if (success)
 		{
-			if (newRecord)
-			{
-				insertTranslations();
-			}
-			else
-			{
-				updateTranslations();
-			}
+			updateTranslations(newRecord);
 		}
 
 		if (!isAssignedID)
@@ -4098,86 +4003,56 @@ public abstract class PO
 		}
 
 		// Make sure it's single ID key which is integer and which is set
-		if (m_IDs.length > 1 || m_IDs.length == 0
-				|| I_ZERO.equals(m_IDs[0])
-				|| !(m_IDs[0] instanceof Integer))
-		{
-			return false;
-		}
-
-		return true;
+		return isSingleIntegerPrimaryKeySet();
 	}
 
-	/**
-	 * Insert (missing) Translation Records
-	 *
-	 * @return false if error (true if no translation or success)
-	 */
-	public final boolean insertTranslations()
-	{
-		// Not a translation table
-		if (!is_Translatable())
+	private boolean isSingleIntegerPrimaryKeySet()
 		{
-			return true;
+		return m_IDs.length == 1
+				&& !I_ZERO.equals(m_IDs[0])
+				&& m_IDs[0] instanceof Integer;
 		}
 
-		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
-		if (ok)
+	private void updateTranslations(final boolean newRecord)
 		{
-			m_translations = null; // reset translations cache
-		}
-		return ok;
-	}	// insertTranslations
-
-	/**
-	 * Update Translations.
-	 *
-	 * @return
-	 *         <ul>
-	 *         <li>true if no translation or success
-	 *         <li>false if error
-	 *         </ul>
-	 */
-	private boolean updateTranslations()
-	{
-		// Not a translation table
-		if (!is_Translatable())
-		{
-			return true; // OK
-		}
-
-		final boolean ok = POTrlRepository.instance.updateTranslations(this);
-		if (ok)
-		{
-			m_translations = null; // reset cached translations
-		}
+		final POTrlInfo trlInfo = p_info.getTrlInfo();
 
 		//
-		return ok;
-	}	// updateTranslations
+		// Case: we deal with a base table which supports translations
+		if (trlInfo.isTranslated())
+	{
+			final boolean updated = newRecord
+					? POTrlRepository.instance.onBaseRecordCreated(trlInfo, get_ID())
+					: POTrlRepository.instance.onBaseRecordChanged(this);
 
-	/**
-	 * Delete Translation Records
-	 *
-	 * @return false if error (true if no translation or success)
-	 */
-	private boolean deleteTranslations()
+			// reset cached translations
+			if (updated)
+		{
+				m_translations = null;
+			}
+		}
+		//
+		// Case: we are dealing with a translation table
+		else if (POTrlRepository.isTrlTableName(p_info.getTableName()))
+		{
+			POTrlRepository.instance.onTrlRecordChanged(this);
+		}
+		}
+
+	private void deleteTranslations()
 	{
 		final POTrlInfo trlInfo = p_info.getTrlInfo();
 		if(!trlInfo.isTranslated())
 		{
-			return true;
+			return;
 		}
 
-		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
+		final boolean ok = POTrlRepository.instance.deleteTranslations(trlInfo, get_ID());
 		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-
-		//
-		return ok;
-	}	// deleteTranslations
+	}
 
 	/**
 	 * Insert Accounting Records
@@ -5196,7 +5071,7 @@ public abstract class PO
 			return null;
 		}
 
-		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
+		final MFSession session = services.sessionBL().getCurrentSession(getCtx());
 		if (session == null)
 		{
 			log.debug("No Session found");
@@ -5262,7 +5137,7 @@ public abstract class PO
 	 */
 	protected final ITrxManager get_TrxManager()
 	{
-		return Services.get(ITrxManager.class);
+		return services.trxManager();
 	}
 
 	/**
@@ -5350,6 +5225,7 @@ public abstract class PO
 		return m_loadCount;
 	}
 
+	// metas: end
 	public boolean isCopying() {return isDynAttributeTrue(DYNATTR_IsCopyWithDetailsInProgress);}
 
 	public void setCopying(final boolean copying) {setDynAttribute(DYNATTR_IsCopyWithDetailsInProgress, copying ? Boolean.TRUE : null);}

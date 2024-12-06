@@ -213,32 +213,6 @@ public abstract class AbstractPOWrapper {
 	}
 
 	/**
-	 *  Return new - old.
-	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number
-	 * 	- otherwise null
-	 *  @param index index
-	 *  @return new - old or null if not appropriate or not changed
-	 */
-	public Object get_ValueDifference(int index) {
-
-		return  po.get_ValueDifference(index); //  get_ValueDifference
-	}
-
-	/**
-	 *  Return new - old.
-	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number
-	 * 	- otherwise null
-	 *  @param columnName column name
-	 *  @return new - old or null if not appropriate or not changed
-	 */
-	public Object get_ValueDifference(String columnName) {
-
-		return  po.get_ValueDifference(columnName); //  get_ValueDifference
-	}
-
-	/**
 	 * 	Set Custom Column
 	 *	@param columnName column
 	 *	@param value value
