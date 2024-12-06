@@ -23,6 +23,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -43,6 +44,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -65,6 +67,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -204,8 +207,10 @@ class PPOrderIssueServiceProductCommand
 	@NonNull
 	private Quantity computeQtyToIssueForOneFinishedGood()
 	{
-		return ppOrderBOMBL.getQuantities(getBOMLineRecord())
-				.getQtyRequired();
+		final I_PP_Order_BOMLine orderBOMLine = getBOMLineRecord();
+		final BigDecimal qtyForOneFinishedGood = CoalesceUtil.firstPositiveOrZero(orderBOMLine.getQtyEntered(), orderBOMLine.getQtyBOM());
+
+		return Quantitys.create(qtyForOneFinishedGood, UomId.ofRepoId(orderBOMLine.getC_UOM_ID()));
 	}
 
 	private List<I_M_HU> splitToOneItemPerHU(final I_PP_Order_Qty finishedGoodsReceiveCandidate)
