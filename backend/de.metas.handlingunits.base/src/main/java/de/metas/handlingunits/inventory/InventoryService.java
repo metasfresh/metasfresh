@@ -86,7 +86,7 @@ public class InventoryService
 	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	@NonNull @Getter private final InventoryRepository inventoryRepository;
 	@NonNull private final SourceHUsService sourceHUsService;
-    @NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@NonNull private static final AdMessageKey MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE = AdMessageKey.of("de.metas.handlingunits.inventory.InventoryService.MsgCreatedVirtualInventoryForShipmentSchedule");
 	@NonNull private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
@@ -110,7 +110,7 @@ public class InventoryService
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
@@ -309,14 +309,14 @@ public class InventoryService
 
 	private void sendNotificationForCreatedVirtualInventory(@NonNull final InventoryId inventoryId, @Nullable final TableRecordReference forRecordRef)
 	{
-		if(forRecordRef != null && forRecordRef.tableNameEqualsTo(I_M_ShipmentSchedule.Table_Name))
+		if (forRecordRef != null && forRecordRef.tableNameEqualsTo(I_M_ShipmentSchedule.Table_Name))
 		{
 			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-												   .recipientUserId(Env.getLoggedUserId())
-												   .contentADMessage(MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE)
-												   .contentADMessageParam(forRecordRef.getRecord_ID())
-												   .targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
-												   .build());
+					.recipientUserId(Env.getLoggedUserId())
+					.contentADMessage(MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE)
+					.contentADMessageParam(forRecordRef.getRecord_ID())
+					.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
+					.build());
 		}
 	}
 

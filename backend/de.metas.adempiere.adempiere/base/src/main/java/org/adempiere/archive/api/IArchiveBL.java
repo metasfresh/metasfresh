@@ -35,7 +35,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -43,7 +42,6 @@ import java.util.Optional;
  * Archive related business logic
  *
  * @author tsa
- *
  */
 public interface IArchiveBL extends ISingletonService
 {
