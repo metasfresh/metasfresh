@@ -5,7 +5,7 @@
   "product_version": "3.8.9",
   "users": [
     {
-      "name": "metasfresh",
+      "name": "procurement_mf",
       "password_hash": "ouJOkWuBKImhQGRnLAaYRP73wXCZgM1mFQ6GyP9RzJourbfN",
       "hashing_algorithm": "rabbit_password_hashing_sha256",
       "tags": ""
