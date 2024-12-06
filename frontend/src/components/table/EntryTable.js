@@ -5,7 +5,13 @@ import { connect } from 'react-redux';
 
 import { getTable, getTableId } from '../../reducers/tables';
 import { updateTableRowProperty } from '../../actions/TableActions';
-import { allowShortcut, disableShortcut, openModal, patch, updatePropertyValue, } from '../../actions/WindowActions';
+import {
+  allowShortcut,
+  disableShortcut,
+  openModal,
+  patch,
+  updatePropertyValue,
+} from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
