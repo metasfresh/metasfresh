@@ -4,7 +4,8 @@ DROP FUNCTION IF EXISTS report.TextSnippet(IN p_ad_boilerplate_id numeric,
 
 CREATE OR REPLACE FUNCTION report.TextSnippet(IN p_ad_boilerplate_id numeric,
                                               IN p_ad_language       character varying DEFAULT 'de_DE')
-    RETURNS text AS
+    RETURNS text
+AS
 $BODY$
 DECLARE
 
@@ -21,4 +22,8 @@ BEGIN
 
     RETURN p_textsnippet_name;
 END;
-$BODY$ LANGUAGE plpgsql;
+$BODY$
+    LANGUAGE plpgsql
+;
+
+
