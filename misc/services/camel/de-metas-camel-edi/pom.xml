@@ -306,6 +306,7 @@
                             <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
                             <generatePackage>${jaxb.packageName}</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_metasfresh</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -318,6 +319,7 @@
                             <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
                             <generatePackage>${jaxb.orders.packageName}</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -330,6 +332,7 @@
                             <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
                             <generatePackage>${jaxb.desadv.packageName}</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -342,6 +345,7 @@
                             <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
                             <generatePackage>${jaxb.invoic.packageName}</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -358,6 +362,7 @@
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
                             <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                 </executions>
