@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -19,51 +19,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
-	name, address, DeliveryDateTimeMax, isPallet,
-	sum(Qty) as Qty,
-	QtyTU,
-	QtyLU,
-	string_agg(note, E'\n') as notes
-FROM
-	(
-	SELECT
-		name, address, DeliveryDateTimeMax, isPallet,
-		count(M_HU_ID) as Qty,
-		QtyTU,
-		QtyLU,
-		note
-	FROM
-		(
-		SELECT
-			bp.name, bpl.address,
-			CASE WHEN hupm.name ILIKE '%pal%' THEN 'Y' ELSE 'N' END AS isPallet,
-			hu.M_HU_ID,
-			dd.DeliveryDateTimeMax,
-			sp.QtyTU,
-			sp.QtyLU,
-			note
-		FROM
-			M_ShippingPackage sp
-			INNER JOIN C_BPartner bp ON sp.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-			INNER JOIN C_BPartner_Location bpl ON sp.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
-			INNER JOIN M_Package_HU phu ON sp.M_Package_ID = phu.M_Package_ID AND phu.isActive = 'Y'
-			INNER JOIN M_HU hu ON phu.M_HU_ID = hu.M_HU_ID
-			LEFT OUTER JOIN M_HU_PI_Item hupii ON hu.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID AND itemtype = 'PM' AND hupii.isActive = 'Y'
-			LEFT OUTER JOIN M_HU_PackingMaterial hupm ON hupii.M_HU_PackingMaterial_ID = hupm.M_HU_PackingMaterial_ID AND hupm.isActive = 'Y'
-			LEFT OUTER JOIN M_Tour_Instance ti ON sp.M_ShipperTransportation_ID = ti.M_ShipperTransportation_ID AND ti.isActive = 'Y'
-			LEFT OUTER JOIN M_DeliveryDay dd ON ti.M_Tour_Instance_ID = dd.M_Tour_Instance_ID 
-				AND sp.C_BPartner_ID = dd.C_BPartner_ID AND sp.C_BPartner_Location_ID = dd.C_BPartner_Location_ID
-				AND dd.isActive = 'Y'
-		WHERE
-			sp.M_ShipperTransportation_ID = $P{RECORD_ID}
-			AND sp.isActive = 'Y'
-		) foo
-	GROUP BY
-		name, address, DeliveryDateTimeMax, isPallet, note, QtyTU, QtyLU
-	) bar
-GROUP BY
-	name, address, DeliveryDateTimeMax, isPallet, QtyTU, QtyLU
-;]]>
+* from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
 	</queryString>
 	<field name="name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="name"/>
@@ -83,10 +39,6 @@ GROUP BY
 	<field name="ispallet" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="ispallet"/>
 		<property name="com.jaspersoft.studio.field.label" value="ispallet"/>
-	</field>
-	<field name="qty" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="qty"/>
-		<property name="com.jaspersoft.studio.field.label" value="qty"/>
 	</field>
 	<field name="qtytu" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="qtytu"/>
@@ -132,35 +84,21 @@ GROUP BY
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="482" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="436" y="0" width="150" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="400" y="0" width="35" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -186,18 +124,11 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="482" y="0" width="110" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+				<reportElement key="textField-16" x="436" y="0" width="150" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="328" y="0" width="35" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f">
@@ -209,23 +140,14 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{deliverydatetimemax}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="437" y="0" width="45" height="12" forecolor="#000000" uuid="056e2312-4c94-44aa-b184-d3066e7a8b83"/>
-				<textElement markup="none">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{ispallet}.equals( "Y" )?
-    ($F{qty}.intValue() == 1? $R{Palette}: $R{Palettes}):
-    ($F{qty}.intValue() == 1? $R{Unit}: $R{Units})]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="364" y="0" width="35" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
+				<reportElement key="textField-16" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtytu}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="400" y="0" width="35" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
+				<reportElement key="textField-16" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
