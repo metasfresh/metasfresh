@@ -32,6 +32,14 @@
       "qtyLabel": "Qty",
       "descriptionLabel": "Description",
       "allowedOnlyForSingleProducts": "The action can be performed only for a single product."
+    },
+    "printLabels": {
+      "buttonCaption": "Print labels",
+      "nrOfCopies": "Number of copies",
+      "label": "Label",
+      "windowName": "Print labels",
+      "print": "Print",
+      "noPrintingOptionSelected": "No printing option has been selected!"
     }
   }
 }

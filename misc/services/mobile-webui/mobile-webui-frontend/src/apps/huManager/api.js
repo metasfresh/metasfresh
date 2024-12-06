@@ -83,3 +83,17 @@ export const changeQty = ({
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
+
+export const printHULabels = ({ huId, huLabelProcessId, nrOfCopies }) => {
+  return axios
+    .post(`${huAPIBasePath}/huLabels/print`, {
+      huId: huId,
+      huLabelProcessId: huLabelProcessId,
+      nrOfCopies: nrOfCopies,
+    })
+    .then(unboxAxiosResponse);
+};
+
+export const getPrintingOptions = () => {
+  return axios.get(`${huAPIBasePath}/huLabels/printingOptions`).then(unboxAxiosResponse);
+};
