@@ -41,6 +41,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -93,7 +94,8 @@ class HUQRCodesServiceTest
 	void beforeEach()
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
-		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService());
+		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 

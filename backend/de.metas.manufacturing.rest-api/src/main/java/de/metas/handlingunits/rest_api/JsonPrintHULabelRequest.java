@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,20 @@
  * #L%
  */
 
-package org.adempiere.archive.api;
+package de.metas.handlingunits.rest_api;
 
-import de.metas.util.StringUtils;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_AD_Archive;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class ArchiveResult
+@Jacksonized
+public class JsonPrintHULabelRequest
 {
-	public static final ArchiveResult EMPTY = ArchiveResult.builder().build();
-
-	@Nullable
-	I_AD_Archive archiveRecord;
-
-	byte[] data;
-
-	public boolean isNoArchive() { return archiveRecord == null; }
-	
-	public Optional<String> getName() { return archiveRecord == null ? Optional.empty() : StringUtils.trimBlankToOptional(archiveRecord.getName()); }
+	@NonNull String huId;
+	@NonNull JsonMetasfreshId huLabelProcessId;
+	int nrOfCopies;
 }
