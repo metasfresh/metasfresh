@@ -24,12 +24,7 @@ package de.metas.contracts.modular.settings.clone;
 
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
-import org.compiere.model.POInfo;
-import org.compiere.model.copy.ValueToCopy;
 import org.springframework.stereotype.Component;
-
-import static de.metas.contracts.model.I_ModCntr_Module.COLUMNNAME_Name;
-import static de.metas.contracts.model.I_ModCntr_Module.COLUMNNAME_Processed;
 
 @Component
 public class ModCntr_Module_CopyTemplateCustomizer implements CopyTemplateCustomizer
@@ -38,18 +33,5 @@ public class ModCntr_Module_CopyTemplateCustomizer implements CopyTemplateCustom
 	public String getTableName()
 	{
 		return I_ModCntr_Module.Table_Name;
-	}
-
-	@Override
-	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
-	{
-		if(COLUMNNAME_Processed.equals(columnName) || COLUMNNAME_Name.equals(columnName))
-		{
-			return ValueToCopy.DIRECT_COPY;
-		}
-		else
-		{
-			return ValueToCopy.NOT_SPECIFIED;
-		}
 	}
 }

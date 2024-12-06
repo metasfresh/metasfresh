@@ -115,11 +115,6 @@ public class ModularContractSettingsService
 		}
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
-	{
-		return modularContractSettingsRepository.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId);
-	}
-
 	public ModularContractSettings getById(@NonNull final ModularContractSettingsId settingsId)
 	{
 		return modularContractSettingsRepository.getById(settingsId);
@@ -161,7 +156,7 @@ public class ModularContractSettingsService
 						.modularContractType(modularContractSettingsRepository.getContractTypeById(modularContractTypeId))
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(getById(modularContractSettingsId).getRawProductId())
-						.processed(true)
+						.generated(true)
 						.build()
 		);
 	}
@@ -192,7 +187,7 @@ public class ModularContractSettingsService
 						.modularContractType(moduleContractType)
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(moduleProductId)
-						.processed(true)
+						.generated(true)
 						.build()
 		);
 	}
@@ -274,7 +269,7 @@ public class ModularContractSettingsService
 					.moduleName(moduleConfig.getName())
 					.modularContractTypeId(moduleTypeIdToUse)
 					.invoicingGroupType(moduleConfig.getInvoicingGroup())
-					.processed(true)
+					.generated(true)
 					.build();
 
 			modularContractSettingsRepository.upsertModule(query, updateRequest);

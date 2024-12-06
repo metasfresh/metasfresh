@@ -148,7 +148,7 @@ public class DefinitiveInvoiceAverageAVOnShippedQtyComputingMethod extends Abstr
 		final Quantity definitiveTotalQty = computingMethodService.getQtySum(shipmentLogs, stockUOMId);
 		final Quantity finalTotalQty = computingMethodService.getQtySum(invoiceLineLogs, stockUOMId);
 		final Quantity diffQty = definitiveTotalQty.subtract(finalTotalQty);
-		Check.assume(diffQty.isPositive(), "Qty diff should be positive at this point");
+		Check.assume(diffQty.isPositive(), "Qty diff should be positive at this point, as qty diff zero should also have amount diff zero");
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())

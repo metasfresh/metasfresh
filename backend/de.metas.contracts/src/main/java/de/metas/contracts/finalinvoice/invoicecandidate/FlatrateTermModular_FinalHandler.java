@@ -63,6 +63,8 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -88,6 +90,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -114,6 +117,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
@@ -262,6 +266,10 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandBL.setPaymentTermIfMissing(invoiceCandidate);
 
 		setPriceAndQty(invoiceCandidate, computingResponse, createInvoiceCandidateRequest);
+
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(modularContract.getC_Order_Term_ID()));
+		invoiceCandidate.setC_Order_ID(orderRecord.getC_Order_ID());
+		invoiceCandidate.setM_Warehouse_ID(orderRecord.getM_Warehouse_ID());
 
 		processModCntrLogs(computingResponse, invoiceCandidate);
 

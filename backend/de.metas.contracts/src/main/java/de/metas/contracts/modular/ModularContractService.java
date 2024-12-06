@@ -252,13 +252,18 @@ public class ModularContractService
 		{
 			return;
 		}
+
 		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId);
+		if(!flatrateBL.isModularContract(flatrateTermId)) // could be interim
+		{
+			return;
+		}
 
 		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
 				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
 				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
 
-		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord))
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
 			updateIsFinalInvoiced(flatrateTermId, false);
 		}
@@ -271,7 +276,7 @@ public class ModularContractService
 
 	public void updateIsFinalInvoiced(@NonNull final InvoiceId invoiceId, final boolean isFinalInvoiced)
 	{
-		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId))
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceId))
 		{
 			updateIsFinalInvoiced(getFlatrateTermIdByInvoiceId(invoiceId), isFinalInvoiced);
 		}

@@ -1308,7 +1308,6 @@ public class FlatrateDAO implements IFlatrateDAO
 	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
 				.stream();

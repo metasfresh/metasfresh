@@ -2712,4 +2712,10 @@ public class FlatrateBL implements IFlatrateBL
 				FlatrateTermId::ofRepoIdOrNull
 				));
 	}
+
+	@Override
+	public Stream<I_C_Flatrate_Term> stream(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	{
+		return flatrateDAO.stream(filter);
+	}
 }
