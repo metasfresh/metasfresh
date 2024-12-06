@@ -192,7 +192,7 @@ class PasswordGeneratorTest
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
 							.targetHUAttributes(ImmutableAttributeSet.builder()
-									.attributeValue(AttributeConstants.RouterPassword1, null)
+									.attributeValue(AttributeConstants.RouterPassword, null)
 									.attributeValue(AttributeConstants.RouterPassword2, null)
 									.build())
 							.bomLineAttributes(ImmutableAttributeSet.EMPTY)
@@ -202,7 +202,7 @@ class PasswordGeneratorTest
 							.build());
 
 			assertThat(actualPasswords.getAttributes()).hasSize(2);
-			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword1)).matches(this::isNotBlank);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword)).matches(this::isNotBlank);
 			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword2)).matches(this::isNotBlank);
 		}
 
