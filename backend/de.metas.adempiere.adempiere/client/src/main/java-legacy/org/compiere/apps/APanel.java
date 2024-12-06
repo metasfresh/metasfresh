@@ -2877,7 +2877,7 @@ public class APanel extends CPanel
 		}
 	}
 
-	private final void actionButton0(final VButton vButton) throws Exception
+	private void actionButton0(final VButton vButton) throws Exception
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 

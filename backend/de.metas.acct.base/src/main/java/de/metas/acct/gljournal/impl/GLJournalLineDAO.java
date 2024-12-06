@@ -22,14 +22,10 @@ package de.metas.acct.gljournal.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.gljournal.IGLJournalLineGroup;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.DBException;
@@ -39,10 +35,12 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.DB;
 
-import de.metas.acct.gljournal.IGLJournalLineDAO;
-import de.metas.acct.gljournal.IGLJournalLineGroup;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 public class GLJournalLineDAO implements IGLJournalLineDAO
 {

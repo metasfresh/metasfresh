@@ -22,14 +22,6 @@ package de.metas.acct.gljournal.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_GL_JournalLine;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyPrecision;
@@ -37,6 +29,12 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_GL_JournalLine;
+
+import java.math.BigDecimal;
 
 /**
  * Adapts {@link I_GL_JournalLine} to {@link ITaxAccountable}

@@ -69,7 +69,8 @@ public class DocTypeService
 		return docTypeDAO.getDocTypeId(query);
 	}
 
-	public DocTypeId getOrderDocTypeId(final OrderDocType orderDocType, OrgId orgId)
+	@Nullable
+	public DocTypeId getOrderDocTypeIdOrNull(@Nullable final OrderDocType orderDocType, final OrgId orgId)
 	{
 		if (orderDocType == null)
 		{

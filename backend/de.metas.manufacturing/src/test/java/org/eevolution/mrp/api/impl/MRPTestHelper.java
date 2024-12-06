@@ -7,6 +7,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.DocSubType;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;

@@ -1,9 +1,9 @@
 package de.metas.cache.model;
 
-import java.util.Set;
-
 import de.metas.cache.TableNamesGroup;
 import lombok.NonNull;
+
+import java.util.Set;
 
 /*
  * #%L

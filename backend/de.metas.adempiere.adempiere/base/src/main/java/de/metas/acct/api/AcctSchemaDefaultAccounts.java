@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import de.metas.acct.Account;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

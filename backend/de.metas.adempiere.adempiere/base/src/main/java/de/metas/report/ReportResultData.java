@@ -106,6 +106,15 @@ public class ReportResultData
 				.build();
 	}
 
+	public static ReportResultData ofFile(final @NotNull File file, @NotNull final String reportFilename)
+	{
+		return ReportResultData.builder()
+				.reportData(new FileSystemResource(file))
+				.reportFilename(reportFilename)
+				.reportContentType(MimeType.getMimeType(reportFilename))
+				.build();
+	}
+
 	@JsonIgnore
 	public boolean isEmpty()
 	{

@@ -16,20 +16,19 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.util.DB;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 /**
  * Add or Copy Acct Schema Default Accounts

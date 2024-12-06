@@ -81,6 +81,7 @@ public class DocTypeQuery
 
 		public DocTypeQueryBuilder docSubTypeAny()
 		{
+
 			return docSubType(DOCSUBTYPE_Any);
 		}
 

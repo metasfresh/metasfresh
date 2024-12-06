@@ -4,6 +4,9 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -153,8 +156,8 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
-					.atTime(LocalTime.parse("23:07:16.193"))
-					.atZone(ZoneId.of("Europe/Berlin"));
+			.atTime(LocalTime.parse("23:07:16.193"))
+			.atZone(ZoneId.of("Europe/Berlin"));
 
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
@@ -192,6 +195,8 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
+
+		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);

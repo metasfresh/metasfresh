@@ -46,6 +46,11 @@ public class PaymentId implements RepoIdAware
 
 	public static Optional<PaymentId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
+	public static Optional<PaymentId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 	public static int toRepoId(final PaymentId id)
 	{
 		return id != null ? id.getRepoId() : -1;
@@ -75,5 +80,8 @@ public class PaymentId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

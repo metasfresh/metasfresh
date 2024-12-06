@@ -1,8 +1,12 @@
 /*
  * #%L
+<<<<<<<< HEAD:backend/de.metas.swat/de.metas.swat.base/src/main/java/de/metas/invoice/detail/InvoiceCandidateWithDetails.java
  * de.metas.business
+========
+ * de.metas.acct.base
+>>>>>>>> new_dawn_uat:backend/de.metas.acct.base/src/main/java/de/metas/acct/gljournal_sap/service/SAPGLJournalCopyRequest.java
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,6 +24,7 @@
  * #L%
  */
 
+<<<<<<<< HEAD:backend/de.metas.swat/de.metas.swat.base/src/main/java/de/metas/invoice/detail/InvoiceCandidateWithDetails.java
 package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableList;
@@ -43,4 +48,24 @@ public class InvoiceCandidateWithDetails
 
 	@Singular
 	ImmutableList<InvoiceDetailItem> detailItems;
+========
+package de.metas.acct.gljournal_sap.service;
+
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.Instant;
+
+@Value
+@Builder
+public class SAPGLJournalCopyRequest
+{
+	@NonNull SAPGLJournalId sourceJournalId;
+
+	@NonNull Instant dateDoc;
+
+	@NonNull Boolean negateAmounts;
+>>>>>>>> new_dawn_uat:backend/de.metas.acct.base/src/main/java/de/metas/acct/gljournal_sap/service/SAPGLJournalCopyRequest.java
 }

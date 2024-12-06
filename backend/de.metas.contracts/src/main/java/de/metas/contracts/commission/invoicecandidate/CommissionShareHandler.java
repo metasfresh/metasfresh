@@ -10,6 +10,7 @@ import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -397,7 +398,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
 						.docBaseType(commissionDocType.getDocBaseType())
-						.docSubType(commissionDocType.getDocSubType())
+						.docSubType(DocSubType.ofCode(commissionDocType.getDocSubType()))
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
 						.build());

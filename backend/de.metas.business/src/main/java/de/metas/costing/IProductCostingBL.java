@@ -1,12 +1,14 @@
 package de.metas.costing;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+
+import java.util.Map;
+import java.util.Set;
 
 import java.util.Map;
 import java.util.Set;

@@ -22,13 +22,11 @@ package de.metas.acct.gljournal;
  * #L%
  */
 
-
-import java.util.List;
-
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 
-import de.metas.util.ISingletonService;
+import java.util.List;
 
 public interface IGLJournalLineDAO extends ISingletonService
 {

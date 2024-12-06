@@ -84,6 +84,11 @@ public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		return Collections.emptyList();
 	}
 
+	public List<Object> getSqlParams()
+	{
+		return Collections.emptyList();
+	}
+
 	@Override
 	public boolean accept(final T model)
 	{

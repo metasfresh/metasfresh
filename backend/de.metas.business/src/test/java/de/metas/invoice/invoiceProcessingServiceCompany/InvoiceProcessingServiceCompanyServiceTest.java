@@ -119,7 +119,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
-		
+
 		configRepository = new InvoiceProcessingServiceCompanyConfigRepository();
 		final MoneyService moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(configRepository, moneyService);
@@ -248,7 +248,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThat(result).isEmpty();
 		}
-
 
 		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()
@@ -721,7 +720,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
 
-			if(docTypeId != null)
+			if (docTypeId != null)
 			{
 				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
 			}
