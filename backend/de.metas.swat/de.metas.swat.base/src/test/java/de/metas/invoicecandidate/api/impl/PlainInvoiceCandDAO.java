@@ -42,7 +42,7 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -75,7 +75,7 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 			final String trxName)
 	{
 		// Conversion date to be used on currency conversion
-		final LocalDate dateConv = SystemTime.asLocalDate();
+		final Instant dateConv = SystemTime.asInstant();
 
 		final List<I_C_Invoice_Candidate> records = getByQuery(InvoiceCandidateMultiQuery.builder().query(query).build());
 

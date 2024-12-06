@@ -122,7 +122,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}
@@ -557,7 +557,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	@NonNull
 	@Override
-	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 

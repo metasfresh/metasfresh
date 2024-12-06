@@ -1,9 +1,6 @@
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
@@ -22,10 +19,6 @@ import de.metas.util.Services;
 import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
-import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatcher;
-import io.github.jsonSnapshot.SnapshotMatchingStrategy;
-import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -61,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -100,24 +92,6 @@ public class AdempiereTestHelper
 	private static final AdempiereTestHelper instance = new AdempiereTestHelper();
 
 	public static final String AD_LANGUAGE = "de_DE";
-
-	/**
-	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
-	 */
-	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
-	{
-		@Override
-		public String getFilePath()
-		{
-			return "src/test/resources/";
-		}
-
-		@Override
-		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
-		{
-			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
-		}
-	};
 
 	public static AdempiereTestHelper get()
 	{
@@ -331,30 +305,6 @@ public class AdempiereTestHelper
 		saveRecord(orgInfoRecord);
 
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
-	}
-
-	/**
-	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * <p>
-	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
-	 *
-	 * @deprecated Consider using de.metas.test.SnapshotFunctionFactory
-	 */
-	@Deprecated
-	public static Function<Object, String> createSnapshotJsonFunction()
-	{
-		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		final ObjectWriter writerWithDefaultPrettyPrinter = jsonObjectMapper.writerWithDefaultPrettyPrinter();
-		return object -> {
-			try
-			{
-				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
-			}
-			catch (final JsonProcessingException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
-		};
 	}
 
 	private void staticInit0()

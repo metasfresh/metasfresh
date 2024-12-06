@@ -81,7 +81,7 @@ public class DocTypeNotFoundException extends AdempiereException
 
 
 		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(docBaseTypeName);
-		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType());
+		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType().getCode());
 		builder.append(", ").appendADElement("AD_Client_ID").append(": ").append(query.getAdClientId());
 		builder.append(", ").appendADElement("AD_Org_ID").append(": ").append(query.getAdOrgId());
 

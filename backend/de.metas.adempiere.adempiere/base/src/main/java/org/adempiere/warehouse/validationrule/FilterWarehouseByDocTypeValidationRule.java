@@ -1,15 +1,6 @@
 package org.adempiere.warehouse.validationrule;
 
-import java.util.Set;
-
-import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.NamePair;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.util.Check;
@@ -17,6 +8,13 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.NamePair;
+
+import java.util.Set;
 
 /**
  * 

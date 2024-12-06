@@ -62,6 +62,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.report.PrintFormatId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -1946,5 +1947,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				.setLimit(limit)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+	}
+
+	@Override
+	public Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
 	}
 }

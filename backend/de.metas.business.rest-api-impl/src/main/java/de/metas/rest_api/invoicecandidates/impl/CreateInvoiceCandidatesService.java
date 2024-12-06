@@ -14,6 +14,7 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -375,7 +376,9 @@ public class CreateInvoiceCandidatesService
 			return;
 		}
 
-		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
+
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(

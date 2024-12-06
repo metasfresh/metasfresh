@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
@@ -46,6 +47,10 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 	public ZonedDateTime toZonedDateTime(@NonNull final Function<OrgId, ZoneId> orgMapper) {return instant.atZone(orgMapper.apply(orgId));}
 
 	public java.sql.Timestamp toTimestamp() {return java.sql.Timestamp.from(instant);}
+
+	public LocalDate toLocalDate(@NonNull final Function<OrgId, ZoneId> orgMapper) {return toZonedDateTime(orgMapper).toLocalDate();}
+
+	public LocalDateAndOrgId toLocalDateAndOrgId(@NonNull final Function<OrgId, ZoneId> orgMapper) {return LocalDateAndOrgId.ofLocalDate(toLocalDate(orgMapper), orgId);}
 
 	@Override
 	public int compareTo(@NonNull final InstantAndOrgId other) {return this.instant.compareTo(other.instant);}

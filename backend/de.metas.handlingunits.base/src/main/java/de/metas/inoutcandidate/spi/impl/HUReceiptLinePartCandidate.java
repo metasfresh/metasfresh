@@ -85,7 +85,7 @@ import java.util.Optional;
 		this.productId = productId;
 
 		_stale = true; // stale by default
-		_qty = Quantitys.createZero(uomId);
+		_qty = Quantitys.zero(uomId);
 	}
 
 	@Override

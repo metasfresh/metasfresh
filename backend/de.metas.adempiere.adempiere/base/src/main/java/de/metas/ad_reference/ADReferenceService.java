@@ -237,7 +237,7 @@ public class ADReferenceService
 			return null;
 		}
 
-		final ReferenceId referenceId = ReferenceId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(model).getPOInfo().getColumnReferenceValueId(columnName));
+		final ReferenceId referenceId = InterfaceWrapperHelper.getPO(model).getPOInfo().getColumnReferenceValueId(columnName);
 		if (referenceId == null)
 		{
 			return null;

@@ -1,5 +1,10 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.FactAcctQuery;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -8,6 +13,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -15,10 +22,13 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -32,6 +42,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -44,8 +55,10 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -58,6 +71,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
@@ -75,6 +89,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -113,6 +128,9 @@ public class InOutBL implements IInOutBL
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -137,6 +155,30 @@ public class InOutBL implements IInOutBL
 	{
 		final I_M_InOut inout = getById(inoutId);
 		return getLines(inout);
+	}
+
+	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId);
+	}
+
+	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId.getInOutLineId());
+	}
+
+	@Override
+	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
+	{
+		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
+	}
+
+	@Override
+	public Set<InOutAndLineId> getLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.retrieveLineIdsByOrderLineIds(orderLineIds);
 	}
 
 	@Override
@@ -172,8 +214,8 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-												 + "\n @M_InOut_ID@: " + inOut
-												 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+					+ "\n @M_InOut_ID@: " + inOut
+					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -184,8 +226,8 @@ public class InOutBL implements IInOutBL
 				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
-					  "No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
-					  inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
+				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
@@ -203,6 +245,19 @@ public class InOutBL implements IInOutBL
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
 		return pricingBL.calculatePrice(pricingCtx);
 
+	}
+
+	@Override
+	public Quantity getQtyEntered(@NonNull final I_M_InOutLine inoutLine)
+	{
+		return Quantitys.of(inoutLine.getQtyEntered(), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+	}
+
+	@Override
+	public Quantity getMovementQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		return Quantitys.of(inoutLine.getMovementQty(), productId);
 	}
 
 	@Override
@@ -249,7 +304,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-													 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -703,5 +758,44 @@ public class InOutBL implements IInOutBL
 		return bPartnerId != null
 				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
 				: null;
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final InOutId inoutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inoutId);
+		return getCurrencyConversionContext(inout);
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
+	{
+		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+				inout.getDateAcct().toInstant(),
+				(CurrencyConversionTypeId)null,
+				ClientId.ofRepoId(inout.getAD_Client_ID()),
+				OrgId.ofRepoId(inout.getAD_Org_ID()));
+
+		return conversionCtx;
+	}
+
+	@Override
+	public Money getCOGSBySalesOrderId(
+			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final List<FactAcctQuery> factAcctQueries = getLineIdsByOrderLineIds(ImmutableSet.of(salesOrderLineId))
+				.stream()
+				.map(inoutAndLineId -> FactAcctQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.accountConceptualName(AccountConceptualName.ofString(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct))
+						.tableName(I_M_InOut.Table_Name)
+						.recordId(inoutAndLineId.getInOutId().getRepoId())
+						.lineId(inoutAndLineId.getInOutLineId().getRepoId())
+						.build())
+				.collect(Collectors.toList());
+
+		return factAcctBL.getAcctBalance(factAcctQueries)
+				.orElseGet(() -> Money.zero(acctSchemaBL.getAcctCurrencyId(acctSchemaId)));
 	}
 }

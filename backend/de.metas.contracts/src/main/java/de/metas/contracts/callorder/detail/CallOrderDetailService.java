@@ -26,10 +26,11 @@ import de.metas.contracts.callorder.detail.model.CallOrderDetail;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailData;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailId;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -50,6 +51,7 @@ import java.util.Optional;
 public class CallOrderDetailService
 {
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	private final CallOrderDetailRepo detailRepo;
 
@@ -124,7 +126,7 @@ public class CallOrderDetailService
 	{
 		final CallOrderDetailQuery query = CallOrderDetailQuery.builder()
 				.summaryId(summaryId)
-				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
 				.build();
 
 		final Optional<CallOrderDetailId> existingDetailId = detailRepo.getDetailByQuery(query)
@@ -157,7 +159,7 @@ public class CallOrderDetailService
 				.builder()
 				.summaryId(callOrderSummaryId)
 				.invoiceId(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()))
-				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
 				.qtyInvoiced(qtyInvoiced)
 				.build();
 	}
@@ -178,17 +180,14 @@ public class CallOrderDetailService
 	}
 
 	@NonNull
-	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
+	private CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
 	{
-		final UomId uomId = UomId.ofRepoId(shipmentLine.getC_UOM_ID());
-		final Quantity qtyDelivered = Quantitys.of(shipmentLine.getMovementQty(), uomId);
-
 		return CallOrderDetailData
 				.builder()
 				.summaryId(summaryId)
 				.shipmentId(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()))
 				.shipmentLineId(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()))
-				.qtyDelivered(qtyDelivered)
+				.qtyDelivered(inoutBL.getQtyEntered(shipmentLine))
 				.build();
 	}
 }

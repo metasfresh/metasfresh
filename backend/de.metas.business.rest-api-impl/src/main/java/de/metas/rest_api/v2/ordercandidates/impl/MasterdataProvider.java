@@ -80,7 +80,7 @@ import java.util.Optional;
  * #L%
  */
 
-final class MasterdataProvider
+public final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);

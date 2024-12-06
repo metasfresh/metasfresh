@@ -24,6 +24,8 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -320,8 +322,8 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubType(DocSubType.EmptiesReceipt)
 				.build();
 
 		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());

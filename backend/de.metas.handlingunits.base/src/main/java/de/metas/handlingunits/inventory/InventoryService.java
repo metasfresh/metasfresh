@@ -1,6 +1,8 @@
 package de.metas.handlingunits.inventory;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -293,8 +295,8 @@ public class InventoryService
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
-				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
+				.docSubType(DocSubType.VirtualInventory)
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

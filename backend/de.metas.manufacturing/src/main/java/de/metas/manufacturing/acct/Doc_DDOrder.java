@@ -22,26 +22,24 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.document.DocBaseType;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
-import org.compiere.model.MDocType;
 import org.eevolution.model.I_DD_Order;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.doc.AcctDocContext;
+import java.math.BigDecimal;
+import java.util.List;
 
 public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 {
 
 	public Doc_DDOrder(final AcctDocContext ctx)
 	{
-		super(ctx, MDocType.DOCBASETYPE_DistributionOrder);
+		super(ctx, DocBaseType.DistributionOrder);
 
 		final I_DD_Order ddOrder = getModel(I_DD_Order.class);
 		setDateAcct(ddOrder.getDateOrdered());

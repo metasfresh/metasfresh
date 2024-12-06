@@ -133,7 +133,7 @@ public class InvoiceToExportFactory
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
 				.id(id)
-				.docSubType(docBaseAndSubType.getDocSubType()) // might be null
+				.docBaseAndSubType(docBaseAndSubType) // might be null
 				.alreadyPaidAmount(allocatedMoney)
 				.amount(grandTotal)
 				.biller(createBiller(invoiceRecord))

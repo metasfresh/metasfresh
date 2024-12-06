@@ -53,7 +53,7 @@ public class StockQtyAndUOMQtys
 	{
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.createZero(productId));
+				.stockQty(Quantitys.zero(productId));
 
 		if (uomId != null)
 		{

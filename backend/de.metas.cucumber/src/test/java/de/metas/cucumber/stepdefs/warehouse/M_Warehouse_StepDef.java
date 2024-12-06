@@ -29,9 +29,9 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -45,13 +45,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
@@ -102,10 +97,12 @@ public class M_Warehouse_StepDef
 
 					assertThat(warehouseRecord).isNotNull();
 
-					final boolean isIssueWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsIssueWarehouse).orElse(false);
-					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
-					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
-					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
+					final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
+					if (isIssueWarehouse)
+					{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
+						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
+						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
+					}
 
 					final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
 							.map(bpartnerTable::getId)
@@ -119,6 +116,10 @@ public class M_Warehouse_StepDef
 					final BPartnerLocationId bpartnerLocationId = bpartnerLocationRepoId > 0
 							? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId)
 							: StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID;
+
+					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
+					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
 
 					warehouseRecord.setValue(valueAndName.getValue());
 					warehouseRecord.setName(valueAndName.getName());

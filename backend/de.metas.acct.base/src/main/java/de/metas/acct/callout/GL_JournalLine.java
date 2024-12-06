@@ -46,11 +46,10 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Callout(value = I_GL_JournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class GL_JournalLine
@@ -90,11 +89,7 @@ public class GL_JournalLine
 		}
 
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournalLine.getC_ConversionType_ID());
-		LocalDate dateAcct = TimeUtil.asLocalDate(glJournalLine.getDateAcct());
-		if (dateAcct == null)
-		{
-			dateAcct = SystemTime.asLocalDate();
-		}
+		final Instant dateAcct = glJournalLine.getDateAcct() != null ? glJournalLine.getDateAcct().toInstant() : SystemTime.asInstant();
 		final ClientId adClientId = ClientId.ofRepoId(glJournalLine.getAD_Client_ID());
 		final OrgId adOrgId = OrgId.ofRepoId(glJournalLine.getAD_Org_ID());
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
@@ -165,11 +160,10 @@ public class GL_JournalLine
 
 	/**
 	 * Copy AmtSourceDr/Cr to AmtSourceCr/Dr based on which is the source column.
-	 *
+	 *<p>
 	 * If the given GL Journal Line has "Split accounting transaction" enabled this method will do nothing
 	 * because in that case the amounts does not have to be synchronized.
 	 *
-	 * @param glJournalLine
 	 * @param fromAmtSourceColumnName source column from where we shall copy the amount. It can be:
 	 *            <ul>
 	 *            <li>{@link I_GL_JournalLine#COLUMNNAME_AmtSourceDr} to copy from AmtSourceDr to AmtSourceCr
@@ -177,7 +171,7 @@ public class GL_JournalLine
 	 *            <li><code>null</code> - it will copy from AmtSourceDr if it's not zero else from AmtSourceCr
 	 *            </ul>
 	 */
-	private final void syncSourceAmountsIfSplitAcctTrx(final I_GL_JournalLine glJournalLine, String fromAmtSourceColumnName)
+	private void syncSourceAmountsIfSplitAcctTrx(final I_GL_JournalLine glJournalLine, String fromAmtSourceColumnName)
 	{
 		// Do nothing if split accounting transaction is enabled
 		if (glJournalLine.isSplitAcctTrx())
@@ -240,7 +234,7 @@ public class GL_JournalLine
 		syncSourceAmountsIfSplitAcctTrx(glJournalLine, I_GL_JournalLine.COLUMNNAME_AmtSourceCr);
 	}
 
-	private final void onTaxBaseAccount(final I_GL_JournalLine glJournalLine)
+	private void onTaxBaseAccount(final I_GL_JournalLine glJournalLine)
 	{
 		//
 		// Take a snapshot of the old values
@@ -376,13 +370,13 @@ public class GL_JournalLine
 		glJournalLine.setType(type);
 	}
 
-	private final ITaxAccountable asTaxAccountable(final I_GL_JournalLine glJournalLine, final boolean accountSignDR)
+	private ITaxAccountable asTaxAccountable(final I_GL_JournalLine glJournalLine, final boolean accountSignDR)
 	{
 		final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 		return glJournalLineBL.asTaxAccountable(glJournalLine, accountSignDR);
 	}
 
-	private final boolean isAutoTaxAccount(final I_C_ValidCombination accountVC)
+	private boolean isAutoTaxAccount(final I_C_ValidCombination accountVC)
 	{
 		if (accountVC == null)
 		{

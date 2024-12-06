@@ -7,10 +7,12 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventObserver;
@@ -44,6 +46,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -265,6 +268,8 @@ public class MRPTestHelper
 	{
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
 		PlainDocumentBL.isDocumentTableResponse = false;
+
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
@@ -610,7 +615,7 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

@@ -12,6 +12,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
+import org.eevolution.api.PPCostCollectorId;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -119,6 +120,8 @@ public interface IOrderDAO extends ISingletonService
 
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
+	void deleteByLineId(OrderAndLineId orderAndLineId);
+
 	void save(org.compiere.model.I_C_Order order);
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
@@ -134,6 +137,8 @@ public interface IOrderDAO extends ISingletonService
 	void allocatePOLineToSOLine(OrderLineId purchaseOrderLineId, OrderLineId salesOrderLineId);
 
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);

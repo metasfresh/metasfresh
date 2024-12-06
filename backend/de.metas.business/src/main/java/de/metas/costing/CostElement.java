@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import de.metas.acct.api.AcctSchemaCosting;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,4 +61,10 @@ public class CostElement
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isActivityControlElement() {return this.costElementType.isActivityControlElement();}
+
+	public boolean isAccountable(final AcctSchemaCosting acctSchemaCosting)
+	{
+		return this.costingMethod.equals(acctSchemaCosting.getCostingMethod())
+				&& (acctSchemaCosting.getPostOnlyCostElementIds().isEmpty() || acctSchemaCosting.getPostOnlyCostElementIds().contains(id));
+	}
 }

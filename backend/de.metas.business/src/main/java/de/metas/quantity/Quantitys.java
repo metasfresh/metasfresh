@@ -88,7 +88,7 @@ public class Quantitys
 		return new Quantity(qty, uomRecord, sourceQty, sourceUomRecord);
 	}
 
-	public Quantity createZero(@NonNull final UomId uomId)
+	public Quantity zero(@NonNull final UomId uomId)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
@@ -104,7 +104,7 @@ public class Quantitys
 		return Quantity.of(1, uomRecord);
 	}
 
-	public Quantity createZero(@NonNull final ProductId productId)
+	public Quantity zero(@NonNull final ProductId productId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM stockUomRecord = productBL.getStockUOM(productId);
