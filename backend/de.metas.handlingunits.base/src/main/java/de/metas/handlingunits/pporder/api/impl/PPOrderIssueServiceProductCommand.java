@@ -170,6 +170,13 @@ class PPOrderIssueServiceProductCommand
 				.build());
 	}
 
+	private I_PP_Order getPPOrderRecord()
+	{
+		return _ppOrderRecord == null
+				? _ppOrderRecord = ppOrderBL.getById(request.getPpOrderId())
+				: _ppOrderRecord;
+	}
+
 	private I_PP_Order_BOMLine getBOMLineRecord()
 	{
 		return _bomLineRecord == null
@@ -204,8 +211,9 @@ class PPOrderIssueServiceProductCommand
 	@NonNull
 	private Quantity computeQtyToIssueForOneFinishedGood()
 	{
-		return ppOrderBOMBL.getQuantities(getBOMLineRecord())
-				.getQtyRequired();
+		return ppOrderBOMBL.getQtyCalculationsBOM(getPPOrderRecord())
+				.getLineByOrderBOMLineId(request.getPpOrderBOMLineId())
+				.computeQtyRequired(Quantity.of(1, uomDAO.getById(UomId.EACH)));
 	}
 
 	private List<I_M_HU> splitToOneItemPerHU(final I_PP_Order_Qty finishedGoodsReceiveCandidate)
