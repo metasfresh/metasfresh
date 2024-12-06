@@ -24,6 +24,7 @@ package de.metas.postfinance.document.export;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryType;
@@ -61,6 +62,7 @@ import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.location.Location;
 import de.metas.location.LocationId;
 import de.metas.location.LocationRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.postfinance.B2BServiceWrapper;
 import de.metas.postfinance.bpartnerconfig.PostFinanceBPartnerConfig;
@@ -102,11 +104,13 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -165,6 +169,7 @@ public class PostFinanceYbInvoiceService
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private static final Logger logger = Logger.getLogger(PostFinanceYbInvoiceService.class.getName());
 	private static final String YB_INVOICE_BILL_DETAILS_TYPE_PDF_APPENDIX = "PDFAppendix";
 	private static final String YB_INVOICE_PAPER_BILL_ID = "41100000301089304";
@@ -177,11 +182,24 @@ public class PostFinanceYbInvoiceService
 	private static final BigDecimal YB_INVOICE_VERSION = BigDecimal.valueOf(2.0);
 	private static final String INVOICE_REFERENCE = "InvoiceReference";
 	private static final String AD_LANGUAGE_DE = "de_DE";
+	private static final String SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE = "de.metas.postfinance.document.export.PostFinanceYbInvoiceService.PostFinanceUploadInvoiceBatchSize";
 
 	public static final ObjectFactory YB_INVOICE_OBJECT_FACTORY = new ObjectFactory();
 
 
 	public void exportToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	{
+		// We group by billerId so also the orgId should be identical for all list elements
+		final ClientAndOrgId clientAndOrgId = CollectionUtils.extractSingleElement(invoices, PostFinanceYbInvoiceResponse::getClientAndOrgId);
+		final int batchSize = sysConfigBL.getIntValue(SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE, 20, clientAndOrgId);
+		final List<List<PostFinanceYbInvoiceResponse>> batchList = Lists.partition(invoices, batchSize);
+		for(final List<PostFinanceYbInvoiceResponse> list : batchList)
+		{
+			exportBatchToPostFinance(billerId,list);
+		}
+	}
+
+	public void exportBatchToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		try
 		{
