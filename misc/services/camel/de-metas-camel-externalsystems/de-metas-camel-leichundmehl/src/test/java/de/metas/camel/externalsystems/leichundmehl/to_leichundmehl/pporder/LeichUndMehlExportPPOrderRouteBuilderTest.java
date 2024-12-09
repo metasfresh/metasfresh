@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.v2.adprocess.JsonAdProcessRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import lombok.NonNull;
@@ -47,6 +48,7 @@ import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_AD_Process_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID;
@@ -59,6 +61,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_RETRIEVE_PP_ORDER_ENDPOINT = "mock:RetrievePPOrderEndpoint";
 	private static final String MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT = "mock:RetrieveProductInfoEndpoint";
+	private static final String MOCK_INVOKE_PROCESS_ENDPOINT = "mock:InvokeProcessEndpoint";
 	private static final String MOCK_TCP_ENDPOINT = "mock:TCPEndpoint";
 	private static final String MOCK_LOG_MESSAGE_ENDPOINT = "mock:LogMessageEndpoint";
 	private static final String MOCK_ATTACHMENT_ENDPOINT = "mock:AttachmentEndpoint";
@@ -69,9 +72,17 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_MANUFACTURING_ORDER_RESPONSE = "10_JsonResponseManufacturingOrder.json";
 	private static final String JSON_RETRIEVE_PRODUCT_CAMEL_REQUEST = "20_RetrieveProductCamelRequest.json";
 	private static final String JSON_PRODUCT_RESPONSE = "20_JsonProduct.json";
+
 	private static final String JSON_DISPATCH_MESSAGE_REQUEST = "30_DispatchMessageRequest.json";
 	private static final String JSON_LOG_MESSAGE_REQUEST = "40_LogMessageRequest.json";
 	private static final String JSON_ATTACHMENT_REQUEST = "50_JsonAttachmentRequest.json";
+
+	private static final String JSON_EXTERNAL_SYSTEM_REQUEST_CUSTOM_QUERY_PROCESS = "customQueryProcess/0_JsonExternalSystemRequest.json";
+	private static final String JSON_CUSTOM_PROCESS_REQUEST = "customQueryProcess/25_CustomQueryRequest.json";
+	private static final String JSON_CUSTOM_PROCESS_RESPONSE = "customQueryProcess/26_CustomQueryResponse.json";
+	private static final String JSON_DISPATCH_REQUEST_CUSTOM_QUERY_PROCESS = "customQueryProcess/30_DispatchMessageRequest.json";
+	private static final String JSON_LOG_MESSAGE_REQUEST_CUSTOM_QUERY_PROCESS = "customQueryProcess/40_LogMessageRequest.json";
+	private static final String JSON_ATTACHMENT_REQUEST_CUSTOM_QUERY_PROCESS = "customQueryProcess/50_JsonAttachmentRequest.json";
 
 	private static final Integer ppOrderMetasfreshId = 11111;
 
@@ -110,12 +121,14 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	{
 		final MockRetrievePPOrderProcessor mockRetrievePPOrderProcessor = new MockRetrievePPOrderProcessor();
 		final MockRetrieveProductInfoProcessor mockRetrieveProductInfoProcessor = new MockRetrieveProductInfoProcessor();
+		final MockCustomQueryProcessor mockCustomQueryProcessor = new MockCustomQueryProcessor();
 		final MockTCPProcessor mockTCPProcessor = new MockTCPProcessor();
 		final MockLogMessageRequestProcessor mockLogMessageRequestProcessor = new MockLogMessageRequestProcessor();
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
 							   mockRetrieveProductInfoProcessor,
+							   mockCustomQueryProcessor,
 							   mockTCPProcessor,
 							   mockLogMessageRequestProcessor,
 							   mockJsonAttachmentRequestProcessor);
@@ -144,6 +157,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockTCPProcessor.called).isEqualTo(1);
 		assertThat(mockRetrievePPOrderProcessor.called).isEqualTo(1);
 		assertThat(mockRetrieveProductInfoProcessor.called).isEqualTo(1);
+		assertThat(mockCustomQueryProcessor.called).isEqualTo(0);
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(1);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
@@ -184,12 +198,14 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	{
 		final MockRetrievePPOrderProcessor mockRetrievePPOrderProcessor = new MockRetrievePPOrderProcessor();
 		final MockRetrieveProductInfoProcessor mockRetrieveProductInfoProcessor = new MockRetrieveProductInfoProcessor();
+		final MockCustomQueryProcessor mockCustomQueryProcessor = new MockCustomQueryProcessor();
 		final MockTCPProcessor mockTCPProcessor = new MockTCPProcessor();
 		final MockLogMessageRequestProcessor mockLogMessageRequestProcessor = new MockLogMessageRequestProcessor();
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
 							   mockRetrieveProductInfoProcessor,
+							   mockCustomQueryProcessor,
 							   mockTCPProcessor,
 							   mockLogMessageRequestProcessor,
 							   mockJsonAttachmentRequestProcessor);
@@ -214,6 +230,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockTCPProcessor.called).isEqualTo(1);
 		assertThat(mockRetrievePPOrderProcessor.called).isEqualTo(1);
 		assertThat(mockRetrieveProductInfoProcessor.called).isEqualTo(1);
+		assertThat(mockCustomQueryProcessor.called).isEqualTo(0);
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(0);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(0);
 		assertMockEndpointsSatisfied();
@@ -226,9 +243,94 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 				.isEqualTo(expectedDispatchMessageRequest.getPayload().replaceAll("\\s+", ""));
 	}
 
+	/**
+	 * The request prompts camel to *also* make a call to a custom process and incorporate the result into the PLU-file.
+	 */
+	@Test
+	public void happyFlow_withCustomQueryProcess() throws Exception
+	{
+		final MockRetrievePPOrderProcessor mockRetrievePPOrderProcessor = new MockRetrievePPOrderProcessor();
+		final MockRetrieveProductInfoProcessor mockRetrieveProductInfoProcessor = new MockRetrieveProductInfoProcessor();
+		final MockCustomQueryProcessor mockCustomQueryProcessor = new MockCustomQueryProcessor();
+		final MockTCPProcessor mockTCPProcessor = new MockTCPProcessor();
+		final MockLogMessageRequestProcessor mockLogMessageRequestProcessor = new MockLogMessageRequestProcessor();
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+
+		prepareRouteForTesting(mockRetrievePPOrderProcessor,
+							   mockRetrieveProductInfoProcessor,
+							   mockCustomQueryProcessor,
+							   mockTCPProcessor,
+							   mockLogMessageRequestProcessor,
+							   mockJsonAttachmentRequestProcessor);
+
+		context.start();
+
+		final MockEndpoint retrievePPOrderMockEndpoint = getMockEndpoint(MOCK_RETRIEVE_PP_ORDER_ENDPOINT);
+		retrievePPOrderMockEndpoint.expectedBodiesReceived(ppOrderMetasfreshId);
+
+		final InputStream expectedRetrieveProductCamelRequestIS = this.getClass().getResourceAsStream(JSON_RETRIEVE_PRODUCT_CAMEL_REQUEST);
+		final MockEndpoint retrieveProductInfoMockEndpoint = getMockEndpoint(MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT);
+		retrieveProductInfoMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedRetrieveProductCamelRequestIS, RetrieveProductCamelRequest.class));
+
+		final InputStream customProcessRequestIS = this.getClass().getResourceAsStream(JSON_CUSTOM_PROCESS_REQUEST);
+		final MockEndpoint customProcessRequestMockEndpoint = getMockEndpoint(MOCK_INVOKE_PROCESS_ENDPOINT);
+		customProcessRequestMockEndpoint.expectedBodiesReceived(objectMapper.readValue(customProcessRequestIS, JsonAdProcessRequest.class));
+
+		final InputStream expectedLogMessageRequestIS = this.getClass().getResourceAsStream(JSON_LOG_MESSAGE_REQUEST_CUSTOM_QUERY_PROCESS);
+		final MockEndpoint logMessageRequestMockEndpoint = getMockEndpoint(MOCK_LOG_MESSAGE_ENDPOINT);
+		logMessageRequestMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedLogMessageRequestIS, LogMessageRequest.class));
+
+		//input request
+		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST_CUSTOM_QUERY_PROCESS);
+		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		//when
+		template.sendBody("direct:" + EXPORT_PPORDER_ROUTE_ID, invokeExternalSystemRequest);
+
+		//then
+		assertThat(mockTCPProcessor.called).isEqualTo(1);
+		assertThat(mockRetrievePPOrderProcessor.called).isEqualTo(1);
+		assertThat(mockRetrieveProductInfoProcessor.called).isEqualTo(1);
+		assertThat(mockCustomQueryProcessor.called).isEqualTo(1);
+		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(1);
+		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
+		assertMockEndpointsSatisfied();
+
+		//validate DispatchMessageRequest
+		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_REQUEST_CUSTOM_QUERY_PROCESS);
+		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
+		assertThat(mockTCPProcessor.actualRequest.getConnectionDetails()).isEqualTo(expectedDispatchMessageRequest.getConnectionDetails());
+		assertThat(mockTCPProcessor.actualRequest.getPayload().replaceAll("\\s+", ""))
+				.isEqualTo(expectedDispatchMessageRequest.getPayload().replaceAll("\\s+", ""));
+
+		//validate JsonAttachmentRequest
+		final InputStream expectedJsonAttachmentRequestIS = this.getClass().getResourceAsStream(JSON_ATTACHMENT_REQUEST_CUSTOM_QUERY_PROCESS);
+		final JsonAttachmentRequest expectedJsonAttachmentRequest = objectMapper.readValue(expectedJsonAttachmentRequestIS, JsonAttachmentRequest.class);
+
+		final JsonAttachmentRequest actualJsonAttachmentRequest = mockJsonAttachmentRequestProcessor.jsonAttachmentRequest;
+
+		assertThat(actualJsonAttachmentRequest.getOrgCode().equals(expectedJsonAttachmentRequest.getOrgCode())).isTrue();
+		assertThat(actualJsonAttachmentRequest.getTargets().equals(expectedJsonAttachmentRequest.getTargets())).isTrue();
+
+		final JsonAttachment expectedJsonAttachment = expectedJsonAttachmentRequest.getAttachment();
+		final JsonAttachment actualJsonAttachment = actualJsonAttachmentRequest.getAttachment();
+
+		final byte[] expectedData = Base64.getDecoder().decode(expectedJsonAttachment.getData().getBytes());
+		final String expectedDataString = new String(expectedData, Charset.forName("windows-1252"));
+
+		final byte[] actualData = Base64.getDecoder().decode(actualJsonAttachment.getData().getBytes());
+		final String actualDataString = new String(actualData, Charset.forName("windows-1252"));
+
+		assertThat(actualJsonAttachment.getFileName().equals(expectedJsonAttachment.getFileName())).isTrue();
+		assertThat(actualJsonAttachment.getType().equals(expectedJsonAttachment.getType())).isTrue();
+		assertThat(actualDataString.replaceAll("\\s+", ""))
+				.isEqualTo(expectedDataString.replaceAll("\\s+", ""));
+	}
+
 	private void prepareRouteForTesting(
 			@NonNull final MockRetrievePPOrderProcessor mockRetrievePPOrderProcessor,
 			@NonNull final MockRetrieveProductInfoProcessor mockRetrieveProductInfoProcessor,
+			@NonNull final MockCustomQueryProcessor mockCustomQueryProcessor,
 			@NonNull final MockTCPProcessor mockTCPProcessor,
 			@NonNull final MockLogMessageRequestProcessor mockLogMessageRequestProcessor,
 			@NonNull final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor) throws Exception
@@ -244,6 +346,11 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 										  .skipSendToOriginalEndpoint()
 										  .to(MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT)
 										  .process(mockRetrieveProductInfoProcessor);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_AD_Process_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_INVOKE_PROCESS_ENDPOINT)
+										  .process(mockCustomQueryProcessor);
 
 								  advice.interceptSendToEndpoint("direct:" + SEND_TO_TCP_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
@@ -288,13 +395,26 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		}
 	}
 
+	private static class MockCustomQueryProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+			final InputStream expectedJsonResponseManufacturingOrderIS = this.getClass().getResourceAsStream(JSON_CUSTOM_PROCESS_RESPONSE);
+			exchange.getIn().setBody(expectedJsonResponseManufacturingOrderIS);
+		}
+	}
+
 	private static class MockTCPProcessor implements Processor
 	{
 		private int called = 0;
 		private DispatchMessageRequest actualRequest;
 
 		@Override
-		public void process(final Exchange exchange) throws IOException
+		public void process(@NonNull final Exchange exchange)
 		{
 			actualRequest = exchange.getIn().getBody(DispatchMessageRequest.class);
 
@@ -307,7 +427,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		private int called = 0;
 
 		@Override
-		public void process(final Exchange exchange) throws Exception
+		public void process(@NonNull final Exchange exchange)
 		{
 			called++;
 		}
@@ -319,7 +439,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		private JsonAttachmentRequest jsonAttachmentRequest;
 
 		@Override
-		public void process(final Exchange exchange) throws Exception
+		public void process(@NonNull final Exchange exchange)
 		{
 			jsonAttachmentRequest = exchange.getIn().getBody(JsonAttachmentRequest.class);
 
