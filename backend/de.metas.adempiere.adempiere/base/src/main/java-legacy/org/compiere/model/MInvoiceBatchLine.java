@@ -116,7 +116,11 @@ public class MInvoiceBatchLine extends X_C_InvoiceBatchLine
 				+ "SET DocumentAmt = COALESCE((SELECT SUM(LineTotalAmt) FROM C_InvoiceBatchLine l "
 					+ "WHERE h.C_InvoiceBatch_ID=l.C_InvoiceBatch_ID AND l.IsActive='Y'),0) "
 				+ "WHERE C_InvoiceBatch_ID=" + getC_InvoiceBatch_ID();
+<<<<<<< HEAD
 			DB.executeUpdate(sql, get_TrxName());
+=======
+			DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return success;
 	}	//	afterSave

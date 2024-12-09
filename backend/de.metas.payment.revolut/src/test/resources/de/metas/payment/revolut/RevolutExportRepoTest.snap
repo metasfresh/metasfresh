@@ -1,6 +1,7 @@
 de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
   [
     {
+<<<<<<< HEAD
       "revolutPaymentExportId" : 100007,
       "recordReference" : {
         "tableName" : "C_PaySelection",
@@ -24,6 +25,27 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "recipientCountryId" : 5,
       "recipientBankCountryId" : 4,
       "recipientType" : "COMPANY"
+=======
+      "IBAN": "iban",
+      "accountNo": "accountNo",
+      "addressLine1": "addr1",
+      "amount": "10 CHF",
+      "city": "city",
+      "name": "name",
+      "orgId": 1,
+      "paymentReference": "payReference",
+      "postalCode": "postal",
+      "recipientBankCountryId": 4,
+      "recipientCountryId": 5,
+      "recipientType": "COMPANY",
+      "recordReference": {
+        "recordId": 1,
+        "tableName": "C_PaySelection"
+      },
+      "regionName": "region",
+      "revolutPaymentExportId": 100007,
+      "routingNo": "routingNo"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]

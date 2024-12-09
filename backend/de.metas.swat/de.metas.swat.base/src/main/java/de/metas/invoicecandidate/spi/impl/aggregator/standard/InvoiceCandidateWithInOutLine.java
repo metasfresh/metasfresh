@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
+<<<<<<< HEAD
 import static de.metas.util.Check.fail;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
@@ -35,6 +36,9 @@ import org.compiere.model.I_M_InOutLine;
 
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -45,12 +49,33 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+<<<<<<< HEAD
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+=======
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMConversionBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.util.Check.fail;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public final class InvoiceCandidateWithInOutLine
 {
@@ -60,7 +85,25 @@ public final class InvoiceCandidateWithInOutLine
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
+<<<<<<< HEAD
 	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+=======
+
+	@Getter
+	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+
+	/**
+	 * -- GETTER --
+	 *  Specify if, when the aggregation is done and if
+	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
+	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
+	 *  <p>
+	 *  Note that in each aggregation, we assume that there is exactly one request with
+	 *  = <code>true</code>, in order to make sure that the invoice candidate's
+	 *  qtyToInvoice is actually invoiced.
+	 */
+	@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final boolean allocateRemainingQty;
 
 	@Getter
@@ -74,6 +117,10 @@ public final class InvoiceCandidateWithInOutLine
 
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
+<<<<<<< HEAD
+=======
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
 	{
@@ -101,18 +148,26 @@ public final class InvoiceCandidateWithInOutLine
 	}
 
 	/** @return shipment/receipt line; could be <code>null</code> */
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_M_InOutLine getM_InOutLine()
 	{
 		if (iciol == null)
 		{
 			return null;
 		}
+<<<<<<< HEAD
 		final I_M_InOutLine inOutLine = iciol.getM_InOutLine();
 		if (inOutLine == null)
 		{
 			return null;
 		}
 		return inOutLine;
+=======
+		return iciol.getM_InOutLine();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
@@ -146,12 +201,17 @@ public final class InvoiceCandidateWithInOutLine
 			switch (invoicableQtyBasedOn)
 			{
 				case CatchWeight:
+<<<<<<< HEAD
 					uomQty = coalesce(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
+=======
+					uomQty = coalesceNotNull(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					break;
 				case NominalWeight:
 					uomQty = iciol.getQtyDeliveredInUOM_Nominal();
 					break;
 				default:
+<<<<<<< HEAD
 					fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
 					uomQty = null;
 					break;
@@ -163,6 +223,23 @@ public final class InvoiceCandidateWithInOutLine
 				.create(
 						stockQty, productId,
 						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
+=======
+					throw fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
+			}
+		}
+
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.of(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+																					 productId,
+																					 icUomId);
+
+		final BigDecimal stockQty = inOutLine.getMovementQty();
+		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
+				.create(
+						stockQty,
+						productId,
+						shippedUomQuantityInIcUOM.toBigDecimal(),
+						shippedUomQuantityInIcUOM.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
 		{
@@ -181,6 +258,7 @@ public final class InvoiceCandidateWithInOutLine
 		return iciol;
 	}
 
+<<<<<<< HEAD
 	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
 	{
 		return invoiceLineAttributes;
@@ -197,4 +275,6 @@ public final class InvoiceCandidateWithInOutLine
 	{
 		return allocateRemainingQty;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

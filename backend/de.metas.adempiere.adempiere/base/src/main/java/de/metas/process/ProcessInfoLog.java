@@ -18,9 +18,18 @@ package de.metas.process;
 
 import de.metas.common.util.time.SystemTime;
 
+<<<<<<< HEAD
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+=======
+import lombok.NonNull;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -65,6 +74,20 @@ public final class ProcessInfoLog implements Serializable
 		m_P_Date = P_Date;
 		m_P_Number = P_Number;
 		m_P_Msg = P_Msg;
+<<<<<<< HEAD
+=======
+		warningMessages = null;
+	}
+
+
+	public ProcessInfoLog(@NonNull final  ProcessInfoLogRequest request)
+	{
+		m_Log_ID = request.getLogId();
+		m_P_Date = request.getPDate();
+		m_P_Number = request.getPNumber();
+		m_P_Msg = request.getPMsg();
+		warningMessages = request.getWarningMessages();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
@@ -73,6 +96,10 @@ public final class ProcessInfoLog implements Serializable
 	private final Timestamp m_P_Date;
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
+<<<<<<< HEAD
+=======
+	private final List<String> warningMessages;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private boolean savedInDB = false;
 
 	public int getLog_ID()
@@ -95,6 +122,14 @@ public final class ProcessInfoLog implements Serializable
 		return m_P_Msg;
 	}
 
+<<<<<<< HEAD
+=======
+	public List<String> getWarningMessages()
+	{
+		return warningMessages;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void markAsSavedInDB()
 	{
 		savedInDB = true;

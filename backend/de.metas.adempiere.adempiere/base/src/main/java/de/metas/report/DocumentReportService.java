@@ -144,7 +144,11 @@ public class DocumentReportService
 		else
 		{
 			final org.compiere.model.I_AD_Archive lastArchiveRecord = archiveBL
+<<<<<<< HEAD
 					.getLastArchive(requestEffective.getDocumentRef())
+=======
+					.getLastArchiveRecord(requestEffective.getDocumentRef())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
 
 			final ArchiveResult lastArchive = ArchiveResult.builder()
@@ -174,7 +178,14 @@ public class DocumentReportService
 
 		//
 		final DocumentReportResult report = executeReportProcessAndComputeResult(requestEffective);
+<<<<<<< HEAD
 		return report.withBpartnerId(reportInfo.getBpartnerId());
+=======
+		return report.toBuilder()
+				.poReference(reportInfo.getPoReference())
+				.bpartnerId(reportInfo.getBpartnerId())
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable

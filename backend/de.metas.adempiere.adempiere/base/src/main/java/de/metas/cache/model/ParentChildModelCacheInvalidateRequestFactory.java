@@ -1,17 +1,27 @@
 package de.metas.cache.model;
 
+<<<<<<< HEAD
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.List;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -59,7 +69,11 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 	@Override
 	public List<CacheInvalidateRequest> createRequestsFromModel(
 			final ICacheSourceModel model,
+<<<<<<< HEAD
 			final ModelCacheInvalidationTiming timing)
+=======
+			final ModelCacheInvalidationTiming timing_NOTUSED)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final int rootRecordId = model.getValueAsInt(childLinkColumnName, -1);
 		if (rootRecordId < 0)

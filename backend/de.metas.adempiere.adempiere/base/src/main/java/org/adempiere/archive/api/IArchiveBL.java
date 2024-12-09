@@ -22,10 +22,21 @@ package org.adempiere.archive.api;
  * #L%
  */
 
+<<<<<<< HEAD
 import de.metas.report.PrintCopies;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.report.PrintCopies;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.ArchiveId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
@@ -70,7 +81,17 @@ public interface IArchiveBL extends ISingletonService
 
 	void setBinaryData(I_AD_Archive archive, byte[] data);
 
+<<<<<<< HEAD
 	Optional<I_AD_Archive> getLastArchive(@NonNull TableRecordReference reference);
 
 	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+=======
+	Optional<I_AD_Archive> getLastArchiveRecord(@NonNull TableRecordReference reference);
+
+	Optional<AdArchive> getLastArchive(@NonNull TableRecordReference reference);
+
+	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+
+	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

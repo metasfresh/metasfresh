@@ -1,10 +1,18 @@
 package de.metas.cache.model;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import de.metas.cache.TableNamesGroup;
 import lombok.NonNull;
 
+=======
+import de.metas.cache.TableNamesGroup;
+import lombok.NonNull;
+
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,5 +39,9 @@ public interface IModelCacheInvalidateRequestFactoryGroup
 {
 	TableNamesGroup getTableNamesToEnableRemoveCacheInvalidation();
 
+<<<<<<< HEAD
 	Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName);
+=======
+	Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName, @NonNull ModelCacheInvalidationTiming timing);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

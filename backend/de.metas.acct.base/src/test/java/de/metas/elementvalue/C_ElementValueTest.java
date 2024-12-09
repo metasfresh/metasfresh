@@ -22,9 +22,16 @@
 
 package de.metas.elementvalue;
 
+<<<<<<< HEAD
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.validator.C_ElementValue;
+=======
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.interceptor.C_ElementValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;
@@ -69,7 +76,12 @@ public class C_ElementValueTest
 		ElementValueService elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+<<<<<<< HEAD
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, treeNodeService));
+=======
+		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, accountDAO, treeNodeService));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.elementValueService = elementValueService;
 		this.treeNodeService = treeNodeService;

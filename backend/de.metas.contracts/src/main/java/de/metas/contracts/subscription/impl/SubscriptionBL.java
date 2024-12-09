@@ -1097,6 +1097,10 @@ public class SubscriptionBL implements ISubscriptionBL
 		// line's NetLineAmount in MOrderLine.beforeSave()
 		ol.setQtyOrdered(olQty);
 
+<<<<<<< HEAD
+=======
+		ol.setIsManualQtyInPriceUOM(false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ol.setQtyEnteredInPriceUOM(olQty);
 
 		// now compute the new prices

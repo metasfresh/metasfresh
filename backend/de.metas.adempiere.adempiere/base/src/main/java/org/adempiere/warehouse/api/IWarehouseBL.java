@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
+<<<<<<< HEAD
+=======
+import de.metas.organization.ClientAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
@@ -35,7 +39,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.Optional;
 
@@ -62,12 +69,22 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
+<<<<<<< HEAD
 	@Nullable
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	CountryId getCountryId(WarehouseId warehouseId);
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	ClientAndOrgId getWarehouseClientAndOrgId(@NonNull WarehouseId warehouseId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 
 	String getLocatorNameById(final LocatorId locatorId);
@@ -87,6 +104,13 @@ public interface IWarehouseBL extends ISingletonService
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
 
+<<<<<<< HEAD
+=======
+	Optional<LocationId> getLocationIdByLocatorRepoId(int locatorRepoId);
+
+	OrgId getOrgIdByLocatorRepoId(int locatorId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 

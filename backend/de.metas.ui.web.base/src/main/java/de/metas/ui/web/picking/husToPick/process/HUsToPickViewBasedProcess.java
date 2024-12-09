@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.husToPick.process;
 
+<<<<<<< HEAD
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 import java.util.Optional;
@@ -10,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableMultimap;
 
+=======
+import com.google.common.collect.ImmutableMultimap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -36,6 +40,16 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
 {

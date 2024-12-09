@@ -15,6 +15,28 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.document.DocBaseType;
+import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.MElementValue;
+import org.compiere.util.DB;
+import org.eevolution.model.I_HR_Process;
+import org.eevolution.model.MHRMovement;
+import org.eevolution.model.MHRProcess;
+import org.eevolution.model.X_HR_Concept_Acct;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -22,6 +44,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.MAccount;
@@ -40,6 +63,8 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.util.Services;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Post Payroll Documents.
  * 
@@ -49,23 +74,33 @@ import de.metas.util.Services;
  * </pre>
  * 
  * @author Oscar Gomez Islas
+<<<<<<< HEAD
  * @version $Id: Doc_Payroll.java,v 1.1 2007/01/20 00:40:02 ogomezi Exp $
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * @author Cristina Ghita, www.arhipac.ro
  */
 public class Doc_HRProcess extends Doc<DocLine_Payroll>
 {
+<<<<<<< HEAD
 	/** Process Payroll **/
 	public static final String DOCTYPE_Payroll = "HRP";
 
 	public Doc_HRProcess(final AcctDocContext ctx)
 	{
 		super(ctx, DOCTYPE_Payroll);
+=======
+	public Doc_HRProcess(final AcctDocContext ctx)
+	{
+		super(ctx, DocBaseType.Payroll);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
 	protected void loadDocumentDetails()
 	{
 		final I_HR_Process process = getModel(I_HR_Process.class);
+<<<<<<< HEAD
 		setDateDoc(TimeUtil.asTimestamp(getDateAcct()));
 		setDocLines(loadLines(process));
 	}
@@ -76,6 +111,12 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	 * @param Payroll Process
 	 * @return DocLine Array
 	 */
+=======
+		setDateDoc(getDateAcct());
+		setDocLines(loadLines(process));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private List<DocLine_Payroll> loadLines(I_HR_Process process)
 	{
 		List<DocLine_Payroll> list = new ArrayList<>();
@@ -125,13 +166,19 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				// round amount according to currency
 				sumAmount = sumAmount.setScale(as.getStandardPrecision().toInt(), RoundingMode.HALF_UP);
 				String AccountSign = rs.getString(4);
+<<<<<<< HEAD
 				int AD_OrgTrx_ID = rs.getInt(6);
 				int C_Activity_ID = rs.getInt(7);
+=======
+				final OrgId AD_OrgTrx_ID = OrgId.ofRepoIdOrAny(rs.getInt(6));
+				final ActivityId C_Activity_ID = ActivityId.ofRepoIdOrNull(rs.getInt(7));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				if (AccountSign != null && AccountSign.length() > 0 && (AccountSign.equals("D") || AccountSign.equals("C")))
 				{
 					// HR_Expense_Acct DR
 					// HR_Revenue_Acct CR
+<<<<<<< HEAD
 					MAccount accountBPD = Services.get(IAccountDAO.class).getById(getAccountBalancing(as.getId(), HR_Concept_ID, "D"));
 					FactLine debit = fact.createLine(null, accountBPD, as.getCurrencyId(), sumAmount, null);
 					debit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
@@ -142,6 +189,20 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 					credit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
 					credit.setC_Activity_ID(C_Activity_ID);
 					credit.saveEx();
+=======
+					fact.createLine()
+							.setAccount(getAccountBalancing(as.getId(), HR_Concept_ID, "D"))
+							.setAmtSource(as.getCurrencyId(), sumAmount, null)
+							.orgTrxId(AD_OrgTrx_ID)
+							.activityId(C_Activity_ID)
+							.buildAndAdd();
+					fact.createLine()
+							.setAccount(getAccountBalancing(as.getId(), HR_Concept_ID, "C"))
+							.setAmtSource(as.getCurrencyId(), null, sumAmount)
+							.orgTrxId(AD_OrgTrx_ID)
+							.activityId(C_Activity_ID)
+							.buildAndAdd();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -152,8 +213,11 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			pstmt = null;
 			rs = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		ArrayList<Fact> facts = new ArrayList<>();
@@ -161,6 +225,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		return facts;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * get account balancing
 	 * 
@@ -172,6 +237,11 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	private int getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
 	{
 		String field;
+=======
+	private Account getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
+	{
+		final String field;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (MElementValue.ACCOUNTSIGN_Debit.equals(AccountSign))
 		{
 			field = X_HR_Concept_Acct.COLUMNNAME_HR_Expense_Acct;
@@ -186,8 +256,13 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
+<<<<<<< HEAD
 		int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId);
 		return Account_ID;
+=======
+		final AccountId accountId = AccountId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId));
+		return Account.of(accountId, AccountConceptualName.ofString(field));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }   // Doc_Payroll

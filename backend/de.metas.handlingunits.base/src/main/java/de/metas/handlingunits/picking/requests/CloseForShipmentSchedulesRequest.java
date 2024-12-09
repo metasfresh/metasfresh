@@ -1,7 +1,10 @@
 package de.metas.handlingunits.picking.requests;
 
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.Builder.Default;

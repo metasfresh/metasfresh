@@ -532,10 +532,13 @@ public final class AEnv
 		{
 			OnlineHelp.openInDefaultBrowser();
 		}
+<<<<<<< HEAD
 		else if (actionCommand.equals("EMailSupport"))
 		{
 			ADialog.createSupportEMail(SwingUtils.getFrame(c), SwingUtils.getFrame(c).getTitle(), "\n\n");
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		else if (actionCommand.equals("About"))
 		{
 			showCenterScreen(new AboutBox(SwingUtils.getFrame(c)));

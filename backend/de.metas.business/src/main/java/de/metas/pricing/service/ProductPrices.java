@@ -71,7 +71,11 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
+<<<<<<< HEAD
 	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
+=======
+	public static ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
@@ -228,7 +232,10 @@ public class ProductPrices
 				.setParameter(I_M_Product.Table_Name, productName);
 	}
 
+<<<<<<< HEAD
 	@SuppressWarnings("serial")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final class DuplicateMainProductPriceException extends AdempiereException
 	{
 		private static final AdMessageKey MSG_M_ProductPrice_DublicateMainPrice = AdMessageKey.of("M_ProductPrice_DublicateMainPrice");

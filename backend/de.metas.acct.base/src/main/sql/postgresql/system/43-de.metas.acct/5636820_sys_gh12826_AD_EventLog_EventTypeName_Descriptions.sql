@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * #%L
  * de.metas.acct.base
@@ -20,6 +21,8 @@
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 -- 2022-04-26T12:57:07.996Z
 UPDATE AD_Ref_List SET Description='Local events are posted to a specific RabbitMQ queue and only local subscribers are notified.',Updated=TO_TIMESTAMP('2022-04-26 15:57:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541509
 ;

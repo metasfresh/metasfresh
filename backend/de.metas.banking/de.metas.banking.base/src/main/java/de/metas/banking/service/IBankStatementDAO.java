@@ -1,5 +1,6 @@
 package de.metas.banking.service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
@@ -14,6 +15,9 @@ import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -24,6 +28,20 @@ import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.banking.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -84,7 +102,11 @@ public interface IBankStatementDAO extends ISingletonService
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
+<<<<<<< HEAD
 	void save(@NonNull final I_C_BankStatement bankStatement);
+=======
+	void save(@NonNull final org.compiere.model.I_C_BankStatement bankStatement);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 

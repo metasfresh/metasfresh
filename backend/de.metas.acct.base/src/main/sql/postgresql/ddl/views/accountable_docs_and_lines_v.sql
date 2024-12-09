@@ -52,6 +52,34 @@ UNION ALL
           INNER JOIN c_invoice i ON il.c_invoice_id = i.c_invoice_id
           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id)
 UNION ALL
+<<<<<<< HEAD
+=======
+(SELECT 'M_Shipping_Notification'                                                    AS TableName,
+        90::integer                                                                  AS tablename_prio,
+        sn.m_shipping_notification_id                                                AS Record_ID,
+        sn.reversal_id                                                               AS reversal_id,
+        snl.m_shipping_notificationline_id                                           AS Line_ID,
+        snl.reversal_id                                                              AS reversalline_id,
+        'Y'                                                                          AS issotrx,
+        sn.docstatus,
+        sn.posted,
+        sn.dateacct                                                                  AS dateacct,
+        sn.ad_client_id                                                              AS ad_client_id,
+        sn.ad_org_id                                                                 AS ad_org_id,
+        --
+        dt.c_doctype_id                                                              AS c_doctype_id,
+        dt.docbasetype                                                               AS docbasetype,
+        --
+        snl.m_product_id,
+        NULL                                                                         AS c_currency_id,
+        NULL                                                                         AS price,
+        (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = snl.m_product_id) AS c_uom_id,
+        snl.movementqty                                                              AS qty
+ FROM m_shipping_notificationline snl
+          INNER JOIN m_shipping_notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
+          INNER JOIN c_doctype dt ON dt.c_doctype_id = sn.c_doctype_id)
+UNION ALL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 (SELECT 'M_InOut'                                                                    AS TableName,
         (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                   AS tablename_prio,
         io.m_inout_id                                                                AS Record_ID,
@@ -234,6 +262,34 @@ UNION ALL
         cc.movementqty          AS qty
  FROM pp_cost_collector cc
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id)
+<<<<<<< HEAD
+=======
+UNION ALL
+(SELECT 'M_CostRevaluation'          AS TableName,
+        990::integer                 AS tablename_prio,
+        cr.m_costrevaluation_id      AS Record_ID,
+        NULL                         AS reversal_id,
+        crl.m_costrevaluationline_id AS Line_ID,
+        NULL                         AS reversalline_id,
+        NULL                         AS issotrx,
+        cr.docstatus,
+        cr.posted,
+        cr.dateacct                  AS dateacct,
+        cr.ad_client_id              AS ad_client_id,
+        cr.ad_org_id                 AS ad_org_id,
+        --
+        dt.c_doctype_id              AS c_doctype_id,
+        dt.docbasetype               AS docbasetype,
+        --
+        crl.m_product_id,
+        crl.c_currency_id            AS c_currency_id,
+        crl.deltaamt                 AS price,
+        crl.c_uom_id                 AS c_uom_id,
+        0                            AS qty
+ FROM m_costrevaluationline crl
+          INNER JOIN m_costrevaluation cr ON crl.m_costrevaluation_id = cr.m_costrevaluation_id
+          INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ;
 
 /*

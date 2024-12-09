@@ -22,6 +22,11 @@
 
 package de.metas.rest_api.v2.product;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
@@ -48,7 +53,10 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -57,18 +65,31 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
 
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
@@ -76,6 +97,7 @@ public class ProductsRestControllerTest
 	private UomId eachUomId;
 	private UomId kgUomId;
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -92,6 +114,16 @@ public class ProductsRestControllerTest
 		SnapshotMatcher.validateSnapshots();
 	}
 
+=======
+	private Expect expect;
+
+	@BeforeAll
+	static void initStatic()
+	{
+		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@BeforeEach
 	public void init()
 	{
@@ -232,7 +264,11 @@ public class ProductsRestControllerTest
 								   .build());
 
 		//
+<<<<<<< HEAD
 		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)

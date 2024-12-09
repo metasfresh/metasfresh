@@ -27,7 +27,10 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
+<<<<<<< HEAD
 import org.compiere.util.TimeUtil;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -88,7 +91,11 @@ public class C_Order
 		final BigDecimal grandTotal = currencyBL.convertBase(
 				order.getGrandTotal(),
 				CurrencyId.ofRepoId(order.getC_Currency_ID()),
+<<<<<<< HEAD
 				TimeUtil.asLocalDate(order.getDateOrdered()),
+=======
+				order.getDateOrdered().toInstant(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));

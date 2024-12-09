@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -36,10 +37,34 @@ import de.metas.util.Services;
 /**
  * Post Inventory Documents.
  * 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.accounts.WarehouseAccountType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.costing.CostAmount;
+import de.metas.document.DocBaseType;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.model.I_M_Inventory;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * Post Inventory Documents.
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * <pre>
  *  Table:              M_Inventory (321)
  *  Document Types:     MMI
  * </pre>
+<<<<<<< HEAD
  * 
  * metas:
  * <li>copied from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_Inventory.java, Rev 14597
@@ -48,13 +73,24 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+=======
+ * <p>
+ *
+ * @author Jorg Janke
+ * @author Armen Rizal, Goodwill Consulting
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * @version $Id: Doc_Inventory.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
 	public Doc_Inventory(final AcctDocContext ctx)
 	{
+<<<<<<< HEAD
 		super(ctx, DOCTYPE_MatInventory);
+=======
+		super(ctx, DocBaseType.MaterialPhysicalInventory);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -70,7 +106,11 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	private List<DocLine_Inventory> loadLines(final I_M_Inventory inventory)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return Services.get(IInventoryDAO.class)
 				.retrieveLinesForInventoryId(inventoryId)
 				.stream()
@@ -87,13 +127,21 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	/**
 	 * Create Facts (the accounting logic) for
 	 * MMI.
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * <pre>
 	 *  Inventory
 	 *      Inventory       DR      CR
 	 *      InventoryDiff   DR      CR   (or Charge)
 	 * </pre>
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param as account schema
 	 * @return Fact
 	 */
@@ -125,15 +173,21 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		// Inventory DR/CR
 		fact.createLine()
 				.setDocLine(line)
+<<<<<<< HEAD
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
 				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSourceDrOrCr(costs.getValue())
+=======
+				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
+				.setAmtSourceDrOrCr(costs.toMoney())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.buildAndAdd();
 
 		//
 		// Charge/InventoryDiff CR/DR
+<<<<<<< HEAD
 		final MAccount invDiff = getInvDifferencesAccount(as, line, costs.getValue().negate());
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
@@ -144,20 +198,42 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.locatorId(line.getM_Locator_ID())
 				.buildAndAdd();
 		if (line.getC_Charge_ID() > 0)	// explicit overwrite for charge
+=======
+		final Account invDiff = getInvDifferencesAccount(as, line, costs.toBigDecimal().negate());
+		final FactLine cr = fact.createLine()
+				.setDocLine(line)
+				.setAccount(invDiff)
+				.setAmtSourceDrOrCr(costs.toMoney().negate())
+				.setQty(line.getQty().negate())
+				.locatorId(line.getM_Locator_ID())
+				.buildAndAdd();
+		if (line.getC_Charge_ID().isPresent())    // explicit overwrite for charge
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			cr.setAD_Org_ID(line.getOrgId());
 		}
 	}
 
+<<<<<<< HEAD
 	private MAccount getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
 	{
 		final MAccount chargeAcct = line.getChargeAccount(as, amount.negate());
+=======
+	@NonNull
+	private Account getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
+	{
+		final Account chargeAcct = line.getChargeAccount(as, amount.negate());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (chargeAcct != null)
 		{
 			return chargeAcct;
 		}
 
+<<<<<<< HEAD
 		return getAccount(AccountType.InvDifferences, as);
+=======
+		return getAccountProvider().getWarehouseAccount(as.getId(), getWarehouseId(), WarehouseAccountType.W_Differences_Acct);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }   // Doc_Inventory

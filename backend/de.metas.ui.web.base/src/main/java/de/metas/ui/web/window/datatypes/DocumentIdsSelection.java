@@ -1,5 +1,19 @@
 package de.metas.ui.web.window.datatypes;
 
+<<<<<<< HEAD
+=======
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.SelectionSize;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,6 +27,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+<<<<<<< HEAD
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Splitter;
@@ -24,6 +39,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -48,11 +65,18 @@ import lombok.ToString;
 
 /**
  * {@link DocumentId}s selection.
+<<<<<<< HEAD
  *
  * Basically consists of a set of {@link DocumentId}s but it all has the {@link #isAll()} flag.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
+=======
+ * <p>
+ * Basically consists of a set of {@link DocumentId}s but it all has the {@link #isAll()} flag.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @Immutable
 @ToString
@@ -74,7 +98,12 @@ public final class DocumentIdsSelection
 		return documentId != null ? new DocumentIdsSelection(false, ImmutableSet.of(documentId)) : EMPTY;
 	}
 
+<<<<<<< HEAD
 	public static DocumentIdsSelection ofStringSet(final Collection<String> stringDocumentIds)
+=======
+	@NonNull
+	public static DocumentIdsSelection ofStringSet(@Nullable final Collection<String> stringDocumentIds)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (stringDocumentIds == null || stringDocumentIds.isEmpty())
 		{
@@ -109,7 +138,11 @@ public final class DocumentIdsSelection
 
 		final ImmutableSet<DocumentId> documentIds = intDocumentIds
 				.stream()
+<<<<<<< HEAD
 				.map(idInt -> DocumentId.of(idInt))
+=======
+				.map(DocumentId::of)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableSet.toImmutableSet());
 		return new DocumentIdsSelection(false, documentIds);
 	}
@@ -152,7 +185,11 @@ public final class DocumentIdsSelection
 	private static final String ALL_String = "all";
 	private static final ImmutableSet<String> ALL_StringSet = ImmutableSet.of(ALL_String);
 
+<<<<<<< HEAD
 	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+=======
+	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final boolean all;
 	private final ImmutableSet<DocumentId> documentIds;
@@ -278,6 +315,31 @@ public final class DocumentIdsSelection
 		return documentIds.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ImmutableList<DocumentId> toImmutableList()
+	{
+		assertNotAll();
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return ImmutableList.copyOf(documentIds);
+	}
+
+	@NonNull
+	public <T> ImmutableList<T> toImmutableList(@NonNull final Function<DocumentId, T> mapper)
+	{
+		assertNotAll();
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return documentIds.stream().map(mapper).collect(ImmutableList.toImmutableList());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Set<Integer> toIntSet()
 	{
 		return toSet(DocumentId::toInt);
@@ -288,6 +350,17 @@ public final class DocumentIdsSelection
 		return toSet(idMapper.compose(DocumentId::toInt));
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Similar to {@link #toIds(Function)} but this returns a list, so it preserves the order
+	 */
+	public <ID extends RepoIdAware> ImmutableList<ID> toIdsList(@NonNull final Function<Integer, ID> idMapper)
+	{
+		return toImmutableList(idMapper.compose(DocumentId::toInt));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Set<String> toJsonSet()
 	{
 		if (all)
@@ -306,4 +379,44 @@ public final class DocumentIdsSelection
 		}
 		return SelectionSize.ofSize(size());
 	}
+<<<<<<< HEAD
+=======
+
+	public DocumentIdsSelection addAll(@NonNull final DocumentIdsSelection documentIdsSelection)
+	{
+		if (this.isEmpty())
+		{
+			return documentIdsSelection;
+		}
+		else if (documentIdsSelection.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.all)
+		{
+			return this;
+		}
+		else if (documentIdsSelection.all)
+		{
+			return documentIdsSelection;
+		}
+
+		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream()).collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection result = DocumentIdsSelection.of(combinedIds);
+
+		if (this.equals(result))
+		{
+			return this;
+		}
+		else if (documentIdsSelection.equals(result))
+		{
+			return documentIdsSelection;
+		}
+		else
+		{
+			return result;
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,8 +1,19 @@
 package de.metas.invoice;
 
+<<<<<<< HEAD
 import de.metas.util.Check;
 import lombok.Value;
 
+=======
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.business
@@ -26,17 +37,44 @@ import lombok.Value;
  */
 
 @Value
+<<<<<<< HEAD
 public class InvoiceScheduleId
 {
 	int repoId;
 
+=======
+public class InvoiceScheduleId implements RepoIdAware
+{
+	int repoId;
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static InvoiceScheduleId ofRepoId(final int repoId)
 	{
 		return new InvoiceScheduleId(repoId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	public static InvoiceScheduleId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InvoiceScheduleId(repoId) : null;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private InvoiceScheduleId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
+<<<<<<< HEAD
+=======
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

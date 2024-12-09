@@ -88,11 +88,14 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		return bankStatementDAO.getLineReferences(bankStatementLineIds);
 	}
 
+<<<<<<< HEAD
 	public I_C_BankStatementLine getBankStatementLineById(@NonNull final BankStatementLineId bankStatementLineId)
 	{
 		return bankStatementBL.getLineById(bankStatementLineId);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void save(final I_C_BankStatementLine line)
 	{
 		bankStatementDAO.save(line);
@@ -122,9 +125,15 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		factAcctDAO.deleteForDocumentModel(bankStatement);
 	}
 
+<<<<<<< HEAD
 	public void unlinkPaymentsAndDeleteReferences(final List<I_C_BankStatementLine> lines)
 	{
 		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
+=======
+	public void unreconcile(@NonNull final List<I_C_BankStatementLine> lines)
+	{
+		bankStatementBL.unreconcile(lines);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public String getMsg(final AdMessageKey adMessage)

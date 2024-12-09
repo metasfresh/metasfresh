@@ -1,13 +1,26 @@
 package de.metas.ui.web.material.cockpit.process;
 
+<<<<<<< HEAD
 import java.util.stream.Stream;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
+<<<<<<< HEAD
+=======
+import java.util.Set;
+import java.util.stream.Stream;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -46,4 +59,26 @@ public abstract class MaterialCockpitViewBasedProcess extends ViewBasedProcessTe
 	{
 		return super.streamSelectedRows().map(MaterialCockpitRow::cast);
 	}
+<<<<<<< HEAD
+=======
+
+	protected Set<Integer> getSelectedCockpitRecordIdsRecursively()
+	{
+		final MaterialCockpitView materialCockpitView = getView();
+
+		return materialCockpitView.streamByIds(getSelectedRowIds())
+				.flatMap(row -> row.getAllIncludedCockpitRecordIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected Set<ProductId> getSelectedProductIdsRecursively()
+	{
+		final MaterialCockpitView materialCockpitView = getView();
+
+		return materialCockpitView.streamByIds(getSelectedRowIds())
+				.map(MaterialCockpitRow::getProductId)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

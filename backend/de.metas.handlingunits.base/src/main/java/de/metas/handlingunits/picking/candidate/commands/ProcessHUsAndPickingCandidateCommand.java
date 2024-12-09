@@ -119,7 +119,11 @@ public class ProcessHUsAndPickingCandidateCommand
 			@Nullable final PPOrderId ppOrderId)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
+<<<<<<< HEAD
 		for (PickingCandidate pickingCandidate : pickingCandidates)
+=======
+		for (final PickingCandidate pickingCandidate : pickingCandidates)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			pickingCandidate.assertDraft();
 			if (!pickingCandidate.getPickFrom().isPickFromHU())

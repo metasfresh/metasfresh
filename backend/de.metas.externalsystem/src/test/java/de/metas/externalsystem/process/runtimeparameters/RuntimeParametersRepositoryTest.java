@@ -22,6 +22,11 @@
 
 package de.metas.externalsystem.process.runtimeparameters;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_RuntimeParameter;
@@ -29,6 +34,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +49,22 @@ import static org.assertj.core.api.Assertions.*;
 public class RuntimeParametersRepositoryTest
 {
 	private RuntimeParametersRepository runtimeParametersRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class RuntimeParametersRepositoryTest
+{
+	private RuntimeParametersRepository runtimeParametersRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -51,12 +73,15 @@ public class RuntimeParametersRepositoryTest
 		runtimeParametersRepository = new RuntimeParametersRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void upsertRuntimeParameter_new()
 	{
@@ -73,7 +98,11 @@ public class RuntimeParametersRepositoryTest
 		final RuntimeParameter result = runtimeParametersRepository.upsertRuntimeParameter(runtimeParameterUpsertRequest);
 
 		assertThat(result).isNotNull();
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -109,7 +138,11 @@ public class RuntimeParametersRepositoryTest
 		assertThat(allParams).isNotNull();
 		assertThat(allParams.size()).isEqualTo(1);
 		assertThat(allParams.get(0).getExternalSystem_RuntimeParameter_ID()).isEqualTo(runtimeParameter.getRuntimeParameterId().getRepoId());
+<<<<<<< HEAD
 		expect(runtimeParameter).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(runtimeParameter);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -129,7 +162,11 @@ public class RuntimeParametersRepositoryTest
 		//then
 		assertThat(runtimeParameters).isNotNull();
 		assertThat(runtimeParameters.size()).isEqualTo(2);
+<<<<<<< HEAD
 		expect(runtimeParameters).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(runtimeParameters);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createRuntimeParamRecord(final ExternalSystemParentConfigId configId,

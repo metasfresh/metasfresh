@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.descriptor;
 
+<<<<<<< HEAD
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -10,6 +11,9 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+=======
+import com.google.common.base.MoreObjects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -23,8 +27,20 @@ import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.util.Check;
+<<<<<<< HEAD
 import lombok.Getter;
 import lombok.NonNull;
+=======
+import de.metas.util.StringUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -242,8 +258,13 @@ public final class ProcessDescriptor implements ETagAware
 
 		public Builder setProcessClassname(final String processClassname)
 		{
+<<<<<<< HEAD
 			this.processClassname = processClassname;
 			processClass = loadProcessClass(processClassname);
+=======
+			this.processClassname = StringUtils.trimBlankToNull(processClassname);
+			processClass = loadProcessClass(this.processClassname);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return this;
 		}
 
@@ -257,9 +278,15 @@ public final class ProcessDescriptor implements ETagAware
 			return processClass.orElse(null);
 		}
 
+<<<<<<< HEAD
 		private static Optional<Class<?>> loadProcessClass(final String classname)
 		{
 			if (Check.isEmpty(classname, true))
+=======
+		private static Optional<Class<?>> loadProcessClass(@Nullable final String classname)
+		{
+			if (classname == null || Check.isBlank(classname))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return Optional.empty();
 			}
@@ -272,7 +299,11 @@ public final class ProcessDescriptor implements ETagAware
 			}
 			catch (final ClassNotFoundException e)
 			{
+<<<<<<< HEAD
 				logger.error("Cannot process class: {}", classname, e);
+=======
+				logger.warn("Cannot load process class: {}", classname, e);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return Optional.empty();
 			}
 		}
@@ -291,7 +322,11 @@ public final class ProcessDescriptor implements ETagAware
 			}
 			catch (final Exception e)
 			{
+<<<<<<< HEAD
 				logger.error(e.getLocalizedMessage(), e);
+=======
+				logger.warn(e.getLocalizedMessage(), e);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return null;
 			}
 		}

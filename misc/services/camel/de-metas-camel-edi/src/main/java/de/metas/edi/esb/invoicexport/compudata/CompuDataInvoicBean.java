@@ -120,6 +120,7 @@ public class CompuDataInvoicBean
 		{
 			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getInvoiceDocumentno()));
 		}
+<<<<<<< HEAD
 		invoice.setReceivergln(xmlCctopInvoice.getReceivergln());
 		invoice.setSendergln(xmlCctopInvoice.getSendergln());
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
@@ -127,6 +128,15 @@ public class CompuDataInvoicBean
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
 		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotaltaxbaseamt(), decimalFormat));
 		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalvat(), decimalFormat));
+=======
+		invoice.setReceivergln(xmlCctopInvoice.getReceiverGLN());
+		invoice.setSendergln(xmlCctopInvoice.getSenderGLN());
+		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
+		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
+		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
+		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotalTaxBaseAmt(), decimalFormat));
+		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalVat(), decimalFormat));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		invoice.setCountryCode(xmlCctopInvoice.getCountryCode());
 		invoice.setCountryCode3Digit(xmlCctopInvoice.getCountryCode3Digit());
 
@@ -180,7 +190,11 @@ public class CompuDataInvoicBean
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
+<<<<<<< HEAD
 		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
+=======
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		cctop000V.setIsTest(settings.getTestIndicator());
 
 		return cctop000V;

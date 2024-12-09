@@ -29,6 +29,10 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;

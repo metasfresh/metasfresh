@@ -117,6 +117,10 @@ public class DocumentReportAdvisorUtil
 				: ExplainedOptional.emptyBecause("No report process defined by " + printFormat);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
 	{
 		return docTypeDAO.getById(docTypeId);

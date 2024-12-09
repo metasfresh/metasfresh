@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -23,6 +24,14 @@ import de.metas.i18n.Msg;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
+=======
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+
+import java.sql.ResultSet;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  *	Request History Model
  *	
@@ -97,6 +106,7 @@ public class MRequestAction extends X_R_RequestAction
 	}	//	getCreatedByName
 
 	/**
+<<<<<<< HEAD
 	 * 	Get Changes as HTML string
 	 *	@return changes
 	 */
@@ -187,6 +197,8 @@ public class MRequestAction extends X_R_RequestAction
 	
 	
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * 	Before Save
 	 *	@param newRecord new
 	 *	@return true

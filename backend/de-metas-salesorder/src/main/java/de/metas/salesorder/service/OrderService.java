@@ -58,7 +58,10 @@ import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
+<<<<<<< HEAD
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
 @Service
@@ -70,7 +73,11 @@ public class OrderService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final AsyncBatchService asyncBatchService;
 
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
@@ -128,6 +135,12 @@ public class OrderService
 
 		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
 				.ifPresent(noAsyncBatchOLCands -> {
+<<<<<<< HEAD
+=======
+
+					// the asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
+					// If will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);
@@ -156,7 +169,11 @@ public class OrderService
 
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
+<<<<<<< HEAD
 		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
+=======
+		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		asyncBatchService.executeBatch(action, asyncBatchId);
 	}

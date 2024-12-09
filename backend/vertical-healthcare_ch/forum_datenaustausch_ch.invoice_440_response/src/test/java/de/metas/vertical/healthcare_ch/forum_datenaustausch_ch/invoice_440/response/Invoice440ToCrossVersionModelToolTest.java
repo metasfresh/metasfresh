@@ -1,5 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
+<<<<<<< HEAD
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -8,6 +9,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
+import lombok.NonNull;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -15,10 +26,14 @@ import org.xmlunit.validation.Validator;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -42,15 +57,24 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+<<<<<<< HEAD
 class Invoice440ToCrossVersionModelToolTest
 {
 	private Invoice440ResponseConversionService invoice440ResponseConversionService;
+=======
+@ExtendWith(SnapshotExtension.class)
+class Invoice440ToCrossVersionModelToolTest
+{
+	private Invoice440ResponseConversionService invoice440ResponseConversionService;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach void init()
 	{
 		invoice440ResponseConversionService = new Invoice440ResponseConversionService();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -63,12 +87,18 @@ class Invoice440ToCrossVersionModelToolTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void toCrossVersionResponse()
 	{
 		final XmlResponse result = toCrossVersionResponseWithXmlFile("/Cancelation_KV_12345.xml");
 		assertThat(result.getPayload().getInvoice().getRequestId()).isEqualTo("KV_12345"); // sortof smoke-test
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@SuppressWarnings({ "SameParameterValue", "UnnecessaryLocalVariable" }) private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)

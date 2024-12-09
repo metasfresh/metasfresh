@@ -19,6 +19,11 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+<<<<<<< HEAD
+=======
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -45,6 +50,10 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+<<<<<<< HEAD
+=======
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -71,7 +80,11 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	public ZonedDateTime getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
 		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override(), tz),
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised(), tz),
@@ -181,8 +194,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final BigDecimal result = olCandRecord.isManualQtyItemCapacity()
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
+<<<<<<< HEAD
 		
 		return Quantitys.create(result, getM_Product_Effective_ID(olCandRecord));
+=======
+
+		return Quantitys.of(result, getM_Product_Effective_ID(olCandRecord));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -449,4 +467,41 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getHandOver_Partner_ID(), olCand.getHandOver_Location_ID(), olCand.getHandOver_Location_Value_ID()),
 				() -> getLocationAndCaptureEffectiveId(olCand, Type.SHIP_TO));
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public Optional<StockQtyAndUOMQty> getQtyShipped(final I_C_OLCand olCand)
+	{
+		if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+		{
+			return Optional.empty();
+		}
+
+		final Quantity qtyShipped = Quantity.of(olCand.getQtyShipped(), getC_UOM_Effective(olCand));
+		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
+		final Quantity qtyShippedProductUOM = uomConversionBL.convertToProductUOM(qtyShipped, productId);
+
+		final StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder builder = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyShippedProductUOM);
+
+		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(olCand.getQtyShipped_CatchWeight_UOM_ID());
+		if (catchWeightUomId != null)
+		{
+			final Quantity catchWeight = Quantity.of(olCand.getQtyShipped_CatchWeight(), uomDAO.getById(catchWeightUomId));
+			builder.uomQty(catchWeight);
+		}
+
+		return Optional.of(builder.build());
+	}
+
+	@Override
+	public Optional<BigDecimal> getManualQtyInPriceUOM(final @NonNull I_C_OLCand record)
+	{
+		return !InterfaceWrapperHelper.isNull(record, I_C_OLCand.COLUMNNAME_ManualQtyInPriceUOM)
+				? Optional.of(record.getManualQtyInPriceUOM())
+				: Optional.empty();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

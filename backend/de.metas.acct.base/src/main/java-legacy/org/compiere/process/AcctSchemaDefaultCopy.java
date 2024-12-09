@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -24,12 +25,24 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.util.DB;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.util.DB;
+
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Add or Copy Acct Schema Default Accounts
@@ -131,7 +144,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE pa.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM M_Product_Category p "
 					+ "WHERE p.M_Product_Category_ID=pa.M_Product_Category_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @M_Product_Category_ID@");
 			updatedTotal += updated;
 		}
@@ -157,7 +174,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM M_Product_Category_Acct pa "
 				+ "WHERE pa.M_Product_Category_ID=p.M_Product_Category_ID"
 				+ " AND pa.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @M_Product_Category_ID@");
 		createdTotal += created;
 		if (!p_CopyOverwriteAcct)	// Insert new Products
@@ -184,7 +205,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ " AND NOT EXISTS (SELECT * FROM M_Product_Acct pa "
 					+ "WHERE pa.M_Product_ID=p.M_Product_ID"
 					+ " AND pa.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 			created = DB.executeUpdate(sql, get_TrxName());
+=======
+			created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(created), "@Created@ @M_Product_ID@");
 			createdTotal += created;
 		}
@@ -210,7 +235,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_BP_Group_Acct x "
 					+ "WHERE x.C_BP_Group_ID=a.C_BP_Group_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_BP_Group_ID@");
 			updatedTotal += updated;
 		}
@@ -236,7 +265,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_BP_Group_Acct a "
 				+ "WHERE a.C_BP_Group_ID=x.C_BP_Group_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_BP_Group_ID@");
 		createdTotal += created;
 
@@ -250,7 +283,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_BP_Employee_Acct x "
 					+ "WHERE x.C_BPartner_ID=a.C_BPartner_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_BPartner_ID@ @IsEmployee@");
 			updatedTotal += updated;
 		}
@@ -268,7 +305,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_BP_Employee_Acct a "
 				+ "WHERE a.C_BPartner_ID=x.C_BPartner_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_BPartner_ID@ @IsEmployee@");
 		createdTotal += created;
 		//
@@ -288,7 +329,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ " AND NOT EXISTS (SELECT * FROM C_BP_Customer_Acct ca "
 					+ "WHERE ca.C_BPartner_ID=p.C_BPartner_ID"
 					+ " AND ca.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 			created = DB.executeUpdate(sql, get_TrxName());
+=======
+			created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(created), "@Created@ @C_BPartner_ID@ @IsCustomer@");
 			createdTotal += created;
 			//
@@ -305,7 +350,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ " AND p.C_BP_Group_ID=acct.C_BP_Group_ID"
 					+ " AND NOT EXISTS (SELECT * FROM C_BP_Vendor_Acct va "
 					+ "WHERE va.C_BPartner_ID=p.C_BPartner_ID AND va.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 			created = DB.executeUpdate(sql, get_TrxName());
+=======
+			created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(created), "@Created@ @C_BPartner_ID@ @IsVendor@");
 			createdTotal += created;
 		}
@@ -322,7 +371,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM M_Warehouse_Acct x "
 					+ "WHERE x.M_Warehouse_ID=a.M_Warehouse_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @M_Warehouse_ID@");
 			updatedTotal += updated;
 		}
@@ -340,7 +393,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM M_Warehouse_Acct a "
 				+ "WHERE a.M_Warehouse_ID=x.M_Warehouse_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @M_Warehouse_ID@");
 		createdTotal += created;
 
@@ -354,7 +411,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Project_Acct x "
 					+ "WHERE x.C_Project_ID=a.C_Project_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_Project_ID@");
 			updatedTotal += updated;
 		}
@@ -372,7 +433,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_Project_Acct a "
 				+ "WHERE a.C_Project_ID=x.C_Project_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_Project_ID@");
 		createdTotal += created;
 
@@ -389,7 +454,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Tax_Acct x "
 					+ "WHERE x.C_Tax_ID=a.C_Tax_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_Tax_ID@");
 			updatedTotal += updated;
 		}
@@ -407,7 +476,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_Tax_Acct a "
 				+ "WHERE a.C_Tax_ID=x.C_Tax_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_Tax_ID@");
 		createdTotal += created;
 
@@ -434,7 +507,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Withholding_Acct x "
 					+ "WHERE x.C_Withholding_ID=a.C_Withholding_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_Withholding_ID@");
 			updatedTotal += updated;
 		}
@@ -452,7 +529,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_Withholding_Acct a "
 				+ "WHERE a.C_Withholding_ID=x.C_Withholding_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_Withholding_ID@");
 		createdTotal += created;
 
@@ -466,7 +547,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Charge_Acct x "
 					+ "WHERE x.C_Charge_ID=a.C_Charge_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_Charge_ID@");
 			updatedTotal += updated;
 		}
@@ -484,7 +569,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_Charge_Acct a "
 				+ "WHERE a.C_Charge_ID=x.C_Charge_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_Charge_ID@");
 		createdTotal += created;
 
@@ -501,7 +590,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Cashbook_Acct x "
 					+ "WHERE x.C_Cashbook_ID=a.C_Cashbook_ID)";
+<<<<<<< HEAD
 			updated = DB.executeUpdate(sql, get_TrxName());
+=======
+			updated = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, new BigDecimal(updated), "@Updated@ @C_Cashbook_ID@");
 			updatedTotal += updated;
 		}
@@ -521,7 +614,11 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 				+ " AND NOT EXISTS (SELECT * FROM C_Cashbook_Acct a "
 				+ "WHERE a.C_Cashbook_ID=x.C_Cashbook_ID"
 				+ " AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+<<<<<<< HEAD
 		created = DB.executeUpdate(sql, get_TrxName());
+=======
+		created = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(created), "@Created@ @C_Cashbook_ID@");
 		createdTotal += created;
 

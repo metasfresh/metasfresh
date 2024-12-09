@@ -26,12 +26,18 @@ import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Component
 public class PackageableFilterDescriptorProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -46,9 +52,13 @@ public class PackageableFilterDescriptorProviderFactory implements DocumentFilte
 
 	@Nullable
 	@Override
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (I_M_Packageable_V.Table_Name.equals(context.getTableName()))
 		{

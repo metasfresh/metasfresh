@@ -22,7 +22,17 @@ package de.metas.material.planning;
  * #L%
  */
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+import java.util.List;
+import java.util.Properties;
+
+import com.google.common.collect.ImmutableSet;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -58,4 +68,8 @@ public interface IResourceDAO extends ISingletonService
 	ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull UserId userId);
 
 	ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull Collection<ResourceTypeId> resourceTypeIds);
+<<<<<<< HEAD
+=======
+	ImmutableSet<ResourceId> getActivePlantIds();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -231,7 +231,11 @@ public class PriceListBL implements IPriceListBL
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
 				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
 
+<<<<<<< HEAD
 		final int recordsUpdated = DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int recordsUpdated = DB.executeUpdateAndThrowExceptionOnFail(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = CacheInvalidateMultiRequest.allChildRecords(I_M_PriceList.Table_Name, priceListId.getRepoId(), I_M_PriceList_Version.Table_Name);
 		CacheMgt.get().reset(cacheInvalidateRequest);

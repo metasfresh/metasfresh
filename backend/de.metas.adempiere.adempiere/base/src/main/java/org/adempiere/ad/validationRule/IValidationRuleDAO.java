@@ -22,12 +22,18 @@ package org.adempiere.ad.validationRule;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 
 import org.compiere.model.I_AD_Val_Rule;
 
 import de.metas.util.ISingletonService;
+=======
+import de.metas.util.ISingletonService;
+import org.adempiere.ad.validationRule.impl.ValidationRuleDescriptor;
+import org.compiere.model.I_AD_Val_Rule;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * DAO methods for retrieving {@link I_AD_Val_Rule}s
@@ -37,6 +43,7 @@ import de.metas.util.ISingletonService;
  */
 public interface IValidationRuleDAO extends ISingletonService
 {
+<<<<<<< HEAD
 	I_AD_Val_Rule retriveValRule(int adValRuleId);
 
 	int retrieveValRuleIdByColumnName(String tableName, String columnName);
@@ -51,4 +58,7 @@ public interface IValidationRuleDAO extends ISingletonService
 
 	Set<String> retrieveValRuleDependsOnTableNames(int valRuleId);
 
+=======
+	ValidationRuleDescriptor getById(AdValRuleId adValRuleId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+<<<<<<< HEAD
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -41,6 +42,24 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+=======
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDimensionValidator;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +85,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -81,6 +101,19 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Dialog to enter Account Info
@@ -951,7 +984,11 @@ public final class VAccountDialog extends CDialog
 		if (f_C_SalesRegion_ID != null && f_C_SalesRegion_ID.getValue() != null)
 		{
 			int C_SRegion_ID = ((Integer)f_C_SalesRegion_ID.getValue()).intValue();
+<<<<<<< HEAD
 			accountDimension.setC_SalesRegion_ID(C_SRegion_ID);
+=======
+			accountDimension.setC_SalesRegion_ID(SalesRegionId.ofRepoIdOrNull(C_SRegion_ID));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		if (f_C_Project_ID != null && f_C_Project_ID.getValue() != null)
 		{

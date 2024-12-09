@@ -8,8 +8,13 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLine.SalesInvoiceLineBuilder;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -183,7 +188,11 @@ public class SalesInvoiceFactory
 						.negateIf(invoiceIsCreditMemo);
 
 				final SalesInvoiceLineBuilder invoiceLine = SalesInvoiceLine.builder()
+<<<<<<< HEAD
 						.id(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
+=======
+						.id(InvoiceAndLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.updated(TimeUtil.asInstantNonNull(invoiceLineRecord.getUpdated()))
 						.invoicedCommissionPoints(invoicedCommissionPoints)
 						.productId(productId)

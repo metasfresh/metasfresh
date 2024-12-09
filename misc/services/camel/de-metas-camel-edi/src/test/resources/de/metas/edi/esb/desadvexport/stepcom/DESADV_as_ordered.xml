@@ -28,9 +28,15 @@
     <MovementDate>2022-07-04+03:00</MovementDate>
     <POReference>testReference3</POReference>
     <EDI_Exp_Desadv_Pack>
+<<<<<<< HEAD
         <GTIN_LU_PackingMaterial>LU_BPARTNER_GTIN</GTIN_LU_PackingMaterial>
         <IPA_SSCC18>000000000000000062</IPA_SSCC18>
         <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+=======
+        <GTIN_PackingMaterial>LU_BPARTNER_GTIN</GTIN_PackingMaterial>
+        <IPA_SSCC18>000000000000000062</IPA_SSCC18>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2022-12-12+02:00</BestBeforeDate>
             <LotNumber>Lot-Number</LotNumber>

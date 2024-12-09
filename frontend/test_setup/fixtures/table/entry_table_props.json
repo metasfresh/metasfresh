@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "columns": [
+=======
+  "rowsLayout": [
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     {
       "cols": [
         {

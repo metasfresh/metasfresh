@@ -22,10 +22,25 @@ package org.adempiere.mm.attributes.listeners.adr;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADRefListId;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.edi.api.impl.EDIOLCandBL;
 import de.metas.fresh.model.I_C_BPartner;
+<<<<<<< HEAD
+=======
+import de.metas.i18n.TranslatableStrings;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.organization.OrgId;
@@ -38,13 +53,25 @@ import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTes
 import org.adempiere.mm.attributes.spi.impl.ADRAttributeGenerator;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
+=======
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
+<<<<<<< HEAD
 import org.junit.Before;
 import org.junit.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -94,7 +121,11 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	 */
 	private Boolean isEDIInput_ReturnValue = null;
 
+<<<<<<< HEAD
 	@Before
+=======
+	@BeforeEach
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -136,6 +167,42 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 			}
 		};
 		Services.registerService(IEDIOLCandBL.class, ediOLCandBL);
+<<<<<<< HEAD
+=======
+
+		SpringContextHolder.registerJUnitBean(newADReferenceService());
+	}
+
+	private ADReferenceService newADReferenceService()
+	{
+		final AdRefListRepositoryMocked adRefListRepository = new AdRefListRepositoryMocked();
+		adRefListRepository.put(adRefList(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, "ADR", I_C_BPartner.ADRZertifizierung_L_GMAA));
+
+		final AdRefTableRepositoryMocked adRefTableRepository = new AdRefTableRepositoryMocked();
+
+		return new ADReferenceService(adRefListRepository, adRefTableRepository);
+	}
+
+	private ADRefList adRefList(int referenceRepoId, String name, String... values)
+	{
+		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
+
+		final AtomicInteger nextADRefListRepoId = new AtomicInteger(1);
+
+		return ADRefList.builder()
+				.referenceId(referenceId)
+				.name(name)
+				.items(Stream.of(values)
+						.map(value -> ADRefListItem.builder()
+								.referenceId(referenceId)
+								.refListId(ADRefListId.ofRepoId(nextADRefListRepoId.getAndIncrement()))
+								.value(value)
+								.valueName(value)
+								.name(TranslatableStrings.anyLanguage(value))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void setADR_Vendor(final String adrValue)

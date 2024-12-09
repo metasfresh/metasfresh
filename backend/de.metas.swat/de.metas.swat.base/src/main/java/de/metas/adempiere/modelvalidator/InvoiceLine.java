@@ -1,5 +1,16 @@
 package de.metas.adempiere.modelvalidator;
 
+<<<<<<< HEAD
+=======
+import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.impl.InvoiceLineBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
@@ -9,6 +20,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoice.InvoiceLineId;
@@ -18,6 +30,8 @@ import de.metas.invoice.service.impl.InvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class InvoiceLine implements ModelValidator
 {
 
@@ -99,9 +113,15 @@ public class InvoiceLine implements ModelValidator
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
+<<<<<<< HEAD
 		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 
 		for (final I_C_InvoiceLine refInvoiceLine : invoiceDAO.retrieveReferringLines(invoiceLineId))
+=======
+		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+
+		for (final I_C_InvoiceLine refInvoiceLine : invoiceDAO.retrieveReferringLines(invoiceAndLineId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			refInvoiceLine.setRef_InvoiceLine_ID(0);
 			invoiceDAO.save(refInvoiceLine);

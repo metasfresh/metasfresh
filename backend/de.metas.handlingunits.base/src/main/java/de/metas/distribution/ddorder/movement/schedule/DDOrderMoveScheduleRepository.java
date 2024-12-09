@@ -120,7 +120,11 @@ public class DDOrderMoveScheduleRepository
 				.pickFromLocatorId(LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID()))
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
 				//				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
+<<<<<<< HEAD
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
+=======
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.isPickWholeHU(record.isPickWholeHU())
 				//
 				// Drop To
@@ -154,7 +158,11 @@ public class DDOrderMoveScheduleRepository
 				//
 				// Pick From
 				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
+<<<<<<< HEAD
 				.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
+=======
+				.qtyPicked(Quantitys.of(record.getQtyPicked(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.pickFromMovementId(MovementId.ofRepoId(record.getPickFrom_Movement_ID()))
 				.inTransitLocatorId(LocatorId.ofRepoIdOrNull(record.getInTransit_Warehouse_ID(), record.getInTransit_Locator_ID()))
 				//

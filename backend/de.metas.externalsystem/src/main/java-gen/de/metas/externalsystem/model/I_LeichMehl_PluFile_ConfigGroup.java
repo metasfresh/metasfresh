@@ -51,6 +51,36 @@ public interface I_LeichMehl_PluFile_ConfigGroup
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Process for additional data.
+	 * Customisable postgREST process via metasfresh support, which can provide additional data for the respective production order.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Process_CustomQuery_ID (int AD_Process_CustomQuery_ID);
+
+	/**
+	 * Get Process for additional data.
+	 * Customisable postgREST process via metasfresh support, which can provide additional data for the respective production order.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Process_CustomQuery_ID();
+
+	@Nullable org.compiere.model.I_AD_Process getAD_Process_CustomQuery();
+
+	void setAD_Process_CustomQuery(@Nullable org.compiere.model.I_AD_Process AD_Process_CustomQuery);
+
+	ModelColumn<I_LeichMehl_PluFile_ConfigGroup, org.compiere.model.I_AD_Process> COLUMN_AD_Process_CustomQuery_ID = new ModelColumn<>(I_LeichMehl_PluFile_ConfigGroup.class, "AD_Process_CustomQuery_ID", org.compiere.model.I_AD_Process.class);
+	String COLUMNNAME_AD_Process_CustomQuery_ID = "AD_Process_CustomQuery_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -120,6 +150,32 @@ public interface I_LeichMehl_PluFile_ConfigGroup
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Query additional data.
+	 * If ‘Yes’, the metasfresh support team can configure additional data for the respective manufacturing order. The respective fields can then be configured in the PLU file config with the source ‘Additional process’.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAdditionalCustomQuery (boolean IsAdditionalCustomQuery);
+
+	/**
+	 * Get Query additional data.
+	 * If ‘Yes’, the metasfresh support team can configure additional data for the respective manufacturing order. The respective fields can then be configured in the PLU file config with the source ‘Additional process’.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAdditionalCustomQuery();
+
+	ModelColumn<I_LeichMehl_PluFile_ConfigGroup, Object> COLUMN_IsAdditionalCustomQuery = new ModelColumn<>(I_LeichMehl_PluFile_ConfigGroup.class, "IsAdditionalCustomQuery", null);
+	String COLUMNNAME_IsAdditionalCustomQuery = "IsAdditionalCustomQuery";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set PLU File Configuration.
 	 *
 	 * <br>Type: ID

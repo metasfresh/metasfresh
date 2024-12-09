@@ -1228,6 +1228,14 @@ public final class Env
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
 
+<<<<<<< HEAD
+=======
+	public static ClientId getClientIdOrSystem()
+	{
+		return ClientId.ofRepoIdOrSystem(getAD_Client_ID());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static void setClientId(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
 		setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
@@ -1503,7 +1511,11 @@ public final class Env
 	 * @param tableName   table to be translated
 	 * @return true if base language and table not translated
 	 */
+<<<<<<< HEAD
 	public static boolean isBaseLanguage(final String AD_Language, final String tableName)
+=======
+	public static boolean isBaseLanguage(@Nullable final String AD_Language, final String tableName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		/**
 		 * if (isBaseTranslation(tableName)) return Language.isBaseLanguage (AD_Language); else // No AD Table if (!isMultiLingualDocument(s_ctx)) // Base Context return true; // access base table
@@ -1594,6 +1606,10 @@ public final class Env
 		return null;
 	}    // getAD_Language
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static String getAD_Language()
 	{
 		return getAD_Language(getCtx());

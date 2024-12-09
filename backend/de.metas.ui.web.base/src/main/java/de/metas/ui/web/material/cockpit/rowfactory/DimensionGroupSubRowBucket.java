@@ -1,15 +1,32 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.dimension.DimensionSpecGroup;
+<<<<<<< HEAD
+=======
+import de.metas.material.cockpit.ProductWithDemandSupply;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+<<<<<<< HEAD
 import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.NonNull;
+=======
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
@@ -45,6 +62,7 @@ import static de.metas.util.Check.assumeNotNull;
  * Mutable row representation that is used during the rows' loading
  *
  * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
  *
  */
 @Data
@@ -87,6 +105,54 @@ public class DimensionGroupSubRowBucket
 
 	// zusagbar Zaehlbestand
 	private Quantity qtyExpectedSurplus;
+=======
+ */
+@Data
+@RequiredArgsConstructor
+public class DimensionGroupSubRowBucket
+{
+	@Getter(AccessLevel.NONE)
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE)
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
+
+	@NonNull private final MaterialCockpitRowLookups rowLookups;
+	@NonNull private final DimensionSpecGroup dimensionSpecGroup;
+	@NonNull private final MaterialCockpitRowCache cache;
+
+	// Zusage Lieferant
+	private Quantity pmmQtyPromisedAtDate;
+
+	private Quantity qtyDemandSalesOrderAtDate;
+
+	private Quantity qtyDemandSalesOrder;
+
+	private Quantity qtyDemandDDOrderAtDate;
+
+	private Quantity qtyDemandSumAtDate;
+	// MRP MEnge
+	private Quantity qtyDemandPPOrderAtDate;
+
+	private Quantity qtySupplyPPOrderAtDate;
+
+	private Quantity qtySupplyPurchaseOrderAtDate;
+
+	private Quantity qtySupplyPurchaseOrder;
+
+	private Quantity qtySupplyDDOrderAtDate;
+
+	private Quantity qtySupplySumAtDate;
+
+	private Quantity qtySupplyRequiredAtDate;
+
+	private Quantity qtySupplyToScheduleAtDate;
+
+	private Quantity qtyMaterialentnahmeAtDate;
+
+	// zusagbar Zaehlbestand
+	private Quantity qtyExpectedSurplusAtDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private Quantity qtyOnHandStock;
 
@@ -94,15 +160,19 @@ public class DimensionGroupSubRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
+<<<<<<< HEAD
 	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		this.dimensionSpecGroup = dimensionSpecGroup;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
+<<<<<<< HEAD
 		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
 		qtyMaterialentnahme = addToNullable(qtyMaterialentnahme, cockpitRecord.getQtyMaterialentnahme(), uom);
 
@@ -119,10 +189,39 @@ public class DimensionGroupSubRowBucket
 		qtySupplyToSchedule = addToNullable(qtySupplyToSchedule, cockpitRecord.getQtySupplyToSchedule(), uom);
 
 		qtyExpectedSurplus = addToNullable(qtyExpectedSurplus, cockpitRecord.getQtyExpectedSurplus(), uom);
+=======
+		pmmQtyPromisedAtDate = addToNullable(pmmQtyPromisedAtDate, cockpitRecord.getPMM_QtyPromised_OnDate_AtDate(), uom);
+		qtyMaterialentnahmeAtDate = addToNullable(qtyMaterialentnahmeAtDate, cockpitRecord.getQtyMaterialentnahme_AtDate(), uom);
+
+		qtyDemandPPOrderAtDate = addToNullable(qtyDemandPPOrderAtDate, cockpitRecord.getQtyDemand_PP_Order_AtDate(), uom);
+		qtyDemandSalesOrderAtDate = addToNullable(qtyDemandSalesOrderAtDate, cockpitRecord.getQtyDemand_SalesOrder_AtDate(), uom);
+		qtyDemandDDOrderAtDate = addToNullable(qtyDemandDDOrderAtDate, cockpitRecord.getQtyDemand_DD_Order_AtDate(), uom);
+		qtyDemandSumAtDate = addToNullable(qtyDemandSumAtDate, cockpitRecord.getQtyDemandSum_AtDate(), uom);
+
+		qtySupplyPPOrderAtDate = addToNullable(qtySupplyPPOrderAtDate, cockpitRecord.getQtySupply_PP_Order_AtDate(), uom);
+		qtySupplyPurchaseOrderAtDate = addToNullable(qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate(), uom);
+		qtySupplyDDOrderAtDate = addToNullable(qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate(), uom);
+		qtySupplySumAtDate = addToNullable(qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate(), uom);
+		qtySupplyRequiredAtDate = addToNullable(qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate(), uom);
+		qtySupplyToScheduleAtDate = addToNullable(qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate(), uom);
+
+		qtyExpectedSurplusAtDate = addToNullable(qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate(), uom);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
+<<<<<<< HEAD
+=======
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
+
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
@@ -140,6 +239,7 @@ public class DimensionGroupSubRowBucket
 
 		return MaterialCockpitRow.attributeSubRowBuilder()
 				.date(productIdAndDate.getDate())
+<<<<<<< HEAD
 				.productId(productIdAndDate.getProductId().getRepoId())
 
 				.dimensionGroup(dimensionSpecGroup)
@@ -157,6 +257,27 @@ public class DimensionGroupSubRowBucket
 				.qtySupplyToSchedule(getQtySupplyToSchedule())
 				.qtyOnHandStock(getQtyOnHandStock())
 				.qtyExpectedSurplus(getQtyExpectedSurplus())
+=======
+				.productId(productIdAndDate.getProductId())
+
+				.dimensionGroup(dimensionSpecGroup)
+				.pmmQtyPromisedAtDate(getPmmQtyPromisedAtDate())
+				.qtyMaterialentnahmeAtDate(getQtyMaterialentnahmeAtDate())
+				.qtyDemandPPOrderAtDate(getQtyDemandPPOrderAtDate())
+				.qtySupplyPurchaseOrderAtDate(getQtySupplyPurchaseOrderAtDate())
+				.qtySupplyPurchaseOrder(getQtySupplyPurchaseOrder())
+				.qtyDemandSalesOrderAtDate(getQtyDemandSalesOrderAtDate())
+				.qtyDemandSalesOrder(getQtyDemandSalesOrder())
+				.qtyDemandDDOrderAtDate(getQtyDemandDDOrderAtDate())
+				.qtyDemandSumAtDate(getQtyDemandSumAtDate())
+				.qtySupplyPPOrderAtDate(getQtySupplyPPOrderAtDate())
+				.qtySupplyDDOrderAtDate(getQtySupplyDDOrderAtDate())
+				.qtySupplySumAtDate(getQtySupplySumAtDate())
+				.qtySupplyRequiredAtDate(getQtySupplyRequiredAtDate())
+				.qtySupplyToScheduleAtDate(getQtySupplyToScheduleAtDate())
+				.qtyOnHandStock(getQtyOnHandStock())
+				.qtyExpectedSurplusAtDate(getQtyExpectedSurplusAtDate())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
 				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))

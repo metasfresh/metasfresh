@@ -49,6 +49,10 @@ public class DocumentReportInfo
 	BPartnerId bpartnerId;
 	DocTypeId docTypeId;
 	Language language;
+<<<<<<< HEAD
+=======
+	String poReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	@Builder.Default

@@ -3,7 +3,11 @@
   "soTrx": "SALES",
   "product": {
     "id": 300000,
+<<<<<<< HEAD
     "stocked": false
+=======
+    "itemType": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   },
   "uomId": 110000,
   "orderedData": {

@@ -22,6 +22,7 @@ package de.metas.document.refid.api;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 
@@ -32,6 +33,16 @@ public interface IReferenceNoGeneratorInstance
 {
 	/**
 	 * @param source
+=======
+import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.document.refid.spi.IReferenceNoGenerator;
+
+import java.util.List;
+
+public interface IReferenceNoGeneratorInstance
+{
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return generated reference number or {@link IReferenceNoGenerator#REFERENCENO_None} if no reference number was generated
 	 */
 	String generateReferenceNo(Object sourceModel);

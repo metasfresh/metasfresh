@@ -134,7 +134,11 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 	@VisibleForTesting
 	int executeSql(final String sql)
 	{
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static String parseSql(final String sqlRaw, final I_C_Queue_WorkPackage workpackage)

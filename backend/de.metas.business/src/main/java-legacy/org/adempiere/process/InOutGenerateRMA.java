@@ -236,7 +236,11 @@ public class InOutGenerateRMA extends JavaProcess
 														   MInvoiceLine.COLUMNNAME_M_RMALine_ID + "=?",
 														   shipment.get_TrxName())
 						.setParameters(new Object[] { rmaLine.getM_RMALine_ID() })
+<<<<<<< HEAD
 						.firstOnly();
+=======
+						.firstOnly(MInvoiceLine.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (invoiceLine != null)
 				{
 					invoiceLine.setM_InOutLine_ID(shipLine.getM_InOutLine_ID());

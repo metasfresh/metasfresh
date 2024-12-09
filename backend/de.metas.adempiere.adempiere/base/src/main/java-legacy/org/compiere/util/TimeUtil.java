@@ -34,6 +34,10 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+<<<<<<< HEAD
+=======
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1400,7 +1404,11 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
+<<<<<<< HEAD
 				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
+=======
+				.atStartOfDay(coalesceNotNull(timezone, de.metas.common.util.time.SystemTime.zoneId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.toInstant();
 		return Timestamp.from(instant);
 	}

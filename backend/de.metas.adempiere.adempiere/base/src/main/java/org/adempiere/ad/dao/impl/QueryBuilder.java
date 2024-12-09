@@ -22,6 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +32,15 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilterBase;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,12 +54,21 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
@@ -84,7 +103,11 @@ import lombok.NonNull;
 	 * Exceptions might be some test cases, but there is think that a developer can carry the border of explicitly giving a <code>null</code> parameter. On the upside, we don't have multiple different constructors to choose from.
 	 *
 	 * @param modelClass
+<<<<<<< HEAD
 	 * @param tableName may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
+=======
+	 * @param tableName  may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
@@ -200,6 +223,15 @@ import lombok.NonNull;
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public ICompositeQueryFilterBase<T> compositeFiltersBase()
+	{
+		return filters;
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public QueryBuilderOrderByClause<T> orderBy()
 	{
 		if (orderByBuilder == null)
@@ -234,6 +266,15 @@ import lombok.NonNull;
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public IQueryBuilder<T> self()
+	{
+		return this;
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getModelTableName()
 	{
 		return modelTableName;

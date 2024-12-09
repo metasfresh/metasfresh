@@ -32,14 +32,27 @@ import org.compiere.model.X_EXP_ProcessorParameter;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.BindingBuilder;
+<<<<<<< HEAD
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+=======
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.w3c.dom.Document;
 
+<<<<<<< HEAD
 import javax.xml.transform.*;
+=======
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
@@ -58,6 +71,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 	protected Logger log = LogManager.getLogger(getClass());
 
 	@Override
+<<<<<<< HEAD
 	public void process(final @NonNull Properties ctx, final @NonNull MEXPProcessor expProcessor,
 			final @NonNull Document document, final Trx trx)
 			throws Exception
@@ -66,13 +80,30 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		int port = expProcessor.getPort();
 		String account = expProcessor.getAccount();
 		String password = expProcessor.getPasswordInfo();
+=======
+	public void process(final @NonNull Properties ctx, 
+			final @NonNull MEXPProcessor expProcessor,
+			final @NonNull Document document, 
+			final Trx trx)
+			throws Exception
+	{
+		final String host = expProcessor.getHost();
+		final int port = expProcessor.getPort();
+		final String account = expProcessor.getAccount();
+		final String password = expProcessor.getPasswordInfo();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		String exchangeName = StringUtils.EMPTY;
 		String routingKey = StringUtils.EMPTY;
 		boolean isDurableQueue = true;
 
 		// Read all processor parameters and set them!
+<<<<<<< HEAD
 		I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
 		for (I_EXP_ProcessorParameter processorParameter : processorParameters)
+=======
+		final I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
+		for (final I_EXP_ProcessorParameter processorParameter : processorParameters)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			log.info("ProcesParameter: Value = {} ; ParameterValue = {}",
 					processorParameter.getValue(),
@@ -102,6 +133,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		}
 
 		// Construct Transformer Factory and Transformer
+<<<<<<< HEAD
 		TransformerFactory tranFactory = TransformerFactory.newInstance();
 		Transformer aTransformer = tranFactory.newTransformer();
 		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -110,6 +142,16 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		// =================================== Write to String
 		Writer writer = new StringWriter();
 		Result dest2 = new StreamResult(writer);
+=======
+		final TransformerFactory tranFactory = TransformerFactory.newInstance();
+		final Transformer aTransformer = tranFactory.newTransformer();
+		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		final Source src = new DOMSource(document);
+
+		// =================================== Write to String
+		final Writer writer = new StringWriter();
+		final Result dest2 = new StreamResult(writer);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		aTransformer.transform(src, dest2);
 
 		sendAMQPMessage(host, port, writer.toString(), exchangeName, routingKey, account, password, isDurableQueue);
@@ -120,6 +162,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 			final @NonNull String routingKey, final @NonNull String userName, final @NonNull String password, final boolean isDurableQueue)
 	{
 
+<<<<<<< HEAD
 		CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
 		if (userName != null && password != null)
 		{
@@ -132,12 +175,28 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		RabbitAdmin admin = new RabbitAdmin(template.getConnectionFactory());
 		Queue queue = new Queue(routingKey, isDurableQueue);
 		TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
+=======
+		final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
+		connectionFactory.setUsername(userName);
+		connectionFactory.setPassword(password);
+
+		final RabbitTemplate template = new RabbitTemplate(connectionFactory);
+		template.setRoutingKey(routingKey);
+		template.setExchange(exchangeName);
+		final RabbitAdmin admin = new RabbitAdmin(template.getConnectionFactory());
+		final Queue queue = new Queue(routingKey, isDurableQueue);
+		final DirectExchange exchange = new DirectExchange(exchangeName, isDurableQueue, false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
 		// queue name and routing key are the same
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
 		log.info("AMQP Message sent!");
+<<<<<<< HEAD
+=======
+		template.destroy();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		connectionFactory.destroy();
 	}
 

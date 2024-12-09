@@ -7,7 +7,11 @@ import PropTypes from 'prop-types';
 
 import MapMarker from './MapMarker';
 
+<<<<<<< HEAD
 class Map extends Component {
+=======
+class GeoMap extends Component {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   static defaultProps = {
     center: {
       lat: 52.31,
@@ -103,6 +107,7 @@ class Map extends Component {
   }
 }
 
+<<<<<<< HEAD
 Map.propTypes = {
   data: PropTypes.object,
   mapConfig: PropTypes.object,
@@ -112,3 +117,14 @@ Map.propTypes = {
 };
 
 export default Map;
+=======
+GeoMap.propTypes = {
+  data: PropTypes.array,
+  mapConfig: PropTypes.object,
+  center: PropTypes.object,
+  toggleState: PropTypes.string,
+  zoom: PropTypes.number,
+};
+
+export default GeoMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

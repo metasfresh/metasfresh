@@ -10,18 +10,27 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -33,6 +42,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+=======
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,6 +56,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceL
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 
 /**
  * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.
@@ -52,12 +65,34 @@ import lombok.NonNull;
  *
  * @author tsa
  *
+=======
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+/**
+ * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.
+ * <p>
+ * It's main purpose is to contain some common methods and common settings.
+ *
+ * @author tsa
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBasedConfig
 {
 	/**
 	 * Sort the {@link IQualityInspectionLine} according to customer requirement
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * See https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit.
 	 */
 	// NOTE: public for testing
@@ -69,11 +104,19 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 			QualityInspectionLineType.ProducedTotalWithoutByProducts,
 			QualityInspectionLineType.ProducedMain,
 			QualityInspectionLineType.ProducedCoProducts
+<<<<<<< HEAD
 			);
 
 	/**
 	 * Sort the {@link QualityInvoiceLineGroupType} according to customer requirement
 	 *
+=======
+	);
+
+	/**
+	 * Sort the {@link QualityInvoiceLineGroupType} according to customer requirement
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * See https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit.
 	 */
 	// NOTE: public for testing
@@ -85,7 +128,11 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 			QualityInvoiceLineGroupType.MainProduct,
 			QualityInvoiceLineGroupType.CoProduct,
 			QualityInvoiceLineGroupType.Withholding
+<<<<<<< HEAD
 			);
+=======
+	);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//
 	private final IContextAware _context;
@@ -130,7 +177,11 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		if (_invoiceDocTypeDownPaymentId == null)
 		{
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment;
+<<<<<<< HEAD
 			_invoiceDocTypeDownPaymentId = loadDocType(docSubType);
+=======
+			_invoiceDocTypeDownPaymentId = loadDocType(DocSubType.ofCode(docSubType));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return _invoiceDocTypeDownPaymentId.getRepoId();
 	}
@@ -141,7 +192,11 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		if (_invoiceDocTypeFinalSettlementId == null)
 		{
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement;
+<<<<<<< HEAD
 			_invoiceDocTypeFinalSettlementId = loadDocType(docSubType);
+=======
+			_invoiceDocTypeFinalSettlementId = loadDocType(DocSubType.ofCode(docSubType));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return _invoiceDocTypeFinalSettlementId.getRepoId();
 	}
@@ -155,7 +210,11 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		return getScrapPercentageTreshold().compareTo(new BigDecimal("100")) < 0;
 	}
 
+<<<<<<< HEAD
 	private DocTypeId loadDocType(final String docSubType)
+=======
+	private DocTypeId loadDocType(final DocSubType docSubType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IContextAware context = getContext();
 

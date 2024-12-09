@@ -51,12 +51,19 @@ public class InvoiceId implements RepoIdAware
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public static Optional<InvoiceId> ofRepoIdOptional(final int repoId)
+=======
+	public static Optional<InvoiceId> optionalOfRepoId(final int repoId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	int repoId;
 
 	private InvoiceId(final int repoId)
@@ -100,4 +107,9 @@ public class InvoiceId implements RepoIdAware
 
 		return ids.stream().map(InvoiceId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable final InvoiceId id1, @Nullable final InvoiceId id2) {return Objects.equals(id1, id2);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

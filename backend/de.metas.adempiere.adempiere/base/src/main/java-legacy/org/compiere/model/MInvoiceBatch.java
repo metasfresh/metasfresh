@@ -137,7 +137,11 @@ public class MInvoiceBatch extends X_C_InvoiceBatch
 		String set = "SET Processed='"
 			+ (processed ? "Y" : "N")
 			+ "' WHERE C_InvoiceBatch_ID=" + getC_InvoiceBatch_ID();
+<<<<<<< HEAD
 		int noLine = DB.executeUpdate("UPDATE C_InvoiceBatchLine " + set, get_TrxName());
+=======
+		int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceBatchLine " + set, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed

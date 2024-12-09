@@ -23,6 +23,10 @@
 package de.metas.edi.esb.excelimport;
 
 import com.google.common.io.Closeables;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -30,6 +34,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -98,7 +106,11 @@ public class ExcelToMapListConverter
 	 *
 	 * NOTE: this method it's also closing the stream.
 	 */
+<<<<<<< HEAD
 	public List<Map<String, Object>> convert(final InputStream in) throws IOException
+=======
+	public List<Map<String, Object>> convert(@NonNull final InputStream in) throws IOException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		HSSFWorkbook workbook = null;
 		try
@@ -107,8 +119,13 @@ public class ExcelToMapListConverter
 			final HSSFSheet sheet = workbook.getSheetAt(0);
 
 			Map<Integer, String> columnIndex2headerName = null;
+<<<<<<< HEAD
 			final List<Map<String, Object>> rowsList = new ArrayList<Map<String, Object>>();
 			final Map<String, Object> name2valuePairs = new HashMap<String, Object>();
+=======
+			final List<Map<String, Object>> rowsList = new ArrayList<>();
+			final Map<String, Object> name2valuePairs = new HashMap<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			for (final Iterator<Row> rowIt = sheet.rowIterator(); rowIt.hasNext();)
 			{
 				final Row row = rowIt.next();
@@ -228,9 +245,16 @@ public class ExcelToMapListConverter
 	 *
 	 * @return header name to value map
 	 */
+<<<<<<< HEAD
 	private Map<String, Object> readRow_TableRow(final Row row, final Map<Integer, String> columnIndex2headerName)
 	{
 		final Map<String, Object> rowAsMap = new LinkedHashMap<String, Object>(columnIndex2headerName.size());
+=======
+	@Nullable
+	private Map<String, Object> readRow_TableRow(final Row row, final Map<Integer, String> columnIndex2headerName)
+	{
+		final Map<String, Object> rowAsMap = new LinkedHashMap<>(columnIndex2headerName.size());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final Map.Entry<Integer, String> headerColumn : columnIndex2headerName.entrySet())
 		{
 			final int columnIndex = headerColumn.getKey();
@@ -269,7 +293,11 @@ public class ExcelToMapListConverter
 	 *
 	 * @return key name to value map
 	 */
+<<<<<<< HEAD
 	private Map<String, Object> readRow_NameValuePair(final Iterator<Cell> cellIt)
+=======
+	private Map<String, Object> readRow_NameValuePair(@NonNull final Iterator<Cell> cellIt)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		String name = null;
 		Object value = null;
@@ -288,8 +316,13 @@ public class ExcelToMapListConverter
 			// Case: we are searching for Name
 			if (name == null)
 			{
+<<<<<<< HEAD
 				String nameCandidate = cellValue == null ? "" : cellValue.toString().trim();
 				if (nameCandidate.isEmpty())
+=======
+				String nameCandidate = cellValue.toString().trim();
+				if (Check.isBlank(nameCandidate))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					continue;
 				}
@@ -320,7 +353,11 @@ public class ExcelToMapListConverter
 		return Collections.singletonMap(name, value);
 	}
 
+<<<<<<< HEAD
 	private boolean isRepeatingHeaderRow(final Map<String, Object> rowAsMap)
+=======
+	private boolean isRepeatingHeaderRow(@NonNull final Map<String, Object> rowAsMap)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		for (final Map.Entry<String, Object> entry : rowAsMap.entrySet())
 		{
@@ -336,7 +373,11 @@ public class ExcelToMapListConverter
 		return true;
 	}
 
+<<<<<<< HEAD
 	private boolean isRepeatingHeaderValue(final String headerName, final Object value)
+=======
+	private boolean isRepeatingHeaderValue(@NonNull final String headerName, final Object value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (isNoNameHeaderName(headerName) && isEmptyValue(value))
 		{
@@ -364,17 +405,29 @@ public class ExcelToMapListConverter
 		return headerName;
 	}
 
+<<<<<<< HEAD
 	private final String buildNoNameHeaderName(final int columnIndex)
+=======
+	@Nullable
+	private String buildNoNameHeaderName(final int columnIndex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (noNameHeaderPrefix == null)
 		{
 			return null;
 		}
+<<<<<<< HEAD
 		final String headerName = noNameHeaderPrefix + columnIndex;
 		return headerName;
 	}
 
 	private final boolean isNoNameHeaderName(final String headerName)
+=======
+		return noNameHeaderPrefix + columnIndex;
+	}
+
+	private boolean isNoNameHeaderName(@NonNull final String headerName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (noNameHeaderPrefix == null)
 		{
@@ -384,12 +437,21 @@ public class ExcelToMapListConverter
 		return headerName.startsWith(noNameHeaderPrefix);
 	}
 
+<<<<<<< HEAD
 	private static final boolean isEmptyValue(final Object value)
+=======
+	private static boolean isEmptyValue(final Object value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return value == null || value.toString().trim().isEmpty();
 	}
 
+<<<<<<< HEAD
 	private Object getCellValue(final Cell cell)
+=======
+	@Nullable
+	private Object getCellValue(@Nullable final Cell cell)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (cell == null)
 		{
@@ -450,6 +512,10 @@ public class ExcelToMapListConverter
 		return value;
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private String getCellValueAsString(final Cell cell)
 	{
 		final Object value = getCellValue(cell);
@@ -464,7 +530,11 @@ public class ExcelToMapListConverter
 
 		private final String code;
 
+<<<<<<< HEAD
 		private RowType(final String code)
+=======
+		RowType(final String code)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.code = code;
 		}
@@ -474,7 +544,12 @@ public class ExcelToMapListConverter
 			return code;
 		}
 
+<<<<<<< HEAD
 		public static RowType forCodeOrNull(final String code)
+=======
+		@Nullable
+		public static RowType forCodeOrNull(@Nullable final String code)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (code == null)
 			{
@@ -494,6 +569,10 @@ public class ExcelToMapListConverter
 
 	public static class Builder
 	{
+<<<<<<< HEAD
+=======
+		@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private String noNameHeaderPrefix = DEFAULT_UnknownHeaderPrefix;
 		private boolean considerNullStringAsNull = false;
 		private boolean considerEmptyStringAsNull = false;
@@ -516,10 +595,16 @@ public class ExcelToMapListConverter
 		 *
 		 * Set it to <code>null</code> to turn it off and get rid of columns without header.
 		 *
+<<<<<<< HEAD
 		 * @param noNameHeaderPrefix
 		 * @see #setDiscardNoNameHeaders()
 		 */
 		public Builder setNoNameHeaderPrefix(final String noNameHeaderPrefix)
+=======
+		 * @see #setDiscardNoNameHeaders()
+		 */
+		public Builder setNoNameHeaderPrefix(@Nullable final String noNameHeaderPrefix)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.noNameHeaderPrefix = noNameHeaderPrefix;
 			return this;
@@ -533,8 +618,11 @@ public class ExcelToMapListConverter
 
 		/**
 		 * Sets if a cell value which is a null string (i.e. {@link ExcelToMapListConverter#NULLStringMarker}) shall be considered as <code>null</code>.
+<<<<<<< HEAD
 		 *
 		 * @param considerNullStringAsNull
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		 */
 		public Builder setConsiderNullStringAsNull(final boolean considerNullStringAsNull)
 		{
@@ -556,8 +644,11 @@ public class ExcelToMapListConverter
 
 		/**
 		 * Sets if we shall detect repeating headers and discard them.
+<<<<<<< HEAD
 		 *
 		 * @param discardRepeatingHeaders
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		 */
 		public Builder setDiscardRepeatingHeaders(final boolean discardRepeatingHeaders)
 		{
@@ -569,8 +660,12 @@ public class ExcelToMapListConverter
 		 * If enabled, the XLS converter will look for first not null column and it will expect to have one of the codes from {@link RowType}.
 		 * If no row type would be found, the row would be ignored entirely.
 		 *
+<<<<<<< HEAD
 		 * @param useTypeColumn
 		 * @task 09045
+=======
+		 * task 09045
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		 */
 		public Builder setUseRowTypeColumn(final boolean useTypeColumn)
 		{

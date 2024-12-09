@@ -68,7 +68,11 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 	private final DocumentFieldWidgetType fieldWidgetType;
 	@Getter
 	private final boolean numericKey;
+<<<<<<< HEAD
 	private final int maxFacetsToFetch;
+=======
+	private final int maxFacetsToFetch2;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final LookupDescriptor fieldLookupDescriptor;
 
 	@Builder
@@ -90,7 +94,11 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		this.fieldName = fieldName;
 		this.fieldWidgetType = fieldWidgetType;
 		this.numericKey = numericKey;
+<<<<<<< HEAD
 		this.maxFacetsToFetch = maxFacetsToFetch;
+=======
+		this.maxFacetsToFetch2 = maxFacetsToFetch;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.fieldLookupDescriptor = fieldLookupDescriptor;
 	}
 
@@ -143,7 +151,10 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 
 		return view.getFacetFiltersCacheMap()
 				.computeIfAbsent(filterId, () -> createFacetFilterViewCache(view))
+<<<<<<< HEAD
 				.getAvailableValues()
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.pageByOffsetAndLimit(
 						evalCtx.getOffset(0),
 						evalCtx.getLimit(Integer.MAX_VALUE));
@@ -155,11 +166,31 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		final ViewEvaluationCtx viewEvalCtx = view.getViewEvaluationCtx();
 		final String selectionId = view.getDefaultSelectionBeforeFacetsFiltering().getSelectionId();
 
+<<<<<<< HEAD
+=======
+		final boolean isLimited;
+		final int fetchLimit;
+		if (this.maxFacetsToFetch2 > 0 && this.maxFacetsToFetch2 < Integer.MAX_VALUE)
+		{
+			isLimited = true;
+			fetchLimit = this.maxFacetsToFetch2 + 1; // fetch one more to be able to determine if there are more values than we can fetch
+		}
+		else
+		{
+			isLimited = false;
+			fetchLimit = Integer.MAX_VALUE;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		List<Object> rawValues = viewDataRepository.retrieveFieldValues(
 				viewEvalCtx,
 				selectionId,
 				fieldName,
+<<<<<<< HEAD
 				maxFacetsToFetch);
+=======
+				fetchLimit);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		boolean valuesAreOrdered = false;
 		if (fieldWidgetType.isDateOrTime()
@@ -174,16 +205,34 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 			valuesAreOrdered = true;
 		}
 
+<<<<<<< HEAD
 		final LookupValuesList lookupValues = rawValues.stream()
+=======
+		LookupValuesList lookupValues = rawValues.stream()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.map(this::convertRawFieldValueToLookupValue)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(LookupValuesList.collect())
 				.ordered(valuesAreOrdered);
 
+<<<<<<< HEAD
 		return FacetFilterViewCache.builder()
 				.filterId(filterId)
 				.availableValues(lookupValues)
+=======
+		boolean hasMoreResults = false;
+		if (isLimited && lookupValues.size() > this.maxFacetsToFetch2)
+		{
+			lookupValues = lookupValues.limit(this.maxFacetsToFetch2);
+			hasMoreResults = true;
+		}
+
+		return FacetFilterViewCache.builder()
+				.filterId(filterId)
+				.availableValues(lookupValues)
+				.hasMoreResults(hasMoreResults)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

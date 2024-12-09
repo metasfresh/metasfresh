@@ -24,6 +24,12 @@ package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
@@ -45,8 +51,11 @@ import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+<<<<<<< HEAD
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -229,7 +238,11 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 	{
 		final String queryWhereClause = createZoomOriginQueryWhereClause(fromDocument);
 
+<<<<<<< HEAD
 		final TableRefInfo refTable = getTarget().getTableRefInfo();
+=======
+		final ADRefTable refTable = getTarget().getTableRefInfo();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String tableName = refTable.getTableName();
 		final String columnName = refTable.getKeyColumn();
@@ -249,7 +262,11 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		final StringBuilder queryWhereClause = new StringBuilder();
 
+<<<<<<< HEAD
 		final TableRefInfo refTable = getTarget().getTableRefInfo();
+=======
+		final ADRefTable refTable = getTarget().getTableRefInfo();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String targetTableName = fromDocument.getTableName();
 		final String originTableName = refTable.getTableName();
@@ -370,8 +387,13 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 	@Value
 	private static class ZoomProviderDestination
 	{
+<<<<<<< HEAD
 		int adReferenceId;
 		TableRefInfo tableRefInfo;
+=======
+		ReferenceId adReferenceId;
+		ADRefTable tableRefInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ITranslatableString roleDisplayName;
 
 		/**
@@ -381,23 +403,34 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		@lombok.Builder
 		private ZoomProviderDestination(
+<<<<<<< HEAD
 				final int adReferenceId,
 				@NonNull final TableRefInfo tableRefInfo,
 				@Nullable final ITranslatableString roleDisplayName,
 				@NonNull final Boolean tableRecordIdTarget)
 		{
 			Check.assume(adReferenceId > 0, "adReferenceId > 0");
+=======
+				@NonNull final ReferenceId adReferenceId,
+				@NonNull final ADRefTable tableRefInfo,
+				@Nullable final ITranslatableString roleDisplayName,
+				@NonNull final Boolean tableRecordIdTarget)
+		{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			this.adReferenceId = adReferenceId;
 			this.tableRefInfo = tableRefInfo;
 			this.roleDisplayName = roleDisplayName;
 			this.tableRecordIdTarget = tableRecordIdTarget;
 		}
 
+<<<<<<< HEAD
 		public String getTableName()
 		{
 			return tableRefInfo.getTableName();
 		}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public ITranslatableString getRoleDisplayName(final AdWindowId fallbackAD_Window_ID)
 		{
 			if (roleDisplayName != null)
@@ -462,7 +495,11 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 	 * @return the <code>AD_Window_ID</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
 	 */
+<<<<<<< HEAD
 	private AdWindowId getRefTableAD_Window_ID(final TableRefInfo tableRefInfo, final boolean isSOTrx)
+=======
+	private AdWindowId getRefTableAD_Window_ID(final ADRefTable tableRefInfo, final boolean isSOTrx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		AdWindowId windowId = tableRefInfo.getZoomAD_Window_ID_Override();
 		if (windowId != null)
@@ -486,10 +523,17 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		return windowId;
 	}
 
+<<<<<<< HEAD
 	@ToString(exclude = "lookupDAO")
 	public static final class Builder
 	{
 		private final transient ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+=======
+	@ToString(exclude = "adReferenceService")
+	public static final class Builder
+	{
+		private ADReferenceService adReferenceService = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private CustomizedWindowInfoMap customizedWindowInfoMap = CustomizedWindowInfoMap.empty();
 
@@ -497,6 +541,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		private int adRelationTypeId;
 		private boolean isTableRecordIDTarget = false;
 
+<<<<<<< HEAD
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
 		@Nullable
@@ -506,6 +551,17 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		private ITranslatableString targetRoleDisplayName;
 		@Nullable
 		private TableRefInfo targetTableRefInfo = null; // lazy
+=======
+		private ReferenceId sourceReferenceId = null;
+		private ITranslatableString sourceRoleDisplayName;
+		@Nullable
+		private ADRefTable sourceTableRefInfo = null; // lazy
+
+		private ReferenceId targetReferenceId = null;
+		private ITranslatableString targetRoleDisplayName;
+		@Nullable
+		private ADRefTable targetTableRefInfo = null; // lazy
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private Builder()
 		{
@@ -530,6 +586,15 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			return new SpecificRelationTypeRelatedDocumentsProvider(this);
 		}
 
+<<<<<<< HEAD
+=======
+		public Builder setAdReferenceService(@NonNull final ADReferenceService adReferenceService)
+		{
+			this.adReferenceService = adReferenceService;
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public Builder setCustomizedWindowInfoMap(final CustomizedWindowInfoMap customizedWindowInfoMap)
 		{
 			this.customizedWindowInfoMap = customizedWindowInfoMap;
@@ -571,11 +636,16 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		public Builder setSource_Reference_ID(final int sourceReferenceId)
 		{
+<<<<<<< HEAD
 			this.sourceReferenceId = sourceReferenceId;
+=======
+			this.sourceReferenceId = ReferenceId.ofRepoIdOrNull(sourceReferenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			sourceTableRefInfo = null; // reset
 			return this;
 		}
 
+<<<<<<< HEAD
 		private int getSource_Reference_ID()
 		{
 			Check.assume(sourceReferenceId > 0, "sourceReferenceId > 0");
@@ -584,6 +654,15 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		@Nullable
 		private TableRefInfo getSourceTableRefInfoOrNull()
+=======
+		private ReferenceId getSource_Reference_ID()
+		{
+			return Check.assumeNotNull(sourceReferenceId, "sourceReferenceId is set");
+		}
+
+		@Nullable
+		private ADRefTable getSourceTableRefInfoOrNull()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (sourceTableRefInfo == null)
 			{
@@ -593,9 +672,15 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		}
 
 		@Nullable
+<<<<<<< HEAD
 		private TableRefInfo retrieveTableRefInfo(final int adReferenceId)
 		{
 			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableRefInfo(adReferenceId);
+=======
+		private ADRefTable retrieveTableRefInfo(final ReferenceId adReferenceId)
+		{
+			final ADRefTable tableRefInfo = adReferenceService.retrieveTableRefInfo(adReferenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (tableRefInfo == null)
 			{
 				return null;
@@ -620,11 +705,16 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		public Builder setTarget_Reference_AD(final int targetReferenceId)
 		{
+<<<<<<< HEAD
 			this.targetReferenceId = targetReferenceId;
+=======
+			this.targetReferenceId = ReferenceId.ofRepoIdOrNull(targetReferenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			targetTableRefInfo = null; // lazy
 			return this;
 		}
 
+<<<<<<< HEAD
 		private int getTarget_Reference_ID()
 		{
 			Check.assume(targetReferenceId > 0, "targetReferenceId > 0");
@@ -632,6 +722,14 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		}
 
 		private TableRefInfo getTargetTableRefInfoOrNull()
+=======
+		private ReferenceId getTarget_Reference_ID()
+		{
+			return Check.assumeNotNull(targetReferenceId, "targetReferenceId is set");
+		}
+
+		private ADRefTable getTargetTableRefInfoOrNull()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (targetTableRefInfo == null)
 			{

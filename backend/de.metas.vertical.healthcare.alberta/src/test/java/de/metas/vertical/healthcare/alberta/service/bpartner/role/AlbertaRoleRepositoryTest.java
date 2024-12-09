@@ -22,11 +22,17 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.role;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +45,17 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class AlbertaRoleRepositoryTest
 {
 	private AlbertaRoleRepository albertaRoleRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SnapshotExtension.class)
+public class AlbertaRoleRepositoryTest
+{
+	private AlbertaRoleRepository albertaRoleRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -47,6 +64,7 @@ public class AlbertaRoleRepositoryTest
 		albertaRoleRepository =  new AlbertaRoleRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	public static void initStatic()
 	{
@@ -59,6 +77,8 @@ public class AlbertaRoleRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save()
 	{
@@ -72,6 +92,10 @@ public class AlbertaRoleRepositoryTest
 		final AlbertaRole result = albertaRoleRepository.save(role);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -90,7 +90,11 @@ public class CallOrderSummaryService
 		final CallOrderSummary callOrderSummary = summaryRepo.getById(callOrderSummaryId);
 		final CallOrderSummaryData summaryData = callOrderSummary.getSummaryData();
 
+<<<<<<< HEAD
 		final Quantity currentQtyDelivered = Quantitys.create(summaryData.getQtyDelivered(), summaryData.getUomId());
+=======
+		final Quantity currentQtyDelivered = Quantitys.of(summaryData.getQtyDelivered(), summaryData.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Quantity sum = conversionBL.computeSum(
 				UOMConversionContext.of(callOrderSummary.getSummaryData().getProductId()),
@@ -107,7 +111,11 @@ public class CallOrderSummaryService
 		final CallOrderSummary callOrderSummary = summaryRepo.getById(callOrderSummaryId);
 		final CallOrderSummaryData summaryData = callOrderSummary.getSummaryData();
 
+<<<<<<< HEAD
 		final Quantity currentQtyInvoiced = Quantitys.create(summaryData.getQtyInvoiced(), summaryData.getUomId());
+=======
+		final Quantity currentQtyInvoiced = Quantitys.of(summaryData.getQtyInvoiced(), summaryData.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Quantity sum = conversionBL.computeSum(
 				UOMConversionContext.of(callOrderSummary.getSummaryData().getProductId()),

@@ -22,6 +22,7 @@ package de.metas.payment.sepa.model.validator;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -29,23 +30,40 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Validator(I_SEPA_Export_Line.class)
 public class SEPA_Export_Line
 {
 	/**
 	 * If the given line's account is an ESR account, then this method sets the line's <code>OtherAccountIdentification</code> value to the ESR-account's retrieveESRAccountNo.
+<<<<<<< HEAD
 	 * 
 	 * task 07789
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateOtherAccountIdentification(I_SEPA_Export_Line esrImport)
+=======
+	 * task 07789
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void updateOtherAccountIdentification(final I_SEPA_Export_Line esrImport)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 		final  String QR_IBAN = bpBankAccount.getQR_IBAN();
@@ -55,7 +73,11 @@ public class SEPA_Export_Line
 			return; // nothing to do if is not ESR or if is a QR account
 		}
 
+<<<<<<< HEAD
 		if (QR_IBAN != null && QR_IBAN.length() > 0)
+=======
+		if (Check.isNotBlank(QR_IBAN))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			esrImport.setOtherAccountIdentification(""); // set nothing, but we need to make sure that tag is closed
 			return;

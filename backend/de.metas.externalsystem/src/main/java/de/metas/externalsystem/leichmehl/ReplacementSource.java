@@ -31,13 +31,24 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+<<<<<<< HEAD
+=======
+@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @AllArgsConstructor
 public enum ReplacementSource implements ReferenceListAwareEnum
 {
 	Product(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_Product),
+<<<<<<< HEAD
 	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder);
 
 	@Getter
+=======
+	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder),
+	/** Result of a customer postgREST procsess invokation (via API) */
+	CustomProcessResult(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_CustomProcessResult);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private final String code;
 

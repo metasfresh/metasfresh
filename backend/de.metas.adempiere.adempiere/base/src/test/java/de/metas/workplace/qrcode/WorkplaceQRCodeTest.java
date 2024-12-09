@@ -25,6 +25,10 @@ package de.metas.workplace.qrcode;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
+=======
+import org.adempiere.warehouse.WarehouseId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +47,10 @@ class WorkplaceQRCodeTest
 		final Workplace workplace = Workplace.builder()
 				.id(WorkplaceId.ofRepoId(1000001))
 				.name("workplace1")
+<<<<<<< HEAD
+=======
+				.warehouseId(WarehouseId.MAIN)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 		final WorkplaceQRCode qrCode = WorkplaceQRCode.ofWorkplace(workplace);
 		System.out.println("QRCode: " + qrCode.toGlobalQRCodeJsonString());

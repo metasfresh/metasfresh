@@ -95,7 +95,11 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	{
 		return DocumentQueryOrderByList.ofList(
 				ImmutableList.of(
+<<<<<<< HEAD
 						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo),
+=======
+						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue))
 		);
 	}

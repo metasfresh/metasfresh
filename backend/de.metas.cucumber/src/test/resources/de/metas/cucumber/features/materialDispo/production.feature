@@ -18,12 +18,22 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
+<<<<<<< HEAD
+=======
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+<<<<<<< HEAD
+=======
+  @Id:S0124_150
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
@@ -74,9 +84,16 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
+<<<<<<< HEAD
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-16   |
+=======
+    # note - we expect 2021-04-16 to be converted to 2021-04-15 22:00:00 UTC, because of the time zone (summer - DST) and timezone that we set in the "metasfresh has date and time.."
+    And metasfresh contains M_Inventories:
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | i_1        | warehouseStd   | 2021-04-16   |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID | M_Product_ID | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1            | p_2          | PCE          | 10       | 0       |
@@ -205,8 +222,14 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+<<<<<<< HEAD
   Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
   Partial stock for main product, enough stock for component (S0129.1_130)
+=======
+  @Id:S0129.1_130
+  Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
+  Partial stock for main product, enough stock for component
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
@@ -293,8 +316,16 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
+<<<<<<< HEAD
   @from:cucumber
   Scenario: Close production candidate (S0129.2_110)
+=======
+  @ignore # supply for components changed, needs to be checked
+  @Id:S0196_100
+  @from:cucumber
+  @Id:S0129.2_110
+  Scenario: Close production candidate
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
@@ -348,6 +379,20 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_l_1_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 #      | c_l_1_2    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_1       | p_1                     | warehouseStd              | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
+      | cp_2       | p_2                     | warehouseStd              | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And the following PP_Order_Candidates are closed
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
@@ -376,12 +421,35 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 
 
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | -10                            | -10                        | 0                             | 0                             |
+      | cp_2       | p_2                     | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
+<<<<<<< HEAD
   @from:cucumber
   Scenario: Production candidate is closed after it has been processed (S0129.2_120)
+=======
+  @ignore # supply for components changed, needs to be checked
+  @Id:S0196_200
+  @from:cucumber
+  @Id:S0129.2_120
+
+  Scenario: Production candidate is closed after it has been processed
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
@@ -447,6 +515,20 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
       | 3/c_l_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_1       | p_1                     | warehouseStd              | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
+      | cp_2       | p_2                     | warehouseStd              | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID |
       | oc_1                  |
@@ -470,6 +552,20 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
       | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
+      | cp_2       | p_2                     | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And the following PP_Order_Candidates are closed
       | PP_Order_Candidate_ID |
       | oc_1                  |
@@ -490,4 +586,17 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | 0                      |
       | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | -100                   |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
+      | cp_2       | p_2                     | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 

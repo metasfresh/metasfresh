@@ -1,14 +1,25 @@
 package de.metas.notification;
 
+<<<<<<< HEAD
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.slf4j.Logger;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -38,10 +49,16 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+<<<<<<< HEAD
 @SuppressWarnings("serial")
 final class UserNotificationDetailMessageFormat extends EventMessageFormatTemplate
 {
 	public static final UserNotificationDetailMessageFormat newInstance()
+=======
+final class UserNotificationDetailMessageFormat extends EventMessageFormatTemplate
+{
+	public static UserNotificationDetailMessageFormat newInstance()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new UserNotificationDetailMessageFormat();
 	}
@@ -54,10 +71,17 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected String formatTableRecordReference(final ITableRecordReference recordRef)
 	{
 		// Retrieve the record
 		Object record;
+=======
+	protected String formatTableRecordReference(@NonNull final ITableRecordReference recordRef)
+	{
+		// Retrieve the record
+		final Object record;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		try
 		{
 			final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
@@ -69,6 +93,15 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 
+<<<<<<< HEAD
+=======
+		if(record == null)
+		{
+			logger.info("Failed retrieving record for " + recordRef);
+			return "<" + recordRef.getRecord_ID() + ">";
+		}
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		return documentNo;
 	}

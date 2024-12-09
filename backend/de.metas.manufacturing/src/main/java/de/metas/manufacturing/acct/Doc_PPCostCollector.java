@@ -23,22 +23,36 @@ package de.metas.manufacturing.acct;
  */
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+=======
+import de.metas.acct.Account;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
+<<<<<<< HEAD
 import org.compiere.acct.FactLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -57,7 +71,11 @@ import java.util.List;
  *  Document Types:     MOP
  * </pre>
  *
+<<<<<<< HEAD
  * @author victor.perez@e-evolution.com http://www.e-evolution.com
+=======
+ * @author victor.perez@e-evolution.com <a href="http://www.e-evolution.com">...</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
@@ -70,7 +88,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 	public Doc_PPCostCollector(final AcctDocContext ctx)
 	{
+<<<<<<< HEAD
 		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+=======
+		super(ctx, DocBaseType.ManufacturingCostCollector);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -95,7 +117,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return getModel(I_PP_Cost_Collector.class);
 	}
 
+<<<<<<< HEAD
 	private CostCollectorType getCostCollectorType()
+=======
+	protected CostCollectorType getCostCollectorType()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return CostCollectorType.ofCode(getPP_Cost_Collector().getCostCollectorType());
 	}
@@ -143,6 +169,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 		else if (CostCollectorType.MethodChangeVariance.equals(costCollectorType))
 		{
+<<<<<<< HEAD
 			facts.addAll(createFacts_Variance(as, ProductAcctType.MethodChangeVariance));
 		}
 		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
@@ -156,6 +183,21 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		else if (CostCollectorType.MixVariance.equals(costCollectorType))
 		{
 			facts.addAll(createFacts_Variance(as, ProductAcctType.MixVariance));
+=======
+			facts.addAll(createFacts_Variance(as, ProductAcctType.P_MethodChangeVariance_Acct));
+		}
+		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_Variance(as, ProductAcctType.P_UsageVariance_Acct));
+		}
+		else if (CostCollectorType.RateVariance.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_Variance(as, ProductAcctType.P_RateVariance_Acct));
+		}
+		else if (CostCollectorType.MixVariance.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_Variance(as, ProductAcctType.P_MixVariance_Acct));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
@@ -174,6 +216,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private Fact createFactLines(
 			@NonNull final AcctSchema as,
 			@NonNull final CostElement costElement,
+<<<<<<< HEAD
 			@NonNull final MAccount debit,
 			@NonNull final MAccount credit,
 			@NonNull final CostAmount cost,
@@ -203,6 +246,38 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		cr.setC_Activity_ID(docLine.getActivityId());
 		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		cr.setM_Locator_ID(docLine.getM_Locator_ID());
+=======
+			@NonNull final Account debit,
+			@NonNull final Account credit,
+			@NonNull final CostAmount cost,
+			@NonNull final Quantity qty)
+	{
+		final DocLine_CostCollector docLine = getLine();
+		final String description = costElement.getName();
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(debit)
+				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
+				.setQty(qty)
+				.additionalDescription(description)
+				.projectId(docLine.getC_Project_ID())
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(credit)
+				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
+				.setQty(qty.negate())
+				.additionalDescription(description)
+				.projectId(docLine.getC_Project_ID())
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return fact;
 	}
@@ -227,13 +302,27 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+=======
+		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+<<<<<<< HEAD
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+=======
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final CostAmount costsReceived = costs.divide(qtyTotal, CurrencyPrecision.ofInt(12))
 					.multiply(qtyReceived)
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
@@ -241,7 +330,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 			if (costsReceived.signum() != 0)
 			{
+<<<<<<< HEAD
 				final MAccount debit = docLine.getAccount(ProductAcctType.Asset, as);
+=======
+				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived);
 				if (fact != null)
 				{
@@ -251,7 +344,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 			if (costsScrapped.signum() != 0)
 			{
+<<<<<<< HEAD
 				final MAccount debit = docLine.getAccount(ProductAcctType.Scrap, as);
+=======
+				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped);
 				if (fact != null)
 				{
@@ -277,14 +374,29 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyIssued = getMovementQty();
 
+<<<<<<< HEAD
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+=======
+		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow().retainOnlyAccountable(as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+<<<<<<< HEAD
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+=======
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
 			if (fact != null)
 			{
@@ -306,16 +418,34 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private List<Fact> createFacts_ActivityControl(final AcctSchema as)
 	{
 		final DocLine_CostCollector docLine = getLine();
+<<<<<<< HEAD
 		final Quantity qtyMoved = getMovementQty();
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+=======
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if(costResult == null)
+		{
+			// NOTE: there is no need to fail if no cost details were created
+			// because it might be that there are no cost elements defined for resource, which is acceptable
+			return ImmutableList.of();
+		}
+
+		final Quantity qtyMoved = getMovementQty();
+		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+<<<<<<< HEAD
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final MAccount credit = docLine.getAccountForCostElement(as, element);
+=======
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
+			final Account credit = docLine.getAccountForCostElement(as, element);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
 			if (fact != null)
 			{
@@ -338,15 +468,38 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			final ProductAcctType varianceAcctType)
 	{
 		final DocLine_CostCollector docLine = getLine();
+<<<<<<< HEAD
 		final MAccount debit = docLine.getAccount(varianceAcctType, as);
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final Quantity qty = getMovementQty();
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+=======
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if(costResult == null)
+		{
+			// NOTE: there is no need to fail if no cost details were created
+			// because it might be that there are no cost elements defined for resource, which is acceptable
+			return ImmutableList.of();
+		}
+
+		final Account debit = docLine.getAccount(varianceAcctType, as);
+		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Quantity qty = getMovementQty();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+<<<<<<< HEAD
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+=======
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
 			if (fact != null)
 			{

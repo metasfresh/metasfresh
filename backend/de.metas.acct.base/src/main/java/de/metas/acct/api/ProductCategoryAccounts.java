@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
 import java.util.Map;
 import java.util.Optional;
 
@@ -7,6 +8,10 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.accounts.ProductAcctType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.product.ProductCategoryId;
@@ -16,6 +21,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.acct.base

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.report;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,6 +26,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
@@ -33,6 +42,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
@@ -41,6 +51,17 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *	Report Tree Model
@@ -87,7 +108,11 @@ public class MReportTree
 	 * 	Get Child IDs
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchie
+<<<<<<< HEAD
 	 *	@param ElementType Account Schema Element Type
+=======
+	 *	@param elementType Account Schema Element Type
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *	@param ID id
 	 *	@return array of IDs
 	 */
@@ -120,7 +145,11 @@ public class MReportTree
 	 * 	Report Tree
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchy
+<<<<<<< HEAD
 	 *	@param ElementType Account Schema Element Type
+=======
+	 *	@param elementType Account Schema Element Type
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public MReportTree (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType)
 	{

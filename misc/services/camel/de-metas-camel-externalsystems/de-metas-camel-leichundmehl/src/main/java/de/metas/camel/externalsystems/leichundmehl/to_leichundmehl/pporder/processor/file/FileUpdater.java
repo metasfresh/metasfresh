@@ -22,6 +22,10 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.core.JsonProcessingException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,6 +39,10 @@ import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.externalsystem.leichundmehl.JsonProcessedKeys;
 import de.metas.common.externalsystem.leichundmehl.JsonReplacementSource;
 import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -131,7 +139,15 @@ public class FileUpdater
 	@Nullable
 	private String resolveValueToUpdate(@NonNull final JsonExternalSystemLeichMehlPluFileConfig config)
 	{
+<<<<<<< HEAD
 		final JsonNode replacementSourceTree = getReplacementSourceTree(config.getReplacementSource());
+=======
+		final JsonNode replacementSourceTree = getReplacementSourceTreeOrNull(config.getReplacementSource());
+		if (replacementSourceTree == null)
+		{
+			return null;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Replacement replacement = Replacement.of(config.getReplacement());
 
@@ -145,6 +161,7 @@ public class FileUpdater
 		return targetNode.textValue();
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	private JsonNode getReplacementSourceTree(@NonNull final JsonReplacementSource jsonReplacementSource)
 	{
@@ -156,10 +173,49 @@ public class FileUpdater
 			case PPOrder -> {
 				return JsonObjectMapperHolder.sharedJsonObjectMapper().convertValue(this.context.getManufacturingOrderNonNull(), JsonNode.class);
 			}
+=======
+	@Nullable
+	private JsonNode getReplacementSourceTreeOrNull(@NonNull final JsonReplacementSource jsonReplacementSource)
+	{
+		switch (jsonReplacementSource)
+		{
+			case Product ->
+			{
+				return JsonObjectMapperHolder.sharedJsonObjectMapper().convertValue(this.context.getProductInfoNonNull(), JsonNode.class);
+			}
+			case PPOrder ->
+			{
+				return JsonObjectMapperHolder.sharedJsonObjectMapper().convertValue(this.context.getManufacturingOrderNonNull(), JsonNode.class);
+			}
+			case CustomProcessResult ->
+			{
+				return extractCustomQueryResonseAsJSON();
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			default -> throw new RuntimeException("Unhandled type=" + jsonReplacementSource.getCode());
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	private JsonNode extractCustomQueryResonseAsJSON()
+	{
+		if (Check.isBlank(this.context.getCustomQueryProcessResponse()))
+		{
+			return null;
+		}
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().readTree(this.context.getCustomQueryProcessResponse());
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("Unable to read JSON-response from Custom Query AD_Process invocation", e);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private Optional<NodeList> getPrintObjectList()
 	{

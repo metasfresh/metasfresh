@@ -27,26 +27,39 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import de.metas.i18n.IModelTranslationMap;
+<<<<<<< HEAD
 import de.metas.logging.LogManager;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
 import de.metas.process.ProcessParamBasicInfo;
 import de.metas.process.ProcessType;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.permissions2.PermissionService;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.IADElementDAO;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+<<<<<<< HEAD
 import org.compiere.model.I_AD_Reference;
 import org.slf4j.Logger;
+=======
+import org.compiere.util.DisplayType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -58,11 +71,16 @@ import java.util.stream.Collectors;
 @Service
 public class ProcessService
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(ProcessService.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
 	private final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
 
@@ -126,11 +144,17 @@ public class ProcessService
 			processParamTrlMap = InterfaceWrapperHelper.getModelTranslationMap(element);
 		}
 
+<<<<<<< HEAD
 		final I_AD_Reference typeReference = referenceDAO.getReferenceByID(ReferenceId.ofRepoId(processPara.getAD_Reference_ID()));
 
 		return ProcessParamBasicInfo.builder()
 				.columnName(processPara.getColumnName())
 				.type(typeReference.getName())
+=======
+		return ProcessParamBasicInfo.builder()
+				.columnName(processPara.getColumnName())
+				.type(DisplayType.getDescription(processPara.getAD_Reference_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.name(processParamTrlMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, processPara.getName()))
 				.description(processParamTrlMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, processPara.getDescription()))
 				.build();

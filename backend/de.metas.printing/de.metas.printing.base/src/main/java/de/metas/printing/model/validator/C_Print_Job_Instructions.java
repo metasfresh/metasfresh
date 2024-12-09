@@ -1,5 +1,6 @@
 package de.metas.printing.model.validator;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -47,6 +48,10 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.ModelValidator;
 
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.i18n.AdMessageKey;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -60,6 +65,31 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.ModelValidator;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Validator(I_C_Print_Job_Instructions.class)
 public class C_Print_Job_Instructions
@@ -73,6 +103,12 @@ public class C_Print_Job_Instructions
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_SEND_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnSendTimeoutSeconds";
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_PENDING_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnPendingTimeoutSeconds";
 
+<<<<<<< HEAD
+=======
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Create Document Outbound only if Status column just changed to Done
 	 */
@@ -112,7 +148,10 @@ public class C_Print_Job_Instructions
 		}
 
 		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
+<<<<<<< HEAD
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.recipientUserId(UserId.ofRepoId(jobInstructions.getAD_User_ToPrint_ID()))
 				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
@@ -196,9 +235,12 @@ public class C_Print_Job_Instructions
 					// schedule our check to be run after 'printTimeOutSeconds' seconds
 					taskExecutorService.schedule(
 							() -> {
+<<<<<<< HEAD
 								final INotificationBL notificationBL = Services.get(INotificationBL.class);
 								final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 								final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsId, I_C_Print_Job_Instructions.class);
 								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
@@ -208,7 +250,11 @@ public class C_Print_Job_Instructions
 											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
 											.contentADMessage(MSG_CLIENT_PRINT_TIMEOUT_DETAILS)
 											.contentADMessageParam(printTimeOutSeconds)
+<<<<<<< HEAD
 											.contentADMessageParam(adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
+=======
+											.contentADMessageParam(adReferenceService.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 											.targetAction(TargetRecordAction.of(I_C_Print_Job_Instructions.Table_Name, printJobInstructionsId))
 											.build());
 								}

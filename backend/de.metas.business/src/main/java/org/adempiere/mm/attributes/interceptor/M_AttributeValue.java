@@ -1,16 +1,28 @@
 package org.adempiere.mm.attributes.interceptor;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
+=======
+import com.google.common.base.Objects;
+import de.metas.util.Check;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
+<<<<<<< HEAD
 
 import com.google.common.base.Objects;
 
 import de.metas.util.Check;
 import lombok.NonNull;
+=======
+import org.springframework.stereotype.Component;
+
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -34,15 +46,28 @@ import lombok.NonNull;
  * #L%
  */
 
+<<<<<<< HEAD
 @Interceptor(I_M_AttributeValue.class)
 public class M_AttributeValue
 {
 	public static final M_AttributeValue INSTANCE = new M_AttributeValue();
 
+=======
+@Component
+@Interceptor(I_M_AttributeValue.class)
+public class M_AttributeValue
+{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public M_AttributeValue()
 	{
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Note: no user-friendly msg needed, because the column is not updatable.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_AttributeValue.COLUMNNAME_Value)
 	public void preventAttributeValueChange(@NonNull final I_M_AttributeValue attributeValue)
 	{
@@ -51,7 +76,11 @@ public class M_AttributeValue
 
 		Check.errorUnless(
 				Objects.equal(newValue, oldValue),
+<<<<<<< HEAD
 				"M_AttributeValue.Value may not be updated because it might be relevant for our storage; oldValue={}; newValue={}; attributevalue={}",
+=======
+				"M_AttributeValue.Value may not be updated because it's rendered into ASI-strings and might be relevant for our storage; oldValue={}; newValue={}; attributevalue={}",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				oldValue, newValue, attributeValue);
 	}
 

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.report;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,6 +30,17 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+=======
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.cube.IFactAcctCubeBL;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.LpadQueryFilterModifier;
@@ -39,8 +51,11 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_PA_ReportCube;
 import org.compiere.print.MPrintFormat;
@@ -51,6 +66,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.cube.IFactAcctCubeBL;
 import de.metas.logging.LogManager;
@@ -58,6 +74,19 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.TreeSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Financial Report Engine
@@ -387,7 +416,11 @@ public class FinReport extends JavaProcess
 						+ "FROM PA_ReportLine "
 						+ "WHERE IsActive='Y' AND PA_ReportLineSet_ID=").append(PA_ReportLineSet_ID);
 
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Report Lines = " + no);
 
 		// ** Get Data ** Segment Values
@@ -623,9 +656,15 @@ public class FinReport extends JavaProcess
 		if (isZeroLine)
 		{
 			final String sql = "DELETE FROM T_Report WHERE AD_PInstance_ID=? AND PA_ReportLine_ID=?";
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(sql,
 					new Object[] { getAD_PInstance_ID(), paReportLine.getPA_ReportLine_ID() },
 					get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql,
+																   new Object[] { getAD_PInstance_ID(), paReportLine.getPA_ReportLine_ID() },
+																   get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 1)
 				log.error("#=" + no + " for " + sql);
 			log.trace(sql);
@@ -638,9 +677,15 @@ public class FinReport extends JavaProcess
 			update.append(" WHERE AD_PInstance_ID=").append(getAD_PInstance_ID())
 					.append(" AND PA_ReportLine_ID=").append(paReportLine.getPA_ReportLine_ID())
 					.append(" AND ABS(LevelNo)<2");		// 0=Line 1=Acct
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(update.toString(),
 					updateSqlParams.toArray(),
 					get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(update.toString(),
+																   updateSqlParams.toArray(),
+																   get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 1)
 				log.error("#=" + no + " for " + update);
 			log.trace(update.toString());
@@ -758,7 +803,11 @@ public class FinReport extends JavaProcess
 						+ "WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");		// not trx
+<<<<<<< HEAD
 				int no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
+=======
+				int no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sb.toString()), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no != 1)
 					log.error("(+) #=" + no + " for " + m_lines[line] + " - " + sb.toString());
 				else
@@ -797,7 +846,11 @@ public class FinReport extends JavaProcess
 						.append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
+<<<<<<< HEAD
 				int no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
+=======
+				int no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sb.toString()), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no != 1)
 				{
 					log.error("(x) #=" + no + " for " + m_lines[line] + " - " + sb.toString());
@@ -844,7 +897,11 @@ public class FinReport extends JavaProcess
 						.append(adPInstanceRepoId)
 						.append(" AND PA_ReportLine_ID=").append(m_lines[line].getPA_ReportLine_ID())
 						.append(" AND ABS(LevelNo)<1");			// 0=Line 1=Acct
+<<<<<<< HEAD
 				no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
+=======
+				no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sb.toString()), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no != 1)
 					log.error("(x) #=" + no + " for " + m_lines[line] + " - " + sb.toString());
 				else
@@ -918,7 +975,11 @@ public class FinReport extends JavaProcess
 			//
 			sb.append(" WHERE AD_PInstance_ID=").append(adPInstanceRepoId)
 					.append(" AND ABS(LevelNo)<2");			// 0=Line 1=Acct
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sb.toString(), get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no < 1)
 				log.error("#=" + no + " for " + m_columns[col]
 						+ " - " + sb.toString());
@@ -1033,7 +1094,11 @@ public class FinReport extends JavaProcess
 			final StringBuilder sql = new StringBuilder("DELETE FROM T_Report WHERE ABS(LevelNo)<>0")
 					.append(" AND Col_0 IS NULL AND Col_1 IS NULL AND Col_2 IS NULL AND Col_3 IS NULL AND Col_4 IS NULL AND Col_5 IS NULL AND Col_6 IS NULL AND Col_7 IS NULL AND Col_8 IS NULL AND Col_9 IS NULL")
 					.append(" AND Col_10 IS NULL AND Col_11 IS NULL AND Col_12 IS NULL AND Col_13 IS NULL AND Col_14 IS NULL AND Col_15 IS NULL AND Col_16 IS NULL AND Col_17 IS NULL AND Col_18 IS NULL AND Col_19 IS NULL AND Col_20 IS NULL");
+<<<<<<< HEAD
 			final int no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Deleted empty #=" + no);
 		}
 
@@ -1046,7 +1111,11 @@ public class FinReport extends JavaProcess
 					+ "WHERE r1.AD_PInstance_ID=r2.AD_PInstance_ID AND r1.PA_ReportLine_ID=r2.PA_ReportLine_ID"
 					+ " AND r2.Record_ID=0 AND r2.Fact_Acct_ID=0)"
 					+ "WHERE SeqNo IS NULL");
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(sql.toString(), get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("SeqNo #=" + no);
 		}
 
@@ -1066,7 +1135,11 @@ public class FinReport extends JavaProcess
 					.append(sql_select).append(") "
 							+ "WHERE Fact_Acct_ID <> 0 AND AD_PInstance_ID=")
 					.append(getAD_PInstance_ID());
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (LogManager.isLevelFinest())
 				log.debug("Trx Name #=" + no + " - " + sql.toString());
 		}
@@ -1380,7 +1453,11 @@ public class FinReport extends JavaProcess
 					.append(" WHERE Record_ID <> 0 AND AD_PInstance_ID=").append(getAD_PInstance_ID())
 					.append(" AND PA_ReportLine_ID=").append(currentReportLine.getPA_ReportLine_ID())
 					.append(" AND Fact_Acct_ID=0");
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (LogManager.isLevelFinest())
 				log.debug("Name #=" + no + " - " + sql.toString());
 		}
@@ -1499,7 +1576,11 @@ public class FinReport extends JavaProcess
 		// // end globalqss
 		// }
 
+<<<<<<< HEAD
 		int no = DB.executeUpdate(insert.toString(), get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(insert.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.trace("Trx #=" + no + " - " + insert);
 		if (no == 0)
 			return;
@@ -1517,7 +1598,11 @@ public class FinReport extends JavaProcess
 			{
 				String sql = "DELETE FROM T_Report WHERE AD_PInstance_ID=" + getPinstanceId().getRepoId()
 						+ " AND PA_ReportLine_ID=" + m_lines[line].getPA_ReportLine_ID();
+<<<<<<< HEAD
 				int no = DB.executeUpdate(sql, get_TrxName());
+=======
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no > 0)
 					log.debug(m_lines[line].getName() + " - #" + no);
 			}
@@ -1543,7 +1628,11 @@ public class FinReport extends JavaProcess
 				String sql = "UPDATE T_Report SET Col_" + column
 						+ "=Col_" + column + "/" + divisor
 						+ " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
+<<<<<<< HEAD
 				int no = DB.executeUpdate(sql, get_TrxName());
+=======
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no > 0)
 					log.debug(m_columns[column].getName() + " - #" + no);
 			}
@@ -1741,7 +1830,11 @@ public class FinReport extends JavaProcess
 			int seqNo = 10;
 			for (MReportLine line : m_lines)
 			{
+<<<<<<< HEAD
 				DB.executeUpdateEx(
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						"UPDATE T_Report SET SeqNo=? WHERE AD_PInstance_ID=? AND PA_ReportLine_ID=?",
 						new Object[] { seqNo, getAD_PInstance_ID(), line.getPA_ReportLine_ID() },
 						get_TrxName());
@@ -1760,12 +1853,21 @@ public class FinReport extends JavaProcess
 				+ "SELECT ?, PA_ReportLine_ID, 0,0, ?,0, Name,Description "
 				+ "FROM PA_ReportLine "
 				+ "WHERE IsActive='Y' AND PA_ReportLineSet_ID=?");
+<<<<<<< HEAD
 		int no = DB.executeUpdateEx(sql.toString(),
 				new Object[] { getAD_PInstance_ID(), line.getSeqNo(), included_reportLineSet_ID },
 				get_TrxName());
 		log.debug("Included report lines[" + line.getName() + "] #" + no);
 		// Delete old line
 		DB.executeUpdateEx(
+=======
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
+														 new Object[] { getAD_PInstance_ID(), line.getSeqNo(), included_reportLineSet_ID },
+														 get_TrxName());
+		log.debug("Included report lines[" + line.getName() + "] #" + no);
+		// Delete old line
+		DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				"DELETE FROM T_Report WHERE AD_PInstance_ID=? AND PA_ReportLine_ID=?",
 				new Object[] { getAD_PInstance_ID(), line.getPA_ReportLine_ID() },
 				get_TrxName());

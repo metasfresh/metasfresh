@@ -135,7 +135,11 @@ public class ExternallyReferencedCandidateRepository
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
+<<<<<<< HEAD
 			final Quantity oneUnitInPriceUom = Quantitys.create(ONE, priceEnteredOverride.getUomId());
+=======
+			final Quantity oneUnitInPriceUom = Quantitys.of(ONE, priceEnteredOverride.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(icRecord.getM_Product_ID());
 			final UomId icRecordUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());

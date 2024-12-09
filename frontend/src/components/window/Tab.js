@@ -3,7 +3,10 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
+<<<<<<< HEAD
 import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class Tab extends PureComponent {
   constructor(props) {
@@ -21,16 +24,26 @@ class Tab extends PureComponent {
     } = this.props;
 
     if (docId && queryOnActivate) {
+<<<<<<< HEAD
       const query = toOrderBysCommaSeparatedString(orderBy);
 
       if (singleRowView) {
         fetchTab({ tabId, windowId, docId, query }).then((res) => {
           if (res.length) {
+=======
+      if (singleRowView) {
+        fetchTab({ tabId, windowId, docId, orderBy }).then((rows) => {
+          if (rows.length) {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             onChange && onChange();
           }
         });
       } else {
+<<<<<<< HEAD
         fetchTab({ tabId, windowId, docId, query }).then(() => {
+=======
+        fetchTab({ tabId, windowId, docId, orderBy }).then(() => {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           onChange && onChange();
         });
       }

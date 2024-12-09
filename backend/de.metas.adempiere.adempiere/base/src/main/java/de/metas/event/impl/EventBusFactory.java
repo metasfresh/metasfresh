@@ -140,9 +140,15 @@ public class EventBusFactory implements IEventBusFactory
 
 	/**
 	 * Creates the event bus.
+<<<<<<< HEAD
 	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
+=======
+	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#DISTRIBUTED},
+	 * then the event bus is also bound to a remote endpoint.
+	 * Otherwise, the event bus will only be local.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private EventBus createEventBus(@NonNull final Topic topic, @NonNull final MeterRegistry meterRegistry)
 	{
@@ -230,7 +236,11 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
+<<<<<<< HEAD
 	 * @return list of available topics on which user can subscribe for UI notifications
+=======
+	 * @return set of available topics on which user can subscribe for UI notifications
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private Set<Topic> getAvailableUserNotificationsTopics()
 	{

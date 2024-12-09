@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.spi.impl;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,16 @@ import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
+import de.metas.cache.CCacheStats;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -20,6 +31,7 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +41,13 @@ import de.metas.cache.CCache.CCacheStats;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.annotation.concurrent.Immutable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Implementation of {@link IAttributeValuesProvider} which is fetching the attributes from {@link IAttributeDAO}.

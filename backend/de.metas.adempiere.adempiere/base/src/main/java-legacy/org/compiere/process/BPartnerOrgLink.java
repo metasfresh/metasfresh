@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MOrg;
 import org.compiere.model.MWarehouse;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -43,6 +46,26 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_Role_OrgAccess;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.MOrg;
+import org.compiere.model.MWarehouse;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Link Business Partner to Organization.
@@ -56,6 +79,12 @@ public class BPartnerOrgLink extends JavaProcess
 	private final transient IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final transient IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final transient IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+<<<<<<< HEAD
+=======
+	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private OrgId p_AD_Org_ID = OrgId.ANY;
 	private OrgTypeId p_AD_OrgType_ID;
@@ -143,7 +172,11 @@ public class BPartnerOrgLink extends JavaProcess
 		I_M_Warehouse wh = null;
 		if (!newOrg)
 		{
+<<<<<<< HEAD
 			final List<I_M_Warehouse> whs = Services.get(IWarehouseDAO.class).getByOrgId(p_AD_Org_ID);
+=======
+			final List<I_M_Warehouse> whs = warehouseDAO.getByOrgId(p_AD_Org_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (!whs.isEmpty())
 			{
 				wh = whs.get(0);    // pick first
@@ -154,6 +187,7 @@ public class BPartnerOrgLink extends JavaProcess
 		{
 			wh = new MWarehouse(org);
 			configureWarehouse(wh, p_C_BPartner_Location_ID); // metas: 03084
+<<<<<<< HEAD
 			InterfaceWrapperHelper.save(wh);
 		}
 
@@ -169,6 +203,25 @@ public class BPartnerOrgLink extends JavaProcess
 				// NOTE (task 03084): We are no longer setting the location to AD_OrgInfo. Location is contained in linked bpartner's location if (newOrg).
 				.warehouseId(Optional.of(WarehouseId.ofRepoId(wh.getM_Warehouse_ID())))
 				.build());
+=======
+			save(wh);
+		}
+
+		// Get/Create Locator
+
+		warehouseBL.getOrCreateDefaultLocator(wh);
+
+		//
+		// Update Org Info
+
+		orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+											 .orgId(p_AD_Org_ID)
+											 .orgTypeId(Optional.ofNullable(p_AD_OrgType_ID))
+											 .orgBPartnerLocationId(Optional.ofNullable(p_C_BPartner_Location_ID))
+											 // NOTE (task 03084): We are no longer setting the location to AD_OrgInfo. Location is contained in linked bpartner's location if (newOrg).
+											 .warehouseId(Optional.of(WarehouseId.ofRepoId(wh.getM_Warehouse_ID())))
+											 .build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID.getRepoId());
@@ -191,7 +244,11 @@ public class BPartnerOrgLink extends JavaProcess
 				}
 				else
 				{
+<<<<<<< HEAD
 					InterfaceWrapperHelper.delete(orgAccess);
+=======
+					delete(orgAccess);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 			// create access
@@ -212,8 +269,14 @@ public class BPartnerOrgLink extends JavaProcess
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/03084:_Move_Org-Infos_to_related_BPartners_%282012080310000055%29
 	 */
+<<<<<<< HEAD
 	private void configureWarehouse(final I_M_Warehouse warehouse, final BPartnerLocationId bpartnerLocationId)
 	{
+=======
+	private void configureWarehouse(@NonNull final I_M_Warehouse warehouse, @NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		warehouse.setC_BPartner_ID(bpartnerLocationId.getBpartnerId().getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		warehouse.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 	}
 }    // BPartnerOrgLink

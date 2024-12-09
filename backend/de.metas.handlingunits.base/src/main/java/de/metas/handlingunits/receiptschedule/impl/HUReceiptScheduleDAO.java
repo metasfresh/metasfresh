@@ -73,7 +73,11 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 			huIdsToRemove.add(hu.getM_HU_ID());
 		}
 
+<<<<<<< HEAD
 		for (final I_M_ReceiptSchedule_Alloc rsa : retrieveHandlingUnitAllocations(receiptSchedule, trxName))
+=======
+		for (final I_M_ReceiptSchedule_Alloc rsa : retrieveAllHandlingUnitAllocations(receiptSchedule, trxName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
 			final int luHUId = rsa.getM_LU_HU_ID();
@@ -133,7 +137,11 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public List<I_M_ReceiptSchedule_Alloc> retrieveHandlingUnitAllocations(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, final String trxName)
+=======
+	public List<I_M_ReceiptSchedule_Alloc> retrieveAllHandlingUnitAllocations(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IQuery<I_M_ReceiptSchedule_Alloc> query = retrieveHandlingUnitAllocationsQueryBuilder(schedule, trxName).create();
 		return query.list(I_M_ReceiptSchedule_Alloc.class);

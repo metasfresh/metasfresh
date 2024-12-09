@@ -22,8 +22,19 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
+=======
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +56,11 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 	private ShipmentScheduleId shipmentScheduleId;

@@ -1,7 +1,11 @@
 package org.adempiere.ad.table.ddl;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -97,7 +101,11 @@ public class TableDDLSyncService
 		}
 		else
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

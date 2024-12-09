@@ -16,6 +16,17 @@
  *****************************************************************************/
 package org.compiere.report;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.i18n.Language;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.model.MElementValue;
+import org.compiere.model.MPeriod;
+import org.compiere.util.DB;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,6 +34,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+<<<<<<< HEAD
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
@@ -33,6 +45,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  *	Trial Balance
  *	
@@ -324,7 +338,11 @@ public class TrialBalance extends JavaProcess
 		else
 			sql.append(",null");
 		Timestamp balanceDay = p_DateAcct_From; // TimeUtil.addDays(p_DateAcct_From, -1);
+<<<<<<< HEAD
 		sql.append(",null,").append(DB.TO_DATE(balanceDay, true)).append(",");
+=======
+		sql.append(",null,").append(DB.TO_DATE(balanceDay)).append(",");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (p_C_Period_ID == 0)
 			sql.append("null");
 		else
@@ -416,7 +434,11 @@ public class TrialBalance extends JavaProcess
 			}
 		}
 		//
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no == 0)
 			log.debug(sql.toString());
 		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
@@ -451,10 +473,17 @@ public class TrialBalance extends JavaProcess
 		//
 		sql.append(" FROM Fact_Acct WHERE AD_Client_ID=").append(getAD_Client_ID())
 			.append (" AND ").append(m_parameterWhere)
+<<<<<<< HEAD
 			.append(" AND DateAcct >= ").append(DB.TO_DATE(p_DateAcct_From, true))
 			.append(" AND TRUNC(DateAcct) <= ").append(DB.TO_DATE(p_DateAcct_To, true));
 		//
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+			.append(" AND DateAcct >= ").append(DB.TO_DATE(p_DateAcct_From))
+			.append(" AND TRUNC(DateAcct) <= ").append(DB.TO_DATE(p_DateAcct_To));
+		//
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no == 0)
 			log.debug(sql.toString());
 		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
@@ -463,7 +492,11 @@ public class TrialBalance extends JavaProcess
 		String sql2 = "UPDATE T_TrialBalance tb SET AccountValue = "
 			+ "(SELECT Value FROM C_ElementValue ev WHERE ev.C_ElementValue_ID=tb.Account_ID) "
 			+ "WHERE tb.Account_ID IS NOT NULL";
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql2, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql2, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no > 0)
 			log.debug("Set AccountValue #" + no);
 		

@@ -2,7 +2,11 @@ package de.metas.edi.api.impl;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
+<<<<<<< HEAD
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+=======
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -30,7 +34,11 @@ import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInS
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class DesadvBLTest
 {
@@ -47,7 +55,11 @@ class DesadvBLTest
 		AdempiereTestHelper.get().init();
 
 		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository());
+<<<<<<< HEAD
 		desadvBL = new DesadvBL(EDIDesadvPackService);
+=======
+		desadvBL = new DesadvBL(EDIDesadvPackService, new EDIDesadvInOutLineDAO());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", 2, X12DE355.COLI).getC_UOM_ID());
@@ -69,18 +81,31 @@ class DesadvBLTest
 	@Test
 	void setQty_isUOMForTUs()
 	{
+<<<<<<< HEAD
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+=======
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.inOutId(InOutId.ofRepoId(2))
+				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyItemCapacity(new BigDecimal("9"))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
+<<<<<<< HEAD
 				.stockQty(Quantitys.create("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
 				.uomQty(Quantitys.create("20.5", coliUomId))
+=======
+				.stockQty(Quantitys.of("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("20.5", coliUomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -89,7 +114,11 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
+<<<<<<< HEAD
 				Quantitys.create("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+=======
+				Quantitys.of("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -98,7 +127,11 @@ class DesadvBLTest
 				null);
 
 		// then
+<<<<<<< HEAD
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+=======
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("9"));
@@ -113,16 +146,28 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_noPicking()
 	{
+<<<<<<< HEAD
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+=======
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.inOutId(InOutId.ofRepoId(2))
+				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
+<<<<<<< HEAD
 				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+=======
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -131,7 +176,11 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
+<<<<<<< HEAD
 				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+=======
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -140,7 +189,11 @@ class DesadvBLTest
 				BigDecimal.valueOf(0.25));
 
 		// then
+<<<<<<< HEAD
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+=======
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -150,6 +203,7 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
+<<<<<<< HEAD
 	
 	@Test
 	void setQty_isCatchWeight_withPicking()
@@ -158,13 +212,29 @@ class DesadvBLTest
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+=======
+
+	@Test
+	void setQty_isCatchWeight_withPicking()
+	{
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
+				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.inOutId(InOutId.ofRepoId(2))
+				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
+<<<<<<< HEAD
 				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
 				.uomQty(Quantitys.create("2.5", eachUomId))
+=======
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("2.5", eachUomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -173,7 +243,11 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
+<<<<<<< HEAD
 				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+=======
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -182,7 +256,11 @@ class DesadvBLTest
 				null);
 
 		// then
+<<<<<<< HEAD
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+=======
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -192,8 +270,12 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
+<<<<<<< HEAD
 	
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * have 10PCE fitting into 1COLI and 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0COLI;
@@ -218,11 +300,19 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
+<<<<<<< HEAD
 				.stockQty(Quantitys.create("9", eachUomId))
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
+=======
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
+
+		// when
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
@@ -253,11 +343,19 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
+<<<<<<< HEAD
 				.stockQty(Quantitys.create("9", eachUomId))
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
+=======
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
+
+		// when
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)

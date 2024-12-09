@@ -1,6 +1,10 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -21,7 +25,10 @@ import de.metas.product.IProductBL;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,7 +71,11 @@ public class DistributionRestService
 				.build();
 	}
 
+<<<<<<< HEAD
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+=======
+	public ADRefList getQtyRejectedReasons()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}

@@ -1,5 +1,6 @@
 package de.metas.inventory.callout;
 
+<<<<<<< HEAD
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -9,6 +10,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Component;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -17,6 +20,17 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Inventory;
+import org.springframework.stereotype.Component;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Callout(I_M_Inventory.class)
 @Component

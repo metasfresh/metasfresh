@@ -1,6 +1,7 @@
 import { quickActionsRequest, topActionsRequest } from '../api';
 import {
   DELETE_QUICK_ACTIONS,
+<<<<<<< HEAD
   TOP_ACTIONS_DELETE,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
@@ -13,6 +14,20 @@ import {
 import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
 import { getTable, getTableId } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
+=======
+  FETCH_QUICK_ACTIONS,
+  FETCH_QUICK_ACTIONS_FAILURE,
+  FETCH_QUICK_ACTIONS_SUCCESS,
+  TOP_ACTIONS_DELETE,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_SUCCESS,
+} from '../constants/ActionTypes';
+
+import { getQuickActions, getQuickActionsId } from '../reducers/actionsHandler';
+import { getTable, getTableId } from '../reducers/tables';
+import { findViewByViewId, getView } from '../reducers/viewHandler';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * @method fetchQuickActions
@@ -191,7 +206,12 @@ export function requestQuickActions({
 }) {
   return (dispatch, getState) => {
     const id = getQuickActionsId({ windowId, viewId });
+<<<<<<< HEAD
     const quickActions = getQuickActions(getState(), id);
+=======
+    const globalState = getState();
+    const quickActions = getQuickActions(globalState, id);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     // don't fetch quick actions if there's already a pending request
     if (!quickActions.pending) {
@@ -200,10 +220,20 @@ export function requestQuickActions({
         payload: { id },
       });
 
+<<<<<<< HEAD
+=======
+      const view = findViewByViewId(globalState, viewId);
+      const viewOrderBy = view?.orderBy;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       return quickActionsRequest({
         windowId,
         viewId,
         viewProfileId,
+<<<<<<< HEAD
+=======
+        viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         selectedIds,
         childView,
         parentView,

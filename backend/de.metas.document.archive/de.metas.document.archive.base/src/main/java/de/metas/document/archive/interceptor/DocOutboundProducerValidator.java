@@ -1,5 +1,6 @@
 package de.metas.document.archive.interceptor;
 
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MClient;
@@ -7,6 +8,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
@@ -16,12 +19,24 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Intercepter which listens to a a table specified in {@link I_C_Doc_Outbound_Config} and enqueues the documents to {@link DocOutboundWorkpackageProcessor}.
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 /* package */class DocOutboundProducerValidator extends AbstractDocOutboundProducer implements ModelValidator
 {
@@ -100,7 +115,11 @@ import lombok.NonNull;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public String modelChange(PO po, int type) throws Exception
+=======
+	public String modelChange(PO po, int type)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE)
 		{
@@ -152,13 +171,24 @@ import lombok.NonNull;
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
 	 * @param po
 	 * @param changeType
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return true if the given PO was just processed
 	 */
 	private boolean isJustProcessed(final PO po, final int changeType)
 	{
+<<<<<<< HEAD
+=======
+		if (!po.isActive())
+		{
+			return false;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final boolean isNew = changeType == ModelValidator.TYPE_BEFORE_NEW || changeType == ModelValidator.TYPE_AFTER_NEW;
 		final int idxProcessed = po.get_ColumnIndex(DocOutboundProducerValidator.COLUMNNAME_Processed);
 		final boolean processedColumnAvailable = idxProcessed > 0;

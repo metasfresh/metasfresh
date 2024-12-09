@@ -55,7 +55,12 @@ public enum AcctSegmentType
 	UserElementString4(AcctSchemaElementType.UserElementString4),
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
+<<<<<<< HEAD
 	UserElementString7(AcctSchemaElementType.UserElementString7)
+=======
+	UserElementString7(AcctSchemaElementType.UserElementString7),
+	SalesOrder(AcctSchemaElementType.SalesOrder),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	;
 
 	// private final AcctSchemaElementType elementType;

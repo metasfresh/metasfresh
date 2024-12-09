@@ -38,7 +38,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
+=======
+public interface ICompositeQueryFilter<T> extends ICompositeQueryFilterBase<T>, IQueryFilter<T>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	/**
 	 * Creates a copy of this object.

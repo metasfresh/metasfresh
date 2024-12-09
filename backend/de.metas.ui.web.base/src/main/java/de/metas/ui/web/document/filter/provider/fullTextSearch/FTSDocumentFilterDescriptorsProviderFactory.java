@@ -38,7 +38,10 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,7 +50,10 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Component
 public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -73,9 +79,13 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 
 	@Nullable
 	@Override
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return StringUtils.trimBlankToOptional(context.getTableName())
 				.map(this::createFiltersProvider)
@@ -116,9 +126,15 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 						.setFrequentUsed(true)
 						.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 						.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 								.setFieldName(PARAM_SearchText)
 								.setDisplayName(caption)
 								.setWidgetType(DocumentFieldWidgetType.Text))
+=======
+								.fieldName(PARAM_SearchText)
+								.displayName(caption)
+								.widgetType(DocumentFieldWidgetType.Text))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.addInternalParameter(PARAM_Context, context)
 						.build());
 	}

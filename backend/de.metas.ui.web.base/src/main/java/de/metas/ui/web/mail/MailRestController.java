@@ -3,6 +3,7 @@ package de.metas.ui.web.mail;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.EmailAttachment;
+<<<<<<< HEAD
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
@@ -15,6 +16,16 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+=======
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxQuery;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.logging.LogManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
 import de.metas.ui.web.mail.WebuiMailRepository.WebuiEmailRemovedEvent;
@@ -34,16 +45,26 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
+<<<<<<< HEAD
 import de.metas.user.api.IUserDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_User;
+=======
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.event.EventListener;
@@ -94,15 +115,23 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 @RestController
 @RequestMapping(MailRestController.ENDPOINT)
 @ApiModel("Outbound email endpoint")
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class MailRestController
 {
 	private static final Logger logger = LogManager.getLogger(MailRestController.class);
 
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
+<<<<<<< HEAD
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+=======
+	private final IUserBL userBL = Services.get(IUserBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final UserSession userSession;
 	private final WebuiMailRepository mailRepo;
 	private final WebuiMailAttachmentsRepository mailAttachmentsRepo;
@@ -117,6 +146,7 @@ public class MailRestController
 	private static final String PATCH_FIELD_TemplateId = "templateId";
 	private static final Set<String> PATCH_FIELD_ALL = ImmutableSet.of(PATCH_FIELD_To, PATCH_FIELD_Subject, PATCH_FIELD_Message, PATCH_FIELD_Attachments, PATCH_FIELD_TemplateId);
 
+<<<<<<< HEAD
 	public MailRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final WebuiMailRepository mailRepo,
@@ -136,6 +166,11 @@ public class MailRestController
 	private void assertReadable(final WebuiEmail email)
 	{
 		// Make sure current logged in user is the owner
+=======
+	private void assertReadable(final WebuiEmail email)
+	{
+		// Make sure current logged-in user is the owner
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (!userSession.isLoggedInAs(email.getOwnerUserId()))
 		{
 			throw new AdempiereException("No credentials to change the email")
@@ -163,10 +198,18 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
+<<<<<<< HEAD
 		final UserId adUserId = userSession.getLoggedUserId();
 		userBL.assertCanSendEMail(adUserId);
 
 		final IntegerLookupValue from = IntegerLookupValue.of(adUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
+=======
+		final UserId fromUserId = userSession.getLoggedUserId();
+		mailService.findMailbox(mailboxQuery(fromUserId)); // i.e. assert can send mails / mailbox is valid
+
+
+		final IntegerLookupValue from = IntegerLookupValue.of(fromUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 
 		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(contextDocumentPath);
@@ -174,13 +217,21 @@ public class MailRestController
 		final List<LookupValue> lookupValues = new ArrayList<>();
 		final Integer toUserId = attributes.getAD_User_ID();
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
+<<<<<<< HEAD
 		if( to != null)
+=======
+		if (to != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			lookupValues.add(to);
 		}
 
 		final Integer ccUserId = attributes.getCC_User_ID();
+<<<<<<< HEAD
 		if(ccUserId != null && ccUserId > 0) // avoid user System
+=======
+		if (ccUserId != null && ccUserId > 0) // avoid user System
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final LookupValue cc = mailRepo.getToByUserId(ccUserId);
 			if (cc != null)
@@ -190,7 +241,11 @@ public class MailRestController
 		}
 		final LookupValuesList emailsTo = LookupValuesList.fromCollection(lookupValues);
 
+<<<<<<< HEAD
 		final String emailId = mailRepo.createNewEmail(adUserId, from, emailsTo, contextDocumentPath).getEmailId();
+=======
+		final String emailId = mailRepo.createNewEmail(fromUserId, from, emailsTo, contextDocumentPath).getEmailId();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (contextDocumentPath != null)
 		{
@@ -202,8 +257,13 @@ public class MailRestController
 				{
 					final Supplier<LookupValue> attachmentProducer = () -> mailAttachmentsRepo
 							.createAttachment(emailId,
+<<<<<<< HEAD
 											  attachment.getFilename(),
 											  new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
+=======
+									attachment.getFilename(),
+									new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 					attachFile(emailId, attachmentProducer);
 				}
@@ -239,6 +299,7 @@ public class MailRestController
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
+<<<<<<< HEAD
 		final String emailId = webuiEmail.getEmailId();
 
 		//
@@ -250,10 +311,14 @@ public class MailRestController
 		final UserEMailConfig userEmailConfig = userBL.getEmailConfigById(fromUserId);
 
 		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
+=======
+		final List<EMailAddress> toList = extractEMailAddresses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (toList.isEmpty())
 		{
 			throw new FillMandatoryException("To");
 		}
+<<<<<<< HEAD
 		final EMailAddress to = toList.get(0);
 		final String subject = webuiEmail.getSubject();
 		final String message = webuiEmail.getMessage();
@@ -287,14 +352,42 @@ public class MailRestController
 		//
 		// Delete temporary attachments
 		mailAttachmentsRepo.deleteAttachments(emailId, webuiEmail.getAttachments());
+=======
+
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(webuiEmail.getFromUserId()))
+				.toList(toList)
+				.subject(webuiEmail.getSubject())
+				.message(webuiEmail.getMessage())
+				.html(false)
+				.attachments(extractEMailAttachments(webuiEmail))
+				.build());
+
+		//
+		// Delete temporary attachments
+		mailAttachmentsRepo.deleteAttachments(webuiEmail.getEmailId(), webuiEmail.getAttachments());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Mark the webui email as sent
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
+<<<<<<< HEAD
 	private Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
 	{
 
+=======
+	private MailboxQuery mailboxQuery(final @NonNull UserId fromUserId)
+	{
+		return MailboxQuery.builder()
+				.clientId(userSession.getClientId())
+				.fromUserId(fromUserId)
+				.build();
+	}
+
+	private Stream<EMailAddress> extractEMailAddresses(final LookupValuesList users)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return users.stream()
 				.map(this::extractEMailAddress);
 	}
@@ -309,6 +402,7 @@ public class MailRestController
 		}
 		else
 		{
+<<<<<<< HEAD
 			final I_AD_User adUser = userDAO.getById(adUserId);
 			final String email = adUser.getEMail();
 			if (Check.isEmpty(email, true))
@@ -319,6 +413,25 @@ public class MailRestController
 		}
 	}
 
+=======
+			return userBL.getEMailAddressById(adUserId).orElseThrow();
+		}
+	}
+
+	private ImmutableList<EMailAttachment> extractEMailAttachments(final WebuiEmail webuiEmail)
+	{
+		final String emailId = webuiEmail.getEmailId();
+
+		return webuiEmail.getAttachments()
+				.stream()
+				.map(webuiAttachment -> {
+					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
+					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@PatchMapping("/{emailId}")
 	@ApiOperation("Changes the email")
 	public JSONEmail changeEmail(@PathVariable("emailId") final String emailId, @RequestBody final List<JSONDocumentChangedEvent> events)

@@ -22,8 +22,15 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+<<<<<<< HEAD
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
+=======
+import de.metas.acct.GLCategoryId;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -107,7 +114,12 @@ import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class PaymentAllocationServiceTest
 {
@@ -137,7 +149,11 @@ public class PaymentAllocationServiceTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
+<<<<<<< HEAD
 		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService);
+=======
+		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
@@ -151,10 +167,18 @@ public class PaymentAllocationServiceTest
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		serviceInvoiceDocTypeId = docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
+<<<<<<< HEAD
 																   .ctx(Env.getCtx())
 																   .name("invoice processing fee vendor invoice")
 																   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
 																   .build());
+=======
+				.ctx(Env.getCtx())
+				.name("invoice processing fee vendor invoice")
+				.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+				.glCategoryId(GLCategoryId.ofRepoId(123))
+				.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -339,7 +363,10 @@ public class PaymentAllocationServiceTest
 
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable()
 	{
 

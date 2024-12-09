@@ -25,8 +25,13 @@ package de.metas.contracts.callorder.detail.model;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -65,10 +70,17 @@ public class CallOrderDetailData
 			@Nullable final InOutLineId shipmentLineId,
 			@Nullable final Quantity qtyDelivered,
 			@Nullable final InvoiceId invoiceId,
+<<<<<<< HEAD
 			@Nullable final InvoiceLineId invoiceLineId,
 			@Nullable final Quantity qtyInvoiced)
 	{
 		final long nonNullSources = Stream.of(orderLineId, shipmentLineId, invoiceLineId)
+=======
+			@Nullable final InvoiceAndLineId invoiceAndLineId,
+			@Nullable final Quantity qtyInvoiced)
+	{
+		final long nonNullSources = Stream.of(orderLineId, shipmentLineId, invoiceAndLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filter(Objects::nonNull)
 				.count();
 
@@ -119,7 +131,11 @@ public class CallOrderDetailData
 
 			this.invoiceDetail = InvoiceDetail.builder()
 					.invoiceId(invoiceId)
+<<<<<<< HEAD
 					.invoiceLineId(invoiceLineId)
+=======
+					.invoiceAndLineId(invoiceAndLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.qtyInvoiced(qtyInvoiced)
 					.build();
 
@@ -137,7 +153,11 @@ public class CallOrderDetailData
 		@NonNull
 		InvoiceId invoiceId;
 		@NonNull
+<<<<<<< HEAD
 		InvoiceLineId invoiceLineId;
+=======
+		InvoiceAndLineId invoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@NonNull
 		Quantity qtyInvoiced;
 	}

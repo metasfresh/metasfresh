@@ -28,6 +28,10 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -48,6 +52,10 @@ import java.util.TreeMap;
 public class Excel_OLCand_Row_Builder
 {
 	public static final String MAPKEY_LineNo = "LineNo";
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Integer lineNo;
 	//
 	private static final String MAPKEY_M_Product_ID = "M_Product_ID";
@@ -178,11 +186,19 @@ public class Excel_OLCand_Row_Builder
 		}
 	}
 
+<<<<<<< HEAD
 	private static Object getValue(final Map<String, Object> map, final String key)
+=======
+	private static Object getValue(@NonNull final Map<String, Object> map, @NonNull final String key)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return map.get(key);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static String extractString(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
@@ -323,7 +339,12 @@ public class Excel_OLCand_Row_Builder
 		return numberCandidate.stripTrailingZeros().scale() <= 0;
 	}
 
+<<<<<<< HEAD
 	private Date extractDate(final Map<String, Object> map, final String key)
+=======
+	@Nullable
+	private Date extractDate(@NonNull final Map<String, Object> map, @NonNull final String key)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Object value = getValue(map, key);
 		if (value == null)

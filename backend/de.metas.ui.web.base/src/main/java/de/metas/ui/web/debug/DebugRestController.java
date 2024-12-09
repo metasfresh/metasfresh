@@ -28,7 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.cache.CCache;
+=======
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -269,7 +273,11 @@ public class DebugRestController
 
 		return LookupDataSourceFactory.instance.getCacheStats()
 				.stream()
+<<<<<<< HEAD
 				.map(CCache.CCacheStats::toString)
+=======
+				.map(CCacheStats::toString)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -479,7 +487,11 @@ public class DebugRestController
 		final String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
+<<<<<<< HEAD
 		final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);
+=======
+		final int countDeleted = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Clear view's cache

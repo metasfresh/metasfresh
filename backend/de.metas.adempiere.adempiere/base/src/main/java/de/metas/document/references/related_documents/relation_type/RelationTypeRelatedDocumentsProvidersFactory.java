@@ -24,6 +24,11 @@ package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
@@ -32,11 +37,17 @@ import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+<<<<<<< HEAD
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+=======
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.element.api.AdWindowId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
@@ -70,7 +81,11 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final CCache<String, ImmutableList<SpecificRelationTypeRelatedDocumentsProvider>> providersBySourceTableName = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
@@ -86,8 +101,15 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 			+ createOrderBy();
 
 	public RelationTypeRelatedDocumentsProvidersFactory(
+<<<<<<< HEAD
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
+=======
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+	{
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
@@ -162,7 +184,11 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		{
 			return provider.retrieveRelatedDocumentsCandidates(fromDocument, targetWindowId).stream();
 		}
+<<<<<<< HEAD
 		catch (Exception ex)
+=======
+		catch (final Exception ex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId, ex);
 			return Stream.empty();
@@ -188,7 +214,11 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 
 		final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
+<<<<<<< HEAD
 		final int keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
+=======
+		final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
 
@@ -259,6 +289,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 
 	@VisibleForTesting
 	@Nullable
+<<<<<<< HEAD
 	protected SpecificRelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
 	{
 		final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
@@ -268,6 +299,18 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
 		return SpecificRelationTypeRelatedDocumentsProvider.builder()
+=======
+	SpecificRelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
+	{
+		final ADRefListItem roleSourceItem = adReferenceService.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
+		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
+
+		final ADRefListItem roleTargetItem = adReferenceService.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
+		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
+
+		return SpecificRelationTypeRelatedDocumentsProvider.builder()
+				.setAdReferenceService(adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 				.setInternalName(relationType.getInternalName())

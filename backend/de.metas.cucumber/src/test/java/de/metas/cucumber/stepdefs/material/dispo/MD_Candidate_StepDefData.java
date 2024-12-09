@@ -27,6 +27,12 @@ import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.model.I_MD_Candidate;
 
+<<<<<<< HEAD
+=======
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class MD_Candidate_StepDefData extends StepDefData<I_MD_Candidate>
 		implements StepDefDataGetIdAware<CandidateId, I_MD_Candidate>
 {

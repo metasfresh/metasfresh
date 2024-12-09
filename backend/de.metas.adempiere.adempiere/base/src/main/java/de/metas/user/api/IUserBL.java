@@ -1,7 +1,13 @@
 package de.metas.user.api;
 
+<<<<<<< HEAD
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
+=======
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.i18n.ExplainedOptional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.Language;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -63,6 +69,7 @@ public interface IUserBL extends ISingletonService
 	 */
 	boolean isEMailValid(I_AD_User user);
 
+<<<<<<< HEAD
 	/**
 	 * Could we send an email from this user
 	 *
@@ -76,9 +83,21 @@ public interface IUserBL extends ISingletonService
 	Language getUserLanguage(@NonNull UserId userId);
 
 	/** @return the user's language or fallbacks; never returns {@code null}. */
+=======
+	Language getUserLanguage(@NonNull UserId userId);
+
+	/**
+	 * @return the user's language or fallbacks; never returns {@code null}.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Language getUserLanguage(I_AD_User userRecord);
 
 	UserEMailConfig getEmailConfigById(UserId userId);
 
+<<<<<<< HEAD
+=======
+	ExplainedOptional<EMailAddress> getEMailAddressById(@NonNull UserId userId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void deleteUserDependency(I_AD_User userRecord);
 }

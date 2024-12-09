@@ -107,6 +107,15 @@ public class AttachmentEntry
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isXML()
+	{
+		final String name = getName().trim().toLowerCase();
+		return name.endsWith(".xml");
+	}
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public AttachmentEntry withAdditionalLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
 		if (getLinkedRecords().contains(modelRef))

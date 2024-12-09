@@ -43,7 +43,11 @@ import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicT
 @Component
 public class RabbitMQEnqueuer implements EventEnqueuer
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
+=======
+	private static final Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final AmqpTemplate amqpTemplate;
 	private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
@@ -60,7 +64,11 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	public void enqueueDistributedEvent(final Event event, final Topic topic)
 	{
 		final String amqpExchangeName = rabbitMQDestinationResolver.getAMQPExchangeNameByTopicName(topic.getName());
+<<<<<<< HEAD
 		final String routingKey = ""; // ignored for fan-out exchanges
+=======
+		final String routingKey = amqpExchangeName; // this corresponds to the way we bound our queues to the exchanges in RabbitMQEventBusConfiguration
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		amqpTemplate.convertAndSend(
 				amqpExchangeName,
 				routingKey,

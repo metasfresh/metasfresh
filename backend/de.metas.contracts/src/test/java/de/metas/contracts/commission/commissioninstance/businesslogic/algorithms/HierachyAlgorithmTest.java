@@ -27,7 +27,11 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -45,7 +49,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -186,7 +195,11 @@ class HierachyAlgorithmTest
 				.orgId(orgId)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.timestamp(de.metas.common.util.time.SystemTime.asInstant())
+<<<<<<< HEAD
 				.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+=======
+				.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(10, 15)))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.triggerDocumentDate(LocalDate.of(2020, 03, 22))
 				.forecastedBasePoints(CommissionPoints.of("30.00"))
 				.invoiceableBasePoints(CommissionPoints.of("20.00"))
@@ -240,7 +253,11 @@ class HierachyAlgorithmTest
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
 												  .orgId(orgId)
+<<<<<<< HEAD
 												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+=======
+												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(10, 15)))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 												  .triggerType(CommissionTriggerType.SalesInvoice)
 												  .triggerDocumentDate(LocalDate.of(2020, 03, 21))
 												  .timestamp(Instant.now())

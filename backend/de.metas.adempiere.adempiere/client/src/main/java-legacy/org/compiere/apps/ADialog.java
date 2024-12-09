@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps;
 
+<<<<<<< HEAD
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -31,10 +32,19 @@ import org.compiere.Adempiere;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.SupportInfo;
+=======
+import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.SwingUtils;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
@@ -42,6 +52,11 @@ import de.metas.logging.LogManager;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import javax.swing.*;
+import java.awt.*;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *  Info Dialog Management
@@ -343,6 +358,7 @@ public final class ADialog
 		return ask (WindowNo, c, AD_Message, null);
 	}	//	ask
 
+<<<<<<< HEAD
 	/*************************************************************************
 
 	/**
@@ -404,6 +420,8 @@ public final class ADialog
 	}
 
 	
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**************************************************************************
 	 *	Beep
 	 */

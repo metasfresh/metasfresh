@@ -15,6 +15,7 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+<<<<<<< HEAD
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -22,12 +23,25 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.UserEMailConfig;
+=======
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
+<<<<<<< HEAD
+=======
+import de.metas.logging.LogManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -47,7 +61,10 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
@@ -56,17 +73,31 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+<<<<<<< HEAD
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
+=======
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 /**
  * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
  * The recipient's email address is taken from {@link I_C_Doc_Outbound_Log#getCurrentEMailAddress()}.
+<<<<<<< HEAD
  * Where this column is empty, no mail is send.
+=======
+ * Where this column is empty, no mail is sent.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -74,8 +105,13 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
 	//
 	// Services
+<<<<<<< HEAD
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IClientDAO clientsDAO = Services.get(IClientDAO.class);
+=======
+	private static final Logger logger = LogManager.getLogger(MailWorkpackageProcessor.class);
+	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
@@ -93,7 +129,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
 
 	@Override
+<<<<<<< HEAD
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+=======
+	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
@@ -127,11 +167,23 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		catch (final Exception e)
 		{
+<<<<<<< HEAD
 			if (mailService.isConnectionError(e))
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
 			throw AdempiereException.wrapIfNeeded(e);
+=======
+			if (EMailSentStatus.isConnectionError(e))
+			{
+				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
+			}
+			else
+			{
+				//noinspection DataFlowIssue
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -150,6 +202,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
+<<<<<<< HEAD
 		final AdProcessId processId = pInstance != null
 				? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID())
 				: ProcessExecutor.getCurrentProcessIdOrNull();
@@ -169,10 +222,23 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		Check.assumeNotNull(
 				docOutboundLogRecord.getCurrentEMailAddress(),
 				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
+=======
+		final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
+				.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+				.adProcessId(pInstance != null ? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID()) : ProcessExecutor.getCurrentProcessIdOrNull())
+				.docBaseAndSubType(extractDocBaseAndSubType(docOutboundLogRecord))
+				.build());
+
+		// note that we verified this earlier
+		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())
+				.orElseThrow(() -> new AdempiereException("C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log=" + docOutboundLogRecord));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Create and send email
 		final ArchiveEmailSentStatus status;
 		{
+<<<<<<< HEAD
 			final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
 
 			final EMail email = mailService.createEMail(
@@ -191,16 +257,33 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			final byte[] attachment = archiveBL.getBinaryData(archive);
 			if (attachment == null && addedAttachments <= 0)
+=======
+			final ArrayList<EMailAttachment> emailAttachments = extractAttachments(docOutboundLogRecord, archive);
+			if (emailAttachments.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
 				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
 			{
+<<<<<<< HEAD
 				final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
 				email.addAttachment(pdfFileName, attachment);
 
 				mailService.send(email);
+=======
+				final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
+				mailService.sendEMail(EMailRequest.builder()
+						.mailbox(mailbox)
+						.to(mailTo)
+						.subject(emailParams.getSubject())
+						.message(emailParams.getMessage())
+						.html(emailParams.isHtml())
+						.attachments(emailAttachments)
+						.build());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				status = ArchiveEmailSentStatus.MESSAGE_SENT;
 			}
 		}
@@ -208,6 +291,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		//
 		// Create doc outbound log entry
 		{
+<<<<<<< HEAD
 			final EMailAddress from = mailbox.getEmail();
 			final EMailAddress cc = null;
 			final EMailAddress bcc = null;
@@ -219,10 +303,56 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					mailTo,
 					cc,
 					bcc,
+=======
+
+			archiveEventManager.fireEmailSent(
+					archive,
+					null,
+					mailbox.getEmail(),
+					mailTo,
+					null,
+					null,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					status);
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	private ArrayList<EMailAttachment> extractAttachments(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord, @NonNull final I_AD_Archive archive)
+	{
+		final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
+		final ArrayList<EMailAttachment> result = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
+				.map(MailWorkpackageProcessor::toEmailAttachment)
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		final byte[] archiveData = archiveBL.getBinaryData(archive);
+		if (archiveData != null && archiveData.length > 0)
+		{
+			final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
+			final EMailAttachment attachment = EMailAttachment.ofNullable(pdfFileName, archiveData);
+			if (attachment != null)
+			{
+				result.add(attachment);
+			}
+		}
+
+		return result;
+	}
+
+	private static EMailAttachment toEmailAttachment(@NonNull de.metas.attachments.EmailAttachment attachment)
+	{
+		final String filename = attachment.getFilename();
+		final EMailAttachment emailAttachment = EMailAttachment.ofNullable(filename, attachment.getAttachmentDataSupplier().get());
+		if (emailAttachment == null)
+		{
+			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
+			return null;
+		}
+		return emailAttachment;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
@@ -236,6 +366,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
+<<<<<<< HEAD
 	private boolean isHTMLMessage(final String message)
 	{
 		if (Check.isEmpty(message))
@@ -247,6 +378,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Language language = extractLanguage(docOutboundLogRecord);
@@ -342,5 +475,19 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		String subject;
 		String message;
+<<<<<<< HEAD
+=======
+
+		private boolean isHtml()
+		{
+			if (Check.isEmpty(message))
+			{
+				// no message => no html
+				return false;
+			}
+
+			return message.toLowerCase().contains("<html>");
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

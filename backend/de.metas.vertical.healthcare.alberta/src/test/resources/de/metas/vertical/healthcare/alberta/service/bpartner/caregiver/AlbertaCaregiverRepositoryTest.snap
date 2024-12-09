@@ -1,21 +1,38 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.caregiver.AlbertaCaregiverRepositoryTest.save_allFields=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaCaregiverId" : 100001,
     "bPartnerId" : 1,
     "caregiverId" : 2,
     "type" : "Enkel",
     "isLegalCarer" : true,
     "legalCarer" : true
+=======
+    "bPartnerAlbertaCaregiverId": 100001,
+    "bPartnerId": 1,
+    "caregiverId": 2,
+    "isLegalCarer": true,
+    "legalCarer": true,
+    "type": "Enkel"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.vertical.healthcare.alberta.service.bpartner.caregiver.AlbertaCaregiverRepositoryTest.save_onlyMandatory=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaCaregiverId" : 100001,
     "bPartnerId" : 1,
     "caregiverId" : 2,
     "isLegalCarer" : false,
     "legalCarer" : false
+=======
+    "bPartnerAlbertaCaregiverId": 100001,
+    "bPartnerId": 1,
+    "caregiverId": 2,
+    "isLegalCarer": false,
+    "legalCarer": false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

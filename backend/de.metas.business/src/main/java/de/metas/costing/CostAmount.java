@@ -8,6 +8,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+<<<<<<< HEAD
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -16,6 +17,18 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+=======
+import de.metas.util.lang.Percent;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.function.Function;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -39,6 +52,7 @@ import java.math.RoundingMode;
  * #L%
  */
 
+<<<<<<< HEAD
 @Value
 public class CostAmount
 {
@@ -47,6 +61,26 @@ public class CostAmount
 			final CurrencyId currencyId)
 	{
 		return new CostAmount(value, currencyId);
+=======
+@EqualsAndHashCode
+@ToString
+public final class CostAmount
+{
+	public static CostAmount of(
+			@NonNull final BigDecimal value,
+			@NonNull final CurrencyId currencyId)
+	{
+		return new CostAmount(Money.of(value, currencyId), null);
+	}
+
+	public static CostAmount of(
+			@NonNull final BigDecimal value,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final BigDecimal sourceValue,
+			@Nullable final CurrencyId sourceCurrencyId)
+	{
+		return new CostAmount(Money.of(value, currencyId), Money.ofOrNull(sourceValue, sourceCurrencyId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static CostAmount of(
@@ -65,12 +99,20 @@ public class CostAmount
 
 	public static CostAmount ofMoney(@NonNull final Money money)
 	{
+<<<<<<< HEAD
 		return new CostAmount(money.toBigDecimal(), money.getCurrencyId());
+=======
+		return new CostAmount(money, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static CostAmount zero(final CurrencyId currencyId)
 	{
+<<<<<<< HEAD
 		return new CostAmount(BigDecimal.ZERO, currencyId);
+=======
+		return new CostAmount(Money.zero(currencyId), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static CostAmount ofProductPrice(@NonNull final ProductPrice price)
@@ -90,6 +132,7 @@ public class CostAmount
 		return ofMoney(price.toMoney().multiply(qty.toBigDecimal()));
 	}
 
+<<<<<<< HEAD
 	BigDecimal value;
 	CurrencyId currencyId;
 
@@ -109,6 +152,34 @@ public class CostAmount
 		}
 	}
 
+=======
+	@NonNull private final Money value;
+	@Nullable private final Money sourceValue;
+
+	private CostAmount(
+			@NonNull final Money value,
+			@Nullable final Money sourceValue)
+	{
+		this.value = value;
+		this.sourceValue = sourceValue;
+	}
+
+	public CurrencyId getCurrencyId() {return value.getCurrencyId();}
+
+	private void assertCurrencyMatching(@NonNull final CostAmount amt)
+	{
+		if (!CurrencyId.equals(getCurrencyId(), amt.getCurrencyId()))
+		{
+			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + getCurrencyId());
+		}
+	}
+
+	public static void assertCurrencyMatching(@Nullable final CostAmount... amts)
+	{
+		CurrencyId.assertCurrencyMatching(CostAmount::getCurrencyId, "Amount", amts);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int signum()
 	{
 		return value.signum();
@@ -127,7 +198,11 @@ public class CostAmount
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new CostAmount(value.negate(), currencyId);
+=======
+			return new CostAmount(value.negate(), sourceValue != null ? sourceValue.negate() : null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -149,7 +224,13 @@ public class CostAmount
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new CostAmount(value.multiply(multiplicand), currencyId);
+=======
+			return new CostAmount(
+					value.multiply(multiplicand),
+					sourceValue != null ? sourceValue.multiply(multiplicand) : null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -164,7 +245,11 @@ public class CostAmount
 	{
 		if (percent.isZero())
 		{
+<<<<<<< HEAD
 			return zero(currencyId);
+=======
+			return toZero();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (percent.isOneHundred())
 		{
@@ -172,7 +257,13 @@ public class CostAmount
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new CostAmount(percent.computePercentageOf(value, precision.toInt()), currencyId);
+=======
+			return new CostAmount(
+					value.multiply(percent, precision),
+					sourceValue != null ? sourceValue.multiply(percent, precision) : null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -189,7 +280,15 @@ public class CostAmount
 			return amtToAdd;
 		}
 
+<<<<<<< HEAD
 		return new CostAmount(value.add(amtToAdd.value), currencyId);
+=======
+		final Money sourceValueNew = sourceValue != null && amtToAdd.sourceValue != null && Money.isSameCurrency(sourceValue, amtToAdd.sourceValue)
+				? sourceValue.add(amtToAdd.sourceValue)
+				: null;
+
+		return new CostAmount(value.add(amtToAdd.value), sourceValueNew);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostAmount divide(
@@ -201,8 +300,16 @@ public class CostAmount
 			throw new AdempiereException("Diving " + this + " by ZERO is not allowed");
 		}
 
+<<<<<<< HEAD
 		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
+=======
+		final Money valueNew = value.divide(divisor, precision);
+		final Money sourceValueNew = sourceValue != null
+				? sourceValue.divide(divisor, precision)
+				: null;
+		return new CostAmount(valueNew, sourceValueNew);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostAmount divide(
@@ -212,16 +319,49 @@ public class CostAmount
 		return divide(divisor.toBigDecimal(), precision);
 	}
 
+<<<<<<< HEAD
 	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)
 	{
 		final BigDecimal valueRounded = precision.roundIfNeeded(value);
 		if (value.equals(valueRounded))
+=======
+	public Optional<CostAmount> divideIfNotZero(
+			@NonNull final Quantity divisor,
+			@NonNull final CurrencyPrecision precision)
+	{
+		return divisor.isZero() ? Optional.empty() : Optional.of(divide(divisor, precision));
+	}
+
+	public CostAmount round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
+	{
+		final Money valueNew = value.round(precisionProvider);
+		final Money sourceValueNew = sourceValue != null ? sourceValue.round(precisionProvider) : null;
+		if (Money.equals(value, valueNew)
+				&& Money.equals(sourceValue, sourceValueNew))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return this;
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new CostAmount(valueRounded, currencyId);
+=======
+			return new CostAmount(valueNew, sourceValueNew);
+		}
+	}
+
+	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)
+	{
+		final Money valueRounded = value.roundIfNeeded(precision);
+		if (Money.equals(value, valueRounded))
+		{
+			return this;
+		}
+		else
+		{
+			return new CostAmount(valueRounded, sourceValue);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -241,6 +381,7 @@ public class CostAmount
 		{
 			return this;
 		}
+<<<<<<< HEAD
 		return new CostAmount(value.subtract(amtToSubtract.value), currencyId);
 	}
 
@@ -252,6 +393,10 @@ public class CostAmount
 		}
 
 		return new CostAmount(value.subtract(amtToSubtract), currencyId);
+=======
+
+		return add(amtToSubtract.negate());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostAmount toZero()
@@ -262,12 +407,40 @@ public class CostAmount
 		}
 		else
 		{
+<<<<<<< HEAD
 			return zero(currencyId);
+=======
+			return new CostAmount(value.toZero(), sourceValue != null ? sourceValue.toZero() : null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
 	public Money toMoney()
 	{
+<<<<<<< HEAD
 		return Money.of(value, currencyId);
 	}
+=======
+		return value;
+	}
+
+	@Nullable
+	public Money toSourceMoney()
+	{
+		return sourceValue;
+	}
+
+	public BigDecimal toBigDecimal() {return value.toBigDecimal();}
+
+	public boolean compareToEquals(@NonNull final CostAmount other)
+	{
+		return this.value.compareTo(other.value) == 0;
+	}
+
+	public static CurrencyId getCommonCurrencyIdOfAll(@Nullable final CostAmount... costAmounts)
+	{
+		return CurrencyId.getCommonCurrencyIdOfAll(CostAmount::getCurrencyId, "Amount", costAmounts);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

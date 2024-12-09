@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2022 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +29,12 @@ package de.metas.cucumber.stepdefs;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Locator;
 
+<<<<<<< HEAD
+=======
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class M_Locator_StepDefData extends StepDefData<I_M_Locator>
 		implements StepDefDataGetIdAware<LocatorId, I_M_Locator>
 {

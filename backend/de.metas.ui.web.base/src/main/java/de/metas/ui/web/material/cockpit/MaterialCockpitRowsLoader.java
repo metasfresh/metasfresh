@@ -22,8 +22,16 @@
 
 package de.metas.ui.web.material.cockpit;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.material.cockpit.ProductWithDemandSupply;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.organization.OrgId;
@@ -48,6 +56,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Repository
 public class MaterialCockpitRowsLoader
@@ -61,6 +75,7 @@ public class MaterialCockpitRowsLoader
 	private final transient CCache<CacheKey, ImmutableSet<ProductId>> productFilterVOToProducts;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+<<<<<<< HEAD
 
 	public MaterialCockpitRowsLoader(
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
@@ -68,6 +83,18 @@ public class MaterialCockpitRowsLoader
 	{
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+=======
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
+
+	public MaterialCockpitRowsLoader(
+			@NonNull final MaterialCockpitFilters materialCockpitFilters,
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
+	{
+		this.materialCockpitFilters = materialCockpitFilters;
+		this.materialCockpitRowFactory = materialCockpitRowFactory;
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// setup caching
 		final int cacheSize = Services
@@ -85,7 +112,11 @@ public class MaterialCockpitRowsLoader
 	public List<MaterialCockpitRow> getMaterialCockpitRows(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final LocalDate date,
+<<<<<<< HEAD
 			final boolean includePerPlantDetailRows)
+=======
+			final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)
@@ -95,13 +126,31 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
+<<<<<<< HEAD
+=======
+		final List<ProductWithDemandSupply> quantitiesRecords;
+		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+		{
+			quantitiesRecords = getQtyRecords(cockpitRecords, stockRecords);
+		}
+		else
+		{
+			quantitiesRecords = ImmutableList.of();
+		}
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
 				.date(date)
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
+<<<<<<< HEAD
 				.includePerPlantDetailRows(includePerPlantDetailRows)
+=======
+				.quantitiesRecords(quantitiesRecords)
+				.detailsRowAggregation(detailsRowAggregation)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 		return materialCockpitRowFactory.createRows(request);
 	}
@@ -123,6 +172,24 @@ public class MaterialCockpitRowsLoader
 				.getOrLoad(cacheKey, () -> retrieveProductsFor(cacheKey));
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	private List<ProductWithDemandSupply> getQtyRecords(
+			@NonNull final List<I_MD_Cockpit> cockpitRecords,
+			@NonNull final List<I_MD_Stock> stockRecords)
+	{
+		final Set<ProductId> productIds = Stream.concat(
+						cockpitRecords.stream().map(I_MD_Cockpit::getM_Product_ID),
+						stockRecords.stream().map(I_MD_Stock::getM_Product_ID))
+				.map(ProductId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds).getAll();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static ImmutableSet<ProductId> retrieveProductsFor(@NonNull final CacheKey cacheKey)
 	{
 		final OrgId orgId = cacheKey.getOrgId();

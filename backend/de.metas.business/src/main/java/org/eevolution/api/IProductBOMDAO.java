@@ -5,6 +5,11 @@ import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -18,6 +23,11 @@ public interface IProductBOMDAO extends ISingletonService
 {
 	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull ProductId productId, @NonNull BOMType bomType);
 
+<<<<<<< HEAD
+=======
+	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest productBOMRequest);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
 	@Deprecated

@@ -27,13 +27,21 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPOrderCostBL;
+=======
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPOrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
@@ -78,7 +86,11 @@ public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+<<<<<<< HEAD
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+=======
+		final DocStatus docStatus = getDocStatus();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (docStatus.isCompletedOrClosed())
 		{
 			createOrderCosts();

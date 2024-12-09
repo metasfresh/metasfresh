@@ -5,7 +5,11 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -31,7 +35,11 @@ public class C_PaySelectionLine
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+<<<<<<< HEAD
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
@@ -125,6 +133,10 @@ public class C_PaySelectionLine
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.runAfterCommit(() -> modelCacheInvalidationService.invalidate(
 						CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, paySelectionId.getRepoId()),
+<<<<<<< HEAD
 						ModelCacheInvalidationTiming.CHANGE));
+=======
+						ModelCacheInvalidationTiming.AFTER_CHANGE));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

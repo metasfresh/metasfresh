@@ -1,16 +1,27 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
 import java.util.Arrays;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Getter;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import lombok.Getter;
 import lombok.NonNull;
+=======
+import java.util.Arrays;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -59,7 +70,11 @@ public enum AcctSchemaElementType
 	UserElementString5(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString5, I_C_ValidCombination.COLUMNNAME_UserElementString5),//
 	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
 	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
+<<<<<<< HEAD
 
+=======
+	SalesOrder(X_C_AcctSchema_Element.ELEMENTTYPE_SalesOrder, I_C_ValidCombination.COLUMNNAME_C_OrderSO_ID),//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	;
 
 	/**

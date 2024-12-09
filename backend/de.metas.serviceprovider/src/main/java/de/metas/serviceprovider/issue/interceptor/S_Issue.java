@@ -99,10 +99,17 @@ public class S_Issue
 
 		final UomId uomId = UomId.ofRepoId(record.getEffort_UOM_ID());
 		
+<<<<<<< HEAD
 		final Quantity currentInvoicableEffort = Quantitys.create(record.getInvoiceableChildEffort(), uomId)
 				.add(Quantitys.create(record.getInvoiceableEffort(), uomId));
 		final Quantity oldInvoicableEffort = Quantitys.create(oldRecord.getInvoiceableChildEffort(), uomId)
 				.add(Quantitys.create(oldRecord.getInvoiceableEffort(), uomId));
+=======
+		final Quantity currentInvoicableEffort = Quantitys.of(record.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.of(record.getInvoiceableEffort(), uomId));
+		final Quantity oldInvoicableEffort = Quantitys.of(oldRecord.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.of(oldRecord.getInvoiceableEffort(), uomId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		
 		final HandleParentChangedRequest handleParentChangedRequest = HandleParentChangedRequest
 				.builder()

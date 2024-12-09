@@ -114,6 +114,10 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+<<<<<<< HEAD
+=======
+				.poReference(invoice.getPOReference())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

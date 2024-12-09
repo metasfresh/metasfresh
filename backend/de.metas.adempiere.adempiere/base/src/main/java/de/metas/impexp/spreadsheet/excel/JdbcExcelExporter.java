@@ -25,6 +25,10 @@ package de.metas.impexp.spreadsheet.excel;
 import de.metas.impexp.spreadsheet.service.DataConsumer;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.util.StringUtils;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,6 +60,10 @@ public class JdbcExcelExporter
 	private ResultSet m_resultSet;
 	private List<String> m_columnHeaders;
 	private final boolean translateHeaders;
+<<<<<<< HEAD
+=======
+	private String fileNamePrefix;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Getter
 	private File resultFile;
@@ -71,7 +79,12 @@ public class JdbcExcelExporter
 			@Nullable final File resultFile,
 			@Nullable final List<String> columnHeaders,
 			@Nullable final Boolean translateHeaders,
+<<<<<<< HEAD
 			@Nullable final Boolean applyFormatting)
+=======
+			@Nullable final Boolean applyFormatting,
+			@Nullable String fileNamePrefix)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		super(excelFormat, constants);
 		m_columnHeaders = columnHeaders;
@@ -81,6 +94,10 @@ public class JdbcExcelExporter
 		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 		this.resultFile = resultFile;
 		this.noDataAddedYet = true;
+<<<<<<< HEAD
+=======
+		this.fileNamePrefix = StringUtils.trimBlankToOptional(fileNamePrefix).orElse("Report")+"_";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		setApplyFormatting(applyFormatting != null ? applyFormatting : true);
 		if (!isApplyFormatting())
@@ -110,7 +127,11 @@ public class JdbcExcelExporter
 		}
 		else
 		{
+<<<<<<< HEAD
 			resultFile = exportToTempFile();
+=======
+			resultFile = exportToTempFile(fileNamePrefix);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

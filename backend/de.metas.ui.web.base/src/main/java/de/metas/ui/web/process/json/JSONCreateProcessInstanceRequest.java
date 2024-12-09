@@ -1,8 +1,11 @@
 package de.metas.ui.web.process.json;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,20 +14,39 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.view.json.JSONViewOrderBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+<<<<<<< HEAD
 import lombok.Data;
 import lombok.NonNull;
 
+=======
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -52,12 +74,22 @@ public class JSONCreateProcessInstanceRequest
 {
 	@JsonProperty("processId")
 	private final String processIdStr;
+<<<<<<< HEAD
 	@JsonIgnore
+=======
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ProcessId processId;
 
 	//
 	// Called from single row (header or included document)
+<<<<<<< HEAD
 	/** Document type (aka AD_Window_ID) */
+=======
+	/**
+	 * Document type (aka AD_Window_ID)
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final WindowId windowId;
@@ -74,13 +106,21 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
 	//
+<<<<<<< HEAD
 	@JsonIgnore
+=======
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient DocumentPath singleDocumentPath;
 	//
 	@JsonProperty("selectedTab")
 	private final JSONSelectedIncludedTab selectedTab;
 	//
+<<<<<<< HEAD
 	@JsonIgnore
+=======
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient List<DocumentPath> selectedIncludedDocumentPaths;
 
 	//
@@ -89,11 +129,23 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String viewIdStr;
 	//
+<<<<<<< HEAD
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> viewDocumentIdsStrings;
 	//
 	@JsonIgnore
+=======
+	@JsonProperty("viewOrderBy")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONViewOrderBy> viewOrderBy;
+	//
+	@JsonProperty("viewDocumentIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final LinkedHashSet<String> viewDocumentIdsStrings;
+	//
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient ViewRowIdsSelection viewRowIdsSelection;
 
 	//
@@ -106,7 +158,11 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> parentViewSelectedIdsStrings;
 	//
+<<<<<<< HEAD
 	@JsonIgnore
+=======
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient ViewRowIdsSelection parentViewRowIdsSelection;
 
 	//
@@ -119,7 +175,11 @@ public class JSONCreateProcessInstanceRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> childViewSelectedIdsStrings;
 	//
+<<<<<<< HEAD
 	@JsonIgnore
+=======
+	@Getter @JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient ViewRowIdsSelection childViewRowIdsSelection;
 
 	@JsonCreator
@@ -134,7 +194,12 @@ public class JSONCreateProcessInstanceRequest
 			@JsonProperty("rowId") final String rowId,
 			//
 			@JsonProperty("viewId") final String viewIdStr,
+<<<<<<< HEAD
 			@JsonProperty("viewDocumentIds") final Set<String> viewDocumentIdsStrings,
+=======
+			@JsonProperty("viewOrderBy") final List<JSONViewOrderBy> viewOrderBy,
+			@JsonProperty("viewDocumentIds") final LinkedHashSet<String> viewDocumentIdsStrings,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			//
 			@JsonProperty("parentViewId") final String parentViewIdStr,
 			@JsonProperty("parentViewSelectedIds") final Set<String> parentViewDocumentIdsStrings,
@@ -160,16 +225,28 @@ public class JSONCreateProcessInstanceRequest
 		//
 		// When called from view: current viewId and selected rowIds
 		this.viewIdStr = viewIdStr;
+<<<<<<< HEAD
 		this.viewDocumentIdsStrings = viewDocumentIdsStrings == null ? null : ImmutableSet.copyOf(viewDocumentIdsStrings);
+=======
+		this.viewDocumentIdsStrings = viewDocumentIdsStrings;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (viewIdStr != null && !viewIdStr.isEmpty())
 		{
 			final ViewId viewId = ViewId.ofViewIdString(viewIdStr, windowId);
 			final DocumentIdsSelection viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
 			viewRowIdsSelection = ViewRowIdsSelection.of(viewId, viewDocumentIds);
+<<<<<<< HEAD
+=======
+			this.viewOrderBy = viewOrderBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
 			viewRowIdsSelection = null;
+<<<<<<< HEAD
+=======
+			this.viewOrderBy = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		this.parentViewIdStr = parentViewIdStr;
@@ -201,7 +278,11 @@ public class JSONCreateProcessInstanceRequest
 				.toString();
 	}
 
+<<<<<<< HEAD
 	private static final DocumentPath createDocumentPathOrNull(final WindowId windowId, final String documentId, final String tabId, final String rowIdStr)
+=======
+	private static DocumentPath createDocumentPathOrNull(final WindowId windowId, final String documentId, final String tabId, final String rowIdStr)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (windowId != null && !Check.isEmpty(documentId))
 		{
@@ -218,6 +299,7 @@ public class JSONCreateProcessInstanceRequest
 		return null;
 	}
 
+<<<<<<< HEAD
 	public ProcessId getProcessId()
 	{
 		return processId;
@@ -249,6 +331,9 @@ public class JSONCreateProcessInstanceRequest
 	}
 
 	private static final List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
+=======
+	private static List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (windowId == null || Check.isEmpty(documentIdStr, true) || selectedTab == null)
 		{
@@ -265,6 +350,14 @@ public class JSONCreateProcessInstanceRequest
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
+=======
+	public DocumentQueryOrderByList getViewOrderBys()
+	{
+		return JSONViewOrderBy.toDocumentQueryOrderByList(viewOrderBy);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@Data
 	public static final class JSONSelectedIncludedTab

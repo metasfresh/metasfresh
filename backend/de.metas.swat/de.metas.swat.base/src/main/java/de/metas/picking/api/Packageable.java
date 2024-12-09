@@ -21,7 +21,12 @@
  */
 
 package de.metas.picking.api;
+<<<<<<< HEAD
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;

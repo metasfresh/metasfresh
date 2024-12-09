@@ -27,6 +27,12 @@ import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 
+<<<<<<< HEAD
+=======
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class M_HU_PI_StepDefData extends StepDefData<I_M_HU_PI>
 		implements StepDefDataGetIdAware<HuPackingInstructionsId, I_M_HU_PI>
 {

@@ -1,7 +1,13 @@
 @from:cucumber
 @ghActions:run_on_executor6
 Feature:product get/create/update using metasfresh api
+<<<<<<< HEAD
 
+=======
+  As a REST-API invoker
+  I want want to be able to upsert products
+  
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -17,9 +23,15 @@ Feature:product get/create/update using metasfresh api
   I want to be able to upsert products
 
     Given metasfresh contains S_ExternalReferences
+<<<<<<< HEAD
       | ExternalSystem | ExternalReference | Type     |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+=======
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -159,9 +171,15 @@ Feature:product get/create/update using metasfresh api
   I want to be able to retrieve products
 
     And metasfresh contains S_ExternalReferences
+<<<<<<< HEAD
       | ExternalSystem | ExternalReference | Type     |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+=======
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """

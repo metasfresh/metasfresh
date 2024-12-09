@@ -1,5 +1,6 @@
 de.metas.CreatedUpdatedInfoTest.createNew_updated=[
   {
+<<<<<<< HEAD
     "createdBy" : 10,
     "created" : {
       "dateTime" : {
@@ -46,5 +47,11 @@ de.metas.CreatedUpdatedInfoTest.createNew_updated=[
         "totalSeconds" : 3600
       }
     }
+=======
+    "created": "2019-03-08T13:20:42.000000002+01:00",
+    "createdBy": 10,
+    "updated": "2019-03-08T14:20:42.000000002+01:00",
+    "updatedBy": 20
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

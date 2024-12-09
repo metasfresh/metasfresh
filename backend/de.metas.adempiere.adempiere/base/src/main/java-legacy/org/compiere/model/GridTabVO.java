@@ -80,7 +80,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *  @param onlyCurrentRows if true query is limited to not processed records
 	 *  @return TabVO
 	 */
+<<<<<<< HEAD
 	static GridTabVO create(final GridWindowVO wVO, final int TabNo, final ResultSet rs, final boolean isRO, final boolean onlyCurrentRows)
+=======
+	static GridTabVO create(final GridWindowVO wVO, final int TabNo, final ResultSet rs, final boolean isRO, final boolean onlyCurrentRows) throws SQLException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		logger.debug("TabNo={}", TabNo);
 
@@ -116,14 +120,21 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * @param rs ResultSet from AD_Tab_v/t
 	 * @return true if read ok
 	 */
+<<<<<<< HEAD
 	private static boolean loadTabDetails(final GridTabVO vo, final ResultSet rs)
+=======
+	private static boolean loadTabDetails(final GridTabVO vo, final ResultSet rs) throws SQLException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		boolean showTrl = "Y".equals(Env.getContext(vo.ctx, "#ShowTrl"));
 		final boolean showAcct = true; // "Y".equals(Env.getContext(vo.ctx, Env.CTXNAME_ShowAcct));
 		final boolean showAdvanced = "Y".equals(Env.getContext(vo.ctx, "#ShowAdvanced"));
 		final boolean loadAllLanguages = vo.loadAllLanguages;
 
+<<<<<<< HEAD
 		try
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			vo.adTabId = AdTabId.ofRepoId(rs.getInt("AD_Tab_ID"));
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.adTabId.getRepoId()));
@@ -157,7 +168,11 @@ public class GridTabVO implements Evaluatee, Serializable
 				if (!showTrl)
 				{
 					vo.addLoadErrorMessage("TrlTab Not displayed (BaseTrl=" + Env.isBaseTranslation(vo.TableName) + ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx) + ")"); // metas: 01934
+<<<<<<< HEAD
 					logger.info("TrlTab Not displayed - AD_Tab_ID="
+=======
+					logger.debug("TrlTab Not displayed - AD_Tab_ID="
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							+ vo.adTabId + ", Table=" + vo.TableName
 							+ ", BaseTrl=" + Env.isBaseTranslation(vo.TableName)
 							+ ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx));
@@ -169,7 +184,11 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAdvanced && "Y".equals(rs.getString("IsAdvancedTab")))
 			{
 				vo.addLoadErrorMessage("AdvancedTab Not displayed"); // metas: 1934
+<<<<<<< HEAD
 				logger.info("AdvancedTab Not displayed - AD_Tab_ID=" + vo.adTabId);
+=======
+				logger.debug("AdvancedTab Not displayed - AD_Tab_ID={}", vo.adTabId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return false;
 			}
 
@@ -177,7 +196,11 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAcct && "Y".equals(rs.getString("IsInfoTab")))
 			{
 				vo.addLoadErrorMessage("AcctTab Not displayed"); // metas: 1934
+<<<<<<< HEAD
 				logger.debug("AcctTab Not displayed - AD_Tab_ID=" + vo.adTabId);
+=======
+				logger.debug("AcctTab Not displayed - AD_Tab_ID={}", vo.adTabId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return false;
 			}
 
@@ -281,7 +304,11 @@ public class GridTabVO implements Evaluatee, Serializable
 				//jz col=null not good for Derby
 				if (vo.WhereClause.indexOf("=null") > 0)
 				{
+<<<<<<< HEAD
 					logger.warn("Replaced '=null' with 'IS NULL' for " + vo);
+=======
+					logger.warn("Replaced '=null' with 'IS NULL' for {}", vo);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					vo.WhereClause = vo.WhereClause.replaceAll("=null", " IS NULL ");
 				}
 				// Where Clauses should be surrounded by parenthesis - teo_sarca, BF [ 1982327 ]
@@ -348,11 +375,15 @@ public class GridTabVO implements Evaluatee, Serializable
 
 			loadTabDetails_metas(vo, rs); // metas
 		}
+<<<<<<< HEAD
 		catch (SQLException ex)
 		{
 			logger.error("", ex);
 			return false;
 		}
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Apply UserDef settings - teo_sarca [ 2726889 ] Finish User Window (AD_UserDef*) functionality
 		if (!MUserDefWin.apply(vo))
 		{
@@ -369,7 +400,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.captions.loadCurrentLanguage(rs);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
 	 *
@@ -519,9 +553,17 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
+<<<<<<< HEAD
 	/** Detect default date filter	*/
 	private boolean IsAutodetectDefaultDateFilter;
 	
+=======
+	/**
+	 * Detect default date filter
+	 */
+	private boolean IsAutodetectDefaultDateFilter;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Where
 	 */
@@ -592,6 +634,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
 
+<<<<<<< HEAD
+=======
+	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public String toString()
 	{
@@ -618,6 +665,10 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setAdWindowId(getAdWindowId())
 							.setAD_Tab_ID(getAD_Tab_ID())
 							.setTemplateTabId(AdTabId.toRepoId(getTemplateTabId()))
+<<<<<<< HEAD
+=======
+							.setTabIncludeFiltersStrategy(includeFiltersStrategy)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.setApplyRolePermissions(applyRolePermissions)
@@ -907,6 +958,13 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo.MaxQueryRecords = 0;
 		}
+<<<<<<< HEAD
+=======
+
+		final boolean isIncludedTab = vo.TabLevel > 0;
+		vo.includeFiltersStrategy = TabIncludeFiltersStrategy.optionalOfNullableCode(rs.getString(I_AD_Tab.COLUMNNAME_IncludeFiltersStrategy))
+				.orElse(isIncludedTab ? TabIncludeFiltersStrategy.None : TabIncludeFiltersStrategy.Auto);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void clone_metas(final Properties ctx, final int windowNo, final GridTabVO clone)
@@ -1104,6 +1162,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsAutodetectDefaultDateFilter;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
@@ -1170,8 +1232,14 @@ public class GridTabVO implements Evaluatee, Serializable
 		return applyRolePermissions;
 	}
 
+<<<<<<< HEAD
 	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
 	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
+=======
+	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
+
+	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//
 	//

@@ -5,6 +5,11 @@ import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.salescandidate.base
@@ -48,5 +53,9 @@ public interface IOLCandWithUOMForTUsCapacityProvider
 	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Might also be {@link Quantity#isInfinite()}. Throw a user-friendly exception if the capacity can't be found.
 	 */
 	@NonNull
+<<<<<<< HEAD
 	Quantity computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
+=======
+	Optional<Quantity> computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

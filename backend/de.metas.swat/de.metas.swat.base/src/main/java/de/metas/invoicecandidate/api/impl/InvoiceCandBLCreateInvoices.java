@@ -11,6 +11,10 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+<<<<<<< HEAD
+=======
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
@@ -58,12 +62,20 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
 import org.adempiere.mm.attributes.api.AttributeConstants;
+=======
+import org.adempiere.mm.attributes.AttributeSetId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -129,7 +141,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
+<<<<<<< HEAD
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+=======
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -148,6 +164,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+<<<<<<< HEAD
+=======
+	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -339,8 +359,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
+<<<<<<< HEAD
 				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
 						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+=======
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getDocTypeInvoiceId().isPresent()
+						? invoiceHeader.getDocTypeInvoiceId().get()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
@@ -370,7 +395,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
+<<<<<<< HEAD
 				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
+=======
+				final Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
@@ -489,7 +518,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
+<<<<<<< HEAD
 			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
+=======
+
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
@@ -524,6 +558,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// NOTE: not static because we share the services
 	private class DefaultInvoiceLineGeneratorRunnable implements TrxRunnable2
 	{
+<<<<<<< HEAD
+=======
+		@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private final List<I_C_InvoiceLine> createdLines;
 		private final I_C_Invoice invoice;
 		private final List<I_C_Invoice_Candidate> errorCandidates;
@@ -799,7 +837,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
+<<<<<<< HEAD
 			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
+=======
+			asi.setM_AttributeSet_ID(AttributeSetId.NONE.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			attributesRepo.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
@@ -822,7 +864,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
+<<<<<<< HEAD
 		public boolean doCatch(final Throwable e) throws Throwable
+=======
+		public boolean doCatch(final Throwable e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (errorException[0] == null)
 			{
@@ -845,11 +891,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				errorException[0] = null;
 			}
 		}
+<<<<<<< HEAD
 
 		public List<I_C_InvoiceLine> getCreatedLines()
 		{
 			return createdLines;
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -928,6 +977,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
+<<<<<<< HEAD
+=======
+				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -1025,7 +1078,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
+<<<<<<< HEAD
 				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+=======
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				candsOfUserId.add(ic);
 			}
 
@@ -1194,7 +1251,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
+<<<<<<< HEAD
 	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+=======
+	public IInvoiceGenerator setInvoicingParams(final IInvoicingParams invoicingParams)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

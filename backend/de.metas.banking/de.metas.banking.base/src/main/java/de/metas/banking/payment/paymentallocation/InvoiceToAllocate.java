@@ -94,4 +94,12 @@ public class InvoiceToAllocate
 
 	@Nullable
 	CurrencyConversionTypeId currencyConversionTypeId;
+<<<<<<< HEAD
+=======
+	
+	public boolean grantDiscount(@NonNull final Amount amountToAllocate)
+	{
+		return openAmountConverted.subtract(discountAmountConverted).equals(amountToAllocate);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

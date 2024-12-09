@@ -17,6 +17,10 @@ import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -87,6 +91,11 @@ public class CreateDraftIssuesCommand
 	private final transient IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
+<<<<<<< HEAD
+=======
+	private final transient SourceHUsService sourceHuService = SourceHUsService.get();
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	//
 	// Parameters
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
@@ -294,6 +303,13 @@ public class CreateDraftIssuesCommand
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
+<<<<<<< HEAD
+=======
+			// Clean up source-HUs.
+			// If we don't do this, addSourceHuMarker will fail when we call ReverseDraftIssues.reverseDraftIssue
+			sourceHuService.deleteSourceHuMarker(HuId.ofRepoId(hu.getM_HU_ID()));
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return candidate;
 		}
 		catch (final RuntimeException rte)

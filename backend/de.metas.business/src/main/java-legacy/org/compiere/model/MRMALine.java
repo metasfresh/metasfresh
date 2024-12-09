@@ -22,6 +22,7 @@ package org.compiere.model;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -31,13 +32,27 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+<<<<<<< HEAD
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+=======
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * RMA Line Model
@@ -245,7 +260,11 @@ public class MRMALine extends X_M_RMALine
 				if (!taxIncluded)
 				{
 					final ITaxBL taxBL = Services.get(ITaxBL.class);
+<<<<<<< HEAD
 					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
+=======
+					taxAmt = taxBL.calculateTaxAmt(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}

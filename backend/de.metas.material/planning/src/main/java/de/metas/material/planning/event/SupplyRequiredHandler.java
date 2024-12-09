@@ -4,9 +4,13 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+=======
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -36,7 +40,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.time.ZoneId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -90,8 +97,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
+<<<<<<< HEAD
 		updateMainData(descriptor);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
 		final MaterialPlanningContext context = createContextOrNull(descriptor);
@@ -112,9 +122,13 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		}
 		else
 		{
+<<<<<<< HEAD
 			// enqueing the response only after commit;
 			// i don't know that anothing we did here creates/changes data that would be needed by the event's handler(s), but better safe than sorry
 			events.forEach(postMaterialEventService::enqueueEventAfterNextCommit);
+=======
+			events.forEach(postMaterialEventService::enqueueEventNow);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -140,6 +154,10 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.warehouseId(warehouseId)
 				.plantId(plantId)
 				.productId(productId)
+<<<<<<< HEAD
+=======
+				.includeWithNullProductId(false)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
@@ -161,6 +179,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.build();
 	}
+<<<<<<< HEAD
 
 	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
@@ -181,4 +200,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

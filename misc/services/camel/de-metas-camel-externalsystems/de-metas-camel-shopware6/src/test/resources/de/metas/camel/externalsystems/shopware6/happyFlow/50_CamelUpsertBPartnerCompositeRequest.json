@@ -11,6 +11,14 @@
             "name":"firstName lastName",
             "companyName": "company",
             "customer": true,
+<<<<<<< HEAD
+=======
+            "priceListId": 121,
+            "group":"test_group",
+            "groupSet":true,
+            "vatId": "vatId12",
+            "vatIdSet": true,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
@@ -71,7 +79,11 @@
               }
             ],
             "syncAdvise": {
+<<<<<<< HEAD
               "ifNotExists": "FAIL",
+=======
+              "ifNotExists": "CREATE",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               "ifExists": "DONT_UPDATE"
             }
           }

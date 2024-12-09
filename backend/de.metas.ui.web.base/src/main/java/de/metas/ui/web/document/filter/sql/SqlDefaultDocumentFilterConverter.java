@@ -2,14 +2,28 @@ package de.metas.ui.web.document.filter.sql;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+<<<<<<< HEAD
+=======
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+=======
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
@@ -18,6 +32,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
@@ -27,7 +46,13 @@ import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.List;
+=======
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -58,6 +83,7 @@ import java.util.List;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+<<<<<<< HEAD
 /* package */final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
 {
 	static SqlDefaultDocumentFilterConverter newInstance(final SqlEntityBinding entityBinding)
@@ -71,6 +97,18 @@ import java.util.List;
 	{
 		this.entityBinding = entityBinding;
 	}
+=======
+@RequiredArgsConstructor
+public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
+{
+	static SqlDefaultDocumentFilterConverter newInstance(final SqlEntityBinding entityBinding)
+	{
+		return new SqlDefaultDocumentFilterConverter(entityBinding, SqlViewBinding.getIncludedEntitiesDescriptors(entityBinding));
+	}
+
+	@NonNull private final SqlEntityBinding entityBinding;
+	@NonNull private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntities;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public String toString()
@@ -92,12 +130,22 @@ import java.util.List;
 	@Override
 	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
+<<<<<<< HEAD
 			@NonNull final SqlOptions sqlOpts,
+=======
+			@NonNull final SqlOptions sqlOptsParam,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final String filterId = filter.getFilterId();
 
+<<<<<<< HEAD
 		final SqlAndParams.Builder sql = SqlAndParams.builder();
+=======
+		final SqlAndParams.Builder mainTabSql = SqlAndParams.builder();
+		final HashMap<DetailId, SqlAndParams.Builder> includedTabSqlByTabId = new HashMap<>();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
 			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
@@ -107,12 +155,24 @@ import java.util.List;
 				continue;
 			}
 
+<<<<<<< HEAD
+=======
+			final DetailId includedTabId = filterParam.getFieldName() != null
+					? ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()).getTabId()
+					: null;
+			
+			final SqlOptions sqlOpts = includedTabId == null
+					? sqlOptsParam
+					: SqlOptions.usingTableAlias(includedTabId.getTableAlias());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final SqlAndParams sqlFilterParam = buildSqlWhereClause(filterId, filterParam, sqlOpts);
 			if (sqlFilterParam == null || sqlFilterParam.isEmpty())
 			{
 				continue;
 			}
 
+<<<<<<< HEAD
 			if (sql.length() > 0)
 			{
 				sql.append(filterParam.isJoinAnd() ? " AND " : " OR ");
@@ -122,6 +182,46 @@ import java.util.List;
 		}
 
 		return FilterSql.ofWhereClause(sql.build());
+=======
+			final SqlAndParams.Builder sql = includedTabId == null
+					? mainTabSql
+					: includedTabSqlByTabId.computeIfAbsent(includedTabId, (k) -> SqlAndParams.builder());
+
+			if (!sql.isEmpty())
+			{
+				sql.append(filterParam.isJoinAnd() ? " AND " : " OR ");
+			}
+			sql.append("(").append(sqlFilterParam).append(")");
+		}
+
+		//
+		//
+		for (final Map.Entry<DetailId, SqlAndParams.Builder> tabIdAndSql : includedTabSqlByTabId.entrySet())
+		{
+			final SqlAndParams.Builder includedTabSql = tabIdAndSql.getValue();
+			if (includedTabSql.isEmpty())
+			{
+				continue;
+			}
+
+			final DetailId tabId = tabIdAndSql.getKey();
+			final SqlDocumentEntityDataBindingDescriptor includedEntityBinding = getIncludedEntityBinding(tabId);
+
+			if (!mainTabSql.isEmpty())
+			{
+				mainTabSql.append("\n AND ");
+			}
+			mainTabSql.append("EXISTS (select 1 from ").append(includedEntityBinding.getTableName()).append(" ").append(tabId.getTableAlias())
+					.append(" where ")
+					.append(tabId.getTableAlias()).append(".").append(includedEntityBinding.getLinkColumnName()).append("=").append(sqlOptsParam.getTableNameOrAlias()).append(".").append(includedEntityBinding.getParentLinkColumnName())
+					.append(" AND ").append(includedTabSql)
+					.append(")");
+		}
+
+		//
+		//
+		return FilterSql.ofWhereClause(mainTabSql.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -152,11 +252,19 @@ import java.util.List;
 
 		//
 		// Labels filter
+<<<<<<< HEAD
 		final String parameterName = filterParam.getFieldName();
 		final DocumentFieldWidgetType widgetType = getParameterWidgetType(parameterName);
 		if (widgetType == DocumentFieldWidgetType.Labels)
 		{
 			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterName);
+=======
+		final ParameterNameFQ parameterNameFQ = ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName());
+		final DocumentFieldWidgetType widgetType = getParameterWidgetType(parameterNameFQ);
+		if (widgetType == DocumentFieldWidgetType.Labels)
+		{
+			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterNameFQ);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return buildSqlWhereClause_LabelsWidget(filterParam, paramDescriptor, sqlOpts);
 		}
 		//
@@ -167,6 +275,7 @@ import java.util.List;
 		}
 	}
 
+<<<<<<< HEAD
 	private SqlEntityFieldBinding getParameterBinding(final String parameterName)
 	{
 		return entityBinding.getFieldByFieldName(parameterName);
@@ -180,6 +289,49 @@ import java.util.List;
 	private DocumentFilterParamDescriptor getParameterDescriptor(final String filterId, final String parameterName)
 	{
 		return entityBinding.getFilterDescriptors().getByFilterId(filterId).getParameterByName(parameterName);
+=======
+	private SqlEntityFieldBinding getParameterBinding(final ParameterNameFQ parameterNameFQ)
+	{
+		if (parameterNameFQ.getTabId() == null)
+		{
+			return entityBinding.getFieldByFieldName(parameterNameFQ.getParameterName());
+		}
+		else
+		{
+			return getIncludedEntityBinding(parameterNameFQ.getTabId()).getFieldByFieldName(parameterNameFQ.getParameterName());
+		}
+	}
+
+	@NonNull
+	private SqlDocumentEntityDataBindingDescriptor getIncludedEntityBinding(final DetailId tabId)
+	{
+		final SqlDocumentEntityDataBindingDescriptor includedEntityBinding = includedEntities.get(tabId);
+		if (includedEntityBinding == null)
+		{
+			throw new AdempiereException("Included entity `" + tabId + "` not found");
+		}
+		return includedEntityBinding;
+	}
+
+	private DocumentFieldWidgetType getParameterWidgetType(final ParameterNameFQ parameterNameFQ)
+	{
+		return getParameterBinding(parameterNameFQ).getWidgetType();
+	}
+
+	private DocumentFilterParamDescriptor getParameterDescriptor(@NonNull final String filterId, @NonNull final ParameterNameFQ parameterNameFQ)
+	{
+		if (parameterNameFQ.getTabId() == null)
+		{
+			return entityBinding.getFilterDescriptors().getByFilterId(filterId).getParameterByName(parameterNameFQ.getParameterName());
+		}
+		else
+		{
+			return getIncludedEntityBinding(parameterNameFQ.getTabId())
+					.getFilterDescriptors()
+					.getByFilterId(parameterNameFQ.getIncludedFilterId())
+					.getParameterByName(parameterNameFQ.getParameterName());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static IQueryFilterModifier extractFieldModifier(final DocumentFieldWidgetType widgetType)
@@ -223,7 +375,11 @@ import java.util.List;
 	@Nullable
 	private SqlAndParams buildSqlWhereClause_StandardWidget(final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
+<<<<<<< HEAD
 		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
+=======
+		final SqlEntityFieldBinding paramBinding = getParameterBinding(ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
 
 		final String columnSqlString;
@@ -507,4 +663,54 @@ import java.util.List;
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public static String includedFilterParameterName(@NonNull final DetailId tabId, @NonNull final String filterId, @NonNull final String parameterName)
+	{
+		return ParameterNameFQ.of(tabId, filterId, parameterName).getAsString();
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ParameterNameFQ
+	{
+		@Nullable DetailId tabId;
+		@Nullable String includedFilterId;
+		@NonNull String parameterName;
+
+		private static final Splitter SPLITTER = Splitter.on(".");
+
+		public static ParameterNameFQ ofParameterNameFQ(@NonNull String parameterNameFQ)
+		{
+			final List<String> parts = SPLITTER.splitToList(parameterNameFQ);
+			if (parts.size() == 1)
+			{
+				return of(null, null, parameterNameFQ);
+			}
+			else if (parts.size() == 3)
+			{
+				return of(
+						DetailId.fromJson(parts.get(0)),
+						parts.get(1),
+						parts.get(2)
+				);
+			}
+			else
+			{
+				throw new AdempiereException("Invalid parameter name `" + parameterNameFQ + "`");
+			}
+		}
+
+		public String getAsString()
+		{
+			if (tabId == null)
+			{
+				return parameterName;
+			}
+			else
+			{
+				return tabId.toJson() + "." + includedFilterId + "." + parameterName;
+			}
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

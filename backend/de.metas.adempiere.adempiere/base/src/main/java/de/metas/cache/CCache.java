@@ -16,7 +16,11 @@
  *****************************************************************************/
 package de.metas.cache;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
+=======
+import com.google.common.annotations.VisibleForTesting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
@@ -27,23 +31,37 @@ import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.metas.logging.LogManager;
 import lombok.Builder;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+<<<<<<< HEAD
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
+=======
+import org.compiere.util.Trace;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+<<<<<<< HEAD
 import java.util.Objects;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -59,7 +77,10 @@ import java.util.stream.Collectors;
  *
  * @param <K> Key
  * @param <V> Value
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * @author Jorg Janke
  * @version $Id: CCache.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
@@ -68,17 +89,29 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * Creates a new LRU cache
 	 *
+<<<<<<< HEAD
 	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
 	 * @param maxSize LRU cache maximum size
+=======
+	 * @param cacheName          cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
+	 * @param maxSize            LRU cache maximum size
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param expireAfterMinutes if positive, the entries will expire after given number of minutes
 	 * @return new cache instance
 	 */
 	public static <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
+<<<<<<< HEAD
 		return CCache.<K, V> builder()
 				.cacheName(cacheName)
 				// .tableName(null) // auto-detect tableName
 				.initialCapacity(maxSize) // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
+=======
+		return CCache.<K, V>builder()
+				.cacheName(cacheName)
+				// .tableName(null) // auto-detect tableName
+				.maximumSize(maxSize)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.expireMinutes(expireAfterMinutes)
 				.cacheMapType(CacheMapType.LRU)
 				.build();
@@ -88,11 +121,19 @@ public class CCache<K, V> implements CacheInterface
 	 * Similar to {@link #newLRUCache(String, int, int)}.
 	 *
 	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
+<<<<<<< HEAD
 	 * @   
 	 */
 	public static <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
 		return CCache.<K, V> builder()
+=======
+	 * @
+	 */
+	public static <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	{
+		return CCache.<K, V>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.cacheName(cacheName)
 				// .tableName(null) // auto-detect tableName
 				.initialCapacity(initialCapacity)
@@ -115,6 +156,7 @@ public class CCache<K, V> implements CacheInterface
 		LRU,
 	}
 
+<<<<<<< HEAD
 	/**
 	 * If active, following informations will be stored:
 	 * <ul>
@@ -156,46 +198,118 @@ public class CCache<K, V> implements CacheInterface
 	private final String debugAquireStacktrace;
 
 	private final CacheAdditionListener<K, V> additionListener;
+=======
+	private static final Logger logger = LogManager.getLogger(CCache.class);
+
+	@NonNull private final CCacheConfig config;
+
+	/**
+	 * Internal map that is used as cache
+	 */
+	@NonNull private final Cache<K, V> cache;
+
+	static final AtomicLong NEXT_CACHE_ID = new AtomicLong(1);
+	/**
+	 * unique cache ID, mainly used for tracking, logging and debugging
+	 */
+	@Getter private final long cacheId;
+
+	@NonNull @Getter private final String cacheName;
+	@NonNull @Getter private final ImmutableSet<CacheLabel> labels;
+
+	public static final int EXPIREMINUTES_Never = 0;
+	/**
+	 * Just reset
+	 */
+	private boolean m_justReset = true;
+
+	/**
+	 * Can provide a collection of cache keys for a given record reference.
+	 */
+	private final Optional<CachingKeysMapper<K>> invalidationKeysMapper;
+
+	@Nullable private final String debugAcquireStacktrace;
+
+	@Nullable private final CacheAdditionListener<K, V> additionListener;
+
+	private final boolean allowDisablingCacheByThreadLocal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Metasfresh Cache - expires after 2 hours
 	 *
+<<<<<<< HEAD
 	 * @param name (table) name of the cache
+=======
+	 * @param name            (table) name of the cache
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param initialCapacity initial capacity
 	 */
 	public CCache(final String name, final int initialCapacity)
 	{
 		this(name, initialCapacity, 120);
+<<<<<<< HEAD
 	}	// CCache
+=======
+	}    // CCache
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Metasfresh Cache
 	 *
+<<<<<<< HEAD
 	 * @param name (table) name of the cache
 	 * @param initialCapacity initial capacity
 	 * @param expireMinutes expire after minutes (0=no expire)
+=======
+	 * @param name            (table) name of the cache
+	 * @param initialCapacity initial capacity
+	 * @param expireMinutes   expire after minutes (0=no expire)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public CCache(final String name, final int initialCapacity, final int expireMinutes)
 	{
 		this(name, // cache name
 				null, // auto-detect tableName
 				null, // additionalTableNamesToResetFor
+<<<<<<< HEAD
 				initialCapacity,
 				expireMinutes,
 				CacheMapType.HashMap,
 				(CachingKeysMapper<K>)null,
 				(CacheRemovalListener<K, V>)null,
 				(CacheAdditionListener<K, V>)null);
+=======
+				null, // additionalLabels
+				initialCapacity,
+				null,
+				expireMinutes,
+				null,
+				null,
+				null,
+				null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder
 	protected CCache(
+<<<<<<< HEAD
 			final String cacheName,
 			final String tableName,
 			@Singular("additionalTableNameToResetFor") final Set<String> additionalTableNamesToResetFor,
 			final Integer initialCapacity,
 			final Integer expireMinutes,
 			final CacheMapType cacheMapType,
+=======
+			@Nullable final String cacheName,
+			@Nullable final String tableName,
+			@Nullable @Singular("additionalTableNameToResetFor") final Set<String> additionalTableNamesToResetFor,
+			@Nullable @Singular("additionalLabel") final Set<CacheLabel> additionalLabels,
+			@Nullable final Integer initialCapacity,
+			@Nullable final Integer maximumSize,
+			@Nullable final Integer expireMinutes,
+			@Nullable final CacheMapType cacheMapType,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final CachingKeysMapper<K> invalidationKeysMapper,
 			@Nullable final CacheRemovalListener<K, V> removalListener,
 			@Nullable final CacheAdditionListener<K, V> additionListener)
@@ -206,12 +320,30 @@ public class CCache<K, V> implements CacheInterface
 		this.additionListener = additionListener;
 
 		final String tableNameEffective;
+<<<<<<< HEAD
+=======
+		boolean isNoCacheName = false;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cacheName == null)
 		{
 			if (tableName == null)
 			{
+<<<<<<< HEAD
 				this.cacheName = "$NoCacheName$" + cacheId;
 				tableNameEffective = "$NoTableName$" + cacheId;
+=======
+				if (additionalTableNamesToResetFor != null && additionalTableNamesToResetFor.size() == 1)
+				{
+					tableNameEffective = additionalTableNamesToResetFor.iterator().next();
+					this.cacheName = tableNameEffective;
+				}
+				else
+				{
+					this.cacheName = "$NoCacheName$" + cacheId;
+					tableNameEffective = CacheLabel.NO_TABLENAME_PREFIX + cacheId;
+					isNoCacheName = true;
+				}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
@@ -226,6 +358,7 @@ public class CCache<K, V> implements CacheInterface
 			if (tableName == null)
 			{
 				final String extractedTableName = extractTableNameForCacheName(cacheName);
+<<<<<<< HEAD
 				if (extractedTableName != null)
 				{
 					tableNameEffective = extractedTableName;
@@ -234,6 +367,9 @@ public class CCache<K, V> implements CacheInterface
 				{
 					tableNameEffective = cacheName;
 				}
+=======
+				tableNameEffective = extractedTableName != null ? extractedTableName : cacheName;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
@@ -241,6 +377,7 @@ public class CCache<K, V> implements CacheInterface
 			}
 		}
 
+<<<<<<< HEAD
 		this.labels = buildCacheLabels(tableNameEffective, additionalTableNamesToResetFor);
 
 		this.expireMinutes = expireMinutes != null ? expireMinutes : EXPIREMINUTES_Never;
@@ -261,21 +398,93 @@ public class CCache<K, V> implements CacheInterface
 			this.debugAquireStacktrace = null; // N/A
 			this.debugId = null; // N/A
 		}
+=======
+		this.labels = buildCacheLabels(tableNameEffective, additionalTableNamesToResetFor, additionalLabels);
+
+		final CCacheConfigDefaults configDefaults = CacheMgt.get().getConfigDefaults();
+		final CacheMapType cacheMapTypeEffective = cacheMapType != null ? cacheMapType : configDefaults.getCacheMapType();
+		final CCacheConfig.CCacheConfigBuilder configBuilder = CCacheConfig.builder()
+				.cacheMapType(cacheMapTypeEffective)
+				.expireMinutes(expireMinutes != null && expireMinutes >= 0 ? expireMinutes : configDefaults.getExpireMinutes());
+		if (cacheMapTypeEffective == CacheMapType.HashMap)
+		{
+			configBuilder.initialCapacity(initialCapacity != null && initialCapacity >= 0 ? initialCapacity : configDefaults.getInitialCapacity());
+		}
+		else if (cacheMapTypeEffective == CacheMapType.LRU)
+		{
+			final Integer maximumSizeEffective = maximumSize != null ? maximumSize : initialCapacity;
+			configBuilder.maximumSize(maximumSizeEffective != null && maximumSizeEffective >= 0 ? maximumSizeEffective : configDefaults.getMaximumSize());
+		}
+		else
+		{
+			throw new AdempiereException("Unknown CacheMapType: " + cacheMapTypeEffective);
+		}
+		this.config = configBuilder.build();
+
+		this.cache = newGuavaCache(this.config, removalListener);
+
+		this.debugAcquireStacktrace = configDefaults.isCaptureStacktrace() || isNoCacheName ? Trace.toOneLineStackTraceString() : null;
+
+		this.allowDisablingCacheByThreadLocal = ThreadLocalCacheController.computeAllowDisablingCache(this.cacheName, this.labels);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Register it to CacheMgt
 		CacheMgt.get().register(this);
+<<<<<<< HEAD
 	}	// CCache
 
 	/**
 	 * Extracts TableName from given <code>cacheName</code>.
 	 *
+=======
+	}
+
+	private static <K, V> Cache<K, V> newGuavaCache(
+			@NonNull final CCacheConfig config,
+			@Nullable final CacheRemovalListener<K, V> removalListener)
+	{
+		final CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder().recordStats();
+		if (config.getInitialCapacity() > 0)
+		{
+			cacheBuilder.initialCapacity(config.getInitialCapacity());
+		}
+		if (config.getMaximumSize() > 0)
+		{
+			cacheBuilder.maximumSize(config.getMaximumSize());
+		}
+		if (config.getExpireMinutes() > 0)
+		{
+			cacheBuilder.expireAfterWrite(config.getExpireMinutes(), TimeUnit.MINUTES);
+		}
+		if (removalListener != null)
+		{
+			//noinspection ResultOfMethodCallIgnored
+			cacheBuilder.removalListener(notification -> {
+				@SuppressWarnings("unchecked") final K key = (K)notification.getKey();
+				@SuppressWarnings("unchecked") final V value = (V)notification.getValue();
+				removalListener.itemRemoved(key, value);
+			});
+		}
+
+		return cacheBuilder.build();
+	}
+
+	/**
+	 * Extracts TableName from given <code>cacheName</code>.
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * NOTE: we assume cacheName has following format: TableName#by#ColumnName1#ColumnName2...
 	 *
 	 * @return tableName or null
 	 */
+<<<<<<< HEAD
 	// NOTE: public for testing
 	@Nullable
+=======
+	@Nullable
+	@VisibleForTesting
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static String extractTableNameForCacheName(final String cacheName)
 	{
 		if (cacheName == null || cacheName.isEmpty())
@@ -297,18 +506,32 @@ public class CCache<K, V> implements CacheInterface
 		return tableName;
 	}
 
+<<<<<<< HEAD
 	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, final Set<String> additionalTableNamesToResetFor)
 	{
 		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.<CacheLabel> builder();
 		builder.add(CacheLabel.ofTableName(tableName));
 
 		if (additionalTableNamesToResetFor != null)
+=======
+	@NonNull
+	private static ImmutableSet<CacheLabel> buildCacheLabels(
+			@NonNull final String tableName,
+			@Nullable final Set<String> additionalTableNamesToResetFor,
+			@Nullable final Set<CacheLabel> additionalLabels)
+	{
+		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.builder();
+		builder.add(CacheLabel.ofTableName(tableName));
+
+		if (additionalTableNamesToResetFor != null && !additionalTableNamesToResetFor.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			additionalTableNamesToResetFor.stream()
 					.map(CacheLabel::ofTableName)
 					.forEach(builder::add);
 		}
 
+<<<<<<< HEAD
 		return builder.build();
 	}
 
@@ -381,10 +604,27 @@ public class CCache<K, V> implements CacheInterface
 	 * <ul>
 	 * <li>this flag is set to <code>false</code> after any change operation (e.g. {@link #put(Object, Object)})
 	 * <li>this flag is set to <code>false</code> programatically by calling {@link #setUsed()}
+=======
+		if (additionalLabels != null && !additionalLabels.isEmpty())
+		{
+			builder.addAll(additionalLabels);
+		}
+
+		return builder.build();
+	}
+
+	/**
+	 * Cache was just reset.
+	 * <p>
+	 * NOTE:
+	 * <ul>
+	 * <li>this flag is set to <code>false</code> after any change operation (e.g. {@link #put(Object, Object)})
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * <li>this flag is set to <code>true</code> after {@link #reset()}
 	 *
 	 * @return true if it was just reset
 	 */
+<<<<<<< HEAD
 	public final boolean isReset()
 	{
 		return m_justReset;
@@ -403,6 +643,13 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * Reset Cache.
 	 *
+=======
+	public final boolean isReset() {return m_justReset;}
+
+	/**
+	 * Reset Cache.
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * It is the same as calling {@link #clear()} but this method will return how many items were cleared.
 	 *
 	 * @return number of items cleared
@@ -411,7 +658,11 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long reset()
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final long no = cache.size();
 			clear();
@@ -430,11 +681,16 @@ public class CCache<K, V> implements CacheInterface
 		cache.cleanUp();
 
 		m_justReset = true;
+<<<<<<< HEAD
 	}	// clear
+=======
+	}    // clear
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public long resetForRecordId(@NonNull final TableRecordReference recordRef)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			if (!invalidationKeysMapper.isPresent())
@@ -444,6 +700,19 @@ public class CCache<K, V> implements CacheInterface
 			}
 
 			return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+		{
+			if (invalidationKeysMapper.isPresent())
+			{
+				return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
+			}
+			else
+			{
+				// NOTE: resetting only by "key" is not supported, so we are resetting everything
+				return reset();
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -483,10 +752,16 @@ public class CCache<K, V> implements CacheInterface
 				.append(", size=").append(size)
 				.append(", id=").append(cacheId);
 
+<<<<<<< HEAD
 		if (DEBUG)
 		{
 			sb.append("\ncacheId=").append(debugId);
 			sb.append("\n").append(this.debugAquireStacktrace);
+=======
+		if (this.debugAcquireStacktrace != null)
+		{
+			sb.append("\n").append(this.debugAcquireStacktrace);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -496,7 +771,11 @@ public class CCache<K, V> implements CacheInterface
 		final String firstEntries = cache.asMap().entrySet()
 				.stream()
 				.limit(sampleSize)
+<<<<<<< HEAD
 				.map(entry -> String.valueOf(entry.getKey()) + "=" + entry.getValue())
+=======
+				.map(entry -> entry.getKey() + "=" + entry.getValue())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(Collectors.joining("\n\t"));
 		if (!firstEntries.isEmpty())
 		{
@@ -512,15 +791,26 @@ public class CCache<K, V> implements CacheInterface
 
 	public boolean containsKey(final K key)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return cache.getIfPresent(key) != null;
 		}
 	}
 
+<<<<<<< HEAD
 	public V remove(final K key)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+	@Nullable
+	public V remove(final K key)
+	{
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final V value = cache.getIfPresent(key);
 			cache.invalidate(key);
@@ -531,7 +821,11 @@ public class CCache<K, V> implements CacheInterface
 
 	public void removeAll(final Iterable<K> keys)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			cache.invalidateAll(keys);
 		}
@@ -543,7 +837,11 @@ public class CCache<K, V> implements CacheInterface
 	@Nullable
 	public V get(final K key)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final V result = cache.getIfPresent(key);
 			logger.debug("get - key={}; result={}", key, result);
@@ -553,9 +851,16 @@ public class CCache<K, V> implements CacheInterface
 
 	/**
 	 * Gets cached value by <code>key</code>.
+<<<<<<< HEAD
 	 *
 	 * For more informations, see {@link #get(Object, Callable)}.
 	 */
+=======
+	 * <p>
+	 * For more informations, see {@link #get(Object, Callable)}.
+	 */
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public V get(final K key, final Supplier<V> valueInitializer)
 	{
 		if (valueInitializer == null)
@@ -572,7 +877,11 @@ public class CCache<K, V> implements CacheInterface
 			}
 
 			@Override
+<<<<<<< HEAD
 			public V call() throws Exception
+=======
+			public V call()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return valueInitializer.get();
 			}
@@ -581,6 +890,7 @@ public class CCache<K, V> implements CacheInterface
 
 	/**
 	 * Gets cached value by <code>key</code>.
+<<<<<<< HEAD
 	 *
 	 * If value is not present in case it will try to initialize it by using <code>valueInitializer</code>.
 	 *
@@ -594,6 +904,26 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
+=======
+	 * <p>
+	 * If value is not present in case it will try to initialize it by using <code>valueInitializer</code>.
+	 * <p>
+	 * If the <code>valueInitializer</code> returns null then this method will return <code>null</code> and the value will NOT be cached.
+	 *
+	 * @param valueInitializer optional cache initializer.
+	 * @return cached value or <code>null</code>
+	 */
+	@Nullable
+	public V get(final K key, final Callable<V> valueInitializer)
+	{
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+		{
+			if (isNoCache())
+			{
+				remove(key);
+			}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (valueInitializer == null)
 			{
 				return cache.getIfPresent(key);
@@ -631,17 +961,31 @@ public class CCache<K, V> implements CacheInterface
 	 * @see #get(Object, Callable).
 	 * @see #get(Object, Supplier)
 	 */
+<<<<<<< HEAD
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+	@Nullable
+	public V getOrLoad(final K key, final Callable<V> valueLoader)
+	{
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return get(key, valueLoader);
 		}
 	}
 
+<<<<<<< HEAD
 	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+	@Nullable
+	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
+	{
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final Callable<V> callable = () -> valueLoader.apply(key);
 			return get(key, callable);
@@ -650,6 +994,7 @@ public class CCache<K, V> implements CacheInterface
 
 	/**
 	 * Gets all values which are identified by given keys.
+<<<<<<< HEAD
 	 *
 	 * For those keys which were not found in cache, the <code>valuesLoader</code> will be called <b>one time</b> with all missing keys.
 	 * The expected return of <code>valuesLoader</code> is a key/value map of all those values loaded.
@@ -658,11 +1003,23 @@ public class CCache<K, V> implements CacheInterface
 	 *
 	 * @param keys
 	 * @param valuesLoader
+=======
+	 * <p>
+	 * For those keys which were not found in cache, the <code>valuesLoader</code> will be called <b>one time</b> with all missing keys.
+	 * The expected return of <code>valuesLoader</code> is a key/value map of all those values loaded.
+	 * <p>
+	 * The values which were just loaded will be also added to cache.
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return values (IMPORTANT: order is not guaranteed)
 	 */
 	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Set<K>, Map<K, V>> valuesLoader)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (keys.isEmpty())
 			{
@@ -670,6 +1027,14 @@ public class CCache<K, V> implements CacheInterface
 				return ImmutableList.of();
 			}
 
+<<<<<<< HEAD
+=======
+			if (isNoCache())
+			{
+				removeAll(keys);
+			}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			//
 			// Fetch from cache what's available
 			final List<V> values = new ArrayList<>(keys.size());
@@ -693,7 +1058,11 @@ public class CCache<K, V> implements CacheInterface
 			// Load the missing keys if any
 			if (keysToLoad.isEmpty())
 			{
+<<<<<<< HEAD
 				logger.debug("getAllOrLoad - all keys had cached values; nothing to load", keysToLoad);
+=======
+				logger.debug("getAllOrLoad - all keys had cached values; nothing to load");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
@@ -718,6 +1087,7 @@ public class CCache<K, V> implements CacheInterface
 
 	/**
 	 * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
+<<<<<<< HEAD
 	 *
 	 * @param key
 	 * @param exceptionSupplier
@@ -727,6 +1097,13 @@ public class CCache<K, V> implements CacheInterface
 	public <E extends Throwable> V getOrElseThrow(final K key, final Supplier<E> exceptionSupplier) throws E
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+	 */
+	@NonNull
+	public <E extends Throwable> V getOrElseThrow(final K key, final Supplier<E> exceptionSupplier) throws E
+	{
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final V value = get(key);
 			if (value == null)
@@ -739,7 +1116,11 @@ public class CCache<K, V> implements CacheInterface
 
 	public void put(final K key, final V value)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_justReset = false;
 			if (value == null)
@@ -770,7 +1151,11 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public void putAll(final Map<? extends K, ? extends V> map)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			cache.putAll(map);
 
@@ -787,7 +1172,11 @@ public class CCache<K, V> implements CacheInterface
 	public boolean isEmpty()
 	{
 		return cache.size() == 0;
+<<<<<<< HEAD
 	}	// isEmpty
+=======
+	}    // isEmpty
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @see java.util.Map#keySet()
@@ -795,7 +1184,11 @@ public class CCache<K, V> implements CacheInterface
 	public Set<K> keySet()
 	{
 		return cache.asMap().keySet();
+<<<<<<< HEAD
 	}	// keySet
+=======
+	}    // keySet
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @see java.util.Map#size()
@@ -804,7 +1197,11 @@ public class CCache<K, V> implements CacheInterface
 	public long size()
 	{
 		return cache.size();
+<<<<<<< HEAD
 	}	// size
+=======
+	}    // size
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @see java.util.Map#values()
@@ -812,12 +1209,17 @@ public class CCache<K, V> implements CacheInterface
 	public Collection<V> values()
 	{
 		return cache.asMap().values();
+<<<<<<< HEAD
 	}	// values
+=======
+	}    // values
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	protected final void finalize() throws Throwable
 	{
 		// NOTE: to avoid memory leaks we need to programatically clear our internal state
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			logger.debug("Running finalize");
@@ -906,3 +1308,33 @@ public class CCache<K, V> implements CacheInterface
 		}
 	}
 }	// CCache
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
+		{
+			logger.debug("Running finalize");
+			cache.invalidateAll();
+		}
+	}
+
+	public CCacheStats stats()
+	{
+		final CacheStats guavaStats = cache.stats();
+		return CCacheStats.builder()
+				.cacheId(cacheId)
+				.name(cacheName)
+				.labels(labels)
+				.config(config)
+				.debugAcquireStacktrace(debugAcquireStacktrace)
+				//
+				.size(cache.size())
+				.hitCount(guavaStats.hitCount())
+				.missCount(guavaStats.missCount())
+				.build();
+	}
+
+	private boolean isNoCache()
+	{
+		return allowDisablingCacheByThreadLocal && ThreadLocalCacheController.instance.isNoCache();
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

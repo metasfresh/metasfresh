@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -12,15 +13,36 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+=======
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
+<<<<<<< HEAD
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -103,7 +125,13 @@ public class DerKurierDeliveryOrderEmailer
 		{
 			return;
 		}
+<<<<<<< HEAD
 		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxOrNull();
+=======
+		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxId()
+				.map(mailService::getMailboxById)
+				.orElseThrow(() -> new AdempiereException("No mailbox defined: " + shipperConfig));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sendAttachmentAsEmail(deliveryOrderMailBox, emailAddress, attachmentEntry);
 	}
@@ -120,6 +148,7 @@ public class DerKurierDeliveryOrderEmailer
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 		final String message = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage, new Object[] { csvDataString });
 
+<<<<<<< HEAD
 		final EMail eMail = mailService.createEMail(
 				mailBox,
 				mailTo,
@@ -129,6 +158,15 @@ public class DerKurierDeliveryOrderEmailer
 		);
 
 		mailService.send(eMail);
+=======
+		mailService.sendEMail(EMailRequest.builder()
+				.mailbox(mailBox)
+				.to(mailTo)
+				.subject(subject)
+				.message(message)
+				.html(false)
+				.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// we don't have an AD_Archive..
 		// final I_AD_User user = loadOutOfTrx(Env.getAD_User_ID(), I_AD_User.class);

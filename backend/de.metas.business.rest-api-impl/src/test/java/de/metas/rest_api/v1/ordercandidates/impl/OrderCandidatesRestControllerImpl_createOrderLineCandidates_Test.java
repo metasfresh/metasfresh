@@ -1,7 +1,17 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+<<<<<<< HEAD
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,6 +42,10 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -41,8 +55,13 @@ import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
+<<<<<<< HEAD
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+=======
+import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
@@ -76,6 +95,10 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -87,8 +110,11 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -115,12 +141,19 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static de.metas.rest_api.v1.ordercandidates.impl.TestMasterdata.RESOURCE_PATH;
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
@@ -145,6 +178,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  * #L%
  */
 
+<<<<<<< HEAD
 @ExtendWith(AdempiereTestWatcher.class)
 public class
 OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
@@ -152,6 +186,14 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
 					.atTime(LocalTime.parse("23:07:16.193"))
 					.atZone(ZoneId.of("Europe/Berlin"));
+=======
+@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
+public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
+{
+	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
+			.atTime(LocalTime.parse("23:07:16.193"))
+			.atZone(ZoneId.of("Europe/Berlin"));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
@@ -174,6 +216,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private OLCandBL olCandBL;
 
+<<<<<<< HEAD
 	@BeforeAll
 	public static void initStatic()
 	{
@@ -185,11 +228,18 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	{
 		validateSnapshots();
 	}
+=======
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+<<<<<<< HEAD
+=======
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
@@ -199,6 +249,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 
+<<<<<<< HEAD
+=======
+		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
@@ -234,11 +289,17 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			testMasterdata.createSalesRep("SalesRep");
 
+<<<<<<< HEAD
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_StandardOrder));
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+=======
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder));
+
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}
@@ -267,7 +328,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
+<<<<<<< HEAD
 				new NoopPerformanceMonitoringService());
+=======
+				NoopPerformanceMonitoringService.INSTANCE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
@@ -283,11 +348,19 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				olCandBL,
 				new DummyOLCandWithUOMForTUsCapacityProvider());
 
+<<<<<<< HEAD
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+=======
+		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.of(ImmutableList.of(defaultOLCandValidator)));
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
@@ -305,9 +378,15 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@NonNull
 		@Override
+<<<<<<< HEAD
 		public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
 			return Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID()));
+=======
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+		{
+			return Optional.of(Quantitys.zero(ProductId.ofRepoId(olCand.getM_Product_ID())));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -358,7 +437,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final X12DE355 x12DE355 = uomDAO.getX12DE355ById(UomId.ofRepoId(productRecord.getC_UOM_ID()));
 			assertThat(x12DE355.getCode()).isEqualTo(request.getProduct().getUomCode());
 		}
+<<<<<<< HEAD
 		expect(olCands).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -625,7 +708,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
 
+<<<<<<< HEAD
 		expect(olCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_C_OLCand olCandRecord = load(olCand.getId(), I_C_OLCand.class);
 		assertThat(olCandRecord.getM_PricingSystem_ID()).isEqualByComparingTo(pricingSystemId.getRepoId());
@@ -710,7 +797,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 
+<<<<<<< HEAD
 		expect(olCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -810,7 +901,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 
+<<<<<<< HEAD
 		expect(olCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -928,7 +1023,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 
+<<<<<<< HEAD
 		expect(olCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -1054,7 +1153,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerLocationId.getBpartnerId().getRepoId(), expectedDropShipLocationId.getRepoId()));
 
+<<<<<<< HEAD
 		expect(olCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -1070,7 +1173,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
+<<<<<<< HEAD
 		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+=======
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final JsonOLCandCreateRequest request = JsonOLCandUtil.loadJsonOLCandCreateRequest(RESOURCE_PATH + "OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
@@ -1079,7 +1186,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+<<<<<<< HEAD
 		expect(jsonOLCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
@@ -1102,7 +1213,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
+<<<<<<< HEAD
 		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+=======
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
 				.orgId(defaultOrgId)
@@ -1152,7 +1267,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+<<<<<<< HEAD
 		expect(jsonOLCand).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)

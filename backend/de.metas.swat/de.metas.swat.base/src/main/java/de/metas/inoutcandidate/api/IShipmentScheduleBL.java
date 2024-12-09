@@ -53,8 +53,11 @@ import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
+<<<<<<< HEAD
 	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Please use this method to avoid unneeded work packages.
 	 *
@@ -87,7 +90,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
 	 */
+<<<<<<< HEAD
 	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
+=======
+	boolean isSchedAllowsConsolidate(@NonNull I_M_ShipmentSchedule sched);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.
@@ -99,7 +106,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Task 08255
 	 *
 	 */
@@ -107,7 +118,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Close the given Shipment Schedule.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
@@ -158,7 +173,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
+<<<<<<< HEAD
 	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+=======
+	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule schedule);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 

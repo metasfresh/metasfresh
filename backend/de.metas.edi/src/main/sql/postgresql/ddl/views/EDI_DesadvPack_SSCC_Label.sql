@@ -10,7 +10,11 @@ SELECT 1                                 AS no_of_labels,
        agg_pack.ipa_sscc18               AS sscc,
        dh.poreference                    AS order_reference,
        dh.movementdate                   AS date_shipped,
+<<<<<<< HEAD
        agg_pack.gtin,
+=======
+       agg_pack.GTIN_CU,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
        agg_pack.product_description      AS product_description,
        agg_pack.amount                   AS amount,
        agg_pack.amount_lu                AS amount_lu,
@@ -40,7 +44,11 @@ FROM (select dl_pack.edi_desadv_pack_id                       as pack_id,
              dl_pack.ipa_sscc18,
              dl_pack.edi_desadv_id,
              dl.m_product_id                                  as m_product_id,
+<<<<<<< HEAD
              dl.gtin                                          as gtin,
+=======
+             dl.GTIN_CU                                       AS GTIN_CU,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
              dl.productdescription                            AS product_description,
              t_sel.ad_pinstance_id                            AS p_instance_id,
              (SELECT count(1) AS count
@@ -58,7 +66,11 @@ FROM (select dl_pack.edi_desadv_pack_id                       as pack_id,
                JOIN edi_desadv_pack dl_pack ON t_sel.t_selection_id = dl_pack.edi_desadv_pack_id
                JOIN edi_desadv_pack_item dl_pack_item ON dl_pack.edi_desadv_pack_id = dl_pack_item.edi_desadv_pack_id
                JOIN edi_desadvline dl ON dl_pack_item.edi_desadvline_id = dl.edi_desadvline_id
+<<<<<<< HEAD
       group by dl_pack.edi_desadv_pack_id, dl.gtin, dl.productdescription, t_sel.ad_pinstance_id, dl.m_product_id) agg_pack
+=======
+      group by dl_pack.edi_desadv_pack_id, dl.GTIN_CU, dl.productdescription, t_sel.ad_pinstance_id, dl.m_product_id) agg_pack
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
          inner JOIN edi_desadv dh ON dh.edi_desadv_id = agg_pack.edi_desadv_id
          LEFT JOIN c_bpartner_location bp_address ON dh.c_bpartner_location_id = bp_address.c_bpartner_location_id
          LEFT JOIN c_bpartner bp ON bp.c_bpartner_id = bp_address.c_bpartner_id
@@ -68,7 +80,10 @@ FROM (select dl_pack.edi_desadv_pack_id                       as pack_id,
          LEFT JOIN c_bpartner ho ON ho.c_bpartner_id = ho_address.c_bpartner_id
          LEFT JOIN c_location ho_address_location ON ho_address.c_location_id = ho_address_location.c_location_id
          LEFT JOIN m_product p ON p.m_product_id = agg_pack.m_product_id;
+<<<<<<< HEAD
 
 alter table edi_desadvpack_sscc_label
     owner to postgres;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

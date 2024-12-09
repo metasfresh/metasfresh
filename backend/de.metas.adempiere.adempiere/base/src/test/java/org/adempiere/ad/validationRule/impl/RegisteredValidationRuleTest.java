@@ -1,10 +1,17 @@
 package org.adempiere.ad.validationRule.impl;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Services;
+import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
+import org.adempiere.ad.validationRule.AdValRuleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -21,9 +28,15 @@ import org.compiere.util.ValueNamePair;
 import org.junit.Before;
 import org.junit.Test;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Services;
+=======
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -81,7 +94,11 @@ public class RegisteredValidationRuleTest
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(tableNameForValRule, ValRuleTest.instance);
 
+<<<<<<< HEAD
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableNameForValRule, 0, tableNameForValRule, columnNameForRegisteredValRule);
+=======
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableNameForValRule, null, tableNameForValRule, columnNameForRegisteredValRule);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		assertThat(validationRule.getAllParameters()).containsOnly(param1, param2);
 	}
@@ -101,7 +118,11 @@ public class RegisteredValidationRuleTest
 
 		InterfaceWrapperHelper.save(columnForValRule);
 
+<<<<<<< HEAD
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableNameForValRule, 0, tableNameForValRule, columnNameForRegisteredValRule);
+=======
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableNameForValRule, null, tableNameForValRule, columnNameForRegisteredValRule);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		assertThat(validationRule).isInstanceOf(NullValidationRule.class);
 		assertThat(validationRule.getExceptionTableAndColumns()).isEmpty();
@@ -137,7 +158,11 @@ public class RegisteredValidationRuleTest
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
 		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
+<<<<<<< HEAD
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), 0, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+=======
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), null, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// If a validation rule has no registered rules it is considered NullValidationRule
 		assertThat(validationRule).isInstanceOf(NullValidationRule.class);
@@ -178,7 +203,11 @@ public class RegisteredValidationRuleTest
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
 		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
+<<<<<<< HEAD
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), databaseValRule.getAD_Val_Rule_ID(), M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+=======
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), AdValRuleId.ofRepoId(databaseValRule.getAD_Val_Rule_ID()), M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// If a validation rule has no registered rules it is considered NullValidationRule
 		assertThat(validationRule).isInstanceOf(SQLValidationRule.class);
@@ -214,7 +243,11 @@ public class RegisteredValidationRuleTest
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
 		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
+<<<<<<< HEAD
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), 0, M_InOut.getTableName(), inout_M_Warehouse_ID.getColumnName());
+=======
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), null, M_InOut.getTableName(), inout_M_Warehouse_ID.getColumnName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ValueNamePair tableAndColumnException = ValueNamePair.of(M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
@@ -239,7 +272,11 @@ public class RegisteredValidationRuleTest
 		}
 
 		@Override
+<<<<<<< HEAD
 		public boolean accept(IValidationContext evalCtx, NamePair item)
+=======
+		public boolean accept(final IValidationContext evalCtx, final NamePair item)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return false; // always reject
 		}
@@ -284,6 +321,10 @@ public class RegisteredValidationRuleTest
 	{
 		final I_AD_Val_Rule registeredValRule = InterfaceWrapperHelper.newInstance(I_AD_Val_Rule.class);
 		registeredValRule.setCode(validationCode);
+<<<<<<< HEAD
+=======
+		registeredValRule.setName(validationCode); // name is mandatory
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		registeredValRule.setType(X_AD_Val_Rule.TYPE_SQL);
 		InterfaceWrapperHelper.save(registeredValRule);
 

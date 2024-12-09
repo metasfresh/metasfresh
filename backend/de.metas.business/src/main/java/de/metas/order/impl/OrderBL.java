@@ -37,10 +37,21 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
+=======
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
@@ -51,6 +62,10 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.money.CurrencyConversionTypeId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -59,6 +74,10 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -91,6 +110,10 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
@@ -107,6 +130,10 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPCostCollectorId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -120,6 +147,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -146,6 +177,10 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+<<<<<<< HEAD
+=======
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -154,6 +189,27 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
+
+	@Override
+	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull final Set<OrderAndLineId> orderAndLineIds)
+	{
+		return orderDAO.getOrderLinesByIds(orderAndLineIds);
+	}
+
+	@Override
+	public I_C_OrderLine getLineById(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return orderDAO.getOrderLineById(orderAndLineId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystemAndDontThrowExIfNotFound)
 	{
 		final int previousPricingSystemId = order.getM_PricingSystem_ID();
@@ -376,7 +432,11 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+<<<<<<< HEAD
 				.docSubType(poDocSubType)
+=======
+				.docSubType(DocSubType.ofCode(poDocSubType))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
@@ -405,7 +465,11 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+<<<<<<< HEAD
 				.docSubType(soDocSubType)
+=======
+				.docSubType(DocSubType.ofCode(soDocSubType))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
@@ -447,10 +511,13 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
+<<<<<<< HEAD
 		if (docType == null)
 		{
 			return;
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (!docType.isCopyDescriptionToDocument())
 		{
@@ -785,6 +852,7 @@ public class OrderBL implements IOrderBL
 	public void closeLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
+<<<<<<< HEAD
 
 		if (orderLine.getQtyDelivered().compareTo(orderLine.getQtyOrdered()) >= 0) // they delivered at least the ordered qty => nothing to do
 		{
@@ -793,6 +861,10 @@ public class OrderBL implements IOrderBL
 
 		orderLine.setQtyOrdered(orderLine.getQtyDelivered());
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
+=======
+		orderLine.setIsDeliveryClosed(true);
+		InterfaceWrapperHelper.save(orderLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_C_Order order = orderLine.getC_Order();
 		reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
@@ -808,6 +880,10 @@ public class OrderBL implements IOrderBL
 		//
 		// Set QtyOrdered
 		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
+<<<<<<< HEAD
+=======
+		orderLine.setIsDeliveryClosed(false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//
@@ -1044,21 +1120,36 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		return docTypeId != null
 				? docTypeBL.getById(docTypeId)
 				: null;
+=======
+	@Nullable
+	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
+	{
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
 	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
 	{
+<<<<<<< HEAD
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		return docTypeId != null
 				? docTypeBL.getById(docTypeId)
 				: null;
+=======
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -1225,6 +1316,15 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public DocStatus getDocStatus(@NonNull final OrderId orderId)
+	{
+		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Map<OrderId, String> getDocumentNosByIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return getByIds(orderIds).stream()
@@ -1232,6 +1332,15 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getPPCostCollectorId(orderLineId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setWeightFromLines(@NonNull final I_C_Order order)
 	{
 		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -1269,4 +1378,44 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.getByIds(orderIds);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void save(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		orderDAO.save(orderLine);
+	}
+
+	@Override
+	public I_C_OrderLine createOrderLine(final I_C_Order order)
+	{
+		return orderLineBL.createOrderLine(order);
+	}
+
+	@Override
+	public void setProductId(
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final ProductId productId,
+			final boolean setUOM)
+	{
+		orderLineBL.setProductId(orderLine, productId, setUOM);
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionContext(final I_C_Order order)
+	{
+		return currencyBL.createCurrencyConversionContext(
+				order.getDateOrdered().toInstant(),
+				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
+	}
+
+	@Override
+	public void deleteLineById(final OrderAndLineId orderAndLineId)
+	{
+		orderDAO.deleteByLineId(orderAndLineId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

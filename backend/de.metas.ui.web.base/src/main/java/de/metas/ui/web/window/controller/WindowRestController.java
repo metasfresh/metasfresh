@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.window.controller;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -32,6 +33,23 @@ import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
+=======
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.document.NewRecordContext;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.logging.LogManager;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.debug.DebugRestController;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
@@ -60,6 +78,10 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -67,8 +89,15 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+=======
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -77,18 +106,36 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+<<<<<<< HEAD
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
+=======
+import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+=======
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,6 +149,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.ArrayList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -119,7 +170,13 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
+<<<<<<< HEAD
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+=======
+	@NonNull private static final Logger logger = LogManager.getLogger(DebugRestController.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final UserSession userSession;
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
@@ -129,6 +186,10 @@ public class WindowRestController
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+<<<<<<< HEAD
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
@@ -139,7 +200,12 @@ public class WindowRestController
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
 			@NonNull final CommentsService commentsService,
+<<<<<<< HEAD
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+=======
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository,
+			@NonNull final ADReferenceService adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
@@ -150,6 +216,10 @@ public class WindowRestController
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
+<<<<<<< HEAD
+=======
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -228,7 +298,11 @@ public class WindowRestController
 				.showOnlyFieldsListStr(fieldsListStr)
 				.showAdvancedFields(advanced)
 				.build();
+<<<<<<< HEAD
 		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
+=======
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
@@ -263,6 +337,7 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
+<<<<<<< HEAD
 		final List<JSONDocument> rows = getData(documentPath, orderBys, jsonOpts);
 
 		final Set<DocumentId> missingRowIds;
@@ -284,6 +359,10 @@ public class WindowRestController
 				.missingIds(missingRowIds)
 				.build();
 
+=======
+		return getData(documentPath, orderBys, jsonOpts)
+				.withMissingIdsUpdatedFromExpectedRowIds(onlyRowIds);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -314,10 +393,17 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
+<<<<<<< HEAD
 		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
 	private List<JSONDocument> getData(
+=======
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
+	}
+
+	private JSONDocumentList getData(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final DocumentPath documentPath,
 			@Nullable final DocumentQueryOrderByList orderBys,
 			@NonNull final JSONDocumentOptions jsonOpts)
@@ -325,6 +411,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
+<<<<<<< HEAD
 			final List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -333,11 +420,22 @@ public class WindowRestController
 			else if (documentPath.isAnyIncludedDocument())
 			{
 				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys).toList();
+=======
+			final OrderedDocumentsList documents;
+			if (documentPath.isRootDocument())
+			{
+				documents = OrderedDocumentsList.of(rootDocument);
+			}
+			else if (documentPath.isAnyIncludedDocument())
+			{
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
 				// IMPORTANT: in case the document was not found, don't fail but return empty.
 				final Document document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()).orElse(null);
+<<<<<<< HEAD
 				documents = document != null
 						? ImmutableList.of(document)
 						: ImmutableList.of();
@@ -349,6 +447,17 @@ public class WindowRestController
 
 			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
 			return JSONDocument.ofDocumentsList(documents, jsonOpts, hasComments);
+=======
+				documents = OrderedDocumentsList.ofNullable(document);
+			}
+			else
+			{
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds());
+			}
+
+			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
+			return JSONDocumentList.ofDocumentsList(documents, jsonOpts, hasComments);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		});
 	}
 
@@ -778,19 +887,32 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
+<<<<<<< HEAD
 																  .getLookupDescriptor()
 																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
 																		  .setParameter("field", field)));
+=======
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
+<<<<<<< HEAD
 				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
 				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
 				final TableRefInfo tableRefInfo = labelsValueReferenceId != null
 						? lookupDAO.retrieveTableRefInfo(labelsValueReferenceId.getRepoId())
 						: lookupDAO.retrieveTableDirectRefInfo(labelsValueColumnName);
+=======
+				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
+				final ADRefTable tableRefInfo = labelsValueReferenceId != null
+						? adReferenceService.retrieveTableRefInfo(labelsValueReferenceId)
+						: adReferenceService.getTableDirectRefInfo(labelsValueColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
@@ -963,7 +1085,11 @@ public class WindowRestController
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document,
+<<<<<<< HEAD
 											  newRecordContext);
+=======
+							newRecordContext);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}));
 	}
 
@@ -1060,4 +1186,77 @@ public class WindowRestController
 		json.setPath(JSONDocumentPath.ofWindowDocumentPath(documentPath));
 		return json;
 	}
+<<<<<<< HEAD
+=======
+
+	@GetMapping("/health")
+	public JsonWindowsHealthResponse healthCheck(
+			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
+	)
+	{
+		final DocumentDescriptorFactory documentDescriptorFactory = documentCollection.getDocumentDescriptorFactory();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
+				AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
+				AdWindowId.ofRepoId(540674), // Shipment Schedule Editor - placeholder window
+				AdWindowId.ofRepoId(540759), // Payment Allocation - placeholder window
+				AdWindowId.ofRepoId(540485) // Picking Terminal (v2) - placeholder window
+		);
+
+		final ImmutableSet<AdWindowId> onlyAdWindowIds = RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class);
+		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
+		final ImmutableSet<AdWindowId> adWindowIds = !onlyAdWindowIds.isEmpty() ? onlyAdWindowIds : allAdWidowIds;
+
+		final ArrayList<JsonWindowsHealthResponse.Entry> errors = new ArrayList<>();
+		final int countTotal = adWindowIds.size();
+		int countCurrent = 0;
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		for (final AdWindowId adWindowId : adWindowIds)
+		{
+			countCurrent++;
+
+			if (skipAdWindowIds.contains(adWindowId))
+			{
+				continue;
+			}
+
+			final WindowId windowId = WindowId.of(adWindowId);
+			try
+			{
+				if (!allAdWidowIds.contains(adWindowId))
+				{
+					throw new AdempiereException("Not an existing/active window");
+				}
+
+				documentDescriptorFactory.invalidateForWindow(windowId);
+				final DocumentDescriptor documentDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
+				documentDescriptorFactory.invalidateForWindow(windowId);
+
+				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
+			}
+			catch (final Exception ex)
+			{
+				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
+
+				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
+				errors.add(JsonWindowsHealthResponse.Entry.builder()
+						.windowId(windowId)
+						.windowName(windowName)
+						.error(JsonErrors.ofThrowable(cause, adLanguage))
+						.build());
+			}
+		}
+
+		stopwatch.stop();
+
+		return JsonWindowsHealthResponse.builder()
+				.took(stopwatch.toString())
+				.countTotal(countTotal)
+				.errors(errors)
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -30,6 +30,10 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public class ElementValueId implements RepoIdAware
@@ -61,8 +65,17 @@ public class ElementValueId implements RepoIdAware
 		return repoId;
 	}
 
+<<<<<<< HEAD
 	public static int toRepoId(final ElementValueId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+=======
+	public static int toRepoId(@Nullable final ElementValueId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(@Nullable final ElementValueId id1, @Nullable final ElementValueId id2) {return Objects.equals(id1, id2);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

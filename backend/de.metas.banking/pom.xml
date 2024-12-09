@@ -16,6 +16,11 @@
 	<modules>
 		<module>de.metas.banking.base</module>
 		<module>de.metas.banking.swingui</module>
+<<<<<<< HEAD
 	</modules>
+=======
+        <module>de.metas.banking.camt53</module>
+    </modules>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 </project>

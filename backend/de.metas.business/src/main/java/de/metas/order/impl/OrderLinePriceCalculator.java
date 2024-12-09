@@ -1,9 +1,13 @@
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+=======
+import de.metas.bpartner.service.IBPartnerBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -121,7 +125,11 @@ final class OrderLinePriceCalculator
 		{
 			return;
 		}
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext();
@@ -129,6 +137,10 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+<<<<<<< HEAD
+=======
+					.appendParametersToMessage()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
@@ -188,7 +200,11 @@ final class OrderLinePriceCalculator
 			}
 			else
 			{
+<<<<<<< HEAD
 				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
+=======
+				orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 

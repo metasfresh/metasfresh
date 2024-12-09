@@ -7,6 +7,10 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -26,7 +30,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -39,7 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+<<<<<<< HEAD
 import java.util.Set;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -172,7 +182,11 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
 		// Std Period open?
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
@@ -215,8 +229,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(Env.getCtx(), minDate, X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;
@@ -239,6 +258,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final HashSet<PaymentId> consideredPaymentIds = extractCurrentPaymentIds(lines);
 		for (final I_C_BankStatementLine line : lines)
 		{
+<<<<<<< HEAD
 			//
 			// Cash/bank transfer
 			if (line.getC_BP_BankAccountTo_ID() > 0)
@@ -265,6 +285,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				}
 			}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
 
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
@@ -388,14 +410,22 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		else
 		{
+<<<<<<< HEAD
 			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+=======
+			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			services.deleteFactsForBankStatement(bankStatement);
 		}
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 
+<<<<<<< HEAD
 		services.unlinkPaymentsAndDeleteReferences(lines);
+=======
+		services.unreconcile(lines);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Set lines to 0
@@ -412,6 +442,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				line.setChargeAmt(BigDecimal.ZERO);
 				line.setInterestAmt(BigDecimal.ZERO);
 
+<<<<<<< HEAD
 				//
 				// Cash/bank transfer
 				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
@@ -425,6 +456,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 					}
 				}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				services.save(line);
 			}
 		}

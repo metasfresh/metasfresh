@@ -95,5 +95,9 @@ public interface IInvoiceLineBL extends ISingletonService
 
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 
+<<<<<<< HEAD
 	Quantity getQtyInvoicedStockUOM(I_C_InvoiceLine invoiceLine);
+=======
+	Quantity getQtyInvoicedStockUOM(org.compiere.model.I_C_InvoiceLine invoiceLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

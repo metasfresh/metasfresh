@@ -1,9 +1,14 @@
 package de.metas.banking.api;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountAcct;
+=======
+import de.metas.banking.Bank;
+import de.metas.banking.BankAccount;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.currency.CurrencyCode;
@@ -13,6 +18,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,16 +50,25 @@ public class BankAccountService
 {
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final BankRepository bankRepo;
+<<<<<<< HEAD
 	private final BankAccountAcctRepository bankAccountAcctRepo;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final CurrencyRepository currencyRepo;
 
 	public BankAccountService(
 			@NonNull final BankRepository bankRepo,
+<<<<<<< HEAD
 			@NonNull final BankAccountAcctRepository bankAccountAcctRepo,
 			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.bankRepo = bankRepo;
 		this.bankAccountAcctRepo = bankAccountAcctRepo;
+=======
+			@NonNull final CurrencyRepository currencyRepo)
+	{
+		this.bankRepo = bankRepo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.currencyRepo = currencyRepo;
 	}
 
@@ -57,7 +76,10 @@ public class BankAccountService
 	{
 		return new BankAccountService(
 				new BankRepository(),
+<<<<<<< HEAD
 				new BankAccountAcctRepository(),
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new CurrencyRepository());
 	}
 
@@ -72,6 +94,7 @@ public class BankAccountService
 		return bankAccountDAO.getById(bankAccountId);
 	}
 
+<<<<<<< HEAD
 	public BankAccountAcct getBankAccountAcct(
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final AcctSchemaId acctSchemaId)
@@ -79,6 +102,8 @@ public class BankAccountService
 		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String createBankAccountName(@NonNull final BankAccountId bankAccountId)
 	{
 		final BankAccount bankAccount = getById(bankAccountId);
@@ -100,4 +125,33 @@ public class BankAccountService
 
 		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
 	}
+<<<<<<< HEAD
+=======
+
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
+		return bankRepo.isImportAsSingleSummaryLine(bankId);
+	}
+
+	@NonNull
+	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
+	{
+		return bankRepo.getBankIdBySwiftCode(swiftCode);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountId(
+			@NonNull final BankId bankId,
+			@NonNull final String accountNo)
+	{
+		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

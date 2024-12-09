@@ -1,15 +1,24 @@
 package de.metas.ui.web.view;
 
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

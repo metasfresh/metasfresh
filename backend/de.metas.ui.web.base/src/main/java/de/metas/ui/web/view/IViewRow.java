@@ -71,7 +71,11 @@ public interface IViewRow
 
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
+<<<<<<< HEAD
 	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+=======
+	 * Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
 
@@ -95,6 +99,14 @@ public interface IViewRow
 		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);
 	}
 
+<<<<<<< HEAD
+=======
+	default Comparable<?> getFieldValueAsComparable(@NonNull final String fieldName, final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues().getAsComparable(fieldName, jsonOpts);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return ImmutableMap.of();
@@ -133,7 +145,13 @@ public interface IViewRow
 	default ITranslatableString getSingleColumnCaption() { return TranslatableStrings.empty(); }
 	// @formatter:on
 
+<<<<<<< HEAD
 	/** @return a stream of given row and all it's included rows recursively */
+=======
+	/**
+	 * @return a stream of given row and all it's included rows recursively
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	default Stream<IViewRow> streamRecursive()
 	{
 		return this.getIncludedRows()

@@ -46,8 +46,11 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+<<<<<<< HEAD
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -301,6 +304,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
+<<<<<<< HEAD
 		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
 		final SpanMetadata request = SpanMetadata.builder()
 				.type("createMissingInvoiceCandidates")
@@ -316,6 +320,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+=======
+		if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return ImmutableList.of();
 		}

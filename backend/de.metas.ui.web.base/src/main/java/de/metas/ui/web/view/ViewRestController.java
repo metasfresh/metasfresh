@@ -42,11 +42,16 @@ import de.metas.ui.web.view.json.JSONGetViewActionsRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewHeaderProperties;
 import de.metas.ui.web.view.json.JSONViewLayout;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.view.json.JSONViewOrderBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
@@ -54,6 +59,14 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+=======
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -79,6 +92,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -288,7 +305,11 @@ public class ViewRestController
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
+<<<<<<< HEAD
 		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType, ViewProfileId.fromJson(profileIdStr));
+=======
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType, ViewProfileId.fromJson(profileIdStr), userSession.getUserRolePermissionsKey());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
@@ -357,11 +378,14 @@ public class ViewRestController
 				.andComposeWith(userSession.toEvaluatee());
 	}
 
+<<<<<<< HEAD
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
 	{
 		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -383,7 +407,11 @@ public class ViewRestController
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
+<<<<<<< HEAD
 	public JSONLookupValuesList getFilterParameterDropdown(
+=======
+	public JSONLookupValuesPage getFilterParameterDropdown(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_FilterId) final String filterId //
@@ -396,16 +424,26 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final Evaluatee ctx = createFilterParameterLookupContext(view);
 
+<<<<<<< HEAD
 		return view
 				.getFilterParameterDropdown(filterId, parameterName, ctx)
 				.transform(this::toJSONLookupValuesList);
+=======
+		return view.getFilterParameterDropdown(filterId, parameterName, ctx)
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")
 	private ViewAsPreconditionsContext createPreconditionsContext(
 			@NonNull final String windowId,
 			@NonNull final String viewIdString,
+<<<<<<< HEAD
 			final String viewProfileIdStr,
+=======
+			@Nullable final String viewProfileIdStr,
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Set<String> selectedIds,
 			final String parentViewId,
 			final Set<String> parentViewSelectedIds,
@@ -423,6 +461,10 @@ public class ViewRestController
 		return ViewAsPreconditionsContext.builder()
 				.view(view)
 				.viewProfileId(ViewProfileId.fromJson(viewProfileIdStr))
+<<<<<<< HEAD
+=======
+				.viewOrderBys(viewOrderBys)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -441,6 +483,10 @@ public class ViewRestController
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
+<<<<<<< HEAD
+=======
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())
@@ -467,6 +513,10 @@ public class ViewRestController
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
 				.viewProfileIdStr(request.getViewProfileId())
+<<<<<<< HEAD
+=======
+				.viewOrderBys(JSONViewOrderBy.toDocumentQueryOrderByList(request.getViewOrderBy()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.selectedIds(request.getSelectedIds())
 				.parentViewId(request.getParentViewId())
 				.parentViewSelectedIds(request.getParentViewSelectedIds())
@@ -517,7 +567,11 @@ public class ViewRestController
 					.excelFormat(excelFormat)
 					.view(viewsRepo.getView(viewId))
 					.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
+<<<<<<< HEAD
 					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
+=======
+					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL, userSession.getUserRolePermissionsKey()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.language(userSession.getLanguage())
 					.zoneId(userSession.getTimeZone())
 					.build()

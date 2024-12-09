@@ -96,6 +96,10 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+<<<<<<< HEAD
+=======
+import java.util.HashMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -109,7 +113,12 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candida
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
@@ -299,7 +308,11 @@ public class MD_Candidate_StepDef
 					.create()
 					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
+<<<<<<< HEAD
 			assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
+=======
+			softly.assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			softly.assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - Fresh_QtyOnHand_ID", freshQtyOnHandLineId).isEqualTo(freshQtyOnHandId);
 			softly.assertThat(stockChangeDetail.isReverted()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - isReverted", freshQtyOnHandLineId).isEqualTo(isReverted);
 
@@ -343,7 +356,11 @@ public class MD_Candidate_StepDef
 				event = MaterialDispoUtils.createStockEstimateDeletedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
 				break;
 			default:
+<<<<<<< HEAD
 				throw new AdempiereException("Event type not handeled: " + eventType);
+=======
+				throw new AdempiereException("Event type not handled: " + eventType);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//noinspection deprecation
@@ -419,15 +436,26 @@ public class MD_Candidate_StepDef
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
+<<<<<<< HEAD
 		table.forEach((row) -> {
 			// make sure the given md_candidate has been created
 			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row);
+=======
+		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
+		table.forEach((row) -> {
+			// make sure the given md_candidate has been created
+			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row, candidateIdsAlreadyMatched);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			SharedTestContext.put("candidateId", materialDispoRecord.getCandidateId().getRepoId());
 			SharedTestContext.put("materialDispoRecord", materialDispoRecord);
 
 			validate_md_candidate(row, materialDispoRecord);
 
 			materialDispoDataItemStepDefData.putOrReplace(row.getIdentifier(), materialDispoRecord);
+<<<<<<< HEAD
+=======
+			candidateIdsAlreadyMatched.put(materialDispoRecord.getCandidateId(), row.getIdentifier());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		});
 
 		stopwatch.stop();
@@ -476,7 +504,12 @@ public class MD_Candidate_StepDef
 
 	private MaterialDispoDataItem tryAndWaitForCandidate(
 			final int timeoutSec,
+<<<<<<< HEAD
 			final @NonNull MaterialDispoTableRow row) throws InterruptedException
+=======
+			final @NonNull MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude) throws InterruptedException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
@@ -487,17 +520,31 @@ public class MD_Candidate_StepDef
 		SharedTestContext.put("actual candidates query SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
 
 		return StepDefUtil.<MaterialDispoDataItem>tryAndWaitForItem()
+<<<<<<< HEAD
 				.worker(() -> retrieveMaterialDispoDataItem(row))
+=======
+				.worker(() -> retrieveMaterialDispoDataItem(row, candidateIdsToExclude))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(1000L)
 				.execute();
 	}
 
+<<<<<<< HEAD
 	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow row)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
 		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
 		return newValidator().findValidItem(items, row);
+=======
+	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(
+			final @NonNull MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
+	{
+		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
+		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		return newValidator().findValidItem(items, row, candidateIdsToExclude);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
@@ -507,7 +554,10 @@ public class MD_Candidate_StepDef
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
+<<<<<<< HEAD
 		//noinspection deprecation
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 				.build());

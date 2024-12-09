@@ -52,8 +52,19 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol, exportContext);
+<<<<<<< HEAD
 		marshaler.marshal(sepaExport, out);
 
+=======
+		try
+		{
+			marshaler.marshal(sepaExport, out);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return SEPACreditTransferXML.builder()
 				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)

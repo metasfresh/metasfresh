@@ -1,3 +1,28 @@
+<<<<<<< HEAD
+=======
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -56,6 +81,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+<<<<<<< HEAD
+=======
+import org.compiere.util.Util;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -118,6 +147,10 @@ public final class ProcessInfo implements Serializable
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
+<<<<<<< HEAD
+=======
+		logWarning = builder.isLogWarning();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -213,6 +246,12 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean notifyUserAfterExecution;
 
+<<<<<<< HEAD
+=======
+	@Getter
+	private final boolean logWarning;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Process Instance ID
 	 */
@@ -326,6 +365,7 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
+<<<<<<< HEAD
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
 		{
@@ -336,6 +376,11 @@ public final class ProcessInfo implements Serializable
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
 			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+=======
+		try
+		{
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -346,6 +391,22 @@ public final class ProcessInfo implements Serializable
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Creates a new instance of {@link #getClassName()}.
 	 * If the classname is empty, null will be returned.
@@ -540,7 +601,14 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
+<<<<<<< HEAD
 	public boolean isInvokedByScheduler() {return invokedBySchedulerId != null;}
+=======
+	public boolean isInvokedByScheduler()
+	{
+		return invokedBySchedulerId != null;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -793,6 +861,11 @@ public final class ProcessInfo implements Serializable
 
 		private Boolean notifyUserAfterExecution;
 
+<<<<<<< HEAD
+=======
+		private Boolean logWarning;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private ProcessInfoBuilder()
 		{
 		}
@@ -1107,6 +1180,10 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
+<<<<<<< HEAD
+=======
+			setLogWarning(adProcess.isLogWarning());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return this;
 		}
 
@@ -1612,6 +1689,37 @@ public final class ProcessInfo implements Serializable
 			return notifyUserAfterExecution;
 		}
 
+<<<<<<< HEAD
+=======
+		public ProcessInfoBuilder setLogWarning(final boolean logWarning)
+		{
+			this.logWarning = logWarning;
+
+			return this;
+		}
+
+		public boolean isLogWarning()
+		{
+			if (logWarning == null)
+			{
+
+					final I_AD_Process processRecord = getAD_ProcessOrNull();
+					if (processRecord != null)
+					{
+						this.logWarning = processRecord.isLogWarning();
+						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
+					}
+					else
+					{
+						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+						this.logWarning = false;
+					}
+				}
+
+			return logWarning;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private String getWhereClause()
 		{
 			if (whereClause != null)

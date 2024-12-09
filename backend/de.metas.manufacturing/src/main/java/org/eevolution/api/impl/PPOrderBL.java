@@ -27,6 +27,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -82,7 +86,10 @@ import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderPlanningStatus;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -94,7 +101,10 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -169,7 +179,11 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
+<<<<<<< HEAD
 		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, /* docSubType */null);
+=======
+		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -317,11 +331,19 @@ public class PPOrderBL implements IPPOrderBL
 	public void setDocType(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final PPOrderDocBaseType docBaseType,
+<<<<<<< HEAD
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docBaseType.getCode())
 				.docSubType(docSubType)
+=======
+			@NonNull final DocSubType docSubType)
+	{
+		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
+																	  .docBaseType(docBaseType.toDocBaseType())
+																	  .docSubType(docSubType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
 				.build());
@@ -335,8 +357,20 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 
+<<<<<<< HEAD
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
 		ppOrdersRepo.save(ppOrder);
+=======
+		closeOrder(ppOrder);
+	}
+
+	@Override
+	public void closeOrder(final I_PP_Order ppOrder)
+	{
+		// NOTE: on before complete we expect to get the PlanningStatus set to COMPLETE + process
+		// ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		// ppOrdersRepo.save(ppOrder);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
 	}

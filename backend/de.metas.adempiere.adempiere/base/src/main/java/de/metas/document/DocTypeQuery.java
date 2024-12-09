@@ -34,15 +34,26 @@ import javax.annotation.Nullable;
 @Builder
 public class DocTypeQuery
 {
+<<<<<<< HEAD
 	public static final String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
 	public static final String DOCSUBTYPE_NONE = null;
+=======
+	public static final DocSubType DOCSUBTYPE_Any = DocSubType.ANY;
+	public static final DocSubType DOCSUBTYPE_NONE = DocSubType.NONE;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	DocBaseType docBaseType;
 
+<<<<<<< HEAD
 	@Nullable
 	@Default
 	String docSubType = DOCSUBTYPE_Any;
+=======
+	@NonNull
+	@Default
+	DocSubType docSubType = DOCSUBTYPE_Any;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	Integer adClientId;
@@ -81,6 +92,10 @@ public class DocTypeQuery
 
 		public DocTypeQueryBuilder docSubTypeAny()
 		{
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return docSubType(DOCSUBTYPE_Any);
 		}
 

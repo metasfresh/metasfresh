@@ -145,6 +145,7 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<configuration>
 					<rules>
+<<<<<<< HEAD
 						<banDuplicateClasses>
 							<dependencies>
 								<dependency>
@@ -157,6 +158,20 @@
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
 						</banDuplicateClasses>
+=======
+<!--						<banDuplicateClasses>-->
+<!--							<dependencies>-->
+<!--								<dependency>-->
+<!--									<groupId>de.metas.migration</groupId>-->
+<!--									<artifactId>de.metas.migration.cli</artifactId>-->
+<!--									<ignoreClasses>-->
+<!--										<ignoreClass>*</ignoreClass>-->
+<!--									</ignoreClasses>-->
+<!--								</dependency>-->
+<!--							</dependencies>-->
+<!--							<findAllDuplicates>true</findAllDuplicates>-->
+<!--						</banDuplicateClasses>-->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					</rules>
 					<fail>true</fail>
 				</configuration>

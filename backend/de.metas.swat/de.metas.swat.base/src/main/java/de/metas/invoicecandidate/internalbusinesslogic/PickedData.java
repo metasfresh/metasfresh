@@ -103,6 +103,10 @@ public class PickedData
 			return null;
 		}
 
+<<<<<<< HEAD
 		return Quantitys.create(qtyCatch, UOMConversionContext.of(productId), qtyPickedInUOM.getUomId());
+=======
+		return Quantitys.of(qtyCatch, UOMConversionContext.of(productId), qtyPickedInUOM.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

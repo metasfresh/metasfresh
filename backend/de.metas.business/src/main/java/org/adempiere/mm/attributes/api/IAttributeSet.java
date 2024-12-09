@@ -52,10 +52,21 @@ public interface IAttributeSet
 	Collection<I_M_Attribute> getAttributes();
 
 	/**
+<<<<<<< HEAD
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	boolean hasAttribute(AttributeCode attributeCode);
 
+=======
+	 * @return true if the given attribute is available for getting/setting.<br>
+	 * Note that the attribute's value might still be {@code null}!
+	 */
+	boolean hasAttribute(AttributeCode attributeCode);
+
+	/**
+	 * @see #hasAttribute(AttributeCode)
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	default boolean hasAttribute(@NonNull final String attributeKey)
 	{
 		return hasAttribute(AttributeCode.ofString(attributeKey));

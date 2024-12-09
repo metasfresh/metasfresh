@@ -93,7 +93,11 @@ public class CostPrice
 	@VisibleForTesting
 	public BigDecimal toBigDecimal()
 	{
+<<<<<<< HEAD
 		return toCostAmount().getValue();
+=======
+		return toCostAmount().toBigDecimal();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostPrice addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)

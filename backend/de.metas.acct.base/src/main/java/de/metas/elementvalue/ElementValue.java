@@ -42,7 +42,12 @@ public class ElementValue
 	@NonNull String value;
 	@NonNull String name;
 	@NonNull String accountSign;
+<<<<<<< HEAD
 	@NonNull String accountType;
+=======
+	@NonNull AccountType accountType;
+	boolean isActive;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean isSummary;
 	boolean isDocControlled;
 	boolean isPostActual;
@@ -51,4 +56,11 @@ public class ElementValue
 	@Nullable ElementValueId parentId;
 	int seqNo;
 	@Nullable String defaultAccountName;
+<<<<<<< HEAD
+=======
+
+	public String toShortString() {return value + "_" + name;}
+
+	public boolean isBalanceSheet() {return accountType.isBalanceSheet();}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

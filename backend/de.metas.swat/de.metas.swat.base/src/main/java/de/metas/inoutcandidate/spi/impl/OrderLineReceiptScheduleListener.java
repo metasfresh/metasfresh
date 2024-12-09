@@ -1,5 +1,11 @@
 package de.metas.inoutcandidate.spi.impl;
 
+<<<<<<< HEAD
+=======
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.order.OrderLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -12,6 +18,12 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 {
 	public static final OrderLineReceiptScheduleListener INSTANCE = new OrderLineReceiptScheduleListener();
 
+<<<<<<< HEAD
+=======
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private OrderLineReceiptScheduleListener()
 	{
 	}
@@ -30,8 +42,14 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 			return; // shall not happen
 		}
 
+<<<<<<< HEAD
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		orderBL.closeLine(orderLine);
+=======
+		orderBL.closeLine(orderLine);
+
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -52,7 +70,12 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 			return; // shall not happen
 		}
 
+<<<<<<< HEAD
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		orderBL.reopenLine(orderLine);
+=======
+		orderBL.reopenLine(orderLine);
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

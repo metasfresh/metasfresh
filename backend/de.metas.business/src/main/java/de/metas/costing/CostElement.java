@@ -1,5 +1,9 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.AcctSchemaCosting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,4 +64,13 @@ public class CostElement
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isActivityControlElement() {return this.costElementType.isActivityControlElement();}
+<<<<<<< HEAD
+=======
+
+	public boolean isAccountable(final AcctSchemaCosting acctSchemaCosting)
+	{
+		return this.costingMethod.equals(acctSchemaCosting.getCostingMethod())
+				&& (acctSchemaCosting.getPostOnlyCostElementIds().isEmpty() || acctSchemaCosting.getPostOnlyCostElementIds().contains(id));
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

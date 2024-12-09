@@ -27,7 +27,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+=======
+import de.metas.mobile.application.MobileApplicationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -89,13 +89,20 @@ public class TestPOJOs
 													  .build()
 								)
 								.orderCustomer(JsonOrderCustomer.builder()
+<<<<<<< HEAD
 													   .orderId("orderId")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 													   .customerId("customerId")
 													   .firstName("firstName")
 													   .lastName("lastName")
 													   .email("email")
 													   .company("company")
 													   .customerNumber("customerNumber")
+<<<<<<< HEAD
+=======
+													   .vatIds(ImmutableList.of("vatId"))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 													   .build())
 								.build()
 				))

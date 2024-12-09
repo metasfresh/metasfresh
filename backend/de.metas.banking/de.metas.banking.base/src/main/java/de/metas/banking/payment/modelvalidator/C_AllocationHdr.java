@@ -7,7 +7,11 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -33,7 +37,11 @@ import java.util.Set;
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
 {
+<<<<<<< HEAD
 	public static final transient C_AllocationHdr instance = new C_AllocationHdr();
+=======
+	public static final C_AllocationHdr instance = new C_AllocationHdr();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private C_AllocationHdr()
@@ -44,8 +52,13 @@ public class C_AllocationHdr
 	/**
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
+<<<<<<< HEAD
 	 *
 	 * task 08972
+=======
+	 * <p>
+	 * Task 08972
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
@@ -83,8 +96,13 @@ public class C_AllocationHdr
 			return;
 		}
 
+<<<<<<< HEAD
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.CHANGE);
+=======
+		final ModelCacheInvalidationService cacheInvalidationService = ModelCacheInvalidationService.get();
+		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static Set<PaymentId> extractPaymentIds(final List<I_C_AllocationLine> lines)
@@ -112,7 +130,11 @@ public class C_AllocationHdr
 
 		//
 		// Retrieve all C_PaySelectionLines which are about invoices from our allocation and which are not already processed.
+<<<<<<< HEAD
 		// The C_PaySelectionLines will be groupped by C_PaySelection_ID.
+=======
+		// The C_PaySelectionLines will be grouped by C_PaySelection_ID.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//@formatter:off
 		final Collection<List<I_C_PaySelectionLine>> paySelectionLinesGroups =
 				Services.get(IPaySelectionDAO.class)

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +29,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,6 +52,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Language;
@@ -49,6 +63,19 @@ import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+=======
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *  Model Window Value Object
@@ -137,7 +164,12 @@ public class GridWindowVO implements Serializable
 			finally
 			{
 				DB.close(rs, pstmt);
+<<<<<<< HEAD
 				rs = null; pstmt = null;
+=======
+				rs = null;
+				pstmt = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			//
 			if (adWindowIdEffective == null)
@@ -244,7 +276,12 @@ public class GridWindowVO implements Serializable
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null; pstmt = null;
+=======
+			rs = null;
+			pstmt = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -429,10 +466,20 @@ public class GridWindowVO implements Serializable
 			//  No Tabs
 			if (TabNo == 0 || tabsByAD_Tab_ID.isEmpty())
 			{
+<<<<<<< HEAD
 				throw new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAdWindowId());
 //				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
 //				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
 //				return null;
+=======
+				final WindowLoadException windowLoadException = new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAdWindowId());
+				final String loadErrorMessages = mWindowVO.loadErrorMessages != null ? StringUtils.trimBlankToNull(mWindowVO.loadErrorMessages.toString()) : null;
+				if (loadErrorMessages != null)
+				{
+					windowLoadException.setParameter("loadErrorMessages", loadErrorMessages);
+				}
+				throw windowLoadException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			return ImmutableList.copyOf(tabsByAD_Tab_ID.values());

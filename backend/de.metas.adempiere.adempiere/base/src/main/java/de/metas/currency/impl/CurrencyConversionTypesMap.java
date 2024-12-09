@@ -1,5 +1,6 @@
 package de.metas.currency.impl;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -10,12 +11,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionType;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+
+import java.time.Instant;
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -79,12 +93,20 @@ final class CurrencyConversionTypesMap
 	public CurrencyConversionType getDefaultConversionType(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
+<<<<<<< HEAD
 			@NonNull final LocalDate date)
 	{
 		final CurrencyConversionTypeRouting bestMatchingRouting = routings.stream()
 				.filter(routing -> routing.isMatching(adClientId, adOrgId, date))
 				.sorted(CurrencyConversionTypeRouting.moreSpecificFirstComparator())
 				.findFirst()
+=======
+			@NonNull final Instant date)
+	{
+		final CurrencyConversionTypeRouting bestMatchingRouting = routings.stream()
+				.filter(routing -> routing.isMatching(adClientId, adOrgId, date))
+				.min(CurrencyConversionTypeRouting.moreSpecificFirstComparator())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_ConversionType_ID@")
 						.setParameter("adClientId", adClientId)
 						.setParameter("adOrgId", adOrgId)

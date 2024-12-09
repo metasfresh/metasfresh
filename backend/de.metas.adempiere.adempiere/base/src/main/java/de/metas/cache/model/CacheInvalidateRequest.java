@@ -88,6 +88,7 @@ public class CacheInvalidateRequest
 		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
+<<<<<<< HEAD
 	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
 	{
 		if (tableName == null)
@@ -104,11 +105,14 @@ public class CacheInvalidateRequest
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final boolean DEBUG = false;
 
 	private static final int RECORD_ID_ALL = -1;
 	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest(null, RECORD_ID_ALL, null, RECORD_ID_ALL, "ALL");
 
+<<<<<<< HEAD
 	@JsonProperty("rootTableName")
 	private final String rootTableName;
 	@JsonProperty("rootRecordId")
@@ -121,6 +125,15 @@ public class CacheInvalidateRequest
 
 	@JsonProperty("debugFrom")
 	final String debugFrom;
+=======
+	@JsonProperty("rootTableName") String rootTableName;
+	@JsonProperty("rootRecordId") int rootRecordId;
+
+	@JsonProperty("childTableName") String childTableName;
+	@JsonProperty("childRecordId") int childRecordId;
+
+	@JsonProperty("debugFrom") String debugFrom;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@JsonCreator
 	private CacheInvalidateRequest(
@@ -205,11 +218,14 @@ public class CacheInvalidateRequest
 		return childTableName != null ? childTableName : rootTableName;
 	}
 
+<<<<<<< HEAD
 	public int getRecordIdEffective()
 	{
 		return childTableName != null ? childRecordId : rootRecordId;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final class Builder
 	{
 		private String rootTableName;

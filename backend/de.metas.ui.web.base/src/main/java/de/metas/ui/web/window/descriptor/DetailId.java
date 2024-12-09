@@ -11,6 +11,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -57,7 +61,10 @@ public final class DetailId implements Comparable<DetailId>
 		return new DetailId(PREFIX_AD_TAB_ID, adTabId.getRepoId());
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static DetailId fromPrefixAndId(final String prefix, final int id)
 	{
 		return new DetailId(prefix, id);
@@ -134,11 +141,20 @@ public final class DetailId implements Comparable<DetailId>
 
 	public String getTableAlias()
 	{
+<<<<<<< HEAD
 		if (_tableAlias == null)
 		{
 			_tableAlias = "d" + idInt;
 		}
 		return _tableAlias;
+=======
+		String tableAlias = this._tableAlias;
+		if (tableAlias == null)
+		{
+			tableAlias = this._tableAlias = "d" + idInt;
+		}
+		return tableAlias;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
@@ -166,4 +182,21 @@ public final class DetailId implements Comparable<DetailId>
 	{
 		return Objects.equals(o1, o2);
 	}
+<<<<<<< HEAD
+=======
+
+	public int getIdIntAssumingPrefix(@NonNull final String expectedPrefix)
+	{
+		assertIdPrefix(expectedPrefix);
+		return getIdInt();
+	}
+
+	private void assertIdPrefix(@NonNull final String expectedPrefix)
+	{
+		if (!expectedPrefix.equals(idPrefix))
+		{
+			throw new AdempiereException("Expected id prefix `" + expectedPrefix + "` for " + this);
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

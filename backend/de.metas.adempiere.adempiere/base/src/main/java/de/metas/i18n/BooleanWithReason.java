@@ -3,11 +3,19 @@ package de.metas.i18n;
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -69,7 +77,16 @@ public final class BooleanWithReason
 		}
 	}
 
+<<<<<<< HEAD
 	private static ITranslatableString toTrl(@Nullable final String reasonStr)
+=======
+	public static BooleanWithReason falseBecause(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return falseBecause(TranslatableStrings.adMessage(adMessage, msgParameters));
+	}
+
+	 private static ITranslatableString toTrl(@Nullable final String reasonStr)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))
 		{
@@ -85,7 +102,11 @@ public final class BooleanWithReason
 	public static final BooleanWithReason FALSE = new BooleanWithReason(false, TranslatableStrings.empty());
 
 	private final boolean value;
+<<<<<<< HEAD
 	private final ITranslatableString reason;
+=======
+	@NonNull @Getter private final ITranslatableString reason;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private BooleanWithReason(
 			final boolean value,
@@ -124,11 +145,14 @@ public final class BooleanWithReason
 		return !value;
 	}
 
+<<<<<<< HEAD
 	public ITranslatableString getReason()
 	{
 		return reason;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getReasonAsString()
 	{
 		return reason.getDefaultValue();
@@ -142,4 +166,14 @@ public final class BooleanWithReason
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public BooleanWithReason and(@NonNull final Supplier<BooleanWithReason> otherSupplier)
+	{
+		return isFalse()
+				? this
+				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

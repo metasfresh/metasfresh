@@ -54,7 +54,11 @@ public class PharmaProductRepository
 	public boolean isLineForNarcoticProduct(final InOutAndLineId inOutLineId)
 	{
 		final IInOutDAO inOutRepo = Services.get(IInOutDAO.class);
+<<<<<<< HEAD
 		final I_M_InOutLine inOutLine = inOutRepo.getLineById(inOutLineId.getInOutLineId());
+=======
+		final I_M_InOutLine inOutLine = inOutRepo.getLineByIdInTrx(inOutLineId.getInOutLineId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 

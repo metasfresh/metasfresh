@@ -90,7 +90,11 @@ public class MDepreciationWorkfile extends X_A_Depreciation_Workfile
 				+ "SET Processing = 'Y'"
 				+ " WHERE A_Depreciation_Workfile_ID = " + p_wkasset_ID	);
 		
+<<<<<<< HEAD
 		int no = DB.executeUpdate (sqlB.toString(),null);
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sqlB.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no == -1)
 			log.info("Update to Deprecaition Workfile failed");
 		return true;

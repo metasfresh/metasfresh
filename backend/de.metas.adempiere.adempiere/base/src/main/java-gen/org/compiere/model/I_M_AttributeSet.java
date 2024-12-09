@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
 
 /** Generated Interface for M_AttributeSet
  *  @author Adempiere (generated) 
@@ -24,12 +25,34 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Get Mandant.
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+
+/** Generated Interface for M_AttributeSet
+ *  @author metasfresh (generated)
+ */
+@SuppressWarnings("unused")
+public interface I_M_AttributeSet
+{
+
+	String Table_Name = "M_AttributeSet";
+
+	//	/** AD_Table_ID=560 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getAD_Client_ID();
 
 	public org.compiere.model.I_AD_Client getAD_Client();
@@ -70,12 +93,43 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Get Erstellt.
+=======
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Get Created.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -85,12 +139,22 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Get Erstellt durch.
+=======
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_Created = new ModelColumn<>(I_M_AttributeSet.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -100,20 +164,36 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Set Beschreibung.
+=======
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Description.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Beschreibung.
+=======
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
@@ -123,22 +203,39 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Set Aktiv.
+=======
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_Description = new ModelColumn<>(I_M_AttributeSet.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Active.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
+=======
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -195,6 +292,12 @@ public interface I_M_AttributeSet
     public static final org.adempiere.model.ModelColumn<I_M_AttributeSet, Object> COLUMN_IsGuaranteeDateMandatory = new org.adempiere.model.ModelColumn<I_M_AttributeSet, Object>(I_M_AttributeSet.class, "IsGuaranteeDateMandatory", null);
     /** Column name IsGuaranteeDateMandatory */
     public static final String COLUMNNAME_IsGuaranteeDateMandatory = "IsGuaranteeDateMandatory";
+=======
+	boolean isActive();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_IsActive = new ModelColumn<>(I_M_AttributeSet.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Instanz-Attribut.
@@ -204,7 +307,11 @@ public interface I_M_AttributeSet
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setIsInstanceAttribute (boolean IsInstanceAttribute);
+=======
+	void setIsInstanceAttribute (boolean IsInstanceAttribute);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Instanz-Attribut.
@@ -214,6 +321,7 @@ public interface I_M_AttributeSet
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public boolean isInstanceAttribute();
 
     /** Column definition for IsInstanceAttribute */
@@ -453,6 +561,12 @@ public interface I_M_AttributeSet
     public static final org.adempiere.model.ModelColumn<I_M_AttributeSet, org.compiere.model.I_M_SerNoCtl> COLUMN_M_SerNoCtl_ID = new org.adempiere.model.ModelColumn<I_M_AttributeSet, org.compiere.model.I_M_SerNoCtl>(I_M_AttributeSet.class, "M_SerNoCtl_ID", org.compiere.model.I_M_SerNoCtl.class);
     /** Column name M_SerNoCtl_ID */
     public static final String COLUMNNAME_M_SerNoCtl_ID = "M_SerNoCtl_ID";
+=======
+	boolean isInstanceAttribute();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_IsInstanceAttribute = new ModelColumn<>(I_M_AttributeSet.class, "IsInstanceAttribute", null);
+	String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Mandatory Type.
@@ -462,7 +576,11 @@ public interface I_M_AttributeSet
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setMandatoryType (java.lang.String MandatoryType);
+=======
+	void setMandatoryType (java.lang.String MandatoryType);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Mandatory Type.
@@ -472,6 +590,7 @@ public interface I_M_AttributeSet
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getMandatoryType();
 
     /** Column definition for MandatoryType */
@@ -482,21 +601,61 @@ public interface I_M_AttributeSet
 	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
+=======
+	java.lang.String getMandatoryType();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_MandatoryType = new ModelColumn<>(I_M_AttributeSet.class, "MandatoryType", null);
+	String COLUMNNAME_MandatoryType = "MandatoryType";
+
+	/**
+	 * Set Merkmals-Satz.
+	 * Product Attribute Set
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSet_ID (int M_AttributeSet_ID);
+
+	/**
+	 * Get Merkmals-Satz.
+	 * Product Attribute Set
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSet_ID();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_M_AttributeSet_ID = new ModelColumn<>(I_M_AttributeSet.class, "M_AttributeSet_ID", null);
+	String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
+
+	/**
+	 * Set Name.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 * Alphanumeric identifier of the entity
+=======
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getName();
 
     /** Column definition for Name */
@@ -556,12 +715,22 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Get Aktualisiert.
+=======
+	java.lang.String getName();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_Name = new ModelColumn<>(I_M_AttributeSet.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Get Updated.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -571,16 +740,31 @@ public interface I_M_AttributeSet
 
 	/**
 	 * Get Aktualisiert durch.
+=======
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_M_AttributeSet, Object> COLUMN_Updated = new ModelColumn<>(I_M_AttributeSet.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
     public static final org.adempiere.model.ModelColumn<I_M_AttributeSet, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeSet, org.compiere.model.I_AD_User>(I_M_AttributeSet.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+=======
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

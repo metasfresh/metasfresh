@@ -1,8 +1,12 @@
 package de.metas.order.voidorderandrelateddocs;
 
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.compiere.util.Env;
 
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -15,6 +19,10 @@ import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -53,7 +61,11 @@ public interface VoidOrderAndRelatedDocsHandler
 	void handleOrderVoided(VoidOrderAndRelatedDocsRequest request);
 
 	@Value
+<<<<<<< HEAD
 	public class RecordsToHandleKey
+=======
+	class RecordsToHandleKey
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		public static RecordsToHandleKey of(@NonNull final String tableName)
 		{
@@ -88,17 +100,29 @@ public interface VoidOrderAndRelatedDocsHandler
 	{
 		final I_C_Order orderRecord = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
 
+<<<<<<< HEAD
 		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
 		final String docStatusTrl = referenceDAO.retrieveListNameTrl(DocStatus.AD_REFERENCE_ID, docStatus.getCode());
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final String docStatusTrl = adReferenceService.retrieveListNameTrl(DocStatus.AD_REFERENCE_ID, docStatus.getCode());
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return msgBL.getTranslatableMsgText(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				Msg_OrderDocumentCancelNotAllowed_4P,
 				orderRecord.getDocumentNo(),
 				msgBL.translate(Env.getCtx(), documentTrlValue),
 				documentNo,
 				docStatusTrl);
+<<<<<<< HEAD
 		return errorMsg;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

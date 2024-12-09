@@ -53,9 +53,13 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 	}
 
 	@Override
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String tableName = context.getTableName();
 		final AdTabId adTabId = context.getAdTabId();
@@ -69,9 +73,15 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 
 		final int adTableId = adTablesRepo.retrieveTableId(tableName);
 
+<<<<<<< HEAD
 		final List<IUserQueryField> searchFields = fields
 				.stream()
 				.map(field -> createUserQueryField(field))
+=======
+		final List<IUserQueryField> searchFields = context.getFields()
+				.stream()
+				.map(UserQueryDocumentFilterDescriptorsProviderFactory::createUserQueryField)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		final UserQueryRepository repository = UserQueryRepository.builder()

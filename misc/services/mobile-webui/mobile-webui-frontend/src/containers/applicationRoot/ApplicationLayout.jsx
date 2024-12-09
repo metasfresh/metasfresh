@@ -8,6 +8,10 @@ import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
 import { useApplicationInfo } from '../../reducers/applications';
+<<<<<<< HEAD
+=======
+import { isApplicationFullScreen } from '../../apps';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -35,6 +39,19 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   if (redirectToHome) {
     return null;
   }
+<<<<<<< HEAD
+=======
+
+  if (isApplicationFullScreen(applicationId)) {
+    return (
+      <div className="app-container app-container-fullscreen">
+        <Component />
+        <ScreenToaster />
+      </div>
+    );
+  }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   return (
     <div className="app-container">
       <div className="app-header">

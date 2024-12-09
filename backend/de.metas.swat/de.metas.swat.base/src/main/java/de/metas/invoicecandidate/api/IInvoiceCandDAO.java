@@ -5,6 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
+=======
+import de.metas.inout.InOutId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -105,9 +109,15 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
+<<<<<<< HEAD
 	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
 
 	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
+=======
+	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
+
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
@@ -176,7 +186,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCands(List<I_C_Invoice_Candidate> ics);
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -242,8 +256,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
+<<<<<<< HEAD
 	 *
 	 * task https://github.com/metasfresh/metasfresh/issues/3809
+=======
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/3809">https://github.com/metasfresh/metasfresh/issues/3809</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
@@ -281,6 +300,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
+<<<<<<< HEAD
 	 * task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
@@ -289,6 +309,18 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
 	 *
 	 * task https://github.com/metasfresh/metasfresh/issues/13376
+=======
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1566">https://github.com/metasfresh/metasfresh/issues/1566</a>
+	 */
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
+
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
+	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/13376">https://github.com/metasfresh/metasfresh/issues/13376</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
 
@@ -416,4 +448,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+<<<<<<< HEAD
+=======
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,5 +1,6 @@
 package de.metas.banking.service.impl;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.Properties;
 
@@ -12,6 +13,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -26,6 +29,20 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class CashStatementBL implements ICashStatementBL
 {
@@ -83,7 +100,11 @@ public class CashStatementBL implements ICashStatementBL
 
 		I_C_BankStatement bs = new Query(ctx, I_C_BankStatement.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(I_C_BankStatement.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (bs != null)
 		{

@@ -2,6 +2,12 @@ package org.adempiere.util.reflect;
 
 import de.metas.util.Check;
 
+<<<<<<< HEAD
+=======
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.util
@@ -28,7 +34,10 @@ import de.metas.util.Check;
  * To be used when it comes to class loading. Can be extended/overridden for testing.
  * 
  * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class ClassInstanceProvider implements IClassInstanceProvider
 {
@@ -46,6 +55,7 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 		{
 			classLoader = ClassInstanceProvider.class.getClassLoader();
 		}
+<<<<<<< HEAD
 		final Class<?> clazz = classLoader.loadClass(className);
 		return clazz;
 	}
@@ -58,5 +68,19 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 		return instanceClazz
 				.asSubclass(interfaceClazz)
 				.newInstance();
+=======
+		return classLoader.loadClass(className);
+	}
+
+	@Override
+	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
+	{
+		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
+
+		final Constructor<?> constructor = instanceClazz.getDeclaredConstructor();
+		constructor.setAccessible(true);
+		//noinspection unchecked
+		return (T)constructor.newInstance();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

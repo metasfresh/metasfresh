@@ -1,9 +1,19 @@
 package de.metas.attachments;
 
+<<<<<<< HEAD
+=======
+import com.google.common.base.MoreObjects;
+import lombok.Builder;
+import lombok.NonNull;
+import org.springframework.core.io.AbstractResource;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import org.springframework.core.io.AbstractResource;
@@ -13,6 +23,8 @@ import com.google.common.base.MoreObjects;
 import lombok.Builder;
 import lombok.NonNull;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -83,6 +95,10 @@ public final class AttachmentEntryDataResource extends AbstractResource
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getFilename()
 	{
 		return filename;

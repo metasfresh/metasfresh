@@ -160,6 +160,16 @@ public final class CurrentCost
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public void addWeightedAverage(
+			@NonNull final CostAmountAndQty amtAndQty,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		addWeightedAverage(amtAndQty.getAmt(), amtAndQty.getQty(), uomConverter);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Add Amt/Qty and calculate weighted average.
 	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty).
@@ -174,12 +184,17 @@ public final class CurrentCost
 			@NonNull final Quantity qty,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
+<<<<<<< HEAD
 		assertCostCurrency(amt);
 
 		if (qty.signum() == 0 && amt.signum() != 0)
 		{
 			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
 		}
+=======
+
+		assertCostCurrency(amt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
@@ -200,6 +215,7 @@ public final class CurrentCost
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty)
 	{
+<<<<<<< HEAD
 		assertCostCurrency(amt);
 		assertCostUOM(qty);
 
@@ -207,6 +223,20 @@ public final class CurrentCost
 		cumulatedQty = cumulatedQty.add(qty);
 	}
 
+=======
+		assertCostUOM(qty);
+
+		addCumulatedAmt(amt);
+		cumulatedQty = cumulatedQty.add(qty);
+	}
+
+	public void addCumulatedAmt(@NonNull final CostAmount amt)
+	{
+		assertCostCurrency(amt);
+		cumulatedAmt = cumulatedAmt.add(amt);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void addToCurrentQtyAndCumulate(
 			@NonNull final Quantity qtyToAdd,
 			@NonNull final CostAmount amt,
@@ -225,6 +255,14 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qtyToAdd);
 	}
 
+<<<<<<< HEAD
+=======
+	public void addToCurrentQtyAndCumulate(@NonNull final CostAmountAndQty amtAndQty)
+	{
+		addToCurrentQtyAndCumulate(amtAndQty.getQty(), amtAndQty.getAmt());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;

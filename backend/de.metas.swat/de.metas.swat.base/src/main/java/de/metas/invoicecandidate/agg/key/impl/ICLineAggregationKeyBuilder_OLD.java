@@ -60,6 +60,10 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_UOM_ID)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_IsPrinted)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_Line)
+<<<<<<< HEAD
+=======
+			.add(I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.build();
 
 	private ICLineAggregationKeyBuilder_OLD()
@@ -139,6 +143,12 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			sb.append("/" + uomName);
 		}
 
+<<<<<<< HEAD
+=======
+		// Use DocTypeID in aggregation
+		sb.append("/").append(ic.getC_DocTypeInvoice_ID() > 0 ? ic.getC_DocTypeInvoice_ID() : 0);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// 07442
 		// Also add activity and tax

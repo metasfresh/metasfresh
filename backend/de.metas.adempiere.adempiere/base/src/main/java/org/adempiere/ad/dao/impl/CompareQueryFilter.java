@@ -97,7 +97,11 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	@Getter
 	private final IQueryFilterModifier operand2Modifier;
 
+<<<<<<< HEAD
 	/* package */ CompareQueryFilter(
+=======
+	public CompareQueryFilter(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final String columnName,
 			@NonNull final Operator operator,
 			@Nullable final Object value,
@@ -113,7 +117,11 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
+<<<<<<< HEAD
 	/* package */ CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
+=======
+	public CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}

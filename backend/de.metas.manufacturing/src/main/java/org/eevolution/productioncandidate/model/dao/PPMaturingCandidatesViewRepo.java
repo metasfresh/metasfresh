@@ -80,7 +80,11 @@ public class PPMaturingCandidatesViewRepo
 		final ProductId issueProductId = ProductId.ofRepoId(ppMaturingCandidatesV.getIssue_M_Product_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppMaturingCandidatesV.getM_Warehouse_ID());
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppMaturingCandidatesV.getPP_Product_Planning_ID());
+<<<<<<< HEAD
 		final Quantity quantity = Quantitys.create(ppMaturingCandidatesV.getQty(), UomId.ofRepoId(ppMaturingCandidatesV.getC_UOM_ID()));
+=======
+		final Quantity quantity = Quantitys.of(ppMaturingCandidatesV.getQty(), UomId.ofRepoId(ppMaturingCandidatesV.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppMaturingCandidatesV.getM_AttributeSetInstance_ID());
 		final Instant dateStartSchedule = Objects.requireNonNull(ppMaturingCandidatesV.getDateStartSchedule()).toInstant();
 		final HuId huId = HuId.ofRepoId(ppMaturingCandidatesV.getM_HU_ID());

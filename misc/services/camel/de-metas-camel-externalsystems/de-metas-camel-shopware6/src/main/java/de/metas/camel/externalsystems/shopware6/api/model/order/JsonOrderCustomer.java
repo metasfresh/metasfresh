@@ -2,7 +2,11 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,10 +27,15 @@
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonInclude;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
+<<<<<<< HEAD
 import lombok.NonNull;
 import lombok.Value;
 
@@ -58,11 +67,50 @@ public class JsonOrderCustomer
 
 	@JsonProperty("email")
 	String email;
+=======
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+@Value
+@EqualsAndHashCode(callSuper = true)
+@JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)
+public class JsonOrderCustomer extends JsonCustomerBasicInfo
+{
+	@Nullable
+	@JsonProperty("customerId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String customerId;
+
+	@Builder
+	JsonOrderCustomer(
+			@JsonProperty("customerId") final String customerId,
+			@JsonProperty("firstName") final String firstName,
+			@JsonProperty("lastName") final String lastName,
+			@JsonProperty("company") final String company,
+			@JsonProperty("customerNumber") final String customerNumber,
+			@JsonProperty("email") final String email,
+			@JsonProperty("createdAt") final ZonedDateTime createdAt,
+			@JsonProperty("updatedAt") final ZonedDateTime updatedAt,
+			@JsonProperty("vatIds") final List<String> vatIds)
+	{
+		super(firstName, lastName, company, customerNumber, email, createdAt, updatedAt, vatIds);
+
+		this.customerId = customerId;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonOrderCustomerBuilder
 	{
 	}
+<<<<<<< HEAD
 }
 
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

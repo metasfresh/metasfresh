@@ -64,7 +64,11 @@ public class DDOrderCandidateAllocRepository
 				.id(record.getDD_Order_Candidate_DDOrder_ID())
 				.ddOrderCandidateId(extractDDOrderCandidateId(record))
 				.ddOrderAndLineId(extractDDOrderAndLineId(record))
+<<<<<<< HEAD
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+=======
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

@@ -31,6 +31,10 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.MobileApplicationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,7 +51,10 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetsQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -91,6 +98,14 @@ public class WorkflowRestController
 		this.workflowRestAPIService = workflowRestAPIService;
 	}
 
+<<<<<<< HEAD
+=======
+	private void assertAccess(final MobileApplicationId applicationId)
+	{
+		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private JsonOpts newJsonOpts()
 	{
 		return JsonOpts.builder()
@@ -101,18 +116,29 @@ public class WorkflowRestController
 	@PostMapping("/logout")
 	public void logout()
 	{
+<<<<<<< HEAD
 		final UserId loggedUserId = Env.getLoggedUserId();
 		workflowRestAPIService.logout(loggedUserId);
+=======
+		workflowRestAPIService.logout(Env.getUserRolePermissions());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{
+<<<<<<< HEAD
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final JsonOpts jsonOpts = newJsonOpts();
 		return JsonMobileApplicationsList.builder()
 				.applications(
 						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
+=======
+		final JsonOpts jsonOpts = newJsonOpts();
+		return JsonMobileApplicationsList.builder()
+				.applications(
+						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
@@ -125,8 +151,16 @@ public class WorkflowRestController
 			@RequestParam("applicationId") final String applicationIdStr,
 			@RequestParam(value = "filterByQRCode", required = false) final String filterByQRCodeStr)
 	{
+<<<<<<< HEAD
 		return getLaunchers(JsonLaunchersQuery.builder()
 				.applicationId(MobileApplicationId.ofString(applicationIdStr))
+=======
+		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
+		assertAccess(applicationId);
+
+		return getLaunchers(JsonLaunchersQuery.builder()
+				.applicationId(applicationId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filterByQRCode(GlobalQRCode.ofNullableString(filterByQRCodeStr))
 				.build());
 	}
@@ -134,6 +168,11 @@ public class WorkflowRestController
 	@PostMapping("/launchers/query")
 	public JsonWorkflowLaunchersList getLaunchers(@RequestBody @NonNull final JsonLaunchersQuery query)
 	{
+<<<<<<< HEAD
+=======
+		assertAccess(query.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(toWorkflowLaunchersQuery(query));
 
 		return JsonWorkflowLaunchersList.of(launchers, query, newJsonOpts());
@@ -154,6 +193,11 @@ public class WorkflowRestController
 	@PostMapping("/facets")
 	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestBody @NonNull final JsonWorkflowLaunchersFacetsQuery query)
 	{
+<<<<<<< HEAD
+=======
+		assertAccess(query.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WorkflowLaunchersFacetGroupList result = workflowRestAPIService.getFacets(
 				WorkflowLaunchersFacetQuery.builder()
 						.applicationId(query.getApplicationId())
@@ -169,6 +213,11 @@ public class WorkflowRestController
 	public JsonWFProcess getWFProcessById(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+<<<<<<< HEAD
+=======
+		assertAccess(wfProcessId.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcess wfProcess = workflowRestAPIService.getWFProcessById(wfProcessId);
 
 		final UserId loggedUserId = Env.getLoggedUserId();
@@ -181,6 +230,11 @@ public class WorkflowRestController
 	public JsonWFProcess continueWFProcess(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+<<<<<<< HEAD
+=======
+		assertAccess(wfProcessId.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final WFProcess wfProcess = workflowRestAPIService.continueWFProcess(wfProcessId, loggedUserId);
 		wfProcess.assertHasAccess(loggedUserId);
@@ -190,6 +244,11 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/start")
 	public JsonWFProcess start(@RequestBody final @NonNull JsonWFProcessStartRequest request)
 	{
+<<<<<<< HEAD
+=======
+		assertAccess(request.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final JsonOpts jsonOpts = newJsonOpts();
 
@@ -207,6 +266,11 @@ public class WorkflowRestController
 	public void abort(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+<<<<<<< HEAD
+=======
+		assertAccess(wfProcessId.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final UserId loggedUserId = Env.getLoggedUserId();
 
 		workflowRestAPIService.abortWFProcess(wfProcessId, loggedUserId);
@@ -215,9 +279,13 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/abortAll")
 	public void abortAll()
 	{
+<<<<<<< HEAD
 		final UserId loggedUserId = Env.getLoggedUserId();
 
 		workflowRestAPIService.abortAllWFProcesses(loggedUserId);
+=======
+		workflowRestAPIService.abortAllWFProcesses(Env.getUserRolePermissions());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public JsonWFProcess toJson(final WFProcess wfProcess)
@@ -243,6 +311,11 @@ public class WorkflowRestController
 	{
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+<<<<<<< HEAD
+=======
+		assertAccess(wfProcessId.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
 		final WFProcess wfProcess = workflowRestAPIService.setScannedBarcode(invokerId, wfProcessId, wfActivityId, request.getBarcode());
 
@@ -256,6 +329,11 @@ public class WorkflowRestController
 	{
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+<<<<<<< HEAD
+=======
+		assertAccess(wfProcessId.getApplicationId());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
 		final WFProcess wfProcess = workflowRestAPIService.setUserConfirmation(invokerId, wfProcessId, wfActivityId);
 
@@ -289,5 +367,8 @@ public class WorkflowRestController
 				.frontendUrl(jsonErrorItem.getFrontendUrl())
 				.build();
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

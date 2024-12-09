@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,12 @@ import com.google.common.collect.Sets;
 
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
+=======
+import com.google.common.collect.Sets;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inout.ShipmentScheduleId;
@@ -22,6 +29,15 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.handlingunits.base

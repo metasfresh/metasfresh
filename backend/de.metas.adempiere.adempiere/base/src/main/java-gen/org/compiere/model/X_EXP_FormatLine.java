@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
@@ -17,10 +18,17 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+=======
+// Generated Model - DO NOT CHANGE
+package org.compiere.model;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for EXP_FormatLine
+<<<<<<< HEAD
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
@@ -51,10 +59,29 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
     /** Load Constructor */
     public X_EXP_FormatLine (Properties ctx, ResultSet rs, String trxName)
+=======
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_FormatLine, org.compiere.model.I_Persistent 
+{
+
+	private static final long serialVersionUID = 303743353L;
+
+    /** Standard Constructor */
+    public X_EXP_FormatLine (final Properties ctx, final int EXP_FormatLine_ID, @Nullable final String trxName)
+    {
+      super (ctx, EXP_FormatLine_ID, trxName);
+    }
+
+    /** Load Constructor */
+    public X_EXP_FormatLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     {
       super (ctx, rs, trxName);
     }
 
+<<<<<<< HEAD
     /** AccessLevel
       * @return 6 - System - Client 
       */
@@ -82,26 +109,48 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
 	@Override
 	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+=======
+
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Column getAD_Column()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
+=======
+	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
+<<<<<<< HEAD
 	/** Set Spalte.
 		@param AD_Column_ID 
 		Column in the table
 	  */
 	@Override
 	public void setAD_Column_ID (int AD_Column_ID)
+=======
+	@Override
+	public void setAD_Column_ID (final int AD_Column_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (AD_Column_ID < 1) 
 			set_Value (COLUMNNAME_AD_Column_ID, null);
 		else 
+<<<<<<< HEAD
 			set_Value (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
 	}
 
@@ -119,16 +168,34 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
 	@Override
 	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+=======
+			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
+	}
+
+	@Override
+	public int getAD_Column_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Reference getAD_Reference()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference)
+=======
+	public void setAD_Reference(final org.compiere.model.I_AD_Reference AD_Reference)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class, AD_Reference);
 	}
 
+<<<<<<< HEAD
 	/** Set Referenz.
 		@param AD_Reference_ID 
 		System Reference and Validation
@@ -152,24 +219,49 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
 	@Override
 	public org.compiere.model.I_AD_Reference getAD_Reference_Override() throws RuntimeException
+=======
+	@Override
+	public void setAD_Reference_ID (final int AD_Reference_ID)
+	{
+		throw new IllegalArgumentException ("AD_Reference_ID is virtual column");	}
+
+	@Override
+	public int getAD_Reference_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Reference getAD_Reference_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Override_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setAD_Reference_Override(org.compiere.model.I_AD_Reference AD_Reference_Override)
+=======
+	public void setAD_Reference_Override(final org.compiere.model.I_AD_Reference AD_Reference_Override)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Override_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Override);
 	}
 
+<<<<<<< HEAD
 	/** Set Referenz abw..
 		@param AD_Reference_Override_ID Referenz abw.	  */
 	@Override
 	public void setAD_Reference_Override_ID (int AD_Reference_Override_ID)
+=======
+	@Override
+	public void setAD_Reference_Override_ID (final int AD_Reference_Override_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (AD_Reference_Override_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Override_ID, null);
 		else 
+<<<<<<< HEAD
 			set_Value (COLUMNNAME_AD_Reference_Override_ID, Integer.valueOf(AD_Reference_Override_ID));
 	}
 
@@ -190,10 +282,24 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	  */
 	@Override
 	public void setDateFormat (java.lang.String DateFormat)
+=======
+			set_Value (COLUMNNAME_AD_Reference_Override_ID, AD_Reference_Override_ID);
+	}
+
+	@Override
+	public int getAD_Reference_Override_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Override_ID);
+	}
+
+	@Override
+	public void setDateFormat (final @Nullable java.lang.String DateFormat)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_DateFormat, DateFormat);
 	}
 
+<<<<<<< HEAD
 	/** Get Datums-Format.
 		@return Date format used in the imput format
 	  */
@@ -209,10 +315,21 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	  */
 	@Override
 	public void setDefaultValue (java.lang.String DefaultValue)
+=======
+	@Override
+	public java.lang.String getDateFormat() 
+	{
+		return get_ValueAsString(COLUMNNAME_DateFormat);
+	}
+
+	@Override
+	public void setDefaultValue (final @Nullable java.lang.String DefaultValue)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
 	}
 
+<<<<<<< HEAD
 	/** Get Standardwert-Logik.
 		@return Alternativen zur Bestimmung eines Standardwertes, separiert durch Semikolon
 	  */
@@ -226,16 +343,33 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 		@param Description Beschreibung	  */
 	@Override
 	public void setDescription (java.lang.String Description)
+=======
+	@Override
+	public java.lang.String getDefaultValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_DefaultValue);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+<<<<<<< HEAD
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+=======
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/** 
@@ -243,6 +377,7 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
+<<<<<<< HEAD
 	/** Set Entitäts-Art.
 		@param EntityType 
 		Dictionary Entity Type; Determines ownership and synchronization
@@ -265,24 +400,50 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
 	@Override
 	public org.compiere.model.I_EXP_Format getEXP_EmbeddedFormat() throws RuntimeException
+=======
+	@Override
+	public void setEntityType (final java.lang.String EntityType)
+	{
+		set_Value (COLUMNNAME_EntityType, EntityType);
+	}
+
+	@Override
+	public java.lang.String getEntityType() 
+	{
+		return get_ValueAsString(COLUMNNAME_EntityType);
+	}
+
+	@Override
+	public org.compiere.model.I_EXP_Format getEXP_EmbeddedFormat()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsPO(COLUMNNAME_EXP_EmbeddedFormat_ID, org.compiere.model.I_EXP_Format.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setEXP_EmbeddedFormat(org.compiere.model.I_EXP_Format EXP_EmbeddedFormat)
+=======
+	public void setEXP_EmbeddedFormat(final org.compiere.model.I_EXP_Format EXP_EmbeddedFormat)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_ValueFromPO(COLUMNNAME_EXP_EmbeddedFormat_ID, org.compiere.model.I_EXP_Format.class, EXP_EmbeddedFormat);
 	}
 
+<<<<<<< HEAD
 	/** Set Embedded Format.
 		@param EXP_EmbeddedFormat_ID Embedded Format	  */
 	@Override
 	public void setEXP_EmbeddedFormat_ID (int EXP_EmbeddedFormat_ID)
+=======
+	@Override
+	public void setEXP_EmbeddedFormat_ID (final int EXP_EmbeddedFormat_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (EXP_EmbeddedFormat_ID < 1) 
 			set_Value (COLUMNNAME_EXP_EmbeddedFormat_ID, null);
 		else 
+<<<<<<< HEAD
 			set_Value (COLUMNNAME_EXP_EmbeddedFormat_ID, Integer.valueOf(EXP_EmbeddedFormat_ID));
 	}
 
@@ -299,24 +460,47 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 
 	@Override
 	public org.compiere.model.I_EXP_Format getEXP_Format() throws RuntimeException
+=======
+			set_Value (COLUMNNAME_EXP_EmbeddedFormat_ID, EXP_EmbeddedFormat_ID);
+	}
+
+	@Override
+	public int getEXP_EmbeddedFormat_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_EmbeddedFormat_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_EXP_Format getEXP_Format()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsPO(COLUMNNAME_EXP_Format_ID, org.compiere.model.I_EXP_Format.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setEXP_Format(org.compiere.model.I_EXP_Format EXP_Format)
+=======
+	public void setEXP_Format(final org.compiere.model.I_EXP_Format EXP_Format)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_ValueFromPO(COLUMNNAME_EXP_Format_ID, org.compiere.model.I_EXP_Format.class, EXP_Format);
 	}
 
+<<<<<<< HEAD
 	/** Set Export Format.
 		@param EXP_Format_ID Export Format	  */
 	@Override
 	public void setEXP_Format_ID (int EXP_Format_ID)
+=======
+	@Override
+	public void setEXP_Format_ID (final int EXP_Format_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (EXP_Format_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EXP_Format_ID, null);
 		else 
+<<<<<<< HEAD
 			set_ValueNoCheck (COLUMNNAME_EXP_Format_ID, Integer.valueOf(EXP_Format_ID));
 	}
 
@@ -335,10 +519,24 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 		@param EXP_FormatLine_ID Format Line	  */
 	@Override
 	public void setEXP_FormatLine_ID (int EXP_FormatLine_ID)
+=======
+			set_ValueNoCheck (COLUMNNAME_EXP_Format_ID, EXP_Format_ID);
+	}
+
+	@Override
+	public int getEXP_Format_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_Format_ID);
+	}
+
+	@Override
+	public void setEXP_FormatLine_ID (final int EXP_FormatLine_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (EXP_FormatLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EXP_FormatLine_ID, null);
 		else 
+<<<<<<< HEAD
 			set_ValueNoCheck (COLUMNNAME_EXP_FormatLine_ID, Integer.valueOf(EXP_FormatLine_ID));
 	}
 
@@ -359,10 +557,45 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	  */
 	@Override
 	public void setHelp (java.lang.String Help)
+=======
+			set_ValueNoCheck (COLUMNNAME_EXP_FormatLine_ID, EXP_FormatLine_ID);
+	}
+
+	@Override
+	public int getEXP_FormatLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_FormatLine_ID);
+	}
+
+	/** 
+	 * FilterOperator AD_Reference_ID=541875
+	 * Reference name: FilterOperator_for_EXP_FormatLine
+	 */
+	public static final int FILTEROPERATOR_AD_Reference_ID=541875;
+	/** Equals = E */
+	public static final String FILTEROPERATOR_Equals = "E";
+	/** Like = L */
+	public static final String FILTEROPERATOR_Like = "L";
+	@Override
+	public void setFilterOperator (final java.lang.String FilterOperator)
+	{
+		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
+	}
+
+	@Override
+	public java.lang.String getFilterOperator() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
+<<<<<<< HEAD
 	/** Get Kommentar/Hilfe.
 		@return Comment or Hint
 	  */
@@ -427,10 +660,45 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	  */
 	@Override
 	public void setName (java.lang.String Name)
+=======
+	@Override
+	public java.lang.String getHelp() 
+	{
+		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public void setIsMandatory (final boolean IsMandatory)
+	{
+		set_Value (COLUMNNAME_IsMandatory, IsMandatory);
+	}
+
+	@Override
+	public boolean isMandatory() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMandatory);
+	}
+
+	@Override
+	public void setIsPartUniqueIndex (final boolean IsPartUniqueIndex)
+	{
+		set_Value (COLUMNNAME_IsPartUniqueIndex, IsPartUniqueIndex);
+	}
+
+	@Override
+	public boolean isPartUniqueIndex() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPartUniqueIndex);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+<<<<<<< HEAD
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
@@ -457,6 +725,24 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+=======
+	@Override
+	public java.lang.String getName() 
+	{
+		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPosition (final int Position)
+	{
+		set_Value (COLUMNNAME_Position, Position);
+	}
+
+	@Override
+	public int getPosition() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Position);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/** 
@@ -472,6 +758,7 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	public static final String TYPE_EmbeddedEXPFormat = "M";
 	/** Referenced EXP Format = R */
 	public static final String TYPE_ReferencedEXPFormat = "R";
+<<<<<<< HEAD
 	/** Set Art.
 		@param Type 
 		Type of Validation (SQL, Java Script, Java Language)
@@ -498,10 +785,27 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	  */
 	@Override
 	public void setValue (java.lang.String Value)
+=======
+	@Override
+	public void setType (final java.lang.String Type)
+	{
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	@Override
+	public java.lang.String getType() 
+	{
+		return get_ValueAsString(COLUMNNAME_Type);
+	}
+
+	@Override
+	public void setValue (final java.lang.String Value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
+<<<<<<< HEAD
 	/** Get Suchschlüssel.
 		@return Search key for the record in the format required - must be unique
 	  */
@@ -509,5 +813,11 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+=======
+	@Override
+	public java.lang.String getValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_Value);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

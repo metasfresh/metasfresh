@@ -1,21 +1,35 @@
 package de.metas.inoutcandidate.lock;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

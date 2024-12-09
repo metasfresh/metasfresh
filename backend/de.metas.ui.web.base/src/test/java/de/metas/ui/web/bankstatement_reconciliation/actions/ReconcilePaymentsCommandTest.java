@@ -1,5 +1,6 @@
 package de.metas.ui.web.bankstatement_reconciliation.actions;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -32,6 +33,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -44,6 +49,11 @@ import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
+<<<<<<< HEAD
+=======
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -56,6 +66,11 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
+<<<<<<< HEAD
+=======
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -77,6 +92,35 @@ import de.metas.ui.web.bankstatement_reconciliation.PaymentToReconcileRow;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.AbstractBooleanAssert;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.Trace;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -147,7 +191,13 @@ public class ReconcilePaymentsCommandTest
 			}
 		};
 
+<<<<<<< HEAD
 		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService);
+=======
+		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
+
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
 		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
@@ -217,7 +267,11 @@ public class ReconcilePaymentsCommandTest
 
 	@Builder(builderMethodName = "bankStatementLineRow", builderClassName = "BankStatementLineRowBuilder")
 	private BankStatementLineRow createBankStatementLineRow(
+<<<<<<< HEAD
 			@NonNull DocStatus docStatus,
+=======
+			@NonNull final DocStatus docStatus,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final Money statementAmt)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()

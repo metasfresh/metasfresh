@@ -2,6 +2,10 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
@@ -59,7 +63,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -123,7 +130,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
@@ -131,6 +141,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
 	private final HUReservationService huReservationService;
+<<<<<<< HEAD
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final boolean showBestBeforeDate;
 	private final boolean showWeightGross;
@@ -147,6 +161,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
+<<<<<<< HEAD
+=======
+			@NonNull final ADReferenceService adReferenceService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean showBestBeforeDate,
 			final boolean showWeightGross,
 			@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate)
@@ -155,6 +173,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
+<<<<<<< HEAD
+=======
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.showBestBeforeDate = showBestBeforeDate;
 		this.showWeightGross = showWeightGross;
 
@@ -485,7 +507,11 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		else
 		{
 			huStatusKey = hu.getHUStatus();
+<<<<<<< HEAD
 			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+=======
+			huStatusDisplayName = adReferenceService.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);

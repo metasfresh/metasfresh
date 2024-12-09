@@ -5,7 +5,11 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
+<<<<<<< HEAD
 import de.metas.ordercandidate.api.OLCandRegistry;
+=======
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -58,11 +62,19 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	{
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
+<<<<<<< HEAD
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty());
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+=======
+		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty());
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
 		// Initialize C_OLCand MV Only!
@@ -169,7 +181,10 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		assertThat(olCand.getProductDescription()).isNull();
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void testSalesRepSameIdAsBPartner()
 	{

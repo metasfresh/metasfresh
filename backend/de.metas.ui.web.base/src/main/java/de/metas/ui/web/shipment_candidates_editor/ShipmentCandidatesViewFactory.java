@@ -1,8 +1,13 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import de.metas.i18n.IMsgBL;
+=======
+import de.metas.i18n.IMsgBL;
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -17,6 +22,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+<<<<<<< HEAD
+=======
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api

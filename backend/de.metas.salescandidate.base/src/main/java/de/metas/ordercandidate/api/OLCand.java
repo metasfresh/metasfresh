@@ -5,6 +5,10 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+<<<<<<< HEAD
+=======
+import de.metas.error.AdIssueId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.DeliveryRule;
@@ -28,12 +32,19 @@ import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+<<<<<<< HEAD
 import org.compiere.util.TimeUtil;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 
 /*
@@ -65,10 +76,26 @@ public final class OLCand implements IProductPriceAware
 
 	private final I_C_OLCand olCandRecord;
 
+<<<<<<< HEAD
 	@Getter
 	@Setter
 	private LocalDate dateDoc;
 
+=======
+	/**
+	 * This value - if not null - ends up as {@code C_Order.DateOrdered}. If null, the current date will be used.
+	 */
+	@Getter
+	@Setter
+	private LocalDate dateOrdered;
+
+	@Getter
+	private final LocalDate presetDateShipped;
+
+	@Getter
+	private final LocalDate presetDateInvoiced;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final BPartnerInfo bpartnerInfo;
 
 	@Getter
@@ -115,6 +142,10 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final Quantity qty;
+<<<<<<< HEAD
+=======
+	@Nullable @Getter private final BigDecimal manualQtyInPriceUOM;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Getter
 	@Nullable
@@ -147,11 +178,26 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final String email;
 
+<<<<<<< HEAD
+=======
+	@Getter
+	private final AdIssueId adIssueId;
+
+	@Getter
+	private final String headerAggregationKey;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
 			@NonNull final I_C_OLCand olCandRecord,
 			//
+<<<<<<< HEAD
+=======
+			@Nullable final LocalDate dateOrdered,
+			@Nullable final LocalDate presetDateShipped,
+			@Nullable final LocalDate presetDateInvoiced,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final DeliveryRule deliveryRule,
 			@Nullable final DeliveryViaRule deliveryViaRule,
 			@Nullable final FreightCostRule freightCostRule,
@@ -170,13 +216,25 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String phone,
+<<<<<<< HEAD
 			@Nullable final String email)
+=======
+			@Nullable final String email,
+			@Nullable final AdIssueId adIssueId,
+			@Nullable final String headerAggregationKey)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
 		this.olCandRecord = olCandRecord;
 
+<<<<<<< HEAD
 		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
+=======
+		this.dateOrdered = dateOrdered;
+		this.presetDateShipped = presetDateShipped;
+		this.presetDateInvoiced = presetDateInvoiced;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
 		this.billBPartnerInfo = olCandEffectiveValuesBL.getBillToPartnerInfo(olCandRecord);
@@ -194,9 +252,17 @@ public final class OLCand implements IProductPriceAware
 		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
+<<<<<<< HEAD
 		this.qty = Quantitys.create(
 				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
+=======
+		this.qty = Quantitys.of(
+				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
+				Objects.requireNonNull(this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord)));
+
+		this.manualQtyInPriceUOM = olCandEffectiveValuesBL.getManualQtyInPriceUOM(olCandRecord).orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
@@ -216,6 +282,13 @@ public final class OLCand implements IProductPriceAware
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+<<<<<<< HEAD
+=======
+
+		this.adIssueId = adIssueId;
+
+		this.headerAggregationKey = headerAggregationKey;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -269,11 +342,19 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public WarehouseId getWarehouseId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());
@@ -304,6 +385,10 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getC_Currency_ID();
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getProductDescription()
 	{
 		return olCandRecord.getProductDescription();
@@ -336,13 +421,24 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
+<<<<<<< HEAD
 	public void setError(final String errorMsg, final int adNoteId)
+=======
+	public void setError(final String errorMsg, final int adNoteId, @Nullable final AdIssueId adIssueId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		olCandRecord.setIsError(true);
 		olCandRecord.setErrorMsg(errorMsg);
 		olCandRecord.setAD_Note_ID(adNoteId);
+<<<<<<< HEAD
 	}
 
+=======
+		olCandRecord.setAD_Issue_ID(AdIssueId.toRepoId(adIssueId));
+	}
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getPOReference()
 	{
 		return olCandRecord.getPOReference();
@@ -370,6 +466,10 @@ public final class OLCand implements IProductPriceAware
 	}
 
 	// FIXME hardcoded (08691)
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
 	{
 		final String olCandColumnName = column.getColumnName();
@@ -408,7 +508,11 @@ public final class OLCand implements IProductPriceAware
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DateOrdered))
 		{
+<<<<<<< HEAD
 			return getDateDoc();
+=======
+			return getDateOrdered();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{
@@ -460,6 +564,7 @@ public final class OLCand implements IProductPriceAware
 		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(olCandRecord.getInvoicableQtyBasedOn());
 	}
 
+<<<<<<< HEAD
 	public LocalDate getPresetDateInvoiced()
 	{
 		return TimeUtil.asLocalDate(olCandRecord.getPresetDateInvoiced());
@@ -470,6 +575,8 @@ public final class OLCand implements IProductPriceAware
 		return TimeUtil.asLocalDate(olCandRecord.getPresetDateShipped());
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
@@ -484,4 +591,12 @@ public final class OLCand implements IProductPriceAware
 
 		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
 	}
+<<<<<<< HEAD
+=======
+
+	public void setHeaderAggregationKey(@NonNull final String headerAggregationKey)
+	{
+		olCandRecord.setHeaderAggregationKey(headerAggregationKey);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

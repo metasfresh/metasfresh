@@ -1,6 +1,15 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+<<<<<<< HEAD
 import de.metas.handlingunits.HuId;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.impl.HUIterator;
+import de.metas.handlingunits.model.I_M_HU;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -9,6 +18,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.IMutable;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -39,6 +56,10 @@ import java.util.Set;
 public class RemoveHUFromPickingSlotCommand
 {
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+<<<<<<< HEAD
+=======
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final HuId huId;
@@ -59,7 +80,25 @@ public class RemoveHUFromPickingSlotCommand
 
 	public void perform()
 	{
+<<<<<<< HEAD
 		final List<PickingCandidate> candidates = retrievePickingCandidates();
+=======
+		final Set<HuId> huIdAndDownstream = new HashSet<>();
+		new HUIterator()
+			.setEnableStorageIteration(false)
+			.setListener(new HUIteratorListenerAdapter()
+			{
+				@Override
+				public Result beforeHU(IMutable<I_M_HU> hu)
+				{
+					huIdAndDownstream.add(HuId.ofRepoId(hu.getValue().getM_HU_ID()));
+					return Result.CONTINUE;
+				}
+			})
+			.iterate(handlingUnitsDAO.getById(huId));
+
+		final List<PickingCandidate> candidates = retrievePickingCandidates(ImmutableSet.copyOf(huIdAndDownstream));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(candidates);
 
 		pickingCandidateRepository.deletePickingCandidates(candidates);
@@ -67,7 +106,11 @@ public class RemoveHUFromPickingSlotCommand
 
 	}
 
+<<<<<<< HEAD
 	private List<PickingCandidate> retrievePickingCandidates()
+=======
+	private List<PickingCandidate> retrievePickingCandidates(@NonNull final ImmutableSet<HuId> huIds)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(huId, pickingSlotId);
 	}

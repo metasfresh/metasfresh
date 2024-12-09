@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
+<<<<<<< HEAD
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.Services;
@@ -60,8 +64,13 @@ public class CommissionInstanceDAO
 	 */
 	public boolean isILsReferencedByCommissionInstances(@NonNull final Set<SalesInvoiceLineDocumentId> salesInvoiceLineDocumentIds)
 	{
+<<<<<<< HEAD
 		final ImmutableSet<InvoiceLineId> invoiceLineIds = salesInvoiceLineDocumentIds.stream()
 				.map(SalesInvoiceLineDocumentId::getInvoiceLineId)
+=======
+		final ImmutableSet<InvoiceAndLineId> invoiceLineIds = salesInvoiceLineDocumentIds.stream()
+				.map(SalesInvoiceLineDocumentId::getInvoiceAndLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableSet.toImmutableSet());
 
 		return queryBL.createQueryBuilder(I_C_Commission_Instance.class)

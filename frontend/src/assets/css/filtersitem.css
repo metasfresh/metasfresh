@@ -1,4 +1,5 @@
 .filter-tooltip {
+<<<<<<< HEAD
     margin-top: 10px;
     left: 25px;
 }
@@ -21,4 +22,43 @@
     width: 100%;
     min-height: 30px;
     padding: 15px;
+=======
+  margin-top: 10px;
+  left: 25px;
+}
+
+.filter-wrapper {
+  .btn-filter {
+    padding: 0.425rem .6rem;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.inline-filters {
+  margin-left: 3px;
+  margin-right: 5px;
+}
+
+.filter-multiselect {
+  width: 100%;
+  min-height: 30px;
+  padding: 15px;
+
+  .col-label {
+    label {
+      width: 100%;
+    }
+  }
+
+  .col-chk {
+    padding-left: 0;
+    
+    .input-checkbox {
+      margin-left: 0 !important;
+      margin-right: .5rem !important;
+    }
+  }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

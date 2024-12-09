@@ -157,6 +157,10 @@ public class PPOrderCostsTest
 			final PPOrderCosts orderCosts,
 			final ProductId productId)
 	{
+<<<<<<< HEAD
 		return assertThat(getPostCalculationCostAmt(orderCosts, productId).getValue());
+=======
+		return assertThat(getPostCalculationCostAmt(orderCosts, productId).toBigDecimal());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

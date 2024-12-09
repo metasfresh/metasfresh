@@ -22,6 +22,7 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -35,13 +36,30 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocContext;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.document.DocBaseType;
+import org.compiere.acct.Doc;
+import org.compiere.acct.DocLine;
+import org.compiere.acct.Fact;
+import org.eevolution.model.I_DD_Order;
+
+import java.math.BigDecimal;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 {
 
 	public Doc_DDOrder(final AcctDocContext ctx)
 	{
+<<<<<<< HEAD
 		super(ctx, MDocType.DOCBASETYPE_DistributionOrder);
+=======
+		super(ctx, DocBaseType.DistributionOrder);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_DD_Order ddOrder = getModel(I_DD_Order.class);
 		setDateAcct(ddOrder.getDateOrdered());

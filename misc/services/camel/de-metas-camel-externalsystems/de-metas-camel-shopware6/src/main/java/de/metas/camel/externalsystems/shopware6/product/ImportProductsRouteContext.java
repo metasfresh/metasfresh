@@ -77,6 +77,14 @@ public class ImportProductsRouteContext
 	@Getter(AccessLevel.NONE)
 	private JsonProduct jsonProduct;
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonProduct parentJsonProduct;
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setNextImportStartingTimestamp(@NonNull final Instant candidate)
 	{
 		if (candidate.isAfter(nextImportStartingTimestamp))
@@ -101,4 +109,13 @@ public class ImportProductsRouteContext
 
 		return jsonProduct;
 	}
+<<<<<<< HEAD
+=======
+
+	@Nullable
+	public JsonProduct getParentJsonProduct()
+	{
+		return parentJsonProduct;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

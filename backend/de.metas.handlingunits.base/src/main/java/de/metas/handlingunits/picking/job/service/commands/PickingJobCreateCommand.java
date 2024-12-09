@@ -24,6 +24,10 @@ import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+<<<<<<< HEAD
+=======
+import de.metas.logging.LogManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -31,15 +35,28 @@ import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PackageableQuery;
+<<<<<<< HEAD
+=======
+import de.metas.picking.api.PickingSlotId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
+=======
+import org.slf4j.Logger;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Objects;
 
@@ -56,6 +73,11 @@ public class PickingJobCreateCommand
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
+<<<<<<< HEAD
+=======
+	private final PickingJobSlotService pickingJobSlotService;
+	private final WorkplaceService workplaceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final PickingJobCreateRequest request;
 
@@ -70,15 +92,27 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
+<<<<<<< HEAD
+=======
+			@NonNull final WorkplaceService workplaceService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			//
 			@NonNull final PickingJobCreateRequest request)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
+<<<<<<< HEAD
+=======
+		this.pickingJobSlotService = pickingJobSlotService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.pickingConfigRepo = pickingConfigRepo;
+<<<<<<< HEAD
+=======
+		this.workplaceService = workplaceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.request = request;
 	}
@@ -120,7 +154,11 @@ public class PickingJobCreateCommand
 
 			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
 
+<<<<<<< HEAD
 			return pickingJob;
+=======
+			return allocatePickingSlotIfPossible(pickingJob);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (final Exception createJobException)
 		{
@@ -137,6 +175,32 @@ public class PickingJobCreateCommand
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
+	{
+		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
+				.map(Workplace::getPickingSlotId)
+				.orElse(null);
+
+		if (pickingSlotId == null)
+		{
+			return pickingJob;
+		}
+
+		return PickingJobAllocatePickingSlotCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
+				.pickingSlotService(pickingJobSlotService)
+				//
+				.pickingJob(pickingJob)
+				.pickingSlotId(pickingSlotId)
+				.failIfNotAllocated(false)
+				//
+				.build().execute();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private PackageableList getItemsToPick()
 	{
 		final PackageableQuery query = toPackageableQuery(request);
@@ -236,9 +300,15 @@ public class PickingJobCreateCommand
 	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull PackageableList items)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
+<<<<<<< HEAD
 				.packageables(items)
 				.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
 				.build());
+=======
+																			.packageables(items)
+																			.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
+																			.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
@@ -258,12 +328,21 @@ public class PickingJobCreateCommand
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
+<<<<<<< HEAD
 						.map(this::createStepRequest)
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
 						.stream()
 						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
 						.collect(ImmutableSet.toImmutableSet()))
+=======
+							   .map(this::createStepRequest)
+							   .collect(ImmutableList.toImmutableList()))
+				.pickFromAlternatives(plan.getAlternatives()
+											  .stream()
+											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+											  .collect(ImmutableSet.toImmutableSet()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -369,12 +448,21 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
+<<<<<<< HEAD
 						.sourceHU(pickFromHU)
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
 						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 						.build());
+=======
+										 .sourceHU(pickFromHU)
+										 .productId(productId)
+										 .qtyCU(qtyToPick)
+										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+										 .build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

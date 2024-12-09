@@ -293,8 +293,13 @@ public class DataExportAudit_StepDef
 	@And("all the export audit data is reset")
 	public void reset_data_export_audit()
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx("TRUNCATE TABLE Data_Export_Audit cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE Data_Export_Audit_Log cascade", ITrx.TRXNAME_None);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE Data_Export_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE Data_Export_Audit_Log cascade", ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("add external system config and pinstance headers")

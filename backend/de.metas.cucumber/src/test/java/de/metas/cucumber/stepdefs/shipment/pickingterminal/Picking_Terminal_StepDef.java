@@ -71,7 +71,10 @@ public class Picking_Terminal_StepDef
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable)
@@ -109,8 +112,13 @@ public class Picking_Terminal_StepDef
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.inventoryService(inventoryService)
 				.request(ProcessPickingCandidatesRequest.builder()
+<<<<<<< HEAD
 						.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
 						.build())
+=======
+								 .pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
+								 .build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		processPickingCandidatesCommand.execute();
@@ -156,10 +164,17 @@ public class Picking_Terminal_StepDef
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_M_HU hu = huTable.get(huIdentifier);
+<<<<<<< HEAD
 			assertThat(hu).isNotNull();
 
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 			assertThat(shipmentSchedule).isNotNull();
+=======
+			assertThat(hu).as("Missing M_HU for " + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER + "=%s", huIdentifier).isNotNull();
+
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+			assertThat(shipmentSchedule).as("Missing M_ShipmentSchedule for " + COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER + "=%s", shipmentScheduleIdentifier).isNotNull();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
 

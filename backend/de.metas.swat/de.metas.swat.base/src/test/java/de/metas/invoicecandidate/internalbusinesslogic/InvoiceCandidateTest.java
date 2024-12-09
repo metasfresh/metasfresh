@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
@@ -10,6 +11,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -21,6 +24,28 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.Percent;
+<<<<<<< HEAD
+=======
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.DELIVERY_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.HUNDRET;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.IC_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINE;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINETY;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.PRODUCT_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -62,8 +87,13 @@ class InvoiceCandidateTest
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
+<<<<<<< HEAD
 				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
 				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+=======
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -78,8 +108,13 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
+<<<<<<< HEAD
 				.qtyPicked(Quantitys.create(BigDecimal.ZERO, STOCK_UOM_ID))
 				.qtyPickedInUOM(Quantitys.create(BigDecimal.ZERO, DELIVERY_UOM_ID))
+=======
+				.qtyPicked(Quantitys.of(BigDecimal.ZERO, STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(BigDecimal.ZERO, DELIVERY_UOM_ID))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()
@@ -90,7 +125,11 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
 				.soTrx(SOTrx.PURCHASE)
 				.id(InvoiceCandidateId.ofRepoId(10))
+<<<<<<< HEAD
 				.product(new InvoiceCandidateProduct(PRODUCT_ID, true/* stocked */))
+=======
+				.product(new InvoiceCandidateProduct(PRODUCT_ID, true /* itemType*/))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.uomId(IC_UOM_ID)
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
@@ -109,6 +148,7 @@ class InvoiceCandidateTest
 	@Test
 	void sales_serialize_deserialize()
 	{
+<<<<<<< HEAD
 		final Quantity shippedQtyInStockUom = Quantitys.create(TEN, STOCK_UOM_ID);
 		final Quantity shippedQtyNominal = Quantitys.create(new BigDecimal("40"), DELIVERY_UOM_ID);
 		final Quantity shippedQtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
@@ -117,6 +157,16 @@ class InvoiceCandidateTest
 				.orderFullyDelivered(false)
 				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
 				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+=======
+		final Quantity shippedQtyInStockUom = Quantitys.of(TEN, STOCK_UOM_ID);
+		final Quantity shippedQtyNominal = Quantitys.of(new BigDecimal("40"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyCatch = Quantitys.of(new BigDecimal("43"), DELIVERY_UOM_ID);
+
+		final OrderedData orderedData = OrderedData.builder()
+				.orderFullyDelivered(false)
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -135,8 +185,13 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
+<<<<<<< HEAD
 				.qtyPicked(Quantitys.create(new BigDecimal("20"), STOCK_UOM_ID))
 				.qtyPickedInUOM(Quantitys.create(new BigDecimal("70"), DELIVERY_UOM_ID))
+=======
+				.qtyPicked(Quantitys.of(new BigDecimal("20"), STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(new BigDecimal("70"), DELIVERY_UOM_ID))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()
@@ -147,7 +202,11 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
 				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(10))
+<<<<<<< HEAD
 				.product(new InvoiceCandidateProduct(PRODUCT_ID, true/* stocked */))
+=======
+				.product(new InvoiceCandidateProduct(PRODUCT_ID,  true/*itemType*/))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.uomId(IC_UOM_ID)
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
@@ -281,9 +340,15 @@ class InvoiceCandidateTest
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
+<<<<<<< HEAD
 		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("60"); // ordered qty
 		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("29"); // ordered qty in stock UOM
+=======
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("20"); // delivered nominal qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("19"); // delivered qty in stock UOM
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 

@@ -640,7 +640,11 @@ jobs:
       max-parallel: 10
       fail-fast: false
       matrix:
+<<<<<<< HEAD
         profile: [profile1, profile2, catchall]
+=======
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, catchall ]
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         include:
           - profile: profile1
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
@@ -659,7 +663,11 @@ jobs:
           - profile: flaky
             params: -Dcucumber.filter.tags="@ghActions:flaky and not @ignore"
           - profile: catchall
+<<<<<<< HEAD
             params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
+=======
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @ghActions:flaky"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -674,6 +682,13 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           cucumberparams: ${{ matrix.params }}
+<<<<<<< HEAD
+=======
+          TEST_SMTP_HOST: ${{ secrets.TEST_SMTP_HOST }}
+          TEST_SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
+          TEST_SMTP_USER: ${{ secrets.TEST_SMTP_USER }}
+          TEST_SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         timeout-minutes: 120
         run: |
           mkdir cucumber
@@ -770,11 +785,19 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
+<<<<<<< HEAD
 #      - name: run api health checks
 #        working-directory: docker-builds/health/
 #        if: success() || failure()
 #        run: |
 #          ./apiHealthChecks.sh
+=======
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./apiHealthChecks.sh
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()

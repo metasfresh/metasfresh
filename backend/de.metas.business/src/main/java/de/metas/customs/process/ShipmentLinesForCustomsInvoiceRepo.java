@@ -1,5 +1,6 @@
 package de.metas.customs.process;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -16,6 +20,14 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_M_InOut;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -91,7 +103,11 @@ public class ShipmentLinesForCustomsInvoiceRepo
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
+<<<<<<< HEAD
 		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(inOutLineId, I_M_InOutLine.class);
+=======
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineByIdOutOfTrx(inOutLineId, I_M_InOutLine.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (shipmentLineRecord.isPackagingMaterial())
 		{

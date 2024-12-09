@@ -63,11 +63,19 @@ public class PickingSlotsClearingViewFilters
 				.setFilterId(FILTER_ID_BPartner)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_C_BPartner_ID)
 						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptor(bpartnerLookupDescriptor))
+=======
+						.fieldName(PARAM_C_BPartner_ID)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Lookup)
+						.lookupDescriptor(bpartnerLookupDescriptor))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 	}

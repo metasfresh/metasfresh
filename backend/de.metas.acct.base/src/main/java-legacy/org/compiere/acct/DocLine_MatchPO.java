@@ -1,14 +1,18 @@
 package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.AggregatedCostAmount;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -17,23 +21,49 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+=======
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
+=======
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
+<<<<<<< HEAD
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+=======
+
+import java.sql.Timestamp;
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -59,6 +89,7 @@ import java.sql.Timestamp;
 
 final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 {
+<<<<<<< HEAD
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 	private final I_C_OrderLine orderLine;
@@ -71,12 +102,48 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 
 		setDateDoc(TimeUtil.asLocalDate(matchPO.getDateTrx()));
+=======
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
+
+	private final I_C_OrderLine orderLine;
+	private final I_M_InOutLine _receiptLine;
+	private final I_M_InOut _receipt;
+	private final CurrencyConversionContext _currencyConversionContext;
+
+	DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
+	{
+		super(InterfaceWrapperHelper.getPO(matchPO), doc);
+
+		IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(matchPO.getC_OrderLine_ID());
+		this.orderLine = orderDAO.getOrderLineById(orderLineId);
+
+		IInOutBL inoutBL = Services.get(IInOutBL.class);
+		final InOutLineId receiptLineId = InOutLineId.ofRepoIdOrNull(matchPO.getM_InOutLine_ID());
+		if (receiptLineId == null)
+		{
+			throw newPostingException()
+					.setDetailMessage("MatchPO cannot be posted because receipt line is not set yet")
+					.setPreserveDocumentPostedStatus();
+		}
+		this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
+		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
+		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);
+
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(
+				matchPO.getDateTrx(),
+				OrgId.ofRepoId(matchPO.getAD_Org_ID()),
+				doc.getServices()::getTimeZone));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
 		final boolean isSOTrx = false;
 		setQty(qty, isSOTrx);
 	}
 
+<<<<<<< HEAD
 	/** @return PO cost amount in accounting schema currency */
 	CostAmount getPOCostAmount(final AcctSchema as)
 	{
@@ -100,6 +167,36 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return poCost
 				.multiply(conversionRate.getConversionRate())
 				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
+=======
+	CostAmount getPOCostAmountInAcctCurrency(final AcctSchema acctSchema)
+	{
+		final CostAmount poCostAmt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), getQty());
+		return convertToAcctCurrency(poCostAmt, acctSchema);
+	}
+
+	private CostAmount convertToAcctCurrency(final CostAmount amt, final AcctSchema acctSchema)
+	{
+		if (amt.getCurrencyId().equals(acctSchema.getCurrencyId()))
+		{
+			return amt;
+		}
+
+		final CurrencyConversionResult poCostConv = currencyBL.convert(
+				getCurrencyConversionContext().withPrecision(acctSchema.getCosting().getCostingPrecision()),
+				amt.toMoney(),
+				acctSchema.getCurrencyId());
+
+		return CostAmount.of(poCostConv.getAmount(), acctSchema.getCurrencyId());
+	}
+
+	private ProductPrice getOrderLineCostPriceInStockingUOM()
+	{
+		final I_C_OrderLine orderLine = getOrderLine();
+		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
+
+		final CurrencyPrecision precision = currencyBL.getCostingPrecision(costPrice.getCurrencyId());
+		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	CostAmount getStandardCosts(final AcctSchema acctSchema)
@@ -122,6 +219,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
+<<<<<<< HEAD
 	AggregatedCostAmount createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
@@ -143,14 +241,36 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+=======
+	void createCostDetails(final AcctSchema as)
+	{
+		final I_M_InOut receipt = getReceipt();
+		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
+		final CostAmount amt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), qty);
+
+		// NOTE: there is no need to fail if no cost details were created because:
+		// * not all costing methods are creating cost details for MatchPO
+		// * we are not using the result of cost details
+		services.createCostDetailOrEmpty(
+				CostDetailCreateRequest.builder()
+						.acctSchemaId(as.getId())
+						.clientId(ClientId.ofRepoId(receipt.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(receipt.getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.productId(getProductId())
 						.attributeSetInstanceId(getAttributeSetInstanceId())
 						.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
 						.qty(qty)
 						.amt(amt)
+<<<<<<< HEAD
 						.currencyConversionTypeId(currencyConversionTypeId)
 						.date(TimeUtil.asLocalDate(receiptDateAcct))
 						.description(orderLine.getDescription())
+=======
+						.currencyConversionContext(getCurrencyConversionContext())
+						.date(getReceiptDateAcct())
+						.description(getOrderLine().getDescription())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.build());
 	}
 
@@ -159,6 +279,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return orderLine;
 	}
 
+<<<<<<< HEAD
 	private ProductPrice getOrderLineCostPrice()
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -180,13 +301,40 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	I_M_InOutLine getReceiptLine()
 	{
 		return getModel(I_M_MatchPO.class).getM_InOutLine();
+=======
+	I_M_InOutLine getReceiptLine()
+	{
+		return this._receiptLine;
+	}
+
+	I_M_InOut getReceipt()
+	{
+		return this._receipt;
+	}
+
+	private CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return this._currencyConversionContext;
+	}
+
+	Instant getReceiptDateAcct()
+	{
+		final I_M_InOut receipt = getReceipt();
+		final Timestamp receiptDateAcct = receipt.getDateAcct();
+		return receiptDateAcct.toInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	boolean isReturnTrx()
 	{
+<<<<<<< HEAD
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		final I_M_InOut inOut = receiptLine.getM_InOut();
 		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(inOut.getMovementType());
+=======
+		final I_M_InOut receipt = getReceipt();
+		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(receipt.getMovementType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private int getM_MatchPO_ID()

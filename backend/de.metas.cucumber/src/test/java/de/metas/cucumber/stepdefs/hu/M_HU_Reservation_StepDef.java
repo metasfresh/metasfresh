@@ -73,7 +73,11 @@ public class M_HU_Reservation_StepDef
 
 			final HUReservation huReservation = huReservationService.makeReservation(
 							ReserveHUsRequest.builder()
+<<<<<<< HEAD
 									.qtyToReserve(Quantitys.create(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
+=======
+									.qtyToReserve(Quantitys.of(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 									.documentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
 									.productId(ProductId.ofRepoId(huStorageRecord.getM_Product_ID()))
 									.huId(huId)

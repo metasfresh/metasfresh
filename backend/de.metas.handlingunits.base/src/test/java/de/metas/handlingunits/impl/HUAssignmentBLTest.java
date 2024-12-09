@@ -1,6 +1,10 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -76,6 +80,10 @@ public class HUAssignmentBLTest
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+<<<<<<< HEAD
+=======
+				ADReferenceService.newMocked(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										   new PPOrderIssueScheduleService(

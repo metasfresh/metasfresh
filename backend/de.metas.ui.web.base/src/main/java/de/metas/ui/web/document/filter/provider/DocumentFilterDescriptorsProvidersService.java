@@ -52,14 +52,22 @@ public final class DocumentFilterDescriptorsProvidersService
 		logger.info("Provider factories: {}", providerFactories);
 	}
 
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ImmutableList<DocumentFilterDescriptorsProvider> providers = providerFactories
 				.stream()
 				.filter(DocumentFilterDescriptorsProviderFactory::isActive)
+<<<<<<< HEAD
 				.map(provider -> provider.createFiltersProvider(context, fields))
+=======
+				.map(provider -> provider.createFiltersProvider(context))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
 				.collect(ImmutableList.toImmutableList());
 

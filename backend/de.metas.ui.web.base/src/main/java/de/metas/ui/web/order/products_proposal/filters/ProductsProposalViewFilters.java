@@ -57,7 +57,11 @@ public class ProductsProposalViewFilters
 				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 				.setDisplayName(getDefaultFilterCaption())
 				.addParameter(newParamDescriptor(ProductsProposalViewFilter.PARAM_ProductName)
+<<<<<<< HEAD
 						.setWidgetType(DocumentFieldWidgetType.Text))
+=======
+						.widgetType(DocumentFieldWidgetType.Text))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -69,8 +73,13 @@ public class ProductsProposalViewFilters
 	private static DocumentFilterParamDescriptor.Builder newParamDescriptor(final String fieldName)
 	{
 		return DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 				.setFieldName(fieldName)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(fieldName));
+=======
+				.fieldName(fieldName)
+				.displayName(Services.get(IMsgBL.class).translatable(fieldName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static ProductsProposalViewFilter extractPackageableViewFilterVO(@NonNull final JSONFilterViewRequest filterViewRequest)

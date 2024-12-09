@@ -176,7 +176,11 @@ public class MClientShare extends X_AD_ClientShare
 			StringBuilder sql = new StringBuilder("UPDATE ")
 					.append(getTableName())
 					.append(" SET AD_Org_ID=0 WHERE AD_Org_ID<>0 AND AD_Client_ID=?");
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql.toString(), getAD_Client_ID(), get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), getAD_Client_ID(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			info = getTableName() + " set to Shared #" + no;
 			log.info(info);
 		}

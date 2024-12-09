@@ -484,7 +484,11 @@ public class ValuePreference extends CDialog
 		sql.append(" AND Attribute='").append(m_Attribute).append("'");
 		//
 		log.debug( sql.toString());
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql.toString(), null);
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no > 0)
 		{
 			Env.setContext(m_ctx, getContextKey(), (String)null);
@@ -566,7 +570,11 @@ public class ValuePreference extends CDialog
 		sql.append(DB.TO_STRING(m_Attribute)).append(",").append(DB.TO_STRING(m_Value)).append(")");
 		//
 		log.debug( sql.toString());
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), null);
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no == 1)
 		{
 			Env.setContext(m_ctx, getContextKey(), m_Value);

@@ -51,7 +51,11 @@ public class HUReceiptScheduleListener extends ReceiptScheduleListenerAdapter
 		final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> allocs = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, trxName);
+=======
+		final List<I_M_ReceiptSchedule_Alloc> allocs = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		huReceiptScheduleBL.destroyHandlingUnits(allocs, trxName);
 	}

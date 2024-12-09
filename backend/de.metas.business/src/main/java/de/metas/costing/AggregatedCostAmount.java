@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +14,13 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaCosting;
+import de.metas.costing.methods.CostAmountDetailed;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,6 +28,17 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -44,18 +63,30 @@ import lombok.Value;
  */
 
 @Value
+<<<<<<< HEAD
 public final class AggregatedCostAmount
+=======
+public class AggregatedCostAmount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
 
 	@Getter(AccessLevel.NONE)
+<<<<<<< HEAD
 	ImmutableMap<CostElement, CostAmount> amountsPerElement;
+=======
+	ImmutableMap<CostElement, CostAmountDetailed> amountsPerElement;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private AggregatedCostAmount(
 			@NonNull final CostSegment costSegment,
+<<<<<<< HEAD
 			@NonNull @Singular final Map<CostElement, CostAmount> amounts)
+=======
+			@NonNull @Singular final Map<CostElement, CostAmountDetailed> amounts)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
@@ -68,9 +99,15 @@ public final class AggregatedCostAmount
 		return amountsPerElement.keySet();
 	}
 
+<<<<<<< HEAD
 	public CostAmount getCostAmountForCostElement(final CostElement costElement)
 	{
 		final CostAmount amt = amountsPerElement.get(costElement);
+=======
+	public CostAmountDetailed getCostAmountForCostElement(final CostElement costElement)
+	{
+		final CostAmountDetailed amt = amountsPerElement.get(costElement);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (amt == null)
 		{
 			throw new AdempiereException("No cost amount for " + costElement + " in " + this);
@@ -86,7 +123,11 @@ public final class AggregatedCostAmount
 		}
 
 		// merge amounts maps; will fail in case of duplicate cost elements
+<<<<<<< HEAD
 		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount> builder()
+=======
+		final ImmutableMap<CostElement, CostAmountDetailed> amountsNew = ImmutableMap.<CostElement, CostAmountDetailed>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.putAll(amountsPerElement)
 				.putAll(other.amountsPerElement)
 				.build();
@@ -101,7 +142,11 @@ public final class AggregatedCostAmount
 			throw new AdempiereException("Cannot add cost results when the cost segment is not matching: " + this + ", " + other);
 		}
 
+<<<<<<< HEAD
 		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement);
+=======
+		final Map<CostElement, CostAmountDetailed> amountsNew = new HashMap<>(amountsPerElement);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
@@ -109,6 +154,7 @@ public final class AggregatedCostAmount
 		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
+<<<<<<< HEAD
 	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
 		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
@@ -147,5 +193,41 @@ public final class AggregatedCostAmount
 		}
 
 		return true;
+=======
+	@VisibleForTesting
+	public AggregatedCostAmount retainOnlyAccountable(@NonNull final AcctSchema as)
+	{
+		final AcctSchemaCosting costing = as.getCosting();
+
+		final LinkedHashMap<CostElement, CostAmountDetailed> amountsPerElementNew = new LinkedHashMap<>();
+		amountsPerElement.forEach((costElement, costAmount) -> {
+			if (costElement.isAccountable(costing))
+			{
+				amountsPerElementNew.put(costElement, costAmount);
+			}
+		});
+
+		if (amountsPerElementNew.size() == amountsPerElement.size())
+		{
+			return this;
+		}
+
+		return new AggregatedCostAmount(costSegment, amountsPerElementNew);
+	}
+
+	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
+	{
+		return getTotalAmount(as.getCosting()).orElseGet(() -> CostAmountDetailed.zero(as.getCurrencyId()));
+	}
+
+	@VisibleForTesting
+	Optional<CostAmountDetailed> getTotalAmount(@NonNull final AcctSchemaCosting asCosting)
+	{
+		return getCostElements()
+				.stream()
+				.filter(costElement -> costElement.isAccountable(asCosting))
+				.map(this::getCostAmountForCostElement)
+				.reduce(CostAmountDetailed::add);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

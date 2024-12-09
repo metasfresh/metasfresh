@@ -12,6 +12,10 @@ import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -37,6 +41,11 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
 
+<<<<<<< HEAD
+=======
+	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	I_M_Attribute getAttributeById(int attributeId);
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
@@ -63,7 +72,11 @@ public interface IAttributeDAO extends ISingletonService
 	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
 
 	/**
+<<<<<<< HEAD
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
+=======
+	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeSetId#NONE}).
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	I_M_AttributeSet retrieveNoAttributeSet();
 

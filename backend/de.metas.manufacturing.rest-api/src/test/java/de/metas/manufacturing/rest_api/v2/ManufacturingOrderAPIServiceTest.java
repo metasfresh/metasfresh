@@ -38,9 +38,15 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonResponseReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.v2.Outcome;
+<<<<<<< HEAD
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+=======
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -72,7 +78,10 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -98,6 +107,10 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPCostCollectorId;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPOrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -117,7 +130,11 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAPIServiceTest

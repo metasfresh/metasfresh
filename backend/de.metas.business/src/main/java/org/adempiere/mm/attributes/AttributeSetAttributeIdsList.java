@@ -25,7 +25,11 @@ package org.adempiere.mm.attributes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
 import de.metas.util.GuavaCollectors;
+=======
+import lombok.Builder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,12 +38,16 @@ import lombok.ToString;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+<<<<<<< HEAD
 import java.util.stream.Collector;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @EqualsAndHashCode
 @ToString(of = "byId")
 public final class AttributeSetAttributeIdsList
 {
+<<<<<<< HEAD
 	public static AttributeSetAttributeIdsList ofList(@NonNull final List<AttributeSetAttribute> list)
 	{
 		return !list.isEmpty() ? new AttributeSetAttributeIdsList(list) : EMPTY;
@@ -63,6 +71,31 @@ public final class AttributeSetAttributeIdsList
 				.map(AttributeSetAttribute::getAttributeId)
 				.collect(ImmutableList.toImmutableList());
 		byId = Maps.uniqueIndex(list, AttributeSetAttribute::getAttributeId);
+=======
+	@NonNull @Getter AttributeSetId attributeSetId;
+	@NonNull @Getter private final ImmutableList<AttributeId> attributeIdsInOrder;
+	@NonNull private final ImmutableMap<AttributeId, AttributeSetAttribute> byId;
+
+	@Builder
+	private AttributeSetAttributeIdsList(
+			@NonNull AttributeSetId attributeSetId,
+			@NonNull final List<AttributeSetAttribute> list)
+	{
+		this.attributeSetId = attributeSetId;
+		this.attributeIdsInOrder = list.stream()
+				.sorted(Comparator.comparing(AttributeSetAttribute::getSeqNo))
+				.map(AttributeSetAttribute::getAttributeId)
+				.collect(ImmutableList.toImmutableList());
+		this.byId = Maps.uniqueIndex(list, AttributeSetAttribute::getAttributeId);
+	}
+
+	public static AttributeSetAttributeIdsList empty(@NonNull final AttributeSetId attributeSetId)
+	{
+		return AttributeSetAttributeIdsList.builder()
+				.attributeSetId(attributeSetId)
+				.list(ImmutableList.of())
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public boolean contains(@NonNull final AttributeId attributeId)

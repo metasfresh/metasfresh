@@ -114,7 +114,11 @@ public class HUInOutDAO implements IHUInOutDAO
 	@Override
 	public List<I_M_HU> retrieveHandlingUnitsByInOutLineId(@NonNull final InOutLineId inOutLineId)
 	{
+<<<<<<< HEAD
 		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineById(inOutLineId));
+=======
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineByIdInTrx(inOutLineId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

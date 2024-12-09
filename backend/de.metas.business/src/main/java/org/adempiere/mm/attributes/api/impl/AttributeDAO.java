@@ -1,10 +1,18 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ArrayListMultimap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.Multimaps;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
@@ -33,6 +41,10 @@ import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -107,16 +119,36 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		if (attributeSetId.isNone())
 		{
+<<<<<<< HEAD
 			return AttributeSetAttributeIdsList.EMPTY;
+=======
+			return AttributeSetAttributeIdsList.empty(attributeSetId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return attributeSetAttributeIdsListsCache.getOrLoad(attributeSetId, this::retrieveAttributeIdsByAttributeSetId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull final Set<AttributeSetId> attributeSetIds)
+	{
+		if (attributeSetIds.isEmpty())
+		{
+			return MultiAttributeSetAttributeIdsList.EMPTY;
+		}
+
+		return MultiAttributeSetAttributeIdsList.of(attributeSetAttributeIdsListsCache.getAllOrLoad(attributeSetIds, this::retrieveAttributeIdsByAttributeSetIds));
+	}
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private AttributeSetAttributeIdsList retrieveAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
 		{
+<<<<<<< HEAD
 			return AttributeSetAttributeIdsList.EMPTY;
 		}
 
@@ -131,6 +163,43 @@ public class AttributeDAO implements IAttributeDAO
 				.stream()
 				.map(AttributeDAO::toAttributeSetAttribute)
 				.collect(AttributeSetAttributeIdsList.collect());
+=======
+			return AttributeSetAttributeIdsList.empty(attributeSetId);
+		}
+
+		return retrieveAttributeIdsByAttributeSetIds(ImmutableSet.of(attributeSetId)).get(attributeSetId);
+	}
+
+	@NonNull
+	private Map<AttributeSetId, AttributeSetAttributeIdsList> retrieveAttributeIdsByAttributeSetIds(@NonNull final Set<AttributeSetId> attributeSetIds)
+	{
+		if (attributeSetIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ArrayListMultimap<AttributeSetId, AttributeSetAttribute> result = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_AttributeUse.COLUMN_M_AttributeSet_ID, attributeSetIds)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_SeqNo)
+				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeUse_ID)
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID()),
+						AttributeDAO::toAttributeSetAttribute,
+						ArrayListMultimap::create));
+
+		return attributeSetIds.stream()
+				.map(attributeSetId -> AttributeSetAttributeIdsList.builder()
+						.attributeSetId(attributeSetId)
+						.list(result.get(attributeSetId))
+						.build())
+				.collect(ImmutableMap.toImmutableMap(
+						AttributeSetAttributeIdsList::getAttributeSetId,
+						list -> list));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static AttributeSetAttribute toAttributeSetAttribute(final I_M_AttributeUse record)

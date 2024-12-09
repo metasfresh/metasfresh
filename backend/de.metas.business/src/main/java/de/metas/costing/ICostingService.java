@@ -1,7 +1,12 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import de.metas.order.OrderLineId;
 import de.metas.uom.UomId;
+=======
+import de.metas.i18n.ExplainedOptional;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Optional;
 
@@ -29,14 +34,27 @@ import java.util.Optional;
 
 public interface ICostingService
 {
+<<<<<<< HEAD
 	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
 
 	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
+=======
+	CostElement getCostElementById(@NonNull CostElementId costElementId);
+
+	CostDetailCreateResultsList createCostDetail(CostDetailCreateRequest request);
+
+	ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+
+	CostDetailCreateResultsList createReversalCostDetails(CostDetailReverseRequest request);
+
+	ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	MoveCostsResult moveCosts(MoveCostsRequest request);
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
+<<<<<<< HEAD
 	/**
 	 * @return seed cost or null
 	 */
@@ -48,4 +66,11 @@ public interface ICostingService
 	Optional<CostPrice> getCurrentCostPrice(
 			CostSegment costSegment,
 			CostingMethod costingMethod);
+=======
+	Optional<CostPrice> getCurrentCostPrice(
+			CostSegment costSegment,
+			CostingMethod costingMethod);
+
+	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,5 +1,9 @@
 package de.metas.ui.web.pporder;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -44,7 +48,12 @@ public class PPOrderLinesViewDataSupplier
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
+<<<<<<< HEAD
 			@NonNull final HUReservationService huReservationService)
+=======
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
 		dataSupplier = ExtendedMemorizingSupplier
@@ -53,6 +62,10 @@ public class PPOrderLinesViewDataSupplier
 						.asiAttributesProvider(asiAttributesProvider)
 						.huSQLViewBinding(huSQLViewBinding)
 						.huReservationService(huReservationService)
+<<<<<<< HEAD
+=======
+						.adReferenceService(adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.build()
 						.retrieveData(ppOrderId));
 	}

@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2022 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +28,10 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+<<<<<<< HEAD
+=======
+import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
@@ -33,8 +41,11 @@ import org.compiere.model.I_IMP_Processor;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
 
+<<<<<<< HEAD
 import java.io.File;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
@@ -95,6 +106,11 @@ public class CucumberLifeCycleSupport
 
 			update_ReplicationProcessors();
 
+<<<<<<< HEAD
+=======
+			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			beforeAllMethodDone = true;
 		}
 	}

@@ -22,6 +22,11 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.patient;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatient;
@@ -29,15 +34,22 @@ import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepos
 import de.metas.vertical.healthcare.alberta.bpartner.patient.DeactivationReasonType;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.PayerType;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -45,6 +57,13 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class AlbertaPatientRepositoryTest
 {
 	private AlbertaPatientRepository albertaPatientRepository;
+=======
+@ExtendWith(SnapshotExtension.class)
+public class AlbertaPatientRepositoryTest
+{
+	private AlbertaPatientRepository albertaPatientRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -53,6 +72,7 @@ public class AlbertaPatientRepositoryTest
 		albertaPatientRepository =  new AlbertaPatientRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	public static void initStatic()
 	{
@@ -65,6 +85,8 @@ public class AlbertaPatientRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save_allFields()
 	{
@@ -96,7 +118,11 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -111,6 +137,10 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

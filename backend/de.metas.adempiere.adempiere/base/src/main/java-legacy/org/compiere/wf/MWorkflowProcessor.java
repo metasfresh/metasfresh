@@ -136,7 +136,11 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 		String sql = "DELETE FROM AD_WorkflowProcessorLog "
 				+ "WHERE AD_WorkflowProcessor_ID=" + getAD_WorkflowProcessor_ID()
 				+ " AND (Created+" + getKeepLogDays() + ") < now()";
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no;
 	}	// deleteLog
 

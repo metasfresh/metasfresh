@@ -23,11 +23,19 @@
 package de.metas.ui.web.edi_desadv;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.document.archive.DocOutboundLogId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
+<<<<<<< HEAD
 import de.metas.edi.model.DocOutboundLogId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -40,7 +48,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -52,7 +63,11 @@ import java.util.List;
 public class ChangeEDI_ExportStatusHelper
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
@@ -62,6 +77,10 @@ public class ChangeEDI_ExportStatusHelper
 		switch (fromStatus)
 		{
 			case DontSend:
+<<<<<<< HEAD
+=======
+			case SendingStarted:
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return ImmutableList.of(EDIExportStatus.Pending);
 			case Pending:
 			case Error:
@@ -123,7 +142,11 @@ public class ChangeEDI_ExportStatusHelper
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 
 		return availableTargetStatuses.stream()
+<<<<<<< HEAD
 				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
+=======
+				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceService.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(LookupValuesList.collect());
 	}
 
@@ -134,7 +157,11 @@ public class ChangeEDI_ExportStatusHelper
 		if (!availableTargetStatuses.isEmpty())
 		{
 			final String code = availableTargetStatuses.get(0).getCode();
+<<<<<<< HEAD
 			return LookupValue.StringLookupValue.of(code, adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
+=======
+			return LookupValue.StringLookupValue.of(code, adReferenceService.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

@@ -13,6 +13,7 @@ import de.metas.event.impl.EventMDC;
 import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+<<<<<<< HEAD
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
@@ -24,6 +25,18 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+=======
+import lombok.NonNull;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,7 +62,11 @@ import javax.annotation.Nullable;
 /** Bidirectional binding between local cache system and remote cache systems */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
+<<<<<<< HEAD
 	public static final transient CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
+=======
+	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
@@ -77,7 +94,11 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		//
 		// Globally register this listener.
 		// We register it globally because we want to survive.
+<<<<<<< HEAD
 		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+=======
+		final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
 	}
 
@@ -144,7 +165,12 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
+<<<<<<< HEAD
 			Services.get(IEventBusFactory.class)
+=======
+			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+			eventBusFactory
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.getEventBus(TOPIC_CacheInvalidation)
 					.enqueueEvent(event);
 		}

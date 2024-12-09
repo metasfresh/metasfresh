@@ -162,4 +162,13 @@ public class PickingSlotBL implements IPickingSlotBL
 		return isAvailableForAnyBPartner(pickingSlotDAO.getById(pickingSlotId));
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public I_M_PickingSlot getById(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.getById(pickingSlotId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

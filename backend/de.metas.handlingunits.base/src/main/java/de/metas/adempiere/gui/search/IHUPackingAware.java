@@ -24,6 +24,10 @@ package de.metas.adempiere.gui.search;
 
 
 import java.math.BigDecimal;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import de.metas.quantity.Quantity;
 
@@ -82,6 +86,13 @@ public interface IHUPackingAware
 
 	void setC_BPartner_ID(int bpartnerId);
 
+<<<<<<< HEAD
+=======
+	default void setQtyCUsPerTU(BigDecimal qtyCUsPerTU) {}
+
+	default Optional<BigDecimal> getQtyCUsPerTU() { return Optional.empty();}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	int getC_BPartner_ID();
 
 	/**
@@ -97,4 +108,8 @@ public interface IHUPackingAware
 	boolean isInDispute();
 
 	void setInDispute(boolean inDispute);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

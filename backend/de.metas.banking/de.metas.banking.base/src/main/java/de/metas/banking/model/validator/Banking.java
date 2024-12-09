@@ -22,6 +22,7 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
+<<<<<<< HEAD
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -29,6 +30,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_BankStatement;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.impexp.BankStatementImportProcess;
@@ -40,10 +43,22 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
+<<<<<<< HEAD
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+=======
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_I_BankStatement;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Banking module activator
@@ -100,10 +115,17 @@ public class Banking extends AbstractModuleInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+<<<<<<< HEAD
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatement(bankStatementBL));
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL, currencyConversionBL));
+=======
+
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatement(bankStatementBL));
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

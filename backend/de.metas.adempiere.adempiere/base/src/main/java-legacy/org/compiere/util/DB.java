@@ -22,6 +22,10 @@
 package org.compiere.util;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
@@ -76,6 +80,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+<<<<<<< HEAD
+=======
+import java.sql.SQLWarning;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -94,6 +102,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+<<<<<<< HEAD
+=======
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * General Database Interface
@@ -131,7 +143,10 @@ public class DB
 		 * <p>
 		 * NOTE: avoid using this method. We introduced it just to migrate from old API.
 		 *
+<<<<<<< HEAD
 		 * @param ignoreError
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		 * @return {@link OnFail} value
 		 */
 		public static OnFail valueOfIgnoreError(final boolean ignoreError)
@@ -151,6 +166,7 @@ public class DB
 	 */
 	private final Logger log = LogManager.getLogger(DB.class);
 
+<<<<<<< HEAD
 	/**
 	 * SQL Statement Separator "; "
 	 */
@@ -159,6 +175,10 @@ public class DB
 	/**************************************************************************
 	 * Set connection.
 	 *
+=======
+	/**************************************************************************
+	 * Set connection.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If the connection was already set and it's the same, this method does nothing.
 	 *
 	 * @param cc connection
@@ -387,7 +407,10 @@ public class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
+<<<<<<< HEAD
 	 * @param readOnly
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
@@ -644,7 +667,11 @@ public class DB
 		}
 		else if (param instanceof Integer)
 		{
+<<<<<<< HEAD
 			pstmt.setInt(index, ((Integer)param).intValue());
+=======
+			pstmt.setInt(index, (Integer)param);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -701,6 +728,7 @@ public class DB
 	 *
 	 * @param trxName optional transaction name
 	 * @return number of rows updated or -1 if error
+<<<<<<< HEAD
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
@@ -712,11 +740,33 @@ public class DB
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}    // executeUpdate
+=======
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}.
+	 */
+	@Deprecated
+	public int executeUpdateAndSaveErrorOnFail(final String sql, final String trxName)
+	{
+		final int timeOut = 0;
+		final OnFail onFail = OnFail.valueOfIgnoreError(false);
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
+<<<<<<< HEAD
 	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
@@ -730,28 +780,74 @@ public class DB
 		final ISqlUpdateReturnProcessor updpateReturnProcessor = null;
 		return executeUpdate(sql, sqlParams, onFail, trxName, timeOut, updpateReturnProcessor);
 	}    // executeUpdate
+=======
+	 * @return number of rows updated or -1 if error
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
+	 */
+	@Deprecated
+	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final boolean ignoreError, final String trxName)
+	{
+		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
+		final int timeOut = 0;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
+<<<<<<< HEAD
 	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final int param, final String trxName)
+=======
+	 * @return number of rows updated or -1 if error
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
+	 */
+	@Deprecated
+	public int executeUpdateAndSaveErrorOnFail(final String sql, final int param, final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Object[] params = new Object[] { param };
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
 		final int timeOut = 0;
+<<<<<<< HEAD
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}    // executeUpdate
+=======
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+		return result.getReturnedValue();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
+<<<<<<< HEAD
 	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
@@ -785,10 +881,40 @@ public class DB
 		if (Check.isEmpty(sql, true))
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + sql);
+=======
+	 * @return number of rows updated or -1 if error
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 */
+	@Deprecated
+	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
+	{
+		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
+		final int timeOut = 0;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+	}
+
+	private SQLUpdateResult executeUpdate(@NonNull final ExecuteUpdateRequest request)
+	{
+		if (Check.isEmpty(request.getSql(), true))
+		{
+			throw new IllegalArgumentException("Required parameter missing - " + request.getSql());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
 		int no = -1;
+<<<<<<< HEAD
 		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
@@ -804,15 +930,41 @@ public class DB
 			}
 
 			if (updateReturnProcessor != null)
+=======
+		SQLWarning warning = null;
+		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
+				ResultSet.TYPE_FORWARD_ONLY,
+				ResultSet.CONCUR_UPDATABLE,
+				request.getSql(),
+				request.getTrxName());
+
+		try
+		{
+			setParameters(cs, request.getParams());
+			if (request.getTimeOut() > 0 && getDatabase().isQueryTimeoutSupported())
+			{
+				cs.setQueryTimeout(request.getTimeOut());
+			}
+
+			if (request.getUpdateReturnProcessor() != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				// NOTE: this is an UPDATE query, so we shall log migration scripts
 				final ResultSet rs = cs.executeQueryAndLogMigationScripts();
 				int rows = 0;
 				try
 				{
+<<<<<<< HEAD
 					while (rs.next())
 					{
 						updateReturnProcessor.process(rs);
+=======
+					warning = rs.getStatement().getWarnings();
+
+					while (rs.next())
+					{
+						request.getUpdateReturnProcessor().process(rs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						rows++;
 					}
 				}
@@ -828,7 +980,11 @@ public class DB
 			}
 
 			// No Transaction - Commit
+<<<<<<< HEAD
 			if (Services.get(ITrxManager.class).isNull(trxName))
+=======
+			if (Services.get(ITrxManager.class).isNull(request.getTrxName()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				cs.commit();    // Local commit
 				// Connection conn = cs.getConnection();
@@ -847,8 +1003,13 @@ public class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
 			{
+<<<<<<< HEAD
 				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params)
 						.setSqlIfAbsent(sql, params);
+=======
+				sqlException = new DBUniqueConstraintException((SQLException)sqlException, request.getSql(), request.getParams())
+						.setSqlIfAbsent(request.getSql(), request.getParams());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: end
 
@@ -859,7 +1020,11 @@ public class DB
 				{
 					final Connection connection = cs.getConnection();
 					sqlException = new DBDeadLockDetectedException(sqlException, connection)
+<<<<<<< HEAD
 							.setSqlIfAbsent(sql, params);
+=======
+							.setSqlIfAbsent(request.getSql(), request.getParams());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 				catch (final SQLException | DBException e1)
 				{
@@ -869,7 +1034,11 @@ public class DB
 					e1.printStackTrace(); // printing the stacktrace (to err), just to make sure it's recorded somewhere
 					// now try to log it
 					log.error(
+<<<<<<< HEAD
 							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + trxName + "] - " + e1.getMessage());
+=======
+							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + request.getTrxName() + "] - " + e1.getMessage());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 
@@ -877,11 +1046,16 @@ public class DB
 					&& DBException.isForeignKeyViolation(sqlException))
 			{
 				sqlException = new DBForeignKeyConstraintException(sqlException)
+<<<<<<< HEAD
 						.setSqlIfAbsent(sql, params);
+=======
+						.setSqlIfAbsent(request.getSql(), request.getParams());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			//
 			// Handle the sqlException
+<<<<<<< HEAD
 			if (onFail == OnFail.SaveError)
 			{
 				log.error(cs.getSql() + " [" + trxName + "]", sqlException);
@@ -895,13 +1069,32 @@ public class DB
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
+=======
+			if (request.getOnFail() == OnFail.SaveError)
+			{
+				log.error(cs.getSql() + " [" + request.getTrxName() + "]", sqlException);
+				MetasfreshLastError.saveError(log, "DBExecuteError", sqlException);
+			}
+			else if (request.getOnFail() == OnFail.IgnoreButLog)
+			{
+				log.error(cs.getSql() + " [" + request.getTrxName() + "] - " + sqlException.getLocalizedMessage());
+			}
+			else if (request.getOnFail() == OnFail.ThrowException)
+			{
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
+						.setSqlIfAbsent(request.getSql(), request.getParams());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
+<<<<<<< HEAD
 						.setSqlIfAbsent(sql, params);
+=======
+						.setSqlIfAbsent(request.getSql(), request.getParams());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 		finally
@@ -910,8 +1103,18 @@ public class DB
 			DB.close(cs);
 		}
 
+<<<<<<< HEAD
 		return no;
 	}    // executeUpdate
+=======
+		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
+
+		return SQLUpdateResult.builder()
+				.returnedValue(no)
+				.warningMessages(warningMessages)
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Execute Update and throw exception.
@@ -920,15 +1123,35 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
+<<<<<<< HEAD
 	public int executeUpdateEx(final String sql, final Object[] params, @Nullable final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 		return executeUpdateEx(sql, params, trxName, timeOut);
+=======
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, final Object[] params, final String trxName) throws DBException
+	{
+		final int timeOut = 0;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(OnFail.ThrowException)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.updateReturnProcessor(null)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
+<<<<<<< HEAD
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
@@ -939,11 +1162,49 @@ public class DB
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+=======
+	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 */
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, @Nullable final String trxName) throws DBException
+	{
+		final int timeOut = 0;
+		final OnFail onFail = OnFail.ThrowException;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+
+	}
+
+	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
+	{
+		final int timeOut = 0;
+		final OnFail onFail = OnFail.ThrowException;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		return executeUpdate(executeUpdateRequest);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
+<<<<<<< HEAD
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
 	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
@@ -975,6 +1236,46 @@ public class DB
 							   final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
+=======
+	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 */
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, final String trxName, final int timeOut) throws DBException
+	{
+		final OnFail onFail = OnFail.ThrowException;
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+
+	}
+
+	public int executeUpdateAndThrowExceptionOnFail(final String sql,
+							   final Object[] params,
+							   @Nullable final String trxName,
+							   final int timeOut,
+							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+	{
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(OnFail.ThrowException)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.updateReturnProcessor(updateReturnProcessor)
+				.build();
+
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+
+		return result.getReturnedValue();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -1004,7 +1305,10 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
+<<<<<<< HEAD
 	 * @throws SQLException
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
@@ -1048,7 +1352,10 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
+<<<<<<< HEAD
 	 * @throws SQLException
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
@@ -1117,8 +1424,11 @@ public class DB
 		finally
 		{
 			close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return retValue;
 	}
@@ -1187,7 +1497,20 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
+<<<<<<< HEAD
 		String retValue = null;
+=======
+		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName, sql, params);
+
+		return result.getReturnedValue();
+	}
+
+	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
+	{
+		String retValue = null;
+		SQLWarning warning = null;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1198,6 +1521,10 @@ public class DB
 			if (rs.next())
 			{
 				retValue = rs.getString(1);
+<<<<<<< HEAD
+=======
+				warning = rs.getStatement().getWarnings();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
@@ -1214,7 +1541,16 @@ public class DB
 			rs = null;
 			pstmt = null;
 		}
+<<<<<<< HEAD
 		return retValue;
+=======
+
+		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
+
+		return SQLValueStringResult.builder().
+				returnedValue(retValue).
+				warningMessages(warningMessages).build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -1721,6 +2057,16 @@ public class DB
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
 	}
 
+<<<<<<< HEAD
+=======
+	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
+	{
+		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
+		paramsOut.addAll(values);
+		return sql;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Is this a remote client connection.
 	 * <p>
@@ -1903,6 +2249,14 @@ public class DB
 		return Database.TO_NUMBER(number, displayType);
 	}
 
+<<<<<<< HEAD
+=======
+	public String TO_STRING(@Nullable final ReferenceListAwareEnum value)
+	{
+		return TO_STRING(value != null ? value.getCode() : null, 0);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Package Strings for SQL command in quotes
 	 *
@@ -1968,7 +2322,10 @@ public class DB
 	}
 
 	/**
+<<<<<<< HEAD
 	 * @param comment
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return SQL multiline comment
 	 */
 	public String TO_COMMENT(final String comment)
@@ -1983,6 +2340,29 @@ public class DB
 				+ " */";
 	}
 
+<<<<<<< HEAD
+=======
+	public String TO_ARRAY(@Nullable final Collection<?> values)
+	{
+		if (values == null)
+		{
+			return "NULL";
+		}
+
+		final StringBuilder result = new StringBuilder();
+		for (final Object value : values)
+		{
+			if (result.length() > 0)
+			{
+				result.append(",");
+			}
+			result.append(TO_SQL(value));
+		}
+
+		return TO_STRING(result.insert(0, "{").append("}").toString());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * convenient method to close result set
 	 */
@@ -2004,7 +2384,10 @@ public class DB
 	/**
 	 * convenient method to close statement
 	 *
+<<<<<<< HEAD
 	 * @param st
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2140,7 +2523,11 @@ public class DB
 
 			if (counter >= 1000)
 			{
+<<<<<<< HEAD
 				DB.executeUpdateEx(insert.toString(), trxName);
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				insert = new StringBuilder();
 				insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 				counter = 0;
@@ -2148,7 +2535,11 @@ public class DB
 		}
 		if (counter > 0)
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx(insert.toString(), trxName);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -2198,14 +2589,21 @@ public class DB
 	/**
 	 * Delete T_Selection
 	 *
+<<<<<<< HEAD
 	 * @param pinstanceId
 	 * @param trxName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return number of records that were deleted
 	 */
 	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { pinstanceId }, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no;
 	}
 
@@ -2253,7 +2651,10 @@ public class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it returns the string <code>"(?,?,?)"</code>, and it will copy <code>paramsIn</code> to the list <code>paramsOut</code>. Note that e.g. if we need
 	 * something like <code>AND ..._ID IN (?,?,?)</code>, then the ordering paramsIn's elements doesn't really matter.
 	 *
+<<<<<<< HEAD
 	 * @param paramsIn
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
@@ -2335,7 +2736,10 @@ public class DB
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 *
+<<<<<<< HEAD
 	 * @param paramsIn
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
@@ -2394,7 +2798,11 @@ public class DB
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
 		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
+<<<<<<< HEAD
 				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+=======
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
 			return false;
@@ -2428,7 +2836,11 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
+<<<<<<< HEAD
 				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+=======
+					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2446,11 +2858,19 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
+<<<<<<< HEAD
 				1, // increment
 				1, // minvalue
 				Integer.MAX_VALUE, // maxvalue
 				1000000, // start
 				ITrx.TRXNAME_ThreadInherited);
+=======
+													   1, // increment
+													   1, // minvalue
+													   Integer.MAX_VALUE, // maxvalue
+													   1000000, // start
+													   ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -2475,7 +2895,10 @@ public class DB
 	 * <li>use it only if is really needed</li>
 	 * </ul>
 	 *
+<<<<<<< HEAD
 	 * @param sql
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return converted SQL
 	 */
 	public String convertSqlToNative(final String sql)
@@ -2494,7 +2917,11 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
+<<<<<<< HEAD
 					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+=======
+										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -2696,7 +3123,13 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
+<<<<<<< HEAD
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
+=======
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader, rows::add);
+		return rows.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -2705,7 +3138,13 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
+<<<<<<< HEAD
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
+=======
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
+		return rows.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -2715,11 +3154,16 @@ public class DB
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
 		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
+<<<<<<< HEAD
 		return retrieveRows(sql, sqlParamsList, ITrx.TRXNAME_ThreadInherited, loader);
+=======
+		return retrieveRows(sql, sqlParamsList, loader);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 
 	@NonNull
+<<<<<<< HEAD
 	private static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
@@ -2754,6 +3198,27 @@ public class DB
 		{
 			close(rs, pstmt);
 		}
+=======
+	public static <T> ImmutableSet<T> retrieveUniqueRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
+			return rows.build();
+		}
+
+	public void forFirstRowIfAny(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer consumer)
+		{
+		retrieveFirstRowOrNull(sql, sqlParams, (rs) -> {
+			consumer.accept(rs);
+			return null;
+		});
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public <T> T retrieveFirstRowOrNull(
@@ -2787,6 +3252,43 @@ public class DB
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	private static <T> void retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
+			@NonNull final ResultSetRowLoader<T> loader,
+			@NonNull final Consumer<T> collector)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql.toString(), trxName);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			while (rs.next())
+			{
+				final T row = loader.retrieveRowOrNull(rs);
+				if (row != null)
+				{
+					collector.accept(row);
+				}
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
 	{
 		try

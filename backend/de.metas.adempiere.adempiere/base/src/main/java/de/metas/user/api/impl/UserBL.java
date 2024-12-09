@@ -3,6 +3,7 @@ package de.metas.user.api.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -15,6 +16,20 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+=======
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxQuery;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.templates.ClientMailTemplates;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailText;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.Language;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.security.IRoleDAO;
@@ -53,8 +68,11 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -69,6 +87,10 @@ public class UserBL implements IUserBL
 	 */
 	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
+<<<<<<< HEAD
+=======
+	private static final AdMessageKey MSG_NoEMailFoundForLoginName = AdMessageKey.of("NoEMailFoundForLoginName");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final AdMessageKey MSG_INCORRECT_PASSWORD = AdMessageKey.of("org.compiere.util.Login.IncorrectPassword");
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
 
@@ -169,6 +191,7 @@ public class UserBL implements IUserBL
 		final EMailAddress emailTo = EMailAddress.ofNullableString(user.getEMail());
 		if (emailTo == null)
 		{
+<<<<<<< HEAD
 			logger.debug("AD_User.Email={} is empty", user.getEMail());
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
@@ -180,6 +203,29 @@ public class UserBL implements IUserBL
 		if (mailTemplateId == null)
 		{
 			logger.error("ClientEMailConfig for AD_Client_ID={} has no password reset mail template; ClientEMailConfig={}", adClientId.getRepoId(), tenantEmailConfig);
+=======
+			throw new AdempiereException(MSG_NoEMailFoundForLoginName);
+		}
+		
+		final MailText mailText = createResetPasswordByEMailText(user);
+
+		final MailboxQuery mailboxQuery = MailboxQuery.builder()
+				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
+				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
+				.build();
+
+		mailService().sendEMail(mailboxQuery, emailTo, mailText);
+	}
+
+	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)
+	{
+		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
+		final ClientMailTemplates clientTemplates = clientDAO.getClientMailTemplatesById(adClientId);
+		final MailTemplateId mailTemplateId = clientTemplates.getPasswordResetMailTemplateId().orElse(null);
+		if (mailTemplateId == null)
+		{
+			logger.error("ClientEMailConfig for AD_Client_ID={} has no password reset mail template", adClientId.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
@@ -196,6 +242,7 @@ public class UserBL implements IUserBL
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
 		if (bpartnerId != null)
 		{
+<<<<<<< HEAD
 			final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
 			mailTextBuilder.bpartner(bpartner);
 		}
@@ -223,6 +270,12 @@ public class UserBL implements IUserBL
 		}
 
 		mailService.send(email);
+=======
+			mailTextBuilder.bpartner(bpartnerId);
+		}
+
+		return mailTextBuilder.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -364,6 +417,7 @@ public class UserBL implements IUserBL
 	}    // isEMailValid
 
 	@Override
+<<<<<<< HEAD
 	@Nullable
 	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
 	{
@@ -416,6 +470,8 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Language getUserLanguage(@NonNull final UserId userId)
 	{
 		final I_AD_User user = getById(userId);
@@ -437,7 +493,11 @@ public class UserBL implements IUserBL
 	private String getBPartnerLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+<<<<<<< HEAD
 		if(bpartnerId == null)
+=======
+		if (bpartnerId == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
@@ -453,6 +513,22 @@ public class UserBL implements IUserBL
 		return toUserEMailConfig(userRecord);
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public ExplainedOptional<EMailAddress> getEMailAddressById(@NonNull final UserId userId)
+	{
+		final I_AD_User adUser = getById(userId);
+		final String email = StringUtils.trimBlankToNull(adUser.getEMail());
+		if (email == null)
+		{
+			return ExplainedOptional.emptyBecause("User " + adUser.getName() + " does not have email");
+		}
+
+		return ExplainedOptional.of(EMailAddress.ofString(email));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static UserEMailConfig toUserEMailConfig(@NonNull final I_AD_User userRecord)
 	{
 		return UserEMailConfig.builder()

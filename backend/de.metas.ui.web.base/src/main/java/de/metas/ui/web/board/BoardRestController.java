@@ -54,7 +54,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
@@ -270,7 +273,11 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
+<<<<<<< HEAD
 		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL);
+=======
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL, userSession.getUserRolePermissionsKey());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final JSONDocumentLayoutOptions options = newJSONLayoutOptions();
 		final String adLanguage = options.getAdLanguage();
@@ -344,7 +351,11 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
+<<<<<<< HEAD
 	public JSONLookupValuesList getFilterParameterDropdown(
+=======
+	public JSONLookupValuesPage getFilterParameterDropdown(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
@@ -355,7 +366,11 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
+<<<<<<< HEAD
 				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
+=======
+				.transform(list -> JSONLookupValuesPage.of(list, userSession.getAD_Language()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private JSONViewResult toJSONCardsViewResult(

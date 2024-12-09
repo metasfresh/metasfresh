@@ -30,22 +30,39 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
+<<<<<<< HEAD
+=======
+import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.ProductId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_M_Shipper;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * This is a short-term-cache; use it only within one method and one thread. It can load data on demand, but has no invalidation mechanism.
  */
+<<<<<<< HEAD
 public class ShippingInfoCache
 {
 	private final IShipmentScheduleBL shipmentScheduleBL;
@@ -65,6 +82,19 @@ public class ShippingInfoCache
 		this.scheduleEffectiveBL = scheduleEffectiveBL;
 		this.shipperDAO = shipperDAO;
 	}
+=======
+@Builder
+public class ShippingInfoCache
+{
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final IShipmentScheduleEffectiveBL scheduleEffectiveBL;
+	@NonNull private final IShipperDAO shipperDAO;
+	@NonNull private final IProductDAO productDAO;
+
+	private final HashMap<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById = new HashMap<>();
+	private final HashMap<String, I_M_Shipper> shipperByInternalName = new HashMap<>();
+	private final HashMap<ProductQuery, ProductId> productIdsByQuery = new HashMap<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public void warmUpForShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
@@ -74,6 +104,15 @@ public class ShippingInfoCache
 				shipmentScheduleBL::getByIds);
 	}
 
+<<<<<<< HEAD
+=======
+	public <T> void warmUpForShipmentScheduleIds(@NonNull final Collection<T> models, @NonNull Function<T, ShipmentScheduleId> getShipmentScheduleId)
+	{
+		final Set<ShipmentScheduleId> shipmentScheduleIds = models.stream().map(getShipmentScheduleId).collect(Collectors.toSet());
+		warmUpForShipmentScheduleIds(shipmentScheduleIds);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void warmUpForShipperInternalNames(@NonNull final Collection<String> shipperInternalNameCollection)
 	{
 		CollectionUtils.getAllOrLoad(
@@ -135,4 +174,34 @@ public class ShippingInfoCache
 	{
 		return shipperDAO.getByInternalName(ImmutableSet.of(shipperInternalName)).get(shipperInternalName);
 	}
+<<<<<<< HEAD
+=======
+
+	public ProductId getProductId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
+	public ProductId getProductId(@NonNull final String productSearchKey, @NonNull final OrgId orgId)
+	{
+		final ProductQuery query = ProductQuery.builder()
+				.value(productSearchKey)
+				.orgId(orgId)
+				.includeAnyOrg(true) // include articles with org=*
+				.build();
+
+		return productIdsByQuery.computeIfAbsent(query, this::retrieveProductIdByQuery);
+	}
+
+	private ProductId retrieveProductIdByQuery(@NonNull final ProductQuery query)
+	{
+		final ProductId productId = productDAO.retrieveProductIdBy(query);
+		if (productId == null)
+		{
+			throw new AdempiereException("No product found for " + query);
+		}
+		return productId;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -213,8 +213,13 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
+<<<<<<< HEAD
 		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
 				? xmlDesadv.getDropShipLocationID() : 
+=======
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN())
+				? xmlDesadv.getDropShipLocationID() :
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				buyrLocation;
 		return dropShipLocation.getGLN();
 	}
@@ -227,7 +232,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 				buyrLocation;
 		return dropShipLocation.getName();
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -262,6 +271,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
+<<<<<<< HEAD
 		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeLUText());
 		if (packagingCode != null)
 		{
@@ -273,6 +283,19 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 						case ONEW -> "08";
 						default -> null;
 					};
+=======
+		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeText());
+		if (packagingCode != null)
+		{
+			final String compudataPackagingCode = switch (packagingCode)
+			{
+				case ISO1 -> "201";
+				case EURO -> "201";
+				case ISO2 -> "200";
+				case ONEW -> "08";
+				default -> null;
+			};
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			p060.setPalettTyp(compudataPackagingCode);
 		}
 
@@ -280,7 +303,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		final String sscc18Value = pack.getPack().getIPASSCC18();
 		p060.setNormalSSCC(sscc18Value);
+<<<<<<< HEAD
 		p060.setGrainNummer(pack.getPack().getGTINLUPackingMaterial());
+=======
+		p060.setGrainNummer(pack.getPack().getGTINPackingMaterial());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// p060.setBruttogewicht(xmlInOutLine.getMProductID().getWeight()); // leave empty for now
 		// p060.setVolumen(xmlInOutLine.getMProductID().getVolume()); // leave empty for now
@@ -305,7 +332,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		p100.setCUperTU(
 				formatNumber(packItem.getQtyCUsPerTU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
+<<<<<<< HEAD
 							 decimalFormat));
+=======
+						decimalFormat));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// note that validateExchange() made sure there is at least one
 		p100.setCurrency(xmlDesadv.getCCurrencyID().getISOCode());
@@ -313,7 +344,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDeliverQTY(formatNumber(
 				packItem.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// this is required for the only compudata user that we currently have
 		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
 		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())

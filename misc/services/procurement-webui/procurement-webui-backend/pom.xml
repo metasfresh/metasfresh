@@ -71,6 +71,16 @@
                 <!-- <version>1.18.18</version> -->
                 <version>1.18.22</version>
             </dependency>
+<<<<<<< HEAD
+=======
+            
+            <!-- https://github.com/hoereth/springfox-enum-plugin -->
+            <dependency>
+                <groupId>de.pentabyte</groupId>
+                <artifactId>springfox-enum-plugin</artifactId>
+                <version>${springfox-enum-plugin.version}</version>
+            </dependency>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         </dependencies>
     </dependencyManagement>
 

@@ -49,10 +49,23 @@ public class JsonOrderLineGroup
 	@JsonInclude(NON_NULL)
 	BigDecimal discount;
 
+<<<<<<< HEAD
 	@Builder
 	public JsonOrderLineGroup(@JsonProperty("groupKey") final @Nullable String groupKey,
 			@JsonProperty("groupMainItem") final boolean isGroupMainItem,
 			@JsonProperty("discount") final @Nullable BigDecimal discount)
+=======
+	@ApiModelProperty( //
+			value = "It is taken into consideration when C_OLCand.Line is renumbered. Translates to C_OLCand.CompensationGroupOrderBy")
+	@JsonInclude(NON_NULL)
+	JsonGroupCompensationOrderBy ordering;
+
+	@Builder
+	public JsonOrderLineGroup(@JsonProperty("groupKey") final @Nullable String groupKey,
+			@JsonProperty("groupMainItem") final boolean isGroupMainItem,
+			@JsonProperty("discount") final @Nullable BigDecimal discount,
+			@JsonProperty("ordering") final @Nullable JsonGroupCompensationOrderBy ordering)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 
 		if (!isGroupMainItem && discount != null)
@@ -63,5 +76,9 @@ public class JsonOrderLineGroup
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
 		this.discount = discount;
+<<<<<<< HEAD
+=======
+		this.ordering = ordering;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

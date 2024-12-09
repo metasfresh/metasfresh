@@ -1,15 +1,23 @@
+<<<<<<< HEAD
 package de.metas.javaclasses.impl;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2015 metas GmbH
+=======
+ * Copyright (C) 2024 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,15 +26,33 @@ package de.metas.javaclasses.impl;
  * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
+=======
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
 
+=======
+package de.metas.javaclasses.impl;
+
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +60,11 @@ import de.metas.javaclasses.impl.JavaClassBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 
+=======
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class JavaClassBLTests extends JavaClassTestBase
 {
@@ -103,7 +134,11 @@ public class JavaClassBLTests extends JavaClassTestBase
 		InterfaceWrapperHelper.save(javaClassDef);
 
 		final TestInterface1 obj = javaClassBL.newInstance(javaClassDef);
+<<<<<<< HEAD
 		Assert.assertNotNull("Instance was not created", obj);
+=======
+		assertThat(obj).as("Instance was not created").isNotNull();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -119,8 +154,14 @@ public class JavaClassBLTests extends JavaClassTestBase
 		InterfaceWrapperHelper.save(javaClassDef);
 
 		final TestSuperClass3 obj = javaClassBL.newInstance(javaClassDef);
+<<<<<<< HEAD
 		Assert.assertNotNull("Instance was not created", obj);
 	}
+=======
+		assertThat(obj).as("Instance was not created").isNotNull();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test(expected = AdempiereException.class)
 	public void test_newInstance_invalidConfig()
 	{
@@ -134,7 +175,11 @@ public class JavaClassBLTests extends JavaClassTestBase
 		InterfaceWrapperHelper.save(javaClassDef);
 
 		javaClassBL.newInstance(javaClassDef);
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -150,12 +195,21 @@ public class JavaClassBLTests extends JavaClassTestBase
 		InterfaceWrapperHelper.save(javaClassDef);
 
 		javaClassBL.newInstance(javaClassDef);
+<<<<<<< HEAD
 		
 		final TestInterface1 obj = javaClassBL.newInstance(javaClassDef);
 		Assert.assertNotNull("Instance was not created", obj);
 	}
 	
 	@Test (expected = Exception.class)
+=======
+
+		final TestInterface1 obj = javaClassBL.newInstance(javaClassDef);
+		assertThat(obj).as("Instance was not created").isNotNull();
+	}
+
+	@Test
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void test_newInstance_NonPublic_Constructor()
 	{
 		final I_AD_JavaClass_Type typeDef = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
@@ -167,10 +221,18 @@ public class JavaClassBLTests extends JavaClassTestBase
 		javaClassDef.setClassname(TestClass4.class.getName());
 		InterfaceWrapperHelper.save(javaClassDef);
 
+<<<<<<< HEAD
 		javaClassBL.newInstance(javaClassDef);
 	}
 	
 	@Test (expected = AdempiereException.class)
+=======
+		final Object instance = javaClassBL.newInstance(javaClassDef);
+		assertThat(instance).isInstanceOf(TestClass4.class);
+	}
+
+	@Test(expected = AdempiereException.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void test_newInstance_Interface_Extending_Interface()
 	{
 		final I_AD_JavaClass_Type typeDef = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
@@ -184,8 +246,13 @@ public class JavaClassBLTests extends JavaClassTestBase
 
 		javaClassBL.newInstance(javaClassDef);
 	}
+<<<<<<< HEAD
 	
 	@Test (expected = AdempiereException.class)
+=======
+
+	@Test
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void test_newInstance_PrivateClass()
 	{
 		final I_AD_JavaClass_Type typeDef = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
@@ -197,6 +264,11 @@ public class JavaClassBLTests extends JavaClassTestBase
 		javaClassDef.setClassname(TestClass5.class.getName());
 		InterfaceWrapperHelper.save(javaClassDef);
 
+<<<<<<< HEAD
 		javaClassBL.newInstance(javaClassDef);
+=======
+		final Object instance = javaClassBL.newInstance(javaClassDef);
+		assertThat(instance).isInstanceOf(TestClass5.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

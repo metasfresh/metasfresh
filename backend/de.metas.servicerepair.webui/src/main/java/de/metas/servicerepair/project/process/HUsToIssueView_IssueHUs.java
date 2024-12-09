@@ -108,7 +108,11 @@ public class HUsToIssueView_IssueHUs
 
 	private Quantity getQtyToReserveParam()
 	{
+<<<<<<< HEAD
 		final Quantity qtyToReserve = Quantitys.create(qty, uomId);
+=======
+		final Quantity qtyToReserve = Quantitys.of(qty, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (qtyToReserve.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_Qty);

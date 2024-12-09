@@ -1,7 +1,12 @@
 package de.metas.edi.api;
 
+<<<<<<< HEAD
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.edi.model.DocOutboundLogId;
+=======
+import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.api.IDocOutboundDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;

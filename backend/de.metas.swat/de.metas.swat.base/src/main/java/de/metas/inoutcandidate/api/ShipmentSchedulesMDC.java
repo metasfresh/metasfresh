@@ -1,15 +1,24 @@
 package de.metas.inoutcandidate.api;
 
 import de.metas.inout.ShipmentScheduleId;
+<<<<<<< HEAD
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

@@ -32,6 +32,7 @@ public interface Shopware6Constants
 	String FIELD_CREATED_AT = "createdAt";
 	String FIELD_ORDER_NUMBER = "orderNumber";
 	String FIELD_ORDER_ID = "id";
+<<<<<<< HEAD
 
 	String PARAMETERS_DATE_GTE = "gte";
 
@@ -41,10 +42,31 @@ public interface Shopware6Constants
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
 	
+=======
+	String FIELD_ORDER_COUNT = "orderCount";
+
+	String PARAMETERS_GTE = "gte";
+	String PARAMETERS_GT = "gt";
+
+	String FIELD_PRODUCT_ID = "id";
+
+	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
+
+	//camel route properties
+	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
+	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
+	String ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT = "GetCustomersRouteContext";
+	String ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT = "ExportStockRouteContext";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	//nodes
 	String JSON_NODE_DATA = "data";
 	String JSON_NODE_DELIVERY_ADDRESS = "shippingOrderAddress";
 	String JSON_NODE_ORDER_CUSTOMER = "orderCustomer";
+<<<<<<< HEAD
+=======
+	String BPARTNER_LOCATION_METASFRESH_ID_JSON_PATH = "/customFields/metasfreshLocationId"; // TODO: replace with request parameter that comes from the external system config
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//shopware client
 	int CONNECTION_TIMEOUT_SECONDS = 600;

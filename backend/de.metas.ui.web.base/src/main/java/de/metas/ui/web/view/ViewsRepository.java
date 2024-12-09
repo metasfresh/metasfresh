@@ -6,6 +6,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -36,6 +42,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
@@ -73,6 +83,10 @@ import java.util.stream.Stream;
 public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
+<<<<<<< HEAD
+=======
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
 
@@ -141,7 +155,11 @@ public class ViewsRepository implements IViewsRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
 		catch (final Exception ex)
@@ -256,6 +274,7 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final String viewId = null; // N/A
@@ -267,6 +286,32 @@ public class ViewsRepository implements IViewsRepository
 				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
 						.getNewRecordNodeForWindowId(windowId)
 						.map(MenuNode::getCaption));
+=======
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId,
+			@Nullable final UserRolePermissionsKey permissionsKey)
+	{
+		if (permissionsKey != null)
+		{
+			final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(permissionsKey);
+			DocumentPermissionsHelper.assertViewAccess(windowId, null, permissions);
+		}
+
+		final IViewFactory factory = getFactory(windowId, viewDataType);
+		ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType, profileId);
+
+		// Enable AllowNew if we have a menu node to create new records.
+		if (permissionsKey != null)
+		{
+			viewLayout = viewLayout.withAllowNewRecordIfPresent(menuTreeRepo.getMenuTree(permissionsKey)
+					.getNewRecordNodeForWindowId(windowId)
+					.map(MenuNode::getCaption));
+		}
+
+		return viewLayout;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

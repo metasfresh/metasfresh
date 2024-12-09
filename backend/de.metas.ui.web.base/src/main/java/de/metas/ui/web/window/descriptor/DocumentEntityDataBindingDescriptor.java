@@ -1,9 +1,16 @@
 package de.metas.ui.web.window.descriptor;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.model.DocumentsRepository;
 
+=======
+import de.metas.ui.web.window.model.DocumentsRepository;
+
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -42,9 +49,15 @@ public interface DocumentEntityDataBindingDescriptor
 	}
 
 	@FunctionalInterface
+<<<<<<< HEAD
 	public interface DocumentEntityDataBindingDescriptorBuilder
 	{
 		final DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
+=======
+	interface DocumentEntityDataBindingDescriptorBuilder
+	{
+		DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		@Nullable
 		DocumentEntityDataBindingDescriptor getOrBuild();

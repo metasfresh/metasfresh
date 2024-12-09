@@ -22,12 +22,18 @@
 
 package de.metas.audit.apirequest.request;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +48,19 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class ApiRequestAuditRepositoryTest
 {
 	private ApiRequestAuditRepository apiRequestAuditRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.time.Instant;
+
+@ExtendWith(SnapshotExtension.class)
+public class ApiRequestAuditRepositoryTest
+{
+	private ApiRequestAuditRepository apiRequestAuditRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -50,6 +69,7 @@ public class ApiRequestAuditRepositoryTest
 		apiRequestAuditRepository = new ApiRequestAuditRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -62,6 +82,8 @@ public class ApiRequestAuditRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save()
 	{
@@ -87,6 +109,10 @@ public class ApiRequestAuditRepositoryTest
 		final ApiRequestAudit result = apiRequestAuditRepository.save(apiRequestAudit);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

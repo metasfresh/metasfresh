@@ -85,10 +85,21 @@ public class AbstractStockEstimateHandler
 		final BigDecimal qtyStockEstimate = stockEstimateEvent instanceof StockEstimateDeletedEvent
 				? BigDecimal.ZERO
 				: stockEstimateEvent.getQuantityDelta();
+<<<<<<< HEAD
 		
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.qtyStockEstimateSeqNo(stockEstimateEvent.getQtyStockEstimateSeqNo())
+=======
+
+		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
+				? 0
+				: stockEstimateEvent.getQtyStockEstimateSeqNo();
+		
+		return UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.qtyStockEstimateSeqNo(qtyStockSeqNo)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyStockEstimateCount(qtyStockEstimate)
 				.qtyStockEstimateTime(stockEstimateEvent.getDate())
 				.build();

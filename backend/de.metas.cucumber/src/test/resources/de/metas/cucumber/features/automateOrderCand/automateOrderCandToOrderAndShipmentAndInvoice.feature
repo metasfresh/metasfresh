@@ -82,7 +82,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
 
@@ -232,7 +236,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -344,7 +352,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -475,7 +487,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
@@ -553,7 +569,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
@@ -654,6 +674,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
+<<<<<<< HEAD
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+=======
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

@@ -23,13 +23,20 @@
 package de.metas.workflow;
 
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.util.Check;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.workflow.execution.WFActivity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_WF_NextCondition;
 import org.slf4j.Logger;
@@ -42,7 +49,11 @@ public class WFNodeTransitionCondition
 {
 	private static final Logger log = LogManager.getLogger(WFNodeTransitionCondition.class);
 
+<<<<<<< HEAD
 	private final int adColumnId;
+=======
+	private final AdColumnId adColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final boolean andJoin;
 	@NonNull
 	private final String operation;
@@ -53,14 +64,21 @@ public class WFNodeTransitionCondition
 
 	@Builder
 	private WFNodeTransitionCondition(
+<<<<<<< HEAD
 			final int adColumnId,
+=======
+			@NonNull final AdColumnId adColumnId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean andJoin,
 			@NonNull final String operation,
 			final String conditionValue1,
 			final String conditionValue2)
 	{
+<<<<<<< HEAD
 		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.adColumnId = adColumnId;
 		this.andJoin = andJoin;
 		this.operation = operation;

@@ -1,0 +1,9 @@
+-- Value: Doc_NoAccountFound_Error
+-- 2023-01-12T22:23:29.821Z
+DELETE FROM  AD_Message_Trl WHERE AD_Message_ID=544974
+;
+
+-- 2023-01-12T22:23:29.832Z
+DELETE FROM AD_Message WHERE AD_Message_ID=544974
+;
+

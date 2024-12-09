@@ -881,7 +881,11 @@ public class Allocation
 				if (open != null && open.signum() == 0)	{
 					sql = "UPDATE C_Invoice SET IsPaid='Y' "
 						+ "WHERE C_Invoice_ID=" + C_Invoice_ID;
+<<<<<<< HEAD
 					int no = DB.executeUpdate(sql, trxName);
+=======
+					int no = DB.executeUpdateAndSaveErrorOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					log.info("Invoice #" + i + " is paid - updated=" + no);
 				}
 				else

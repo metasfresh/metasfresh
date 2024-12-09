@@ -31,7 +31,11 @@ import lombok.Value;
 public class OrderDeliveryItem
 {
 	@NonNull
+<<<<<<< HEAD
 	OrderAddressDetails orderAddressDetails;
+=======
+	AddressDetail orderAddressDetails;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	JsonOrderDelivery jsonOrderDelivery;

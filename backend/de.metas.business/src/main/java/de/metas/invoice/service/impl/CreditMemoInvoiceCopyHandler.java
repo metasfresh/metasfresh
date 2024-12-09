@@ -1,15 +1,25 @@
 package de.metas.invoice.service.impl;
 
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
@@ -33,7 +43,11 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void copyValues(final I_C_Invoice from, final I_C_Invoice to)
+=======
+	public void copyValues(@NonNull final I_C_Invoice from, @NonNull final I_C_Invoice to)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final de.metas.adempiere.model.I_C_Invoice invoice = InterfaceWrapperHelper.create(from, de.metas.adempiere.model.I_C_Invoice.class);
 		final de.metas.adempiere.model.I_C_Invoice creditMemo = InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Invoice.class);

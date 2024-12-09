@@ -24,6 +24,11 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -110,7 +115,11 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
+<<<<<<< HEAD
 		return inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
+=======
+		return inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -320,8 +329,13 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+<<<<<<< HEAD
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
+=======
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubType(DocSubType.EmptiesReceipt)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());

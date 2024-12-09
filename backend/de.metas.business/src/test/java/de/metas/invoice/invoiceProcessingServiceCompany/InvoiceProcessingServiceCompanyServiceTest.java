@@ -22,6 +22,10 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -97,7 +101,11 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
@@ -118,7 +126,11 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		configRepository = new InvoiceProcessingServiceCompanyConfigRepository();
 		final MoneyService moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(configRepository, moneyService);
@@ -248,7 +260,10 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assertThat(result).isEmpty();
 		}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()
 		{
@@ -507,10 +522,18 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			serviceInvoiceDocTypeId = Services.get(IDocTypeDAO.class)
 					.createDocType(DocTypeCreateRequest.builder()
+<<<<<<< HEAD
 										   .ctx(Env.getCtx())
 										   .name("invoice processing fee vendor invoice")
 										   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
 										   .build());
+=======
+							.ctx(Env.getCtx())
+							.name("invoice processing fee vendor invoice")
+							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+							.glCategoryId(GLCategoryId.ofRepoId(123))
+							.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 			serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -719,7 +742,11 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
 
+<<<<<<< HEAD
 			if(docTypeId != null)
+=======
+			if (docTypeId != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
 			}

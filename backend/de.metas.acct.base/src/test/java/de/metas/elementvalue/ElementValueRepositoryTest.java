@@ -90,7 +90,12 @@ class ElementValueRepositoryTest
 						.value("accountNo")
 						.name("account name")
 						.accountSign("D") // Debit
+<<<<<<< HEAD
 						.accountType("A") // Asset
+=======
+						.accountType(AccountType.Asset)
+						.isActive(true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.isSummary(true)
 						.isDocControlled(true)
 						.isPostActual(true)

@@ -22,12 +22,18 @@
 
 package de.metas.audit.apirequest.config;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_API_Audit_Config;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +47,19 @@ import static org.assertj.core.api.Assertions.*;
 public class ApiAuditConfigRepositoryTest
 {
 	private ApiAuditConfigRepository apiAuditConfigRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class ApiAuditConfigRepositoryTest
+{
+	private ApiAuditConfigRepository apiAuditConfigRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -49,6 +68,7 @@ public class ApiAuditConfigRepositoryTest
 		apiAuditConfigRepository = new ApiAuditConfigRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -61,6 +81,8 @@ public class ApiAuditConfigRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void getActiveConfigsByOrgId()
 	{
@@ -77,7 +99,11 @@ public class ApiAuditConfigRepositoryTest
 
 		//then
 		assertThat(configs.size()).isEqualTo(1);
+<<<<<<< HEAD
 		expect(configs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createMockAuditConfig(final OrgId orgId, final boolean isActive)

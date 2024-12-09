@@ -7,6 +7,10 @@ import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+<<<<<<< HEAD
+=======
+import de.metas.allocation.api.PaymentAllocationLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.BankAccountId;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRules;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRulesRepository;
@@ -14,6 +18,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+<<<<<<< HEAD
+=======
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -29,6 +37,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_AllocationLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
@@ -36,6 +48,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class AllocationBL implements IAllocationBL
 {
@@ -333,4 +349,21 @@ public class AllocationBL implements IAllocationBL
 				//
 				.create(true); // complete=true
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public Optional<InvoiceId> getInvoiceId(@NonNull final PaymentAllocationLineId lineId)
+	{
+		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
+		return InvoiceId.optionalOfRepoId(line.getC_Invoice_ID());
+	}
+
+	@Override
+	public Optional<PaymentId> getPaymentId(@NonNull final PaymentAllocationLineId lineId)
+	{
+		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
+		return PaymentId.optionalOfRepoId(line.getC_Payment_ID());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

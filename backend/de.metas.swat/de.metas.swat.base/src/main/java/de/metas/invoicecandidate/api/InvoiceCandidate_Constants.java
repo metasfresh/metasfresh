@@ -1,8 +1,13 @@
 package de.metas.invoicecandidate.api;
 
+<<<<<<< HEAD
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+=======
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -30,7 +35,11 @@ public class InvoiceCandidate_Constants
 {
 	public static final String LOGGERNAME_ROOT = InvoiceCandidate_Constants.class.getPackage().getName();
 
+<<<<<<< HEAD
 	public static final Logger getLogger(Class<?> clazz)
+=======
+	public static Logger getLogger(final Class<?> clazz)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return LogManager.getLogger(clazz);
 	}

@@ -22,10 +22,16 @@ package org.adempiere.server.rpl.api;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.Iterator;
 import java.util.Properties;
 
+=======
+import de.metas.util.ILoggable;
+import de.metas.util.ISingletonService;
+import de.metas.util.Loggables;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.AdempiereProcessor;
@@ -35,9 +41,14 @@ import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.I_IMP_ProcessorParameter;
 
+<<<<<<< HEAD
 import de.metas.util.ILoggable;
 import de.metas.util.ISingletonService;
 import de.metas.util.Loggables;
+=======
+import java.util.Iterator;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IIMPProcessorBL extends ISingletonService
 {
@@ -56,7 +67,10 @@ public interface IIMPProcessorBL extends ISingletonService
 	/**
 	 * Gets XML message as String
 	 *
+<<<<<<< HEAD
 	 * @param pLog
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return xml message or null
 	 */
 	String getXmlMessage(I_IMP_ProcessorLog pLog);
@@ -65,8 +79,11 @@ public interface IIMPProcessorBL extends ISingletonService
 
 	/**
 	 * Mark error log as resolved (e.g. to be called after it was resubmitted successfully).
+<<<<<<< HEAD
 	 *
 	 * @param plog
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	void markResolved(I_IMP_ProcessorLog plog);
 
@@ -80,24 +97,31 @@ public interface IIMPProcessorBL extends ISingletonService
 	/**
 	 * Create/Update Parameter
 	 *
+<<<<<<< HEAD
 	 * @param impProcessor
 	 * @param key parameter key
 	 * @param name parameter name (human readable)
 	 * @param desc parameter description
 	 * @param help parameter help
 	 * @param value parameter value
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return created/updated parameter
 	 */
 	I_IMP_ProcessorParameter createParameter(I_IMP_Processor impProcessor, String key, String name, String desc, String help, String value);
 
+<<<<<<< HEAD
 	I_IMP_ProcessorParameter createParameter(I_IMP_Processor impProcessor, String key, String value);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	AdempiereProcessor asAdempiereProcessor(I_IMP_Processor impProcessor);
 
 	I_IMP_Processor getIMP_Processor(AdempiereProcessor adempiereProcessor);
 
 	IImportHelper createImportHelper(Properties initialCtx);
 
+<<<<<<< HEAD
 	void setImportHelperClass(Class<? extends IImportHelper> importHelperClass);
 
 	/**
@@ -105,6 +129,11 @@ public interface IIMPProcessorBL extends ISingletonService
 	 *
 	 * @param column
 	 * @param formatLine
+=======
+	/**
+	 * Returns the reference of the given column or (if an overriding reference is set there) from the given line.
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return AD_Reference of column and formatLine
 	 */
 	int getAD_Reference_ID(I_AD_Column column, I_EXP_FormatLine formatLine);
@@ -112,16 +141,22 @@ public interface IIMPProcessorBL extends ISingletonService
 	/**
 	 * Returns the table and column that the given embedded or referencing format line points to. Throws an exception if the given line's type is neither <code>ReferencedEXPFormat</code> nor
 	 * <code>EmbeddedEXPFormat</code>.
+<<<<<<< HEAD
 	 *
 	 * @param formatLine
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	ITableAndColumn getTargetTableAndColumn(I_EXP_FormatLine formatLine);
 
 	/**
 	 * Simple interface to return the result of {@link IIMPProcessorBL#getTargetTableAndColumn(I_EXP_FormatLine)}
 	 *
+<<<<<<< HEAD
 	 *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	interface ITableAndColumn
 	{

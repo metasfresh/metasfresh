@@ -35,6 +35,10 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.ClientAndOrgId;
+<<<<<<< HEAD
+=======
+import de.metas.organization.LocalDateAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -43,13 +47,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Objects;
 
 @Service
@@ -83,9 +95,29 @@ public class MoneyService
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
 			@Nullable final LocalDate convDate,
+=======
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return currencyRepository.getStdPrecision(currencyId);
+	}
+
+	@NonNull
+	public CurrencyConversionContext createConversionContext(
+			@NonNull final LocalDateAndOrgId convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId)
+	{
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
+	}
+
+	@NonNull
+	public CurrencyConversionContext createConversionContext(
+			@Nullable final Instant convDate,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
@@ -107,7 +139,11 @@ public class MoneyService
 		}
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+<<<<<<< HEAD
 				SystemTime.asLocalDate(),
+=======
+				SystemTime.asInstant(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				ConversionTypeMethod.Spot,
 				Env.getClientId(),
 				Env.getOrgId());

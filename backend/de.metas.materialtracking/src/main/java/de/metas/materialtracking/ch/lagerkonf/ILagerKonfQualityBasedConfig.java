@@ -22,17 +22,29 @@ package de.metas.materialtracking.ch.lagerkonf;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.currency.Currency;
+import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
+import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+<<<<<<< HEAD
 import org.compiere.model.I_M_Product;
 
 import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Interface containing all the information needed to do quality based invoicing
  *
@@ -58,16 +70,22 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	 * Returns the quality adjustment for the given month.
 	 *
 	 * @param month 0-based number of the month, i.e. 0 is january. Note that we have it 0-based, because that is also how it's done in <code>java.util.Calendar</code>.
+<<<<<<< HEAD
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	BigDecimal getQualityAdjustmentForMonthOrNull(int month);
 
 	/**
 	 * Convenience method, calls {@link #getQualityAdjustmentForMonthOrNull(int)}, or if the given date is outside of this config's validity time window, returns the highest value of all months.
+<<<<<<< HEAD
 	 *
 	 * @param outboundDate
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	BigDecimal getQualityAdjustmentForDateOrNull(Date outboundDate);
@@ -82,7 +100,10 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	 *
 	 * @param m_Product the unwanted (by-)product for which there is a fee when it is produced.
 	 * @param percentage the percentage of the produced product.
+<<<<<<< HEAD
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	BigDecimal getFeeForProducedMaterial(I_M_Product m_Product, BigDecimal percentage);
@@ -90,8 +111,14 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	@Override
 	String getFeeNameForProducedProduct(I_M_Product product);
 
+<<<<<<< HEAD
 	@Override
 	List<IInvoicingItem> getAdditionalFeeProducts();
+=======
+	@NonNull
+	@Override
+	List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	Currency getCurrency();
@@ -100,4 +127,11 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	 * returns the last date at which this config is valid
 	 */
 	Timestamp getValidToDate();
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	@Override
+	List<IInvoicingItem> getRawAdditionalFeeProducts();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

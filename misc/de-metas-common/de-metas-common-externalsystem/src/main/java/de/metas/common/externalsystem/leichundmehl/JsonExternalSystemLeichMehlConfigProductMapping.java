@@ -41,7 +41,11 @@ public class JsonExternalSystemLeichMehlConfigProductMapping
 
 	@NonNull
 	JsonMetasfreshId productId;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemLeichMehlConfigProductMapping(

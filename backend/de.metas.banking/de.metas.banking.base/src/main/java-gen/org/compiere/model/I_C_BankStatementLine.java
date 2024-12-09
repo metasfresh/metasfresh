@@ -1,9 +1,17 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /** Generated Interface for C_BankStatementLine
  *  @author metasfresh (generated) 
  */
@@ -158,8 +166,12 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Kosten.
 	 * Additional document charges
+=======
+	 * Set Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -168,8 +180,12 @@ public interface I_C_BankStatementLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Kosten.
 	 * Additional document charges
+=======
+	 * Get Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -202,7 +218,12 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Gebühr.
+=======
+	 * Set Charge amount.
+	 * Charge Amount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -211,7 +232,12 @@ public interface I_C_BankStatementLine
 	void setChargeAmt (BigDecimal ChargeAmt);
 
 	/**
+<<<<<<< HEAD
 	 * Get Gebühr.
+=======
+	 * Get Charge amount.
+	 * Charge Amount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -410,7 +436,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV-Betrag.
+=======
+	 * Set EFT Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Amount
 	 *
 	 * <br>Type: Amount
@@ -420,7 +450,11 @@ public interface I_C_BankStatementLine
 	void setEftAmt (@Nullable BigDecimal EftAmt);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV-Betrag.
+=======
+	 * Get EFT Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Amount
 	 *
 	 * <br>Type: Amount
@@ -433,7 +467,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftAmt = "EftAmt";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV Scheck-Nr..
+=======
+	 * Set EFT Check No.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Check No
 	 *
 	 * <br>Type: String
@@ -443,7 +481,11 @@ public interface I_C_BankStatementLine
 	void setEftCheckNo (@Nullable java.lang.String EftCheckNo);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV Scheck-Nr..
+=======
+	 * Get EFT Check No.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Check No
 	 *
 	 * <br>Type: String
@@ -456,7 +498,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftCheckNo = "EftCheckNo";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV-Währung.
+=======
+	 * Set EFT Currency.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Currency
 	 *
 	 * <br>Type: String
@@ -466,7 +512,11 @@ public interface I_C_BankStatementLine
 	void setEftCurrency (@Nullable java.lang.String EftCurrency);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV-Währung.
+=======
+	 * Get EFT Currency.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Currency
 	 *
 	 * <br>Type: String
@@ -479,7 +529,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftCurrency = "EftCurrency";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV Memo.
+=======
+	 * Set EFT Memo.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Memo
 	 *
 	 * <br>Type: String
@@ -489,7 +543,11 @@ public interface I_C_BankStatementLine
 	void setEftMemo (@Nullable java.lang.String EftMemo);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV Memo.
+=======
+	 * Get EFT Memo.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Memo
 	 *
 	 * <br>Type: String
@@ -502,7 +560,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftMemo = "EftMemo";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV-Zahlungsempfänger.
+=======
+	 * Set EFT Payee.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Payee information
 	 *
 	 * <br>Type: String
@@ -512,7 +574,11 @@ public interface I_C_BankStatementLine
 	void setEftPayee (@Nullable java.lang.String EftPayee);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV-Zahlungsempfänger.
+=======
+	 * Get EFT Payee.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Payee information
 	 *
 	 * <br>Type: String
@@ -525,8 +591,13 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftPayee = "EftPayee";
 
 	/**
+<<<<<<< HEAD
 	 * Set Konto ELV-Zahlungsempfänger.
 	 * Electronic Funds Transfer Payyee Account Information
+=======
+	 * Set EFT Payee Account.
+	 * Electronic Funds Transfer Payee Account Information
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -535,8 +606,13 @@ public interface I_C_BankStatementLine
 	void setEftPayeeAccount (@Nullable java.lang.String EftPayeeAccount);
 
 	/**
+<<<<<<< HEAD
 	 * Get Konto ELV-Zahlungsempfänger.
 	 * Electronic Funds Transfer Payyee Account Information
+=======
+	 * Get EFT Payee Account.
+	 * Electronic Funds Transfer Payee Account Information
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -571,7 +647,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftReference = "EftReference";
 
 	/**
+<<<<<<< HEAD
 	 * Set Datum ELV-Position.
+=======
+	 * Set EFT Statement Line Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Statement Line Date
 	 *
 	 * <br>Type: Date
@@ -581,7 +661,11 @@ public interface I_C_BankStatementLine
 	void setEftStatementLineDate (@Nullable java.sql.Timestamp EftStatementLineDate);
 
 	/**
+<<<<<<< HEAD
 	 * Get Datum ELV-Position.
+=======
+	 * Get EFT Statement Line Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Statement Line Date
 	 *
 	 * <br>Type: Date
@@ -594,7 +678,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftStatementLineDate = "EftStatementLineDate";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV-TransaktionsID.
+=======
+	 * Set EFT Trx ID.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Transaction ID
 	 *
 	 * <br>Type: String
@@ -604,7 +692,11 @@ public interface I_C_BankStatementLine
 	void setEftTrxID (@Nullable java.lang.String EftTrxID);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV-TransaktionsID.
+=======
+	 * Get EFT Trx ID.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Transaction ID
 	 *
 	 * <br>Type: String
@@ -617,7 +709,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftTrxID = "EftTrxID";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV-Transaktionsart.
+=======
+	 * Set EFT Trx Type.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Transaction Type
 	 *
 	 * <br>Type: String
@@ -627,7 +723,11 @@ public interface I_C_BankStatementLine
 	void setEftTrxType (@Nullable java.lang.String EftTrxType);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV-Transaktionsart.
+=======
+	 * Get EFT Trx Type.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Transaction Type
 	 *
 	 * <br>Type: String
@@ -640,7 +740,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftTrxType = "EftTrxType";
 
 	/**
+<<<<<<< HEAD
 	 * Set ELV Wertstellungs-Datum.
+=======
+	 * Set EFT Effective Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Valuta (effective) Date
 	 *
 	 * <br>Type: Date
@@ -650,7 +754,11 @@ public interface I_C_BankStatementLine
 	void setEftValutaDate (@Nullable java.sql.Timestamp EftValutaDate);
 
 	/**
+<<<<<<< HEAD
 	 * Get ELV Wertstellungs-Datum.
+=======
+	 * Get EFT Effective Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Electronic Funds Transfer Valuta (effective) Date
 	 *
 	 * <br>Type: Date
@@ -753,8 +861,13 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
 	 * Set Manuell.
 	 * This is a manual process
+=======
+	 * Set Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -763,8 +876,13 @@ public interface I_C_BankStatementLine
 	void setIsManual (boolean IsManual);
 
 	/**
+<<<<<<< HEAD
 	 * Get Manuell.
 	 * This is a manual process
+=======
+	 * Get Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -845,7 +963,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
+<<<<<<< HEAD
 	 * Set Umkehrung.
+=======
+	 * Set Reversal.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * This is a reversing transaction
 	 *
 	 * <br>Type: YesNo
@@ -855,7 +977,11 @@ public interface I_C_BankStatementLine
 	void setIsReversal (boolean IsReversal);
 
 	/**
+<<<<<<< HEAD
 	 * Get Umkehrung.
+=======
+	 * Get Reversal.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * This is a reversing transaction
 	 *
 	 * <br>Type: YesNo
@@ -868,6 +994,32 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_IsReversal = "IsReversal";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Update Amounts from invoice.
+	 * If set and an invoice is assigned, then the bank statement and transaction amount as well as the currency will be taken from the open amount of the invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateAmountsFromInvoice (boolean IsUpdateAmountsFromInvoice);
+
+	/**
+	 * Get Update Amounts from invoice.
+	 * If set and an invoice is assigned, then the bank statement and transaction amount as well as the currency will be taken from the open amount of the invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateAmountsFromInvoice();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsUpdateAmountsFromInvoice = new ModelColumn<>(I_C_BankStatementLine.class, "IsUpdateAmountsFromInvoice", null);
+	String COLUMNNAME_IsUpdateAmountsFromInvoice = "IsUpdateAmountsFromInvoice";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -953,7 +1105,11 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+<<<<<<< HEAD
 	 * Set Referenznummer.
+=======
+	 * Set Reference No.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -963,7 +1119,11 @@ public interface I_C_BankStatementLine
 	void setReferenceNo (@Nullable java.lang.String ReferenceNo);
 
 	/**
+<<<<<<< HEAD
 	 * Get Referenznummer.
+=======
+	 * Get Reference No.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -998,7 +1158,11 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Set Statement amount.
+<<<<<<< HEAD
 	 * Kontoauszug Betrag
+=======
+	 * Statement Amount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1008,7 +1172,11 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Get Statement amount.
+<<<<<<< HEAD
 	 * Kontoauszug Betrag
+=======
+	 * Statement Amount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1020,8 +1188,12 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_StmtAmt = "StmtAmt";
 
 	/**
+<<<<<<< HEAD
 	 * Set Bewegungs-Betrag.
 	 * Amount of a transaction
+=======
+	 * Set Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1030,8 +1202,12 @@ public interface I_C_BankStatementLine
 	void setTrxAmt (BigDecimal TrxAmt);
 
 	/**
+<<<<<<< HEAD
 	 * Get Bewegungs-Betrag.
 	 * Amount of a transaction
+=======
+	 * Get Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true

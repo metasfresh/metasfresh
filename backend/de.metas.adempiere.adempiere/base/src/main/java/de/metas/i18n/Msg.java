@@ -4,6 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.logging.LogManager;
@@ -14,7 +19,11 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 import lombok.Singular;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import lombok.Value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -483,9 +492,15 @@ public final class Msg
 		final int adReferenceId = ReferenceListAwareEnums.getAD_Reference_ID(referenceListAwareEnum);
 		if (adReferenceId > 0)
 		{
+<<<<<<< HEAD
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final IADReferenceDAO.ADRefListItem adRefListItem = adReferenceDAO.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
 			if (adRefListItem != null)
+=======
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final ADRefListItem adRefListItem = adReferenceService.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
+			if(adRefListItem != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return adRefListItem.getName().translate(adLanguage);
 			}
@@ -1069,7 +1084,11 @@ public final class Msg
 		}
 	}
 
+<<<<<<< HEAD
 	@lombok.Value
+=======
+	@Value
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static class Element
 	{
 		public static String DEFAULT_LANG = "";

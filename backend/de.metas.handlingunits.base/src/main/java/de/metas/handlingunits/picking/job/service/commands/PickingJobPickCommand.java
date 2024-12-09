@@ -270,7 +270,11 @@ public class PickingJobPickCommand
 		}
 
 		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
+<<<<<<< HEAD
 				? Quantitys.create(catchWeightBD, line.getCatchUomId())
+=======
+				? Quantitys.of(catchWeightBD, line.getCatchUomId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				: null;
 		if (this.catchWeight != null && !this.catchWeight.isPositive())
 		{
@@ -690,6 +694,10 @@ public class PickingJobPickCommand
 		return childValues.size() == 1 ? childValues.iterator().next() : null;
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private boolean isUpdateAttributes()
 	{
 		return isSetBestBeforeDate || isSetLotNo;

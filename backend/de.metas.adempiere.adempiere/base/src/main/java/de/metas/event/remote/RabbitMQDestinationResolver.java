@@ -83,9 +83,15 @@ public class RabbitMQDestinationResolver
 		return eventBusQueueConfigurationList.stream()
 				.filter(queueConfig -> queueConfig.getTopicName().isPresent())
 				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
+<<<<<<< HEAD
 				.map(IEventBusQueueConfiguration::getFanoutExchangeName)
 				.findFirst()
 				.orElseGet(() -> SpringContextHolder.instance.getBean(RabbitMQEventBusConfiguration.DefaultQueueConfiguration.class).getFanoutExchangeName());
+=======
+				.map(IEventBusQueueConfiguration::getExchangeName)
+				.findFirst()
+				.orElseGet(() -> SpringContextHolder.instance.getBean(RabbitMQEventBusConfiguration.DefaultQueueConfiguration.class).getExchangeName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void validateSingleQueueForTopic(@NonNull final List<IEventBusQueueConfiguration> anonymousQueueConfigurationList)

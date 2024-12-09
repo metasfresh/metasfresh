@@ -1,5 +1,6 @@
 package de.metas.security;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -10,10 +11,17 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;
 
+=======
+import de.metas.mobile.application.MobileApplicationRepoId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
+<<<<<<< HEAD
+=======
+import de.metas.security.requests.CreateMobileApplicationAccessRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
@@ -28,21 +36,46 @@ import de.metas.security.requests.RemoveWindowAccessRequest;
 import de.metas.security.requests.RemoveWorkflowAccessRequest;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_OrgAccess;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * {@link IUserRolePermissions} retrieval DAO.
  *
  * @author tsa
+<<<<<<< HEAD
  *
  */
 public interface IUserRolePermissionsDAO extends ISingletonService
 {
 	/** @return role dependent tables; it does not include AD_Role table; it might include tables which does not have AD_Role_ID column */
+=======
+ */
+public interface IUserRolePermissionsDAO extends ISingletonService
+{
+	/**
+	 * @return role dependent tables; it does not include AD_Role table; it might include tables which does not have AD_Role_ID column
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Set<String> getRoleDependentTableNames();
 
 	/**
 	 * Gets current cache version.
+<<<<<<< HEAD
 	 * 
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The cache version is incremented on each cache reset call.
 	 */
 	long getCacheVersion();
@@ -50,7 +83,11 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	/**
 	 * Resets all role and permissions related caches after current transaction is committed.
 	 * If there is no current transaction, the caches will be reset right away.
+<<<<<<< HEAD
 	 * 
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If a cache reset was already scheduled for current transaction this method won't schedule another one.
 	 */
 	void resetCacheAfterTrxCommit();
@@ -74,14 +111,22 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return permissions with organization access.
 	 */
 	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
 	/**
 	 * Retrieves first {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return permissions with organization access.
 	 * @see #retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId, OrgId, UserId, LocalDate)
 	 */
@@ -105,7 +150,11 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Delete Access Records of the role.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * WARNING: to be called after the role was (successfully) deleted.
 	 */
 	void deleteAccessRecords(RoleId roleId);
@@ -116,7 +165,10 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void setAccountingModuleActive();
 
 	/**
+<<<<<<< HEAD
 	 * 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return always return {@code false}, unless {@link #setAccountingModuleActive()} was previously called.
 	 */
 	boolean isAccountingModuleActive();
@@ -153,6 +205,13 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	void deletePrivateAccess(RemoveRecordPrivateAccessRequest request);
 
+<<<<<<< HEAD
+=======
+	void createMobileApplicationAccess(CreateMobileApplicationAccessRequest request);
+
+	void deleteMobileApplicationAccess(MobileApplicationRepoId applicationId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}
 	 */

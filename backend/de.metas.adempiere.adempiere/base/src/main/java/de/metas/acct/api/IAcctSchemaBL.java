@@ -22,15 +22,32 @@
 
 package de.metas.acct.api;
 
+<<<<<<< HEAD
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+=======
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
+<<<<<<< HEAD
+=======
+	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	CurrencyId getAcctCurrencyId(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	CurrencyId getAcctCurrencyId(@NonNull AcctSchemaId acctSchemaId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable OrgId orgId);
 
 	void updateDebitorCreditorIds(@NonNull AcctSchema acctSchema, @NonNull I_C_BPartner bpartner);

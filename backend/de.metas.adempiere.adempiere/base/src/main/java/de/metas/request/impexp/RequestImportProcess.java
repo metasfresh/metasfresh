@@ -123,7 +123,11 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, trxName);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set C_BPartner_ID for {} records", no);
 		//
 		// Flag missing BPartners
@@ -145,7 +149,11 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, trxName);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set R_RequestType_ID for {} records", no);
 		//
 		// Flag missing R_RequestType_ID
@@ -167,7 +175,11 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, trxName);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set M_Product_ID for {} records (by Value)", no);
 		//
 		// Flag missing status
@@ -181,7 +193,11 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_Request.I_ISIMPORTED_ImportFailed, errorMsg + "; " };
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	}
 

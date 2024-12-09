@@ -1,13 +1,26 @@
 package de.metas.order;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+=======
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 
+<<<<<<< HEAD
 import de.metas.util.ISingletonService;
+=======
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -46,4 +59,12 @@ public interface IMatchPOBL extends ISingletonService
 	 */
 	I_M_MatchPO create(I_C_InvoiceLine iLine, I_M_InOutLine receiptLine, Timestamp dateTrx, BigDecimal qty);
 
+<<<<<<< HEAD
+=======
+	void unlink(@NonNull OrderLineId orderLineId, @NonNull InvoiceAndLineId invoiceAndLineId);
+
+	void unlink(@NonNull InOutId inoutId);
+
+	void unlink(@NonNull InvoiceId invoiceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

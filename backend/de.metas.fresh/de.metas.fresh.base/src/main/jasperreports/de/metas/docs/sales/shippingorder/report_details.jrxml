@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
 <!-- 2016-10-07T09:55:07 -->
+=======
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippingorder/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+<<<<<<< HEAD
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+=======
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -20,6 +28,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
+<<<<<<< HEAD
 	name, address, DeliveryDateTimeMax, isPallet,
 	sum(Qty) as Qty,
 	string_agg(note, E'\n') as notes
@@ -66,11 +75,49 @@ GROUP BY
 	<field name="ispallet" class="java.lang.String"/>
 	<field name="qty" class="java.math.BigDecimal"/>
 	<field name="notes" class="java.lang.String"/>
+=======
+* from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
+	</queryString>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_bpartner"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address"/>
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_bpartner_location"/>
+	</field>
+	<field name="deliverydatetimemax" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="deliverydatetimemax"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliverydatetimemax"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_deliveryday"/>
+	</field>
+	<field name="ispallet" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ispallet"/>
+		<property name="com.jaspersoft.studio.field.label" value="ispallet"/>
+	</field>
+	<field name="qtytu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtytu"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtytu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_shippingpackage"/>
+	</field>
+	<field name="qtylu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtylu"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtylu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_shippingpackage"/>
+	</field>
+	<field name="notes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="notes"/>
+		<property name="com.jaspersoft.studio.field.label" value="notes"/>
+	</field>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	<title>
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
 		<band height="12" splitType="Stretch">
+<<<<<<< HEAD
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
 				<textElement markup="none">
@@ -113,18 +160,74 @@ GROUP BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
+=======
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPName}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="436" y="0" width="150" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{QtyLU}]]></textFieldExpression>
+			</textField>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="12" splitType="Stretch">
+<<<<<<< HEAD
 			<textField isStretchWithOverflow="true">
+=======
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<reportElement key="textField-16" x="37" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="1b4cc2a7-14ad-4b21-8275-fda17943337b"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
+<<<<<<< HEAD
 			<textField isStretchWithOverflow="true">
+=======
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="149a75da-bec3-4688-8c75-bf3603956ed6"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
@@ -132,12 +235,17 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+<<<<<<< HEAD
 				<reportElement key="textField-16" x="437" y="0" width="110" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+=======
+				<reportElement key="textField-16" x="436" y="0" width="150" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
 			</textField>
+<<<<<<< HEAD
 			<textField>
 				<reportElement key="textField-16" x="350" y="0" width="35" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
 				<textElement textAlignment="Right" markup="none">
@@ -147,11 +255,18 @@ GROUP BY
 			</textField>
 			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="266" y="0" width="85" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f"/>
+=======
+			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deliverydatetimemax}]]></textFieldExpression>
 			</textField>
+<<<<<<< HEAD
 			<textField>
 				<reportElement key="textField-16" x="392" y="0" width="45" height="12" forecolor="#000000" uuid="056e2312-4c94-44aa-b184-d3066e7a8b83"/>
 				<textElement markup="none">
@@ -160,6 +275,21 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{ispallet}.equals( "Y" )?
     ($F{qty}.intValue() == 1? $R{Palette}: $R{Palettes}):
     ($F{qty}.intValue() == 1? $R{Unit}: $R{Units})]]></textFieldExpression>
+=======
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtytu}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtylu}]]></textFieldExpression>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			</textField>
 		</band>
 		<band height="5"/>

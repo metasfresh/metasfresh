@@ -12,6 +12,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPCostCollectorId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -119,6 +123,11 @@ public interface IOrderDAO extends ISingletonService
 
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
+<<<<<<< HEAD
+=======
+	void deleteByLineId(OrderAndLineId orderAndLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void save(org.compiere.model.I_C_Order order);
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
@@ -135,6 +144,11 @@ public interface IOrderDAO extends ISingletonService
 
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
 
+<<<<<<< HEAD
+=======
+	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

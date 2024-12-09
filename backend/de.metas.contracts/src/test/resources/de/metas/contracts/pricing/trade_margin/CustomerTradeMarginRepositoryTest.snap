@@ -1,5 +1,6 @@
 de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepositoryTest.getById_Test=[
   {
+<<<<<<< HEAD
     "customerTradeMarginId" : 100001,
     "commissionProductId" : 1,
     "pointsPrecision" : 2,
@@ -13,5 +14,20 @@ de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepositoryTest.getByI
         "marginPercent" : 10
       }
     ]
+=======
+    "commissionProductId": 1,
+    "customerTradeMarginId": 100001,
+    "lines": [
+      {
+        "active": true,
+        "customerTradeMarginId": 100001,
+        "customerTradeMarginLineId": 100002,
+        "marginPercent": 10,
+        "seqNo": 0
+      }
+    ],
+    "name": "name",
+    "pointsPrecision": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

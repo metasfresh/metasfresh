@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
+=======
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="aae3cda5-2e7a-4834-8355-ed9690a329a3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -22,11 +26,17 @@
 	<field name="org_value" class="java.lang.String"/>
 	<field name="taxid" class="java.lang.String"/>
 	<field name="condition" class="java.lang.String"/>
+<<<<<<< HEAD
+=======
+	<field name="Account_manager" class="java.lang.String"/>
+	<field name="Account_manager_mail" class="java.lang.String"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="106" splitType="Stretch">
+<<<<<<< HEAD
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement uuid="123ec5b2-87bc-41af-a1b9-9bd1ef154dde" key="textField-3" mode="Transparent" x="128" y="34" width="58" height="13"/>
 				<box>
@@ -55,6 +65,10 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e" key="textField-9" mode="Transparent" x="59" y="56" width="486" height="50" isRemoveLineWhenBlank="true"/>
+=======
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-9" mode="Transparent" x="56" y="70" width="488" height="13" isRemoveLineWhenBlank="true" uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -67,7 +81,11 @@
 				<textFieldExpression><![CDATA[$F{noteheader}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
+<<<<<<< HEAD
 				<reportElement uuid="fc57ee94-80b8-41c9-96a2-e8666ee47e4d" key="textField-5" mode="Transparent" x="59" y="0" width="265" height="18"/>
+=======
+				<reportElement key="textField-5" mode="Transparent" x="59" y="0" width="265" height="18" uuid="fc57ee94-80b8-41c9-96a2-e8666ee47e4d"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -75,12 +93,46 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
+<<<<<<< HEAD
 					<font size="12" fontName="Arial" isBold="true"/>
+=======
+					<font fontName="Arial" size="12" isBold="true"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				</textElement>
 				<textFieldExpression><![CDATA[$F{doctype}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+<<<<<<< HEAD
 				<reportElement uuid="b466abe4-d837-4f67-9e03-b8ac2f6c335d" key="textField-3" mode="Transparent" x="305" y="34" width="68" height="13"/>
+=======
+				<reportElement key="textField-3" mode="Transparent" x="167" y="34" width="131" height="13" uuid="0af69d1e-d076-4ae6-b81c-7a389efee6f9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dunningdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" mode="Transparent" x="56" y="34" width="111" height="13" uuid="0ce7d45e-9e02-4176-b5fa-c84246daed59"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="168" y="47" width="130" height="13" uuid="32c4cc7e-3038-4884-a7a4-69c1dc0f29fb"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,7 +145,11 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
+<<<<<<< HEAD
 				<reportElement uuid="08442526-03d3-4df3-96a7-6bb85e41e6df" key="textField-5" mode="Transparent" x="193" y="34" width="112" height="13"/>
+=======
+				<reportElement key="textField-5" mode="Transparent" x="56" y="47" width="111" height="13" uuid="6122d920-aac6-4868-bbcc-9188e732e684"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -105,6 +161,61 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
+<<<<<<< HEAD
+=======
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="412" y="34" width="129" height="13" uuid="26393df0-f984-4853-bb9f-4f59b48fd5c2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Account_manager}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" mode="Transparent" x="352" y="34" width="60" height="13" uuid="cfee9d29-d8e8-49e0-b51a-9b9558163b55"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" mode="Transparent" x="352" y="47" width="60" height="13" uuid="8c1f5db6-b668-4b6b-a9b5-a3a93a66e328"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="380" y="47" width="161" height="13" uuid="4a94d3bb-94c8-4277-a8d5-7272721b870a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Account_manager_mail}]]></textFieldExpression>
+			</textField>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		</band>
 	</title>
 	<pageHeader>

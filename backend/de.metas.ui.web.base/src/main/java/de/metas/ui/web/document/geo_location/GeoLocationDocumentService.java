@@ -1,5 +1,9 @@
 package de.metas.ui.web.document.geo_location;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.AdMessageKey;
@@ -68,6 +72,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	private static final ImmutableSet<GeoLocationDocumentDescriptor> DESCRIPTORS_TO_CHECK = ImmutableSet.<GeoLocationDocumentDescriptor>builder()
 			.add(GeoLocationDocumentDescriptor.builder()
+<<<<<<< HEAD
 						 .type(LocationColumnNameType.LocationId)
 						 .locationColumnName(I_C_Order.COLUMNNAME_C_BPartner_Location_Value_ID)
 						 .build())
@@ -83,6 +88,23 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 						 .type(LocationColumnNameType.BPartnerId)
 						 .locationColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 						 .build())
+=======
+					.type(LocationColumnNameType.LocationId)
+					.locationColumnName(I_C_Order.COLUMNNAME_C_BPartner_Location_Value_ID)
+					.build())
+			.add(GeoLocationDocumentDescriptor.builder()
+					.type(LocationColumnNameType.LocationId)
+					.locationColumnName(I_C_Location.COLUMNNAME_C_Location_ID)
+					.build())
+			.add(GeoLocationDocumentDescriptor.builder()
+					.type(LocationColumnNameType.BPartnerLocationId)
+					.locationColumnName(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+					.build())
+			.add(GeoLocationDocumentDescriptor.builder()
+					.type(LocationColumnNameType.BPartnerId)
+					.locationColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+					.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.build();
 
 	public GeoLocationDocumentService()
@@ -91,14 +113,23 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	@Override
 	@Nullable
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (context.getTableName() == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
+<<<<<<< HEAD
+=======
+
+		final ImmutableList<DocumentFieldDescriptor> fields = context.getFields();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (fields.isEmpty())
 		{
 			return null;
@@ -120,11 +151,14 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 				.orElseThrow(() -> new AdempiereException("No geo-location support for " + fieldNames));
 	}
 
+<<<<<<< HEAD
 	public boolean hasGeoLocationSupport(@NonNull final Set<String> fieldNames)
 	{
 		return getGeoLocationDocumentDescriptorIfExists(fieldNames).isPresent();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public boolean isActive()
 	{
@@ -149,6 +183,14 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 		return fields.stream().map(DocumentFieldDescriptor::getFieldName).collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean containsGeoLocationFilter(@NonNull final Collection<DocumentFilterDescriptor> filters)
+	{
+		return !filters.isEmpty() && filters.stream().anyMatch(filter -> GeoLocationFilterConverter.FILTER_ID.equals(filter.getFilterId()));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private DocumentFilterDescriptor createDocumentFilterDescriptor(final GeoLocationDocumentDescriptor descriptor)
 	{
 		final ITranslatableString caption = msgBL.getTranslatableMsgText(MSG_FILTER_CAPTION);
@@ -159,6 +201,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 				.setDisplayName(caption)
 				//
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 									  .setFieldName(GeoLocationFilterConverter.PARAM_Address1)
 									  .setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Address1))
 									  .setWidgetType(DocumentFieldWidgetType.Text))
@@ -184,6 +227,33 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 									  .setFieldName(GeoLocationFilterConverter.PARAM_VisitorsAddress)
 									  .setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_VisitorsAddress))
 									  .setWidgetType(DocumentFieldWidgetType.YesNo))
+=======
+									  .fieldName(GeoLocationFilterConverter.PARAM_Address1)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Address1))
+									  .widgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+									  .fieldName(GeoLocationFilterConverter.PARAM_Postal)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Postal))
+									  .widgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+									  .fieldName(GeoLocationFilterConverter.PARAM_City)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_City))
+									  .widgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+									  .fieldName(GeoLocationFilterConverter.PARAM_CountryId)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_CountryId))
+									  .mandatory(true)
+									  .widgetType(DocumentFieldWidgetType.Lookup)
+									  .lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+									  .fieldName(GeoLocationFilterConverter.PARAM_Distance)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Distance))
+									  .widgetType(DocumentFieldWidgetType.Integer))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+									  .fieldName(GeoLocationFilterConverter.PARAM_VisitorsAddress)
+									  .displayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_VisitorsAddress))
+									  .widgetType(DocumentFieldWidgetType.YesNo))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.addInternalParameter(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
 				//

@@ -18,6 +18,10 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.sales_region.SalesRegionId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.minigrid.IMiniTable;
@@ -34,14 +38,22 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 /**
+<<<<<<< HEAD
  *  Create Charge from Accounts
  *
  *  @author Jorg Janke
  *  @version $Id: Charge.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
+=======
+ * Create Charge from Accounts
+ *
+ * @author Jorg Janke
+ * @version $Id: Charge.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class Charge
 {
 	/**
+<<<<<<< HEAD
 	 * 
 	 */
 	private static final long serialVersionUID = 2478440763968206819L;
@@ -65,17 +77,56 @@ public class Charge
 	 *  Dynamic Init
 	 *  - Get defaults for primary AcctSchema
 	 *  - Create Table with Accounts
+=======
+	 *
+	 */
+	private static final long serialVersionUID = 2478440763968206819L;
+
+	/**
+	 * Window No
+	 */
+	public int m_WindowNo = 0;
+	//	/**	FormFrame			*/
+	//	private FormFrame 	m_frame;
+
+	private AcctSchema acctSchema = null;
+
+	/**
+	 * Default Charge Tax Category
+	 */
+	private int m_C_TaxCategory_ID = 0;
+	private int m_AD_Client_ID = 0;
+	private int m_AD_Org_ID = 0;
+	private int m_CreatedBy = 0;
+	/**
+	 * Logger
+	 */
+	public static Logger log = LogManager.getLogger(Charge.class);
+
+	/**
+	 * Dynamic Init
+	 * - Get defaults for primary AcctSchema
+	 * - Create Table with Accounts
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public Vector<Vector<Object>> getData()
 	{
 		//  Table
 		Vector<Vector<Object>> data = new Vector<>();
 		String sql = "SELECT C_ElementValue_ID,Value, Name, AccountType "
+<<<<<<< HEAD
 			+ "FROM C_ElementValue "
 			+ "WHERE AccountType IN ('R','E')"
 			+ " AND IsSummary='N'"
 			+ " AND C_Element_ID=? "
 			+ "ORDER BY 2";
+=======
+				+ "FROM C_ElementValue "
+				+ "WHERE AccountType IN ('R','E')"
+				+ " AND IsSummary='N'"
+				+ " AND C_Element_ID=? "
+				+ "ORDER BY 2";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
@@ -99,6 +150,7 @@ public class Charge
 		{
 			log.error(sql, e);
 		}
+<<<<<<< HEAD
 		
 		return data;
 	}
@@ -118,6 +170,26 @@ public class Charge
     	acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
     }
 	
+=======
+
+		return data;
+	}
+
+	/**
+	 * Finds the Element Identifier for the current charge.
+	 */
+	public void findChargeElementID()
+	{
+		AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(Env.getContextAsInt(Env.getCtx(), "$C_AcctSchema_ID"));
+		if (acctSchemaId == null)
+		{
+			return;
+		}
+
+		acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Vector<String> getColumnNames()
 	{
 		//  Header Info
@@ -126,10 +198,17 @@ public class Charge
 		columnNames.add(Msg.translate(Env.getCtx(), "Value"));
 		columnNames.add(Msg.translate(Env.getCtx(), "Name"));
 		columnNames.add(Msg.getMsg(Env.getCtx(), "Expense"));
+<<<<<<< HEAD
 		
 		return columnNames;
 	}
 	
+=======
+
+		return columnNames;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setColumnClass(IMiniTable dataTable)
 	{
 		dataTable.setColumnClass(0, Boolean.class, false);      //  0-Selection
@@ -139,10 +218,17 @@ public class Charge
 		//  Table UI
 		dataTable.autoSize();
 	}
+<<<<<<< HEAD
 	
 	/**
      * Finds the identifier for the tax category for the client.
      */
+=======
+
+	/**
+	 * Finds the identifier for the tax category for the client.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void findTaxCategoryID()
 	{
 		//  Other Defaults
@@ -152,7 +238,11 @@ public class Charge
 
 		//  TaxCategory
 		String sql = "SELECT C_TaxCategory_ID FROM C_TaxCategory "
+<<<<<<< HEAD
 			+ "WHERE IsDefault='Y' AND AD_Client_ID=?";
+=======
+				+ "WHERE IsDefault='Y' AND AD_Client_ID=?";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_C_TaxCategory_ID = 0;
 		try
 		{
@@ -171,7 +261,11 @@ public class Charge
 			log.error(sql, e);
 		}
 	}   //  dynInit
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**************************************************************************
 	 *  Create ElementValue for primary AcctSchema
 	 *  @param value value
@@ -179,7 +273,11 @@ public class Charge
 	 *  @param isExpenseType is expense
 	 *  @return element value
 	 */
+<<<<<<< HEAD
 	protected int createElementValue (String value, String name, boolean isExpenseType)
+=======
+	protected int createElementValue(String value, String name, boolean isExpenseType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		throw new UnsupportedOperationException();
 		// log.info(name);
@@ -197,6 +295,7 @@ public class Charge
 	}   //  createElementValue
 
 	/**
+<<<<<<< HEAD
      *  Create Charge and account entries for primary Account Schema.
      *
      *  @param name             charge name
@@ -317,11 +416,138 @@ public class Charge
 
         return account;
     }
+=======
+	 * Create Charge and account entries for primary Account Schema.
+	 *
+	 * @param name           charge name
+	 * @param elementValueId element value identifier
+	 * @return charge identifier, or 0 if no charge created.
+	 */
+	protected int createCharge(String name, int elementValueId)
+	{
+		MCharge charge;
+		MAccount account;
+
+		log.info(name + " - ");
+		// Charge
+		charge = new MCharge(Env.getCtx(), 0, null);
+		charge.setName(name);
+		charge.setC_TaxCategory_ID(m_C_TaxCategory_ID);
+		if (!charge.save())
+		{
+			log.error(name + " not created");
+			return 0;
+		}
+
+		if (!isAccountSchemaValid())
+		{
+			return 0;
+		}
+
+		//  Target Account
+		account = getAccount(elementValueId, charge);
+		if (account == null)
+		{
+			return 0;
+		}
+
+		updateAccount(charge, account);
+
+		return charge.getC_Charge_ID();
+	}   //  createCharge
+
+	/**
+	 * Updates the charge account details.
+	 *
+	 * @param charge  the charge
+	 * @param account the account
+	 */
+	private void updateAccount(MCharge charge, MAccount account)
+	{
+		StringBuffer sql = createUpdateAccountSql(charge, account);
+		//
+		int noAffectedRows = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+		if (noAffectedRows != 1)
+		{
+			log.error("Update #" + noAffectedRows + "\n" + sql.toString());
+		}
+
+		return;
+	}
+
+	/**
+	 * Queries whether the current account scheme is valid.
+	 *
+	 * @return false if the current account is <code>null</code> or
+	 * its identifier is 0 (zero).
+	 */
+	private boolean isAccountSchemaValid()
+	{
+		return acctSchema != null;
+	}
+
+	/**
+	 * Creates the SQL statement for updating the account and charge.
+	 *
+	 * @param charge  charge
+	 * @param account account
+	 * @return the SQL DML statement for updating the specified account and charge.
+	 */
+	private StringBuffer createUpdateAccountSql(MCharge charge, MAccount account)
+	{
+		StringBuffer sql = new StringBuffer("UPDATE C_Charge_Acct ");
+		sql.append("SET CH_Expense_Acct=").append(account.getC_ValidCombination_ID());
+		sql.append(", CH_Revenue_Acct=").append(account.getC_ValidCombination_ID());
+		sql.append(" WHERE C_Charge_ID=").append(charge.getC_Charge_ID());
+		sql.append(" AND C_AcctSchema_ID=").append(acctSchema.getId().getRepoId());
+
+		return sql;
+	}
+
+	/**
+	 * Gets the account for the specified charge and element value.
+	 * The account is created if it doesn't already exist.
+	 *
+	 * @param elementValueId identifier for the element value
+	 * @param charge         charge
+	 * @return the account
+	 */
+	private MAccount getAccount(int elementValueId, MCharge charge)
+	{
+		MAccount defaultAccount = MAccount.getDefault(acctSchema, true); //  optional null
+		MAccount account = MAccount.get(Env.getCtx(),
+				charge.getAD_Client_ID(),
+				charge.getAD_Org_ID(),
+				acctSchema.getId(),
+				elementValueId,
+				defaultAccount.getC_SubAcct_ID(),
+				defaultAccount.getM_Product_ID(),
+				defaultAccount.getC_BPartner_ID(),
+				defaultAccount.getAD_OrgTrx_ID(),
+				defaultAccount.getC_LocFrom_ID(),
+				defaultAccount.getC_LocTo_ID(),
+				SalesRegionId.ofRepoIdOrNull(defaultAccount.getC_SalesRegion_ID()),
+				defaultAccount.getC_Project_ID(),
+				defaultAccount.getC_Campaign_ID(),
+				defaultAccount.getC_Activity_ID(),
+				defaultAccount.getUser1_ID(),
+				defaultAccount.getUser2_ID(),
+				defaultAccount.getUserElement1_ID(),
+				defaultAccount.getUserElement2_ID(),
+				defaultAccount.getC_OrderSO_ID());
+
+		return account;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public StringBuffer listCreated;
 	public StringBuffer listRejected;
 
+<<<<<<< HEAD
     public void createAccount(IMiniTable dataTable)
+=======
+	public void createAccount(IMiniTable dataTable)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		log.info("");
 		//

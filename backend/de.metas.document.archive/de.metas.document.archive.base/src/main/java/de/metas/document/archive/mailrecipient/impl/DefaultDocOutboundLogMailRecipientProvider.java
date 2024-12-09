@@ -8,23 +8,37 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+<<<<<<< HEAD
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
 import de.metas.process.AdProcessId;
+=======
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxNotFoundException;
+import de.metas.email.mailboxes.MailboxQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.PlainContextAware;
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_DocType;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
@@ -57,7 +71,10 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
 	private final MailService mailService;
 
+<<<<<<< HEAD
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	public DefaultDocOutboundLogMailRecipientProvider(
@@ -68,14 +85,26 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		this.mailService = mailService;
 	}
 
+<<<<<<< HEAD
 	/** returns {@code true}. */
+=======
+	/**
+	 * returns {@code true}.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public boolean isDefault()
 	{
 		return true;
 	}
 
+<<<<<<< HEAD
 	/** returns {@code null}. */
+=======
+	/**
+	 * returns {@code null}.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public String getTableName()
 	{
@@ -144,6 +173,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	{
 		try
 		{
+<<<<<<< HEAD
 			final ClientEMailConfig tenantEmailConfig = extractTenantEmailConfig(request);
 			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(request);
 
@@ -153,6 +183,13 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 					null, // don't filter by processID
 					docBaseAndSubType,
 					null); // mailCustomType
+=======
+			return mailService.findMailbox(MailboxQuery.builder()
+					.clientId(request.getClientId())
+					.orgId(request.getOrgId())
+					.docBaseAndSubType(extractDocBaseAndSubType(request))
+					.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (final MailboxNotFoundException e)
 		{
@@ -161,11 +198,15 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		}
 	}
 
+<<<<<<< HEAD
 	private ClientEMailConfig extractTenantEmailConfig(final DocOutboundLogMailRecipientRequest request)
 	{
 		return clientsRepo.getEMailConfigById(request.getClientId());
 	}
 
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private DocBaseAndSubType extractDocBaseAndSubType(final DocOutboundLogMailRecipientRequest request)
 	{
 		final DocTypeId docTypeId = request.getDocTypeId();

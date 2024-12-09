@@ -22,6 +22,7 @@
 
 package de.metas.common.bpartner.v1.response;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,6 +44,25 @@ class JsonResponseBPartnerCompositeUpsertTest
 		start();
 	}
 
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+class JsonResponseBPartnerCompositeUpsertTest
+{
+	ObjectMapper objectMapper = new ObjectMapper();
+	private Expect expect;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void serializeDeserializeTest() throws IOException
 	{
@@ -76,7 +96,11 @@ class JsonResponseBPartnerCompositeUpsertTest
 		final JsonResponseBPartnerCompositeUpsert result = objectMapper.readValue(str,JsonResponseBPartnerCompositeUpsert.class);
 		assertThat(result).isEqualTo(item);
 
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }

@@ -2,16 +2,29 @@ DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_
 
 DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1));
 DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1), p_ExcludePostingTypeYearEnd char(1));
+<<<<<<< HEAD
+=======
+DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1), p_ExcludePostingTypeYearEnd char(1),p_firstYearDay date );
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 CREATE OR REPLACE FUNCTION de_metas_acct.acctBalanceToDate(p_Account_ID numeric,
                                                            p_C_AcctSchema_ID numeric,
                                                            p_DateAcct date,
                                                            p_AD_Org_ID numeric(10, 0),
                                                            p_IncludePostingTypeStatistical char(1) = 'N',
+<<<<<<< HEAD
                                                            p_ExcludePostingTypeYearEnd char(1) = 'N')
     RETURNS de_metas_acct.BalanceAmt
 AS
 $BODY$
+=======
+                                                           p_ExcludePostingTypeYearEnd char(1) = 'N',
+                                                           p_firstYearDay date = NULL)
+    RETURNS de_metas_acct.BalanceAmt
+AS
+$BODY$
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 WITH filteredAndOrdered AS (
     SELECT --
            fas.PostingType,
@@ -20,7 +33,12 @@ WITH filteredAndOrdered AS (
            fas.AmtAcctCr_YTD,
            fas.AmtAcctDr,
            fas.AmtAcctDr_YTD,
+<<<<<<< HEAD
            fas.DateAcct
+=======
+           fas.DateAcct,
+           coalesce(p_firstYearDay, date_trunc('year', $3)) as v_firstYearDay
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     FROM Fact_Acct_Summary fas
              INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fas.Account_ID) AND ev.isActive = 'Y'
     WHERE TRUE
@@ -38,11 +56,19 @@ FROM (
          (
              SELECT (CASE
                  -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+<<<<<<< HEAD
                          WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= date_trunc('year', $3) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                          WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                  -- For any other account => we consider from the beginning to Date amount
                          ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
                  END) AS Balance
+=======
+                         WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= v_firstYearDay THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                         WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                 -- For any other account => we consider from the beginning to Date amount
+                                                                                             ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                     END) AS Balance
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
              FROM filteredAndOrdered fo
              WHERE TRUE
                AND fo.PostingType = 'A'
@@ -54,11 +80,19 @@ FROM (
          (
              SELECT (CASE
                  -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+<<<<<<< HEAD
                          WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= date_trunc('year', $3) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                          WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                  -- For any other account => we consider from the beginning to Date amount
                          ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
                  END) AS Balance
+=======
+                         WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= v_firstYearDay THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                         WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                 -- For any other account => we consider from the beginning to Date amount
+                                                                                             ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                     END) AS Balance
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
              FROM filteredAndOrdered fo
              WHERE TRUE
                AND $6 = 'N' -- p_ExcludePostingTypeYearEnd
@@ -71,11 +105,19 @@ FROM (
          (
              SELECT (CASE
                  -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+<<<<<<< HEAD
                          WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= date_trunc('year', $3) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                          WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                  -- For any other account => we consider from the beginning to Date amount
                          ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
                  END) AS Balance
+=======
+                         WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= v_firstYearDay THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                         WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                 -- For any other account => we consider from the beginning to Date amount
+                                                                                             ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                     END) AS Balance
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
              FROM filteredAndOrdered fo
              WHERE TRUE
                AND $5 = 'Y' -- p_IncludePostingTypeStatistical

@@ -225,14 +225,22 @@ public class AD_Index_Create extends JavaProcess
 	{
 		if (ignoreError)
 		{
+<<<<<<< HEAD
 			if (DB.executeUpdate(sql, trxName) != -1)
+=======
+			if (DB.executeUpdateAndSaveErrorOnFail(sql, trxName) != -1)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				addLog(sql + ";");
 			}
 		}
 		else
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, trxName);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(sql + ";");
 		}
 	}

@@ -125,7 +125,11 @@ public class AssetTransfer extends JavaProcess
 				  + "WHERE Processed='Y'" 
 				  + " AND A_Entry_Type = 'TRN'" + clientCheck;
 			
+<<<<<<< HEAD
 			no = DB.executeUpdate (sql,null);
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		try {
@@ -275,7 +279,11 @@ public class AssetTransfer extends JavaProcess
 				change.setChangeAmt(v_Balance);
 				change.save();
 				
+<<<<<<< HEAD
 				DB.executeUpdate(sql,null);
+=======
+				DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				
 				AssetTransfer.setIsActive(false);
 				AssetTransfer.save();

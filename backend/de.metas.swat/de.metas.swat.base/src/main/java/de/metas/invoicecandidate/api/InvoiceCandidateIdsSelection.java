@@ -65,6 +65,11 @@ public final class InvoiceCandidateIdsSelection
 		this.ids = ids;
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isEmpty() {return selectionId == null && (ids == null || ids.isEmpty());}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isDatabaseSelection()
 	{
 		return selectionId != null;
@@ -74,9 +79,15 @@ public final class InvoiceCandidateIdsSelection
 	{
 		void empty();
 
+<<<<<<< HEAD
 		void fixedSet(ImmutableSet<InvoiceCandidateId> ids);
 
 		void selectionId(PInstanceId selectionId);
+=======
+		void fixedSet(@NonNull ImmutableSet<InvoiceCandidateId> ids);
+
+		void selectionId(@NonNull PInstanceId selectionId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void apply(@NonNull final CaseMapper mapper)

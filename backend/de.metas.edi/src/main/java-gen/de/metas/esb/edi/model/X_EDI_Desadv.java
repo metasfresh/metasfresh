@@ -1,10 +1,17 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Model for EDI_Desadv
  *  @author metasfresh (generated) 
@@ -13,7 +20,11 @@ import javax.annotation.Nullable;
 public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -1839509513L;
+=======
+	private static final long serialVersionUID = 635426762L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_EDI_Desadv (final Properties ctx, final int EDI_Desadv_ID, @Nullable final String trxName)
@@ -107,6 +118,20 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
+	{
+		throw new IllegalArgumentException ("DatePromised is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/** 
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
@@ -123,7 +148,11 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/** Luftpost = LU */
 	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
+<<<<<<< HEAD
 	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
+=======
+	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
@@ -311,6 +340,20 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setIsShipmentsNotSent (final boolean IsShipmentsNotSent)
+	{
+		throw new IllegalArgumentException ("IsShipmentsNotSent is virtual column");	}
+
+	@Override
+	public boolean isShipmentsNotSent() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipmentsNotSent);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
@@ -359,6 +402,20 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setShipment_DocumentNo (final @Nullable java.lang.String Shipment_DocumentNo)
+	{
+		throw new IllegalArgumentException ("Shipment_DocumentNo is virtual column");	}
+
+	@Override
+	public java.lang.String getShipment_DocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_Shipment_DocumentNo);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setSumDeliveredInStockingUOM (final BigDecimal SumDeliveredInStockingUOM)
 	{
 		set_Value (COLUMNNAME_SumDeliveredInStockingUOM, SumDeliveredInStockingUOM);

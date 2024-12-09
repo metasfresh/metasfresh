@@ -1,12 +1,19 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.List;
 
@@ -17,7 +24,11 @@ public class JsonRejectReasonsList
 {
 	@NonNull List<JsonRejectReason> reasons;
 
+<<<<<<< HEAD
 	public static JsonRejectReasonsList of(@NonNull IADReferenceDAO.ADRefList adRefList, @NonNull JsonOpts jsonOpts)
+=======
+	public static JsonRejectReasonsList of(@NonNull final ADRefList adRefList, @NonNull final JsonOpts jsonOpts)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return builder()
 				.reasons(adRefList.getItems()

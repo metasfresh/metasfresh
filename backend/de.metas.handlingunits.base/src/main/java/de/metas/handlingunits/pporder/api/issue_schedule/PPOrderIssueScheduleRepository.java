@@ -77,7 +77,11 @@ public class PPOrderIssueScheduleRepository
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+<<<<<<< HEAD
 				.qtyToIssue(Quantitys.create(record.getQtyToIssue(), uomId))
+=======
+				.qtyToIssue(Quantitys.of(record.getQtyToIssue(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.issueFromHUId(HuId.ofRepoId(record.getIssueFrom_HU_ID()))
 				.issueFromLocatorId(LocatorId.ofRepoId(record.getIssueFrom_Warehouse_ID(), record.getIssueFrom_Locator_ID()))
 				.isAlternativeIssue(record.isAlternativeHU())
@@ -109,7 +113,11 @@ public class PPOrderIssueScheduleRepository
 	private static Quantity extractQtyIssued(final I_PP_Order_IssueSchedule record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+<<<<<<< HEAD
 		return Quantitys.create(record.getQtyIssued(), uomId);
+=======
+		return Quantitys.of(record.getQtyIssued(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
@@ -121,7 +129,11 @@ public class PPOrderIssueScheduleRepository
 		if (qtyReject.signum() != 0 && reasonCode != null)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+<<<<<<< HEAD
 			return QtyRejectedWithReason.of(Quantitys.create(qtyReject, uomId), reasonCode);
+=======
+			return QtyRejectedWithReason.of(Quantitys.of(qtyReject, uomId), reasonCode);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{

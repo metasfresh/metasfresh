@@ -8,6 +8,11 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+<<<<<<< HEAD
+=======
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOutLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -82,7 +87,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
+<<<<<<< HEAD
 			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+=======
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
@@ -95,7 +104,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Reservation 1 - look at scheds for which there is a reservation
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU_Reservation res"
+<<<<<<< HEAD
 			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+=======
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"

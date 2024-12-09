@@ -377,10 +377,17 @@ public class ColumnEncryption extends JavaProcess
 			if (rs.next())
 			{
 				// Change the column size physically.
+<<<<<<< HEAD
 				DB.executeUpdateEx(alterSql, ITrx.TRXNAME_ThreadInherited);
 
 				// Change the column size in AD.
 				DB.executeUpdateEx(updateSql, ITrx.TRXNAME_ThreadInherited);
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(alterSql, ITrx.TRXNAME_ThreadInherited);
+
+				// Change the column size in AD.
+				DB.executeUpdateAndThrowExceptionOnFail(updateSql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 		catch (final SQLException ex)

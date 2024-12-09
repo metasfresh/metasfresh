@@ -59,7 +59,11 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
+<<<<<<< HEAD
 				<reportElement key="subreport-7" mode="Transparent" x="56" y="153" width="255" height="127" uuid="3779eea3-77cc-4294-93da-2a9ea38437b2">
+=======
+				<reportElement key="subreport-7" mode="Transparent" x="37" y="153" width="255" height="127" uuid="3779eea3-77cc-4294-93da-2a9ea38437b2">
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -92,7 +96,11 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
+<<<<<<< HEAD
 				<reportElement key="subreport-8" mode="Transparent" x="340" y="155" width="210" height="127" uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d">
+=======
+				<reportElement key="subreport-8" mode="Transparent" x="330" y="155" width="210" height="127" uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d">
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>

@@ -1,9 +1,17 @@
 package de.metas.esb.edi.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /** Generated Interface for EDI_Desadv
  *  @author metasfresh (generated) 
  */
@@ -182,24 +190,68 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.sql.Timestamp getDatePromised();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_DatePromised = new ModelColumn<>(I_EDI_Desadv.class, "DatePromised", null);
+	String COLUMNNAME_DatePromised = "DatePromised";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Delivery Via.
 	 * How the order will be delivered
 	 *
 	 * <br>Type: List
+<<<<<<< HEAD
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
+=======
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Delivery Via.
 	 * How the order will be delivered
 	 *
 	 * <br>Type: List
+<<<<<<< HEAD
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getDeliveryViaRule();
+=======
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDeliveryViaRule();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_EDI_Desadv, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_EDI_Desadv.class, "DeliveryViaRule", null);
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
@@ -289,7 +341,11 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set EDI Fehlermeldung.
+=======
+	 * Set EDI Error Message.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -298,7 +354,11 @@ public interface I_EDI_Desadv
 	void setEDIErrorMsg (@Nullable java.lang.String EDIErrorMsg);
 
 	/**
+<<<<<<< HEAD
 	 * Get EDI Fehlermeldung.
+=======
+	 * Get EDI Error Message.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -310,7 +370,11 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
 
 	/**
+<<<<<<< HEAD
 	 * Set EDI Status Exportieren.
+=======
+	 * Set EDI export status.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -319,7 +383,11 @@ public interface I_EDI_Desadv
 	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
 
 	/**
+<<<<<<< HEAD
 	 * Get EDI Status Exportieren.
+=======
+	 * Get EDI export status.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -331,7 +399,11 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
+<<<<<<< HEAD
 	 * Set Geliefert %.
+=======
+	 * Set Delivered %.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -340,7 +412,11 @@ public interface I_EDI_Desadv
 	void setFulfillmentPercent (BigDecimal FulfillmentPercent);
 
 	/**
+<<<<<<< HEAD
 	 * Get Geliefert %.
+=======
+	 * Get Delivered %.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -352,7 +428,11 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_FulfillmentPercent = "FulfillmentPercent";
 
 	/**
+<<<<<<< HEAD
 	 * Set Geliefert % Minimum.
+=======
+	 * Set Delivered % min.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -361,7 +441,11 @@ public interface I_EDI_Desadv
 	void setFulfillmentPercentMin (@Nullable BigDecimal FulfillmentPercentMin);
 
 	/**
+<<<<<<< HEAD
 	 * Get Geliefert % Minimum.
+=======
+	 * Get Delivered % min.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -373,7 +457,11 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_FulfillmentPercentMin = "FulfillmentPercentMin";
 
 	/**
+<<<<<<< HEAD
 	 * Set Übergabeadresse.
+=======
+	 * Set unloading address.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -382,7 +470,11 @@ public interface I_EDI_Desadv
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Übergabeadresse.
+=======
+	 * Get unloading address.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -461,8 +553,38 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
 	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+=======
+	 * Set Shipments not sent.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsShipmentsNotSent (boolean IsShipmentsNotSent);
+
+	/**
+	 * Get Shipments not sent.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isShipmentsNotSent();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_IsShipmentsNotSent = new ModelColumn<>(I_EDI_Desadv.class, "IsShipmentsNotSent", null);
+	String COLUMNNAME_IsShipmentsNotSent = "IsShipmentsNotSent";
+
+	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -471,8 +593,13 @@ public interface I_EDI_Desadv
 	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
 
 	/**
+<<<<<<< HEAD
 	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+=======
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -549,6 +676,34 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set shipment_documentno.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipment_DocumentNo (@Nullable java.lang.String Shipment_DocumentNo);
+
+	/**
+	 * Get shipment_documentno.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getShipment_DocumentNo();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Shipment_DocumentNo = new ModelColumn<>(I_EDI_Desadv.class, "Shipment_DocumentNo", null);
+	String COLUMNNAME_Shipment_DocumentNo = "Shipment_DocumentNo";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set SumDeliveredInStockingUOM.
 	 *
 	 * <br>Type: Quantity
@@ -616,8 +771,12 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+<<<<<<< HEAD
 	 * Set Nutzer 1.
 	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+=======
+	 * Set User 1.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -626,8 +785,12 @@ public interface I_EDI_Desadv
 	void setUserFlag (@Nullable java.lang.String UserFlag);
 
 	/**
+<<<<<<< HEAD
 	 * Get Nutzer 1.
 	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+=======
+	 * Get User 1.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

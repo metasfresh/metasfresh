@@ -24,7 +24,10 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+<<<<<<< HEAD
 import de.metas.bpartner.BPartnerLocationId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.LocationId;
@@ -60,7 +63,11 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class TaxDAOTest
 {
@@ -73,7 +80,10 @@ class TaxDAOTest
 	private static final OrgId ORG_ID = OrgId.ofRepoId(10);
 	private static final LocationId locationId = LocationId.ofRepoId(11);
 	private static final BPartnerId bPartnerId = BPartnerId.ofRepoId(12);
+<<<<<<< HEAD
 	private static final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId,13);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final int ORG_COUNTRY_ID = 1000;
 	private static final String ORG_COUNTRY_CODE = "AA";
@@ -303,6 +313,10 @@ class TaxDAOTest
 	private TaxId createTaxData(final TypeOfDestCountry typeOfDestCountry, final int countryId, final int toCountryId)
 	{
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
+<<<<<<< HEAD
+=======
+		tax.setName(typeOfDestCountry + "-" + countryId + "-" + toCountryId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		tax.setAD_Org_ID(ORG_ID.getRepoId());
 		tax.setC_Country_ID(countryId);
 		tax.setTo_Country_ID(toCountryId);

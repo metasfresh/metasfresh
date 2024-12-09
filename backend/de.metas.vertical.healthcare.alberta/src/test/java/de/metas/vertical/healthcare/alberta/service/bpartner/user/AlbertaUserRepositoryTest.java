@@ -22,12 +22,18 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.user;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUser;
 import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUserRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.user.GenderType;
 import de.metas.vertical.healthcare.alberta.bpartner.user.TitleType;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +48,19 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class AlbertaUserRepositoryTest
 {
 	private AlbertaUserRepository albertaUserRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.time.Instant;
+
+@ExtendWith(SnapshotExtension.class)
+public class AlbertaUserRepositoryTest
+{
+	private AlbertaUserRepository albertaUserRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -50,6 +69,7 @@ public class AlbertaUserRepositoryTest
 		albertaUserRepository =  new AlbertaUserRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	public static void initStatic()
 	{
@@ -62,6 +82,8 @@ public class AlbertaUserRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save_allFields()
 	{
@@ -77,7 +99,11 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -92,6 +118,10 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

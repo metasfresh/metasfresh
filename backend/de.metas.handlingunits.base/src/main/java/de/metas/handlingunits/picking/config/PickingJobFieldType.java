@@ -23,10 +23,17 @@
 package de.metas.handlingunits.picking.config;
 
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
 import de.metas.common.util.Check;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.common.util.Check;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;

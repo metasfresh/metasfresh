@@ -24,6 +24,10 @@ package de.metas.edi.esb.ordersimport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+<<<<<<< HEAD
+=======
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -34,7 +38,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class EcosioOrdersRouteTest extends CamelTestSupport
 {
@@ -62,9 +70,17 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected RouteBuilder createRouteBuilder()
 	{
 		return new EcosioOrdersRoute();
+=======
+	protected RouteBuilder[] createRouteBuilders()
+	{
+		return new RouteBuilder[] {
+				new EcosioOrdersRoute(),
+				new NotifyReplicationTrxRoute() };
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -79,7 +95,11 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 				+ "   </EDI_Imp_C_OLCands>"
 				+ "</EDI_Message>";
 
+<<<<<<< HEAD
 		metasfreshOutputEndpoint.expectedMessageCount(2);
+=======
+		metasfreshOutputEndpoint.expectedMessageCount(3);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// when
 		template.sendBodyAndHeader("direct:edi.file.orders.ecosio", input, Exchange.FILE_NAME, "filename");
@@ -117,5 +137,17 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <POReference>PORef</POReference>"
 						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
+<<<<<<< HEAD
+=======
+
+		final var string3 = metasfreshOutputEndpoint.getExchanges().get(2).getIn().getBody(String.class);
+		assertThat(string3).isEqualToIgnoringWhitespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+						+ "<EDI_ReplicationTrx_Update AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"PORef_filename\">\n"
+						+ "    <Name>PORef_filename</Name>\n"
+						+ "    <IsReplicationTrxFinished>Y</IsReplicationTrxFinished>\n"
+						+ "    <IsError>N</IsError>\n"
+						+ "</EDI_ReplicationTrx_Update>\n");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

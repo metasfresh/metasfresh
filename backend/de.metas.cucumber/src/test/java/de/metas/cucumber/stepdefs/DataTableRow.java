@@ -60,8 +60,16 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
+<<<<<<< HEAD
 	@NonNull private final Map<String, String> map;
 	@Nullable @Setter private String additionalRowIdentifierColumnName;
+=======
+	@NonNull
+	private final Map<String, String> map;
+	@Nullable
+	@Setter
+	private String additionalRowIdentifierColumnName;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	DataTableRow(
 			final int lineNo,
@@ -81,7 +89,14 @@ public class DataTableRow
 		return new DataTableRow(-1, map);
 	}
 
+<<<<<<< HEAD
 	public Map<String, String> asMap() {return map;}
+=======
+	public Map<String, String> asMap()
+	{
+		return map;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
@@ -246,7 +261,19 @@ public class DataTableRow
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
+<<<<<<< HEAD
 		String string = map.get(columnName);
+=======
+		String string = null;
+		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+		if (string == null && !columnName.startsWith("OPT."))
+		{
+			string = map.get("OPT." + columnName);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
@@ -256,6 +283,14 @@ public class DataTableRow
 			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
 		}
 
+<<<<<<< HEAD
+=======
+		if (string == null)
+		{
+			string = map.get(columnName);
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (string == null || Check.isBlank(string))
 		{
 			return Optional.empty();

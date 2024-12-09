@@ -2,6 +2,11 @@ package de.metas.inventory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -15,7 +20,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -28,6 +36,7 @@ public class InventoryCandidateService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -35,6 +44,20 @@ public class InventoryCandidateService
 	public IADReferenceDAO.ADRefList getDisposalReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+=======
+	private final ADReferenceService adReferenceService;
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	public InventoryCandidateService(final ADReferenceService adReferenceService)
+	{
+		this.adReferenceService = adReferenceService;
+	}
+
+	public ADRefList getDisposalReasons()
+	{
+		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void createDisposeCandidates(

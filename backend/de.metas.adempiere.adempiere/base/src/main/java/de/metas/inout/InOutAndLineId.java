@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.Value;
 
@@ -46,6 +49,14 @@ public class InOutAndLineId
 		return new InOutAndLineId(InOutId.ofRepoId(inOutRepoId), InOutLineId.ofRepoId(inOutLineRepoId));
 	}
 
+<<<<<<< HEAD
+=======
+	public static InOutAndLineId ofRepoId(@NonNull final InOutId inOutId, final int inOutLineRepoId)
+	{
+		return new InOutAndLineId(inOutId, InOutLineId.ofRepoId(inOutLineRepoId));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public static InOutAndLineId ofRepoIdOrNull(final int inOutRepoId, final int inOutLineRepoId)
 	{

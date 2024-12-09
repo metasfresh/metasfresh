@@ -184,7 +184,11 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			// => percent = 1.9231 (<=rounded up) => qtyToAllocate ends up 3 instead of 2.
 			// why don't we take qtyToAllocate := currentCandidateQtyBD directly? IDK.
 			final Quantity qtyToAllocate;
+<<<<<<< HEAD
 			if (idx != lastIdx)
+=======
+			if (idx != lastIdx && qtyToAllocateRemaining.signum() > 0)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
 				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
@@ -197,9 +201,17 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			{
 				qtyToAllocate = qtyToAllocateRemaining;
 			}
+<<<<<<< HEAD
 
 			candidate.setQtyToAllocate(qtyToAllocate);
 			qtyToAllocateRemaining = qtyToAllocateRemaining.subtract(qtyToAllocate);
+=======
+			// Prevent overallocation
+			// eg: 50 non-zero candidates having to equally divide 80 qty. => 2 Qty each, 100 qty total.
+			final Quantity actualAllocatedQty = qtyToAllocate.min(qtyToAllocateRemaining);
+			candidate.setQtyToAllocate(actualAllocatedQty);
+			qtyToAllocateRemaining = qtyToAllocateRemaining.subtract(actualAllocatedQty);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

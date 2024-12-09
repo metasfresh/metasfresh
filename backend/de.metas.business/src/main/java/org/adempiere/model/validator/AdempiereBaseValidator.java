@@ -8,11 +8,17 @@ import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.TableNamesGroup;
+<<<<<<< HEAD
 import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
+=======
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
@@ -341,7 +347,10 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
+<<<<<<< HEAD
 		WindowBasedCacheInvalidateRequestInitializer.setup();
 		ColumnSqlCacheInvalidateRequestInitializer.setup();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -3,7 +3,12 @@
 Feature: Setting customColumns via SetCustomColumns method
 
   Background:
+<<<<<<< HEAD
     Given metasfresh has current date and time
+=======
+    Given infrastructure and metasfresh are running
+    And metasfresh has current date and time
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value                     | OPT.IsActive |
       | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
@@ -63,7 +68,11 @@ Feature: Setting customColumns via SetCustomColumns method
 
     Then validate customColumns:
       | OPT.C_Order_ID.Identifier | OPT.S_ResourceType_ID.Identifier | CustomColumnJSONValue                                                                                                              |
+<<<<<<< HEAD
       | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40Z","IsDropShip":true,"Volume":2.1234} |
+=======
+      | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40.108Z","IsDropShip":true,"Volume":2.1234} |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                           |
 
     And set custom columns for C_Order expecting error:

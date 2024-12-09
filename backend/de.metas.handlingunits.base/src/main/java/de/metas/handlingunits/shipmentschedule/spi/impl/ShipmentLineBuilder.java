@@ -259,7 +259,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(productId);
 		if (catchUOMId.isPresent())
 		{
+<<<<<<< HEAD
 			catchQty = Quantitys.createZero(catchUOMId.get());
+=======
+			catchQty = Quantitys.zero(catchUOMId.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//

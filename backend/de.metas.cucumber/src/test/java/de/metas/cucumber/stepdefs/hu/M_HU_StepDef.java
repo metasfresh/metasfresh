@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2022 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +67,10 @@ import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -75,6 +83,10 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -111,6 +123,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+<<<<<<< HEAD
+=======
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -138,11 +154,19 @@ public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+<<<<<<< HEAD
+=======
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -158,10 +182,19 @@ public class M_HU_StepDef
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 
+<<<<<<< HEAD
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+=======
+	private final TestContext testContext;
+
+	@And("all the hu data is reset")
+	public void reset_data()
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("validate M_HUs:")
@@ -231,7 +264,11 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
+<<<<<<< HEAD
 	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+=======
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
@@ -242,16 +279,26 @@ public class M_HU_StepDef
 			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
+<<<<<<< HEAD
 					.huId(huId)
 					.huIdentifier(huIdentifier)
 					.build()));
+=======
+																		 .huId(huId)
+																		 .huIdentifier(huIdentifier)
+																		 .build()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			restTestContext.setIdVariableFromRow(row, huId);
 		});
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")
+<<<<<<< HEAD
 	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+=======
+	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
@@ -272,16 +319,35 @@ public class M_HU_StepDef
 		});
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * @param dataTable: <ul>
+	 *                   <li>OPT.resultedNewTUs: comma-separated identifiers of the TUs that are expected when the given quantity is transferred using the given packing-instruction.<br>
+	 *                   If given, then the stepdef expects one identifier for each TU that resulted from the transfer.</li>
+	 *                   <li>OPT.resultedNewCUs: comma-separated identifiers of the CUs that are expected from the transfer.<br>
+	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
+	 *                   </ul>
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final StepDefDataIdentifier sourceCuIdentifier = row.getAsIdentifier("sourceCU");
 			final BigDecimal cuQty = row.getAsBigDecimal("cuQty");
 			final StepDefDataIdentifier huPIItemProductIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
 
 			final I_M_HU cuHU = huTable.get(sourceCuIdentifier);
+<<<<<<< HEAD
 			assertThat(cuHU).isNotNull();
+=======
+			assertThat(cuHU).as("sourceCU").isNotNull();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final I_C_UOM uom = uomDAO.getById(StepDefConstants.PCE_UOM_ID);
 			final Quantity cuQuantity = Quantity.of(cuQty, uom);
@@ -296,7 +362,11 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (tuIdentifiers != null)
 			{
+<<<<<<< HEAD
 				assertThat(tuIdentifiers).hasSameSizeAs(resultedNewTUs);
+=======
+				assertThat(tuIdentifiers).as("resultedNewTUs").hasSameSizeAs(resultedNewTUs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			final List<StepDefDataIdentifier> cuIdentifiers = row.getAsOptionalIdentifier("resultedNewCUs")
@@ -304,7 +374,11 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (cuIdentifiers != null)
 			{
+<<<<<<< HEAD
 				assertThat(cuIdentifiers).hasSameSizeAs(resultedNewTUs);
+=======
+				assertThat(cuIdentifiers).as("resultedNewCUs").hasSameSizeAs(resultedNewTUs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			for (int index = 0; index < resultedNewTUs.size(); index++)
@@ -371,8 +445,14 @@ public class M_HU_StepDef
 			huTrxBL.process(huContext -> {
 				final LULoader luLoader = new LULoader(huContext);
 
+<<<<<<< HEAD
 				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
 				for (StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+=======
+				@NonNull
+				final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
+				for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
 					luLoader.addTU(sourceTU);
@@ -440,12 +520,21 @@ public class M_HU_StepDef
 				.source(HUListAllocationSourceDestination.of(sourceCU))
 				.destination(producer)
 				.load(AllocationUtils.builder()
+<<<<<<< HEAD
 						.setHUContext(huContext)
 						.setProduct(productId)
 						.setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
 						.setDateAsToday()
 						.setForceQtyAllocation(true)
 						.create());
+=======
+							  .setHUContext(huContext)
+							  .setProduct(productId)
+							  .setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
+							  .setDateAsToday()
+							  .setForceQtyAllocation(true)
+							  .create());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		row.getAsIdentifier("newLU").put(huTable, newLU);
@@ -507,7 +596,11 @@ public class M_HU_StepDef
 
 		final Map<String, Map<String, String>> identifierToRow = rows.stream()
 				.collect(Collectors.toMap(row -> DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER),
+<<<<<<< HEAD
 						Function.identity()));
+=======
+										  Function.identity()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Map<String, String> topRow = rows.get(0);
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -515,6 +608,7 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
+<<<<<<< HEAD
 	@And("^after not more than (.*)s, M_HU are found:$")
 	public void is_HU_found(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -524,6 +618,8 @@ public class M_HU_StepDef
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -627,8 +723,15 @@ public class M_HU_StepDef
 		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
+<<<<<<< HEAD
 	@And("load newly created M_HU record based on SourceHU")
 	public void load_newly_created_M_HU(@NonNull final DataTable dataTable)
+=======
+	@And("^after not more than (.*)s, load newly created M_HU record based on SourceHU$")
+	public void load_newly_created_M_HU(
+			final int timeoutSec,
+			@NonNull final DataTable dataTable) throws InterruptedException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -640,7 +743,11 @@ public class M_HU_StepDef
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_Trace.COLUMNNAME_Qty);
 			final String huTraceType = DataTableUtil.extractStringForColumnName(row, I_M_HU_Trace.COLUMNNAME_HUTraceType);
 
+<<<<<<< HEAD
 			final Optional<Integer> huId = queryBL.createQueryBuilder(I_M_HU_Trace.class)
+=======
+			final Supplier<Optional<I_M_HU>> huSupplier = () -> queryBL.createQueryBuilder(I_M_HU_Trace.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, vhuSourceHU.getM_HU_ID())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_Qty, qty)
@@ -649,10 +756,17 @@ public class M_HU_StepDef
 					.create()
 					.stream()
 					.map(I_M_HU_Trace::getM_HU_ID)
+<<<<<<< HEAD
 					.findFirst();
 
 			assertThat(huId).isPresent();
 			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
+=======
+					.findFirst()
+					.map(id -> InterfaceWrapperHelper.load(id, I_M_HU.class));
+
+			final I_M_HU newHU = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, huSupplier);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
@@ -705,6 +819,7 @@ public class M_HU_StepDef
 		assertThat(huStorageRecord.get().getQty()).isEqualTo(qty);
 	}
 
+<<<<<<< HEAD
 	private void findHU(@NonNull final Map<String, String> row, @NonNull final Integer timeoutSec) throws InterruptedException
 	{
 		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
@@ -734,6 +849,8 @@ public class M_HU_StepDef
 		return getHuRecord().isPresent();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Optional<I_M_HU_Storage> getHuStorageRecord(@NonNull final I_M_HU huRecord)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
@@ -821,6 +938,28 @@ public class M_HU_StepDef
 		}
 	}
 
+<<<<<<< HEAD
+=======
+
+	@And("return hu from customer")
+	public void return_HU_from_customer(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			returnHUFromCustomer(tableRow);
+		}
+	}
+
+	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Picking_Candidate.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private Boolean loadHU(@NonNull final LoadHURequest request)
 	{

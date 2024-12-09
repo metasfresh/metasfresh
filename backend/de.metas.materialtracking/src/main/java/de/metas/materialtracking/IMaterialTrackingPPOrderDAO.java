@@ -32,7 +32,10 @@ public interface IMaterialTrackingPPOrderDAO extends ISingletonService
 	/**
 	 * Deletes <all <code>C_Invoice_Detail</code> records that reference the given <code>ppOrder</code>.
 	 *
+<<<<<<< HEAD
 	 * @param ppOrder
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return the number of deleted records
 	 */
 	int deleteInvoiceDetails(I_PP_Order ppOrder);

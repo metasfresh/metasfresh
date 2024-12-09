@@ -1,9 +1,15 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Model for C_Workplace
  *  @author metasfresh (generated) 
@@ -12,7 +18,11 @@ import javax.annotation.Nullable;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = 952651378L;
+=======
+	private static final long serialVersionUID = 541219646L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -62,6 +72,24 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setM_PickingSlot_ID (final int M_PickingSlot_ID)
+	{
+		if (M_PickingSlot_ID < 1) 
+			set_Value (COLUMNNAME_M_PickingSlot_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PickingSlot_ID, M_PickingSlot_ID);
+	}
+
+	@Override
+	public int getM_PickingSlot_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_PickingSlot_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 

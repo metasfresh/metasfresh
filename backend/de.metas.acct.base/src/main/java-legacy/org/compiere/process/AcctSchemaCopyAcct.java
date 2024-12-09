@@ -25,8 +25,15 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
+<<<<<<< HEAD
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+=======
+import de.metas.order.OrderId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.sales_region.SalesRegionId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,17 +129,29 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		return "@OK@";
+<<<<<<< HEAD
 	}	// doIt
+=======
+	}    // doIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private I_C_AcctSchema_GL retrieveAcctSchemaGLOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
+<<<<<<< HEAD
 	}	// get
+=======
+	}    // get
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private I_C_AcctSchema_Default retrieveAcctSchemaDefaultOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
+<<<<<<< HEAD
 	}	// get
+=======
+	}    // get
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private void copyGL(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -148,7 +167,11 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
+<<<<<<< HEAD
 	}	// copyGL
+=======
+	}    // copyGL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private void copyDefault(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -164,7 +187,11 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
+<<<<<<< HEAD
 	}	// copyDefault
+=======
+	}    // copyDefault
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return target account
@@ -185,7 +212,11 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int AD_OrgTrx_ID = 0;
 		int C_LocFrom_ID = 0;
 		int C_LocTo_ID = 0;
+<<<<<<< HEAD
 		int C_SalesRegion_ID = 0;
+=======
+		SalesRegionId C_SalesRegion_ID = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		int C_Project_ID = 0;
 		int C_Campaign_ID = 0;
 		int C_Activity_ID = 0;
@@ -193,6 +224,13 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int User2_ID = 0;
 		int UserElement1_ID = 0;
 		int UserElement2_ID = 0;
+<<<<<<< HEAD
+=======
+		OrderId C_OrderSO_ID = null;
+		int M_SectionCode_ID = 0;
+		int C_Harvesting_Calendar_ID=0;
+		int Harvesting_Year_ID=0;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// Active Elements
 		for (final AcctSchemaElement ase : targetElements)
@@ -223,6 +261,15 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			{
 				C_Activity_ID = sourceAccount.getC_Activity_ID();
 			}
+<<<<<<< HEAD
+=======
+
+			else if (elementType.equals(AcctSchemaElementType.SalesOrder))
+			{
+				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
+			}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 			{
 				C_LocFrom_ID = sourceAccount.getC_LocFrom_ID();
@@ -245,7 +292,11 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			}
 			else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 			{
+<<<<<<< HEAD
 				C_SalesRegion_ID = sourceAccount.getC_SalesRegion_ID();
+=======
+				C_SalesRegion_ID = SalesRegionId.ofRepoIdOrNull(sourceAccount.getC_SalesRegion_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else if (elementType.equals(AcctSchemaElementType.UserList1))
 			{
@@ -271,15 +322,27 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
+<<<<<<< HEAD
 				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
 
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
 	}	// createAccount
+=======
+				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
+				OrderId.toRepoId(C_OrderSO_ID));
+
+		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
+	}    // createAccount
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(acctAwareModel);
+<<<<<<< HEAD
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
+=======
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final List<AccountInfo> list = new ArrayList<>();
 		for (int columnIndex = 0; columnIndex < poInfo.getColumnCount(); columnIndex++)
@@ -316,4 +379,8 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		@With
 		AccountId accountId;
 	}
+<<<<<<< HEAD
 }	// AcctSchemaCopyAcct
+=======
+}    // AcctSchemaCopyAcct
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

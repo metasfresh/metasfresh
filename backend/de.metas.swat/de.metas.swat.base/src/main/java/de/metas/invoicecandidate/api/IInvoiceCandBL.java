@@ -22,6 +22,10 @@
 
 package de.metas.invoicecandidate.api;
 
+<<<<<<< HEAD
+=======
+import com.google.common.annotations.VisibleForTesting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.AsyncBatchId;
@@ -182,6 +186,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
+<<<<<<< HEAD
+=======
+	@VisibleForTesting
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
@@ -228,7 +236,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
+<<<<<<< HEAD
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
@@ -313,7 +324,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
+<<<<<<< HEAD
 	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
+=======
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -356,6 +371,13 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
+<<<<<<< HEAD
+=======
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Iterate the candidates to close and close them one by one.
 	 */
@@ -410,11 +432,23 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
 
+<<<<<<< HEAD
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 
 	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 
+=======
+	/**
+	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
+	 *
+	 */
+	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
+
+	@NonNull
+	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
 
 	Quantity getQtyInvoicedStockUOM(I_C_Invoice_Candidate ic);

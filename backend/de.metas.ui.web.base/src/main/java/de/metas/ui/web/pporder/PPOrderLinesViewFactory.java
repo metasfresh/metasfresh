@@ -23,6 +23,10 @@
 package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.process.AdProcessId;
@@ -65,17 +69,31 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	private final ASIRepository asiRepository;
 	private final DefaultHUEditorViewFactory huEditorViewFactory;
 	private final HUReservationService huReservationService;
+<<<<<<< HEAD
 
+=======
+	private final ADReferenceService adReferenceService;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	public PPOrderLinesViewFactory(
 			@NonNull final ASIRepository asiRepository,
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+<<<<<<< HEAD
 			@NonNull final HUReservationService huReservationService)
+=======
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.asiRepository = asiRepository;
 		this.huEditorViewFactory = huEditorViewFactory;
 		this.huReservationService = huReservationService;
+<<<<<<< HEAD
+=======
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -93,6 +111,10 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
 				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+<<<<<<< HEAD
+=======
+				.adReferenceService(adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		return PPOrderLinesView.builder()
@@ -110,9 +132,15 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 	@Override
 	public IView filterView(
+<<<<<<< HEAD
 			final IView view,
 			final JSONFilterViewRequest filterViewRequest,
 			final Supplier<IViewsRepository> viewsRepo)
+=======
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		throw new AdempiereException("View does not support filtering")
 				.setParameter("view", view)

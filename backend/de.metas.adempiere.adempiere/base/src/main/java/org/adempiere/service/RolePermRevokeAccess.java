@@ -1,6 +1,11 @@
 package org.adempiere.service;
 
 import ch.qos.logback.classic.Level;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
@@ -26,8 +31,11 @@ import de.metas.workflow.service.IADWorkflowBL;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.element.api.AdWindowId;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +50,11 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
+=======
+;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -145,7 +158,11 @@ public class RolePermRevokeAccess
 			final DocTypeId docTypeId = DocTypeId.ofRepoId(request.getC_DocType_ID());
 			final String docAction = request.getDocAction();
 
+<<<<<<< HEAD
 			final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
+=======
+			final ADRefListItem docActionItem = ADReferenceService.get().retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
 			final int docActionRefListId = docActionItem.getRefListId().getRepoId();
 

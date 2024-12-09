@@ -31,6 +31,10 @@ package org.adempiere.process.rpl.exp;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IAppDictionaryBL;
+<<<<<<< HEAD
+=======
+import de.metas.attachments.AttachmentEntryService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -53,6 +57,10 @@ import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+<<<<<<< HEAD
+=======
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
@@ -80,9 +88,26 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
+<<<<<<< HEAD
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+=======
+import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
+import java.io.Writer;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -98,7 +123,11 @@ import java.util.TimeZone;
  * @author Antonio Cañaveral, e-Evolution
  * <ul>
  * <li>[ 2195016 ] Implementation delete records messages
+<<<<<<< HEAD
  * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+=======
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332">http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * </ul>
  * @author victor.perez@e-evolution.com, e-Evolution
  * <ul>
@@ -115,19 +144,41 @@ public class ExportHelper
 	public static final String MSG_EXPFormatNotFound = "EXPFormatNotFound";
 	public static final String MSG_EXPFormatLineError = "EXPFormatLineError";
 
+<<<<<<< HEAD
 	/** Logger */
 	private static Logger log = LogManager.getLogger(ExportHelper.class);
 
 	/** XML Document */
+=======
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LogManager.getLogger(ExportHelper.class);
+
+	/**
+	 * XML Document
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Document outDocument = null;
 
 	/** Custom Date Format */
 	// private SimpleDateFormat m_customDateFormat = null;
 
+<<<<<<< HEAD
 	/** Client */
 	private int m_AD_Client_ID = -1;
 
 	/** Replication Strategy */
+=======
+	/**
+	 * Client
+	 */
+	private int m_AD_Client_ID = -1;
+
+	/**
+	 * Replication Strategy
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private I_AD_ReplicationStrategy m_rplStrategy = null;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
@@ -154,6 +205,25 @@ public class ExportHelper
 		return exportRecord(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
 	}
 
+<<<<<<< HEAD
+=======
+	public void exportRecord(
+			final PO po,
+			final MEXPFormat exportFormat,
+			final Integer replicationMode,
+			final String replicationType,
+			final Integer replicationEvent,
+			@Nullable final CreateAttachmentRequest attachResultRequest)
+	{
+		exportRecord(po, exportFormat, replicationMode, replicationType, replicationEvent);
+
+		if (attachResultRequest != null)
+		{
+			createAttachment(attachResultRequest);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String exportRecord(final PO po, final MEXPFormat exportFormat, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
 	{
 		outDocument = createExportDOM(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
@@ -203,7 +273,11 @@ public class ExportHelper
 		log.debug("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 
 		log.debug("po.get_TrxName() = " + po.get_TrxName());
+<<<<<<< HEAD
 		if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+=======
+		if (Check.isBlank(po.get_TrxName()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			po.set_TrxName("exportRecord");
 		}
@@ -271,7 +345,11 @@ public class ExportHelper
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(exportFormat.getAD_Table_ID());
 
 		// metas: begin: build where clause
+<<<<<<< HEAD
 		final StringBuffer whereClause = new StringBuffer("1=1");
+=======
+		final StringBuilder whereClause = new StringBuilder("1=1");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (!Check.isEmpty(exportFormat.getWhereClause(), true))
 		{
 			whereClause.append(" AND (").append(exportFormat.getWhereClause()).append(")");
@@ -293,7 +371,11 @@ public class ExportHelper
 			log.debug("Client = " + client.toString());
 			log.trace("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 			log.trace("po.get_TrxName() = " + po.get_TrxName());
+<<<<<<< HEAD
 			if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+=======
+			if (Check.isBlank(po.get_TrxName()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				po.set_TrxName("exportRecord");
 			}
@@ -455,9 +537,15 @@ public class ExportHelper
 
 			final String linkColumnName = getLinkColumnName(masterPO, tableEmbedded); // metas
 			final Object linkId = masterPO.get_Value(linkColumnName); // metas
+<<<<<<< HEAD
 			final StringBuffer whereClause = new StringBuffer(linkColumnName + "=?"); // metas: use linkColumnName
 
 			if (embeddedFormat.getWhereClause() != null && !"".equals(embeddedFormat.getWhereClause()))
+=======
+			final StringBuilder whereClause = new StringBuilder(linkColumnName + "=?"); // metas: use linkColumnName
+
+			if (Check.isNotBlank(embeddedFormat.getWhereClause()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				whereClause.append(" AND ").append(embeddedFormat.getWhereClause());
 			}
@@ -564,7 +652,11 @@ public class ExportHelper
 				throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 			}
 
+<<<<<<< HEAD
 			log.debug("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
+=======
+			log.debug("Embedded: Table={}, KeyColumName={}", embeddedTableName, embeddedKeyColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
 			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
@@ -615,6 +707,7 @@ public class ExportHelper
 
 	/**
 	 * Utility method which is responsible to create new XML Document
+<<<<<<< HEAD
 	 *
 	 * @return Document
 	 * @throws ParserConfigurationException
@@ -624,6 +717,14 @@ public class ExportHelper
 		Document result = null;
 		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
+=======
+	 */
+	Document createNewDocument()
+	{
+		final Document result;
+		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder documentBuilder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		try
 		{
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -682,14 +783,22 @@ public class ExportHelper
 		if (replTable != null && replTable.getEXP_Format_ID() > 0)
 		{
 			exportFormat = MEXPFormat.get(po.getCtx(), replTable.getEXP_Format_ID(), po.get_TrxName());
+<<<<<<< HEAD
 			log.debug("ExportFormat(replication table): ", exportFormat);
+=======
+			log.debug("ExportFormat(replication table): {}", exportFormat);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return exportFormat;
 		}
 
 		if (exportFormat == null)
 		{
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), m_AD_Client_ID, po.get_Table_ID(), version, po.get_TrxName());
+<<<<<<< HEAD
 			log.debug("ExportFormat(client): ", exportFormat);
+=======
+			log.debug("ExportFormat(client): {}", exportFormat);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		// Fall back to System Client
@@ -697,7 +806,11 @@ public class ExportHelper
 		{
 			final int adClientId = 0; // System
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), adClientId, po.get_Table_ID(), version, po.get_TrxName());
+<<<<<<< HEAD
 			log.debug("ExportFormat(system): ", exportFormat);
+=======
+			log.debug("ExportFormat(system): {}", exportFormat);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (exportFormat == null || exportFormat.getEXP_Format_ID() <= 0)
@@ -744,11 +857,19 @@ public class ExportHelper
 		}
 		else if (DisplayType.isDate(displayType))
 		{
+<<<<<<< HEAD
 			valueString = encodeDate((Timestamp)value, formatLine, displayType);
 		}
 		else if (DisplayType.isYesNo(displayType))
 		{
 			valueString = StringUtils.ofBoolean((Boolean)value,"N");
+=======
+			valueString = encodeDate((Timestamp)value, displayType);
+		}
+		else if (DisplayType.isYesNo(displayType))
+		{
+			valueString = StringUtils.ofBoolean((Boolean)value, "N");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -756,7 +877,11 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
+<<<<<<< HEAD
 		log.debug("Encoded column '{}' from '{}' to '{}'", new Object[] { column.getColumnName(), value, valueString });
+=======
+		log.debug("Encoded column '{}' from '{}' to '{}'", column.getColumnName(), value, valueString);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return valueString;
 	}
 
@@ -764,7 +889,10 @@ public class ExportHelper
 	@VisibleForTesting
 	static String encodeDate(
 			final Timestamp date,
+<<<<<<< HEAD
 			@NonNull final I_EXP_FormatLine formatLine,
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final int displayType)
 	{
 		final ZoneId timeZoneId = Services.get(IOrgDAO.class).getTimeZone(Env.getOrgId());
@@ -840,4 +968,36 @@ public class ExportHelper
 
 		return column.getAD_Reference_ID();
 	}
+<<<<<<< HEAD
+=======
+
+	private void createAttachment(@NonNull final CreateAttachmentRequest request)
+	{
+		try
+		{
+			final String documentAsString = writeDocumentToString(outDocument);
+
+			final byte[] data = documentAsString.getBytes();
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(request.getTarget(), request.getAttachmentName(), data);
+		}
+		catch (final Exception exception)
+		{
+			throw AdempiereException.wrapIfNeeded(exception);
+		}
+	}
+
+	private static String writeDocumentToString(@NonNull final Document document) throws TransformerException
+	{
+		final TransformerFactory tranFactory = TransformerFactory.newInstance();
+		final Transformer aTransformer = tranFactory.newTransformer();
+		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		final Source src = new DOMSource(document);
+		final Writer writer = new StringWriter();
+		final Result dest2 = new StreamResult(writer);
+		aTransformer.transform(src, dest2);
+
+		return writer.toString();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

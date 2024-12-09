@@ -22,18 +22,30 @@ package de.metas.aggregation.api;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Collection;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.aggregation.api.AggregationItem.Type;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Evaluatees;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public final class Aggregation
@@ -77,4 +89,14 @@ public final class Aggregation
 
 		return false;
 	}
+<<<<<<< HEAD
+=======
+
+	public boolean hasInvoicePerShipmentAttribute()
+	{
+		return getItems().stream()
+				.filter(item -> item.getType() == Type.Attribute && item.getAttribute() != null)
+				.anyMatch(item -> ("@" + I_M_InOut.COLUMNNAME_M_InOut_ID + "@").equals(item.getAttribute().evaluate(Evaluatees.empty())));
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -16,12 +16,24 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -35,6 +47,9 @@ import de.metas.cache.CCache;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Product Attribute Set
@@ -55,8 +70,12 @@ public class MAttributeSet extends X_M_AttributeSet
 	/**
 	 * Get MAttributeSet from Cache
 	 * 
+<<<<<<< HEAD
 	 * @param ctx context
 	 * @param M_AttributeSet_ID id
+=======
+	 * @param attributeSetId id
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return MAttributeSet
 	 */
 	public static MAttributeSet get(@NonNull final AttributeSetId attributeSetId)
@@ -81,12 +100,15 @@ public class MAttributeSet extends X_M_AttributeSet
 		if (is_new())
 		{
 			// setName (null);
+<<<<<<< HEAD
 			setIsGuaranteeDate(false);
 			setIsGuaranteeDateMandatory(false);
 			setIsLot(false);
 			setIsLotMandatory(false);
 			setIsSerNo(false);
 			setIsSerNoMandatory(false);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			setIsInstanceAttribute(false);
 			setMandatoryType(MANDATORYTYPE_NotMandatary);
 		}
@@ -107,9 +129,12 @@ public class MAttributeSet extends X_M_AttributeSet
 	/** Entry Exclude */
 	private X_M_AttributeSetExclude[] m_excludes = null;
 	/** Lot create Exclude */
+<<<<<<< HEAD
 	private X_M_LotCtlExclude[] m_excludeLots = null;
 	/** Serial No create Exclude */
 	private X_M_SerNoCtlExclude[] m_excludeSerNos = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @param instanceAttributes true if for instance
@@ -133,10 +158,14 @@ public class MAttributeSet extends X_M_AttributeSet
 	 */
 	public boolean isMandatory()
 	{
+<<<<<<< HEAD
 		return !MANDATORYTYPE_NotMandatary.equals(getMandatoryType())
 				|| isLotMandatory()
 				|| isSerNoMandatory()
 				|| isGuaranteeDateMandatory();
+=======
+		return !MANDATORYTYPE_NotMandatary.equals(getMandatoryType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}	// isMandatory
 
 	/**
@@ -192,6 +221,7 @@ public class MAttributeSet extends X_M_AttributeSet
 		return false;
 	}	// excludeEntry
 
+<<<<<<< HEAD
 	/**
 	 * Exclude Lot creation
 	 * 
@@ -338,6 +368,8 @@ public class MAttributeSet extends X_M_AttributeSet
 		final MSerNoCtl ctl = new MSerNoCtl(getCtx(), M_SerNoCtl_ID, get_TrxName());
 		return ctl.createSerNo();
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Before Save.
@@ -349,8 +381,12 @@ public class MAttributeSet extends X_M_AttributeSet
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
+<<<<<<< HEAD
 		if (!isInstanceAttribute()
 				&& (isSerNo() || isLot() || isGuaranteeDate()))
+=======
+		if (!isInstanceAttribute())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			setIsInstanceAttribute(true);
 		return true;
 	}	// beforeSave
@@ -373,14 +409,22 @@ public class MAttributeSet extends X_M_AttributeSet
 					+ " SET IsInstanceAttribute='Y' "
 					+ "WHERE M_AttributeSet_ID=" + getM_AttributeSet_ID()
 					+ " AND IsInstanceAttribute='N'"
+<<<<<<< HEAD
 					+ " AND (IsSerNo='Y' OR IsLot='Y' OR IsGuaranteeDate='Y'"
 					+ " OR EXISTS (SELECT * FROM M_AttributeUse mau"
+=======
+					+ " AND (EXISTS (SELECT * FROM M_AttributeUse mau"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')"
 					+ ")";
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 0)
 			{
 				log.warn("Set Instance Attribute");
@@ -388,19 +432,30 @@ public class MAttributeSet extends X_M_AttributeSet
 			}
 		}
 		// Reset Instance Attribute
+<<<<<<< HEAD
 		if (isInstanceAttribute() && !isSerNo() && !isLot() && !isGuaranteeDate())
+=======
+		if (isInstanceAttribute())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			String sql = "UPDATE M_AttributeSet mas"
 					+ " SET IsInstanceAttribute='N' "
 					+ "WHERE M_AttributeSet_ID=" + getM_AttributeSet_ID()
 					+ " AND IsInstanceAttribute='Y'"
+<<<<<<< HEAD
 					+ "	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N'"
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " AND NOT EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')";
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 0)
 			{
 				log.warn("Reset Instance Attribute");

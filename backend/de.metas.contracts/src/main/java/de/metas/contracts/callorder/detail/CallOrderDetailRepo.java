@@ -29,8 +29,13 @@ import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.contracts.model.I_C_CallOrderDetail;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -142,9 +147,15 @@ public class CallOrderDetailRepo
 			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMNNAME_M_InOutLine_ID, query.getInOutLineId());
 		}
 
+<<<<<<< HEAD
 		if (query.getInvoiceLineId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMN_C_InvoiceLine_ID, query.getInvoiceLineId());
+=======
+		if (query.getInvoiceAndLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMN_C_InvoiceLine_ID, query.getInvoiceAndLineId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return queryBuilder.create()
@@ -181,7 +192,11 @@ public class CallOrderDetailRepo
 			final CallOrderDetailData.InvoiceDetail invoiceDetail = detailData.getInvoiceDetail();
 
 			record.setC_Invoice_ID(invoiceDetail.getInvoiceId().getRepoId());
+<<<<<<< HEAD
 			record.setC_InvoiceLine_ID(invoiceDetail.getInvoiceLineId().getRepoId());
+=======
+			record.setC_InvoiceLine_ID(invoiceDetail.getInvoiceAndLineId().getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			record.setQtyInvoicedInUOM(invoiceDetail.getQtyInvoiced().toBigDecimal());
 			record.setC_UOM_ID(invoiceDetail.getQtyInvoiced().getUomId().getRepoId());
 		}
@@ -206,7 +221,11 @@ public class CallOrderDetailRepo
 
 		if (record.getC_OrderLine_ID() > 0)
 		{
+<<<<<<< HEAD
 			final Quantity qtyEntered = Quantitys.create(record.getQtyEntered(), uomId);
+=======
+			final Quantity qtyEntered = Quantitys.of(record.getQtyEntered(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			return builder
 					.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
@@ -217,7 +236,11 @@ public class CallOrderDetailRepo
 		}
 		else if (record.getM_InOutLine_ID() > 0)
 		{
+<<<<<<< HEAD
 			final Quantity qtyDeliveredInUOM = Quantitys.create(record.getQtyDeliveredInUOM(), uomId);
+=======
+			final Quantity qtyDeliveredInUOM = Quantitys.of(record.getQtyDeliveredInUOM(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			return builder
 					.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
@@ -227,11 +250,19 @@ public class CallOrderDetailRepo
 		}
 		else if (record.getC_InvoiceLine_ID() > 0)
 		{
+<<<<<<< HEAD
 			final Quantity qtyInvoicedInUOM = Quantitys.create(record.getQtyInvoicedInUOM(), uomId);
 
 			return builder
 					.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
 					.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+=======
+			final Quantity qtyInvoicedInUOM = Quantitys.of(record.getQtyInvoicedInUOM(), uomId);
+
+			return builder
+					.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
+					.invoiceAndLineId(InvoiceAndLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.qtyInvoiced(qtyInvoicedInUOM)
 					.build();
 		}

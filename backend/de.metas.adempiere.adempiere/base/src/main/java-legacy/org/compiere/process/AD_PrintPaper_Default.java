@@ -78,7 +78,11 @@ public class AD_PrintPaper_Default extends JavaProcess
 			if (p_AD_Client_ID != -1) {
 				sql.append(" AND AD_Client_ID = " + p_AD_Client_ID);
 			}
+<<<<<<< HEAD
 			cnt = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+			cnt = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.info("Updated " + cnt + " columns");
 			log.debug("Committing ...");
 			DB.commit(true, null);

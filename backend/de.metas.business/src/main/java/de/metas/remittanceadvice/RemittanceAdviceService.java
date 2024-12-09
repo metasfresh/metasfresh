@@ -24,6 +24,10 @@ package de.metas.remittanceadvice;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -44,6 +48,10 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
@@ -51,7 +59,11 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,11 +112,18 @@ public class RemittanceAdviceService
 	@NonNull
 	private Amount getInvoiceAmountInRemAdvCurrency(@NonNull final CurrencyId remittanceCurrencyId, @NonNull final I_C_Invoice invoice)
 	{
+<<<<<<< HEAD
 		final LocalDate conversionDate = LocalDate.now();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	 ConversionTypeMethod.Spot,
 																	 Env.getClientId(),
+=======
+		final Instant conversionDate = SystemTime.asInstant();
+		final CurrencyConversionContext currencyConversionContext =
+				currencyConversionBL.createCurrencyConversionContext(conversionDate,
+						ClientId.ofRepoId(invoice.getAD_Client_ID()),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 																	 OrgId.ofRepoId(invoice.getAD_Org_ID()));
 
 		final Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
@@ -220,7 +239,11 @@ public class RemittanceAdviceService
 			return Optional.of(serviceFeeAmount);
 		}
 
+<<<<<<< HEAD
 		final LocalDate conversionDate = LocalDate.now();
+=======
+		final Instant conversionDate = SystemTime.asInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	 ConversionTypeMethod.Spot,

@@ -26,13 +26,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+<<<<<<< HEAD
+=======
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+=======
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
@@ -41,18 +54,35 @@ import org.compiere.model.I_AD_PInstance;
 
 import java.io.IOException;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.assertj.core.api.Assertions.*;
 
 public class AD_Issue_StepDef
 {
+<<<<<<< HEAD
+=======
+	private final AD_Issue_StepDefData issueTable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private PInstanceId pInstanceId;
 	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+<<<<<<< HEAD
 	public AD_Issue_StepDef(final TestContext testContext)
 	{
+=======
+	public AD_Issue_StepDef(
+			@NonNull final AD_Issue_StepDefData issueTable,
+			@NonNull final TestContext testContext)
+	{
+		this.issueTable = issueTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.testContext = testContext;
 	}
 
@@ -104,4 +134,22 @@ public class AD_Issue_StepDef
 		assertThat(orgId).isNotNull();
 		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 	}
+<<<<<<< HEAD
 }
+=======
+
+	@And("validate AD_Issue")
+	public void validate_AD_Issue(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Issue.COLUMNNAME_AD_Issue_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Issue issue = issueTable.get(issueIdentifier);
+
+			final String issueSummary = DataTableUtil.extractStringForColumnName(row, I_AD_Issue.COLUMNNAME_IssueSummary);
+			final boolean containsSummary = issue.getIssueSummary().contains(issueSummary);
+			assertThat(containsSummary).isTrue();
+		}
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

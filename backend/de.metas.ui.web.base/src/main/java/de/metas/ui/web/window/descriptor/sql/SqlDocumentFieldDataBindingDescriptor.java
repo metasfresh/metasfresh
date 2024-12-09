@@ -62,7 +62,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
+<<<<<<< HEAD
 			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+=======
+			return cast(descriptor);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -70,6 +74,15 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	public static SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	{
+		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Getter
 	private final String fieldName;
 	@Getter
@@ -150,12 +163,21 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
+<<<<<<< HEAD
 	public String getColumnName() { return getSqlColumnName(); }
 
 	public boolean isNumericKey() { return numericKey != null && numericKey; }
 
 	@Override
 	public boolean isDefaultOrderBy() { return defaultOrderByPriority != 0; }
+=======
+	public String getColumnName() {return getSqlColumnName();}
+
+	public boolean isNumericKey() {return numericKey != null && numericKey;}
+
+	@Override
+	public boolean isDefaultOrderBy() {return defaultOrderByPriority != 0;}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public SqlOrderByValue getSqlOrderBy()

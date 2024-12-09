@@ -1,5 +1,6 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepositoryTest.save_allFields=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaPatientId" : 100001,
     "bPartnerId" : 1,
     "hospitalId" : 2,
@@ -49,12 +50,38 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
     "updatedById" : 6,
     "transferPatient" : true,
     "ivtherapy" : false
+=======
+    "bPartnerAlbertaPatientId": 100001,
+    "bPartnerId": 1,
+    "careDegree": 2.2,
+    "classification": "classification",
+    "copaymentFrom": "2019-11-23",
+    "copaymentTo": "2019-11-24",
+    "createdAt": "2019-11-26T00:00:00Z",
+    "createdById": 5,
+    "deactivationComment": "deactivationComment",
+    "deactivationDate": "2019-11-25",
+    "deactivationReason": "AllTherapiesEnded",
+    "dischargeDate": "2019-11-22",
+    "fieldNurseId": 4,
+    "hospitalId": 2,
+    "isIVTherapy": false,
+    "isTransferPatient": true,
+    "ivtherapy": false,
+    "numberOfInsured": "numberOfInsured",
+    "payerId": 3,
+    "payerType": "ProfessionalAssociation",
+    "transferPatient": true,
+    "updatedAt": "2019-11-27T00:00:00Z",
+    "updatedById": 6
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepositoryTest.save_onlyMandatory=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaPatientId" : 100001,
     "bPartnerId" : 1,
     "isTransferPatient" : false,
@@ -62,5 +89,14 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
     "careDegree" : 0,
     "transferPatient" : false,
     "ivtherapy" : false
+=======
+    "bPartnerAlbertaPatientId": 100001,
+    "bPartnerId": 1,
+    "careDegree": 0,
+    "isIVTherapy": false,
+    "isTransferPatient": false,
+    "ivtherapy": false,
+    "transferPatient": false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -28,6 +28,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.function.Function;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static java.math.BigDecimal.ZERO;
 
@@ -155,6 +159,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
+<<<<<<< HEAD
 		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 
 		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
@@ -163,6 +168,11 @@ public class DemandCandiateHandler implements CandidateHandler
 			return; // nothing to do
 		}
 		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(childStockCandidate.get().getId());
+=======
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+
+		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 

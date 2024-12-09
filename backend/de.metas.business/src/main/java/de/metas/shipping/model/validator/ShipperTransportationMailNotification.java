@@ -64,17 +64,30 @@ import java.util.StringTokenizer;
  * Supposed to send an email to a shipment's receiver when the shipper document is completed.
  *
  * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
  * @task https://metasfresh.atlassian.net/browse/FRESH-407 this MV doesn't really work. Whenever you actually need the feature, please let's reimplement it.
+=======
+ * @implNote  <a href="https://metasfresh.atlassian.net/browse/FRESH-407">task</a> - this MV doesn't really work. Whenever you actually need the feature, please let's reimplement it.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @Deprecated
 public class ShipperTransportationMailNotification implements ModelValidator
 {
+<<<<<<< HEAD
 	final private String SYS_CONFIG_SHIP = "SHIP_MAIL_NOTIFICATION";
 
 	private int m_AD_Client_ID = -1;
 	private int p_SMTPRetriesNo = 3;
 
 	private Logger log = LogManager.getLogger(getClass());
+=======
+	private static final String SYS_CONFIG_SHIP = "SHIP_MAIL_NOTIFICATION";
+
+	private int m_AD_Client_ID = -1;
+	private final int p_SMTPRetriesNo = 3;
+
+	private static final Logger log = LogManager.getLogger(ShipperTransportationMailNotification.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public String docValidate(PO po, int type)
@@ -224,7 +237,10 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					to = EMailAddress.ofString(orderUser.getEMail());
 				}
 				EMail email = client.createEMail(
+<<<<<<< HEAD
 						null,
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						to,
 						text.getName(),
 						message,

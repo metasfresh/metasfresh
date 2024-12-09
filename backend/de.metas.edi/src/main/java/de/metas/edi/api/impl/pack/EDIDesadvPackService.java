@@ -23,6 +23,10 @@
 package de.metas.edi.api.impl.pack;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.SimpleSequence;
@@ -32,6 +36,10 @@ import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
+<<<<<<< HEAD
+=======
+import de.metas.esb.edi.model.I_EDI_Desadv;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
@@ -71,6 +79,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -94,7 +107,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+<<<<<<< HEAD
 import static de.metas.util.Check.isEmpty;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -127,6 +143,27 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
+<<<<<<< HEAD
+=======
+	public EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+
+		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
+		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackSeqNo)
+				.increment(1).build();
+
+		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
+		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackItemLine)
+				.increment(10).build();
+
+		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
+	}
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
 		final I_M_HU_PI_Item_Product materialItemProduct;
@@ -155,10 +192,17 @@ public class EDIDesadvPackService
 		ediDesadvPackRepository.removePackAndItemRecords(inOutLineRecord);
 	}
 
+<<<<<<< HEAD
 	public void createPacks(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
 			@NonNull final SimpleSequence packLineSequence)
+=======
+	public void createOrExtendPacks(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final BPartnerId recipientBPartnerId,
+			@NonNull final Sequences sequences)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -167,7 +211,11 @@ public class EDIDesadvPackService
 		if (desadvLineId == null)
 		{
 			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
+<<<<<<< HEAD
 						 orderLineRecord.getC_OrderLine_ID());
+=======
+					orderLineRecord.getC_OrderLine_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			return;
 		}
@@ -181,6 +229,7 @@ public class EDIDesadvPackService
 		StockQtyAndUOMQty remainingQtyToAdd = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 		final BigDecimal uomToStockRatio = remainingQtyToAdd.getUOMToStockRatio();
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
+<<<<<<< HEAD
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 
 		for (final I_M_HU topLevelHU : topLevelHUs)
@@ -194,12 +243,28 @@ public class EDIDesadvPackService
 					invoicableQtyBasedOn, 
 					uomToStockRatio,
 					packLineSequence);
+=======
+		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord); // TODO see if we can't use the HURepo *here*, to get HUs right away instead of records
+
+		for (final I_M_HU topLevelHU : topLevelHUs)
+		{
+			final StockQtyAndUOMQty addedPackQty = createOrExtendPackUsingHU(
+					desadvLineRecord,
+					inOutLineRecord,
+					topLevelHU,
+					recipientBPartnerId,
+					desadvLineWithDraftedPackItems,
+					invoicableQtyBasedOn,
+					uomToStockRatio,
+					sequences);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
 		
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
 			createPackUsingJustInOutLine(
+<<<<<<< HEAD
 					inOutLineRecord, 
 					orderLineRecord, 
 					desadvLineRecord, 
@@ -208,6 +273,16 @@ public class EDIDesadvPackService
 					invoicableQtyBasedOn, 
 					uomToStockRatio,
 					packLineSequence);
+=======
+					inOutLineRecord,
+					orderLineRecord,
+					desadvLineRecord,
+					remainingQtyToAdd,
+					desadvLineWithDraftedPackItems,
+					invoicableQtyBasedOn,
+					uomToStockRatio,
+					sequences);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -219,7 +294,11 @@ public class EDIDesadvPackService
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio,
+<<<<<<< HEAD
 			@NonNull final SimpleSequence packLineSequence)
+=======
+			@NonNull final Sequences sequences)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assume(qtyToAdd.getStockQty().signum() > 0, "Parameter 'qtyToAdd' needs to be >0 for all this to make sense");
 
@@ -268,12 +347,20 @@ public class EDIDesadvPackService
 		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
 			// we use the capacity which the goods were ordered in
+<<<<<<< HEAD
 			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+=======
+			qtyCUsPerTUInStockUOM = Quantitys.of(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
 			// we make an educated guess, based on the packing-instruction's information
+<<<<<<< HEAD
 			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
+=======
+			qtyCUsPerTUInStockUOM = Quantitys.of(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -286,6 +373,7 @@ public class EDIDesadvPackService
 		for (int i = 0; i < requiredLUCount; i++)
 		{
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
+<<<<<<< HEAD
 					.line(packLineSequence.next())
 					.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
 					.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
@@ -293,6 +381,16 @@ public class EDIDesadvPackService
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
 					CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
 							.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
+=======
+					.seqNo(sequences.getPackSeqNoSequence().next())
+					.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
+					.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
+
+			final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
+					CreateEDIDesadvPackItemRequest.builder()
+							.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
+							.line(sequences.getPackItemLineSequence().next())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.qtyItemCapacity(lutuConfigurationInStockUOM.getQtyCUsPerTU())
 							.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
 							.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()));
@@ -312,6 +410,7 @@ public class EDIDesadvPackService
 
 			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
+<<<<<<< HEAD
 			createEDIDesadvPackRequestBuilder.huPackagingCodeLUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID));
 			createEDIDesadvPackRequestBuilder.gtinLUPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
 
@@ -336,6 +435,12 @@ public class EDIDesadvPackService
 				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
 							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
 			}
+=======
+			createEDIDesadvPackRequestBuilder.huPackagingCodeID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID));
+			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
+
+			setPackRecordPackagingCodeAndGTIN(createEDIDesadvPackItemRequestBuilder, tuPIItemProduct, bpartnerId, desadvLineRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
@@ -352,8 +457,13 @@ public class EDIDesadvPackService
 			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, packUomId, invoiceUomId, movementQty, invoicableQtyBasedOn, uomToStockRatio);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
+<<<<<<< HEAD
 															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
 															 .build());
+=======
+					.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
+					.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			// prepare next iteration within this for-look
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
@@ -361,6 +471,44 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
+<<<<<<< HEAD
+=======
+	public EDIDesadvPack createDesadvPack(@NonNull final CreateEDIDesadvPackRequest createEDIDesadvPackRequest)
+	{
+		return ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
+	}
+
+	public void setPackRecordPackagingCodeAndGTIN(
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final I_EDI_DesadvLine desadvLineRecord)
+	{
+		final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
+		createEDIDesadvPackItemRequestBuilder.huPackagingCodeTUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeTU_ID));
+
+		final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
+		if (huPackingMaterials.size() == 1)
+		{
+			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
+					.retrieveBPartnerProductAssociation(Env.getCtx(),
+														bPartnerId,
+														ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+														OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+			{
+				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
+			}
+		}
+		else
+		{
+			logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
+						 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
+		}
+	}
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Optional<Timestamp> extractBestBeforeDate(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
@@ -394,14 +542,22 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private StockQtyAndUOMQty createPackUsingHU(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_M_HU huRecord,
+=======
+	private StockQtyAndUOMQty createOrExtendPackUsingHU(
+			@NonNull final I_EDI_DesadvLine desadvLineRecord,
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final I_M_HU topLevelHURecord,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio,
+<<<<<<< HEAD
 			@NonNull final SimpleSequence packLineSequence)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
@@ -418,10 +574,24 @@ public class EDIDesadvPackService
 			final UomId desadvUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
 			return StockQtyAndUOMQtys.createZero(productId, desadvUomId);
 		}
+=======
+			@NonNull final Sequences sequences)
+	{
+		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
+
+		final HU topLevelHU = huRepository
+				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
+				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
+				.orElseThrow(() -> new AdempiereException("Missing M_HU").appendParametersToMessage()
+						.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
+						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
+						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
 		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
 		// That's why we need to invoke min(..)
+<<<<<<< HEAD
 		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(rootLU, productId)
 				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
@@ -429,16 +599,45 @@ public class EDIDesadvPackService
 				rootLU,
 				bPartnerId,
 				qtyCUsPerTopLevelHU,
+=======
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
+				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
+
+		final RequestParameters parameters = new RequestParameters(topLevelHU,
+				bPartnerId,
+																   qtyCUsPerTopLevelHU,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				productId,
 				desadvLineRecord,
 				inOutLineRecord,
 				desadvLineWithPacks,
 				invoicableQtyBasedOn,
 				uomToStockRatio,
+<<<<<<< HEAD
 				packLineSequence);
 
 		ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
 
+=======
+																   sequences.getPackSeqNoSequence(),
+																   sequences.getPackItemLineSequence());
+
+		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
+
+		if (packByHUId == null)
+		{
+			final CreateEDIDesadvPackRequest createPackRequest = buildCreateDesadvPackRequest(parameters);
+
+			ediDesadvPackRepository.createDesadvPack(createPackRequest);
+		}
+		else
+		{
+			final CreateEDIDesadvPackItemRequest createPackItemRequest = buildCreateDesadvPackItemRequest(parameters)
+					.withEdiDesadvPackId(packByHUId.getEdiDesadvPackId());
+
+			ediDesadvPackRepository.createDesadvPackItem(createPackItemRequest);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return qtyCUsPerTopLevelHU;
 	}
 
@@ -469,6 +668,7 @@ public class EDIDesadvPackService
 
 	@NonNull
 	private CreateEDIDesadvPackRequest buildCreateDesadvPackRequest(
+<<<<<<< HEAD
 			@NonNull final HU rootHU,
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final StockQtyAndUOMQty quantity,
@@ -524,11 +724,83 @@ public class EDIDesadvPackService
 		setSSCC18(rootHU, createDesadvPackRequestBuilder);
 
 		createDesadvPackRequestBuilder.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build());
+=======
+			@NonNull final RequestParameters parameters)
+	{
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
+				.seqNo(parameters.packSeqNoSequence.next())
+				.orgId(OrgId.ofRepoId(parameters.desadvLineRecord.getAD_Org_ID()))
+				.ediDesadvId(EDIDesadvId.ofRepoId(parameters.desadvLineRecord.getEDI_Desadv_ID()))
+				.huId(parameters.topLevelHU.getId());
+
+		setPackagingCodeToPack(parameters.topLevelHU, createDesadvPackRequestBuilder);
+		setPackagingGTINsToPack(parameters.topLevelHU, parameters.bPartnerId, createDesadvPackRequestBuilder);
+		setSSCC18ToPack(parameters.topLevelHU, createDesadvPackRequestBuilder);
+
+		final CreateEDIDesadvPackItemRequest packItemRequest = buildCreateDesadvPackItemRequest(parameters);
+		createDesadvPackRequestBuilder.createEDIDesadvPackItemRequest(packItemRequest);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return createDesadvPackRequestBuilder.build();
 	}
 
+<<<<<<< HEAD
 	private void setSSCC18(
+=======
+	/**
+	 * Creates a "complete" request, just without a pack-ID
+	 */
+	private CreateEDIDesadvPackItemRequest buildCreateDesadvPackItemRequest(
+			@NonNull final RequestParameters parameters)
+	{
+		final Quantity qtyCUInStockUOM = parameters.topLevelHU.extractMedianCUQtyPerChildHU(parameters.productId);
+
+		// get minimum best before of all HUs and sub-HUs
+		final Date bestBefore = parameters.topLevelHU.extractSingleAttributeValue(
+				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
+				TimeUtil::min);
+
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createPackItemRequestBuilder =
+				CreateEDIDesadvPackItemRequest.builder()
+						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(parameters.desadvLineRecord.getEDI_DesadvLine_ID()))
+						.inOutId(InOutId.ofRepoId(parameters.inOutLineRecord.getM_InOut_ID()))
+						.inOutLineId(InOutLineId.ofRepoId(parameters.inOutLineRecord.getM_InOutLine_ID()))
+						.line(parameters.packItemLineSequence.next())
+						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
+						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
+						.qtyTu(parameters.topLevelHU.getChildHUs().size());
+
+		final String lotNumber = parameters.topLevelHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
+		if (Check.isNotBlank(lotNumber))
+		{
+			createPackItemRequestBuilder.lotNumber(lotNumber);
+		}
+
+		final UomId stockUomId = UomId.ofRepoId(parameters.desadvLineRecord.getC_UOM_ID());
+		final UomId invoiceUomId = UomId.ofRepoIdOrNull(parameters.desadvLineRecord.getC_UOM_Invoice_ID());
+
+		final BigDecimal movementQty = parameters.quantity.getStockQty().toBigDecimal();
+
+		parameters.desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createPackItemRequestBuilder::ediDesadvPackItemId);
+
+		setQty(createPackItemRequestBuilder,
+			   parameters.productId,
+			   qtyCUInStockUOM,
+			   parameters.quantity,
+			   stockUomId,
+			   invoiceUomId,
+			   movementQty,
+			   parameters.invoicableQtyBasedOn,
+			   parameters.uomToStockRatio);
+
+		setPackagingCodeToPackItem(parameters.topLevelHU.getChildHUs(), createPackItemRequestBuilder);
+		setPackagingGTINsToPackItem(parameters.topLevelHU.getChildHUs(), parameters.bPartnerId, createPackItemRequestBuilder);
+
+		return createPackItemRequestBuilder.build();
+	}
+
+	private void setSSCC18ToPack(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final HU rootHU,
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
@@ -550,7 +822,11 @@ public class EDIDesadvPackService
 
 	@VisibleForTesting
 	public void setQty(
+<<<<<<< HEAD
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
+=======
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyCUsPerTUInStockUOM,
 			@NonNull final StockQtyAndUOMQty qtyCUsPerLU,
@@ -645,6 +921,7 @@ public class EDIDesadvPackService
 				.build();
 	}
 
+<<<<<<< HEAD
 	private static void extractAndSetPackagingCodes(
 			@NonNull final HU rootHU,
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder,
@@ -654,6 +931,27 @@ public class EDIDesadvPackService
 
 		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+=======
+	/**
+	 * If rootHU has a packaging-code, then set it to the packRequestBuilder
+	 */
+	private static void setPackagingCodeToPack(
+			@NonNull final HU rootHU,
+			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
+	{
+		rootHU.getPackagingCode().ifPresent(code -> createEDIDesadvPackRequestBuilder.huPackagingCodeID(code.getId()));
+	}
+
+	/**
+	 * If all childHUs have the same packingCode, then set that to the packItemRequestBuilder
+	 */
+	private static void setPackagingCodeToPackItem(
+			@NonNull final ImmutableList<HU> childHUs,
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+	{
+		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
+				childHUs, // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
 				PackagingCode.NONE);
 
@@ -663,6 +961,7 @@ public class EDIDesadvPackService
 		}
 	}
 
+<<<<<<< HEAD
 	private static void extractAndSetPackagingGTINs(
 			@NonNull final HU rootHU,
 			@NonNull final BPartnerId bPartnerId,
@@ -678,6 +977,28 @@ public class EDIDesadvPackService
 		final String tuPackagingGTIN = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
 				hu -> coalesce(hu.getPackagingGTINs().get(bPartnerId), ""),
+=======
+	private static void setPackagingGTINsToPack(
+			@NonNull final HU rootHU,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
+	{
+		final String packagingGTIN = rootHU.getPackagingGTIN(bPartnerId);
+		if (isNotBlank(packagingGTIN))
+		{
+			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(packagingGTIN);
+		}
+		}
+
+	private static void setPackagingGTINsToPackItem(
+			@NonNull final ImmutableList<HU> childHUs,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+	{
+		final String tuPackagingGTIN = CollectionUtils.extractSingleElementOrDefault(
+				childHUs, // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+				hu -> coalesce(hu.getPackagingGTIN(bPartnerId), ""),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				"");
 
 		if (isNotBlank(tuPackagingGTIN))
@@ -685,4 +1006,51 @@ public class EDIDesadvPackService
 			createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(tuPackagingGTIN);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	/**
+	 * Sequences needed when creating new DESADV-Packs and DESADV-Pack-Items
+	 */
+	@Value
+	@RequiredArgsConstructor
+	public static class Sequences
+	{
+		@NonNull
+		SimpleSequence packSeqNoSequence;
+		@NonNull
+		SimpleSequence packItemLineSequence;
+	}
+
+	/**
+	 * All thast needed to create with a pack-request that includes a pack-item-request or just a single pack-item-request.
+	 */
+	@Value
+	@RequiredArgsConstructor
+	public static class RequestParameters
+	{
+		@NonNull
+		HU topLevelHU;
+		@NonNull
+		BPartnerId bPartnerId;
+		@NonNull
+		StockQtyAndUOMQty quantity;
+		@NonNull
+		ProductId productId;
+		@NonNull
+		I_EDI_DesadvLine desadvLineRecord;
+		@NonNull
+		I_M_InOutLine inOutLineRecord;
+		@NonNull
+		DesadvLineWithDraftedPackItems desadvLineWithPacks;
+		@NonNull
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+		@Nullable
+		BigDecimal uomToStockRatio;
+		@NonNull
+		SimpleSequence packSeqNoSequence;
+		@NonNull
+		SimpleSequence packItemLineSequence;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

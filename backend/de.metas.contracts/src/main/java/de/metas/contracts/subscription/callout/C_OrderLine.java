@@ -66,7 +66,13 @@ public class C_OrderLine
 		{
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
 			ol.setQtyOrdered(qtyOrdered);
+<<<<<<< HEAD
 			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(ol).toBigDecimal();
+=======
+			
+			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(ol).toBigDecimal();
+			ol.setIsManualQtyInPriceUOM(false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			ol.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()

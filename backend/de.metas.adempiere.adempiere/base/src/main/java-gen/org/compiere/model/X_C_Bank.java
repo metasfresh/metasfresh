@@ -12,7 +12,11 @@ import java.util.Properties;
 public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -376628303L;
+=======
+	private static final long serialVersionUID = 1318796591L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_C_Bank (final Properties ctx, final int C_Bank_ID, @Nullable final String trxName)
@@ -140,6 +144,21 @@ public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.com
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setIsImportAsSingleSummaryLine (final boolean IsImportAsSingleSummaryLine)
+	{
+		set_Value (COLUMNNAME_IsImportAsSingleSummaryLine, IsImportAsSingleSummaryLine);
+	}
+
+	@Override
+	public boolean isImportAsSingleSummaryLine() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsImportAsSingleSummaryLine);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setIsOwnBank (final boolean IsOwnBank)
 	{
 		set_Value (COLUMNNAME_IsOwnBank, IsOwnBank);

@@ -1,5 +1,12 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Interface for M_CostDetail
  *  @author Adempiere (generated) 
@@ -298,6 +305,32 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Accounting Date.
+	 * Accounting Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDateAcct (java.sql.Timestamp DateAcct);
+
+	/**
+	 * Get Accounting Date.
+	 * Accounting Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDateAcct();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_DateAcct = new ModelColumn<>(I_M_CostDetail.class, "DateAcct", null);
+	String COLUMNNAME_DateAcct = "DateAcct";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Delta Amount.
 	 * Difference Amount
 	 *
@@ -305,7 +338,11 @@ public interface I_M_CostDetail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setDeltaAmt (java.math.BigDecimal DeltaAmt);
+=======
+	void setDeltaAmt (@Nullable BigDecimal DeltaAmt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Delta Amount.
@@ -315,12 +352,19 @@ public interface I_M_CostDetail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.math.BigDecimal getDeltaAmt();
 
     /** Column definition for DeltaAmt */
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_DeltaAmt = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "DeltaAmt", null);
     /** Column name DeltaAmt */
     public static final String COLUMNNAME_DeltaAmt = "DeltaAmt";
+=======
+	BigDecimal getDeltaAmt();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_DeltaAmt = new ModelColumn<>(I_M_CostDetail.class, "DeltaAmt", null);
+	String COLUMNNAME_DeltaAmt = "DeltaAmt";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Delta Quantity.
@@ -500,7 +544,32 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_M_CostDetail_ID = "M_CostDetail_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Kostenart.
+=======
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostDetail_Type (java.lang.String M_CostDetail_Type);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getM_CostDetail_Type();
+
+	org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_M_CostDetail_Type = new org.adempiere.model.ModelColumn<>(I_M_CostDetail.class, "M_CostDetail_Type", null);
+	String COLUMNNAME_M_CostDetail_Type = "M_CostDetail_Type";
+
+	/**
+	 * Set Cost Element.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Product Cost Element
 	 *
 	 * <br>Type: TableDir
@@ -517,6 +586,7 @@ public interface I_M_CostDetail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_CostElement_ID();
 
 	public org.compiere.model.I_M_CostElement getM_CostElement();
@@ -531,22 +601,97 @@ public interface I_M_CostDetail
 	/**
 	 * Set Versand-/Wareneingangsposition.
 	 * Line on Shipment or Receipt document
+=======
+	int getM_CostElement_ID();
+
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
+
+	org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new org.adempiere.model.ModelColumn<>(I_M_CostDetail.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
+	 * Set Cost Revaluation.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
 	 * Get Versand-/Wareneingangsposition.
 	 * Line on Shipment or Receipt document
+=======
+	void setM_CostRevaluation_ID (int M_CostRevaluation_ID);
+
+	/**
+	 * Get Cost Revaluation.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_InOutLine_ID();
+=======
+	int getM_CostRevaluation_ID();
+
+	@Nullable org.compiere.model.I_M_CostRevaluation getM_CostRevaluation();
+
+	void setM_CostRevaluation(@Nullable org.compiere.model.I_M_CostRevaluation M_CostRevaluation);
+
+	String COLUMNNAME_M_CostRevaluation_ID = "M_CostRevaluation_ID";
+
+	/**
+	 * Set Cost Revaluation Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostRevaluationLine_ID (int M_CostRevaluationLine_ID);
+
+	/**
+	 * Get Cost Revaluation Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostRevaluationLine_ID();
+
+	@Nullable org.compiere.model.I_M_CostRevaluationLine getM_CostRevaluationLine();
+
+	void setM_CostRevaluationLine(@Nullable org.compiere.model.I_M_CostRevaluationLine M_CostRevaluationLine);
+
+	org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_CostRevaluationLine> COLUMN_M_CostRevaluationLine_ID = new org.adempiere.model.ModelColumn<>(I_M_CostDetail.class, "M_CostRevaluationLine_ID", org.compiere.model.I_M_CostRevaluationLine.class);
+	String COLUMNNAME_M_CostRevaluationLine_ID = "M_CostRevaluationLine_ID";
+
+	/**
+	 * Set Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOutLine_ID();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public org.compiere.model.I_M_InOutLine getM_InOutLine();
 
@@ -924,6 +1069,50 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Amount in document currency.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSourceAmt (@Nullable BigDecimal SourceAmt);
+
+	/**
+	 * Get Amount in document currency.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSourceAmt();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_SourceAmt = new ModelColumn<>(I_M_CostDetail.class, "SourceAmt", null);
+	String COLUMNNAME_SourceAmt = "SourceAmt";
+
+	/**
+	 * Set Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource_Currency_ID (int Source_Currency_ID);
+
+	/**
+	 * Get Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSource_Currency_ID();
+
+	String COLUMNNAME_Source_Currency_ID = "Source_Currency_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *

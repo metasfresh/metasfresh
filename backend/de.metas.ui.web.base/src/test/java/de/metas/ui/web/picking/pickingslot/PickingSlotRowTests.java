@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.pickingslot;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,15 @@ import org.junit.jupiter.api.Test;
 import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.HuId;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -56,6 +66,10 @@ public class PickingSlotRowTests
 				.huId(HuId.ofRepoId(124))
 				.huEditorRowType(HUEditorRowType.TU)
 				.topLevelHU(true)
+<<<<<<< HEAD
+=======
+				.huId2OpenPickingOrderIds(ImmutableMap.of())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 		assertThat(pickedHURow.isPickingSlotRow()).isFalse();
 		assertThat(pickedHURow.isPickedHURow()).isTrue();

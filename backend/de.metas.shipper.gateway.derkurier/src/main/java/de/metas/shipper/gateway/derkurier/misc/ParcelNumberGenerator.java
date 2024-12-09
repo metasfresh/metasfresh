@@ -1,10 +1,14 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import org.apache.commons.lang.StringUtils;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -14,6 +18,11 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

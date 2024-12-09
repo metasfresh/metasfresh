@@ -224,7 +224,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getIssuingTolerance_UOM_ID());
+<<<<<<< HEAD
 			final Quantity qty = Quantitys.create(record.getIssuingTolerance_Qty(), uomId);
+=======
+			final Quantity qty = Quantitys.of(record.getIssuingTolerance_Qty(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else

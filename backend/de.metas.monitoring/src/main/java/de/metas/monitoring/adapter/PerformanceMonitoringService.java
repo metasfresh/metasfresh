@@ -1,11 +1,14 @@
 package de.metas.monitoring.adapter;
 
+<<<<<<< HEAD
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +16,14 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.monitoring
@@ -37,6 +48,7 @@ import lombok.Value;
 
 public interface PerformanceMonitoringService
 {
+<<<<<<< HEAD
 	public static final String LABEL_RECORD_ID = "recordId";
 	public static final String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
 	public static final String LABEL_EXTERNAL_LINE_ID = "externalLineId";
@@ -49,12 +61,29 @@ public interface PerformanceMonitoringService
 	default void monitorSpan(final Runnable runnable, final SpanMetadata metadata)
 	{
 		monitorSpan(
+=======
+	String LABEL_RECORD_ID = "recordId";
+	String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
+	String LABEL_EXTERNAL_LINE_ID = "externalLineId";
+	String LABEL_WORKPACKAGE_ID = "de.metas.async.C_Queue_WorkPackage_ID";
+	ImmutableSet<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
+
+	/**
+	 * Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required.
+	 */
+	<V> V monitor(Callable<V> callable, Metadata metadata);
+
+	default void monitor(final Runnable runnable, final Metadata metadata)
+	{
+		monitor(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				() -> {
 					runnable.run();
 					return null;
 				},
 				metadata);
 	}
+<<<<<<< HEAD
 	
 	@Value
 	@Builder
@@ -109,6 +138,34 @@ public interface PerformanceMonitoringService
 
 		@Singular
 		Map<String, String> distributedTransactionHeaders;
+=======
+
+	void recordElapsedTime(final long duration, TimeUnit unit, final Metadata metadata);
+
+	@Value
+	@Builder
+	class Metadata
+	{
+		@NonNull
+		Type type;
+
+		@NonNull
+		String className;
+
+		@NonNull
+		String functionName;
+
+		@Nullable
+		String windowNameAndId;
+
+		boolean isGroupingPlaceholder;
+
+		@Singular
+		Map<String, String> labels;
+
+		public String getFunctionNameFQ() {return className + " - " + functionName;}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	enum Type
@@ -121,17 +178,30 @@ public interface PerformanceMonitoringService
 
 		SCHEDULER("scheduler"),
 
+<<<<<<< HEAD
 		REST_API_PROCESSING("rest-API"),
 
 		CACHE_OPERATION("cache-operation"),
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
+=======
+		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
+
+		REST_CONTROLLER("rest-controller"),
+
+		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
+
+		PO("po"),
+
+		DB("db");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		Type(final String code)
 		{
 			this.code = code;
 		}
 
+<<<<<<< HEAD
 		@Getter
 		private final String code;
 	}
@@ -153,6 +223,11 @@ public interface PerformanceMonitoringService
 		SubType(final String code)
 		{
 			this.code = code;
+=======
+		public boolean isAnyRestControllerType()
+		{
+			return this == Type.REST_CONTROLLER || this == Type.REST_CONTROLLER_WITH_WINDOW_ID;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Getter

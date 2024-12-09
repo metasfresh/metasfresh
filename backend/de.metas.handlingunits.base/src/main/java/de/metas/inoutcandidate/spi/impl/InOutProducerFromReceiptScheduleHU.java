@@ -173,7 +173,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		final HUReceiptLineCandidatesBuilder receiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(rs);
 		receiptLineCandidatesBuilder.setHUContext(huContext);
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(rs, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(rs, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final I_M_ReceiptSchedule_Alloc alloc : allocsAll)
 		{
 			if (!isRsaEligible(alloc))

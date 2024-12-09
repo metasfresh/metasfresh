@@ -6,8 +6,13 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.report.jasper.class_loader.JasperClassLoader;
+<<<<<<< HEAD
 import de.metas.report.jasper.data_source.ReportDataSource;
 import de.metas.report.jasper.data_source.JasperDataSourceProvider;
+=======
+import de.metas.report.jasper.data_source.JasperDataSourceProvider;
+import de.metas.report.jasper.data_source.ReportDataSource;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.report.jasper.exporter.MetasJRXlsExporter;
 import de.metas.report.server.AbstractReportEngine;
 import de.metas.report.server.OutputType;

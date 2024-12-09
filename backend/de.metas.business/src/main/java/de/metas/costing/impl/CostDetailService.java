@@ -1,11 +1,14 @@
 package de.metas.costing.impl;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -13,6 +16,10 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+<<<<<<< HEAD
+=======
+import de.metas.costing.CostDetailCreateResultsList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostSegment;
@@ -29,6 +36,15 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -104,6 +120,7 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
 	{
 		return costDetailsRepo.hasCostDetailsForProductId(productId);
@@ -116,12 +133,34 @@ public class CostDetailService implements ICostDetailService
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
+=======
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		return costDetailsRepo.updateDateAcct(costDetail, newDateAcct);
+	}
+
+	@Override
+	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
+	{
+		return costDetailsRepo.hasCostDetailsByProductId(productId);
+	}
+
+	@Override
+	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
+	{
+		return costDetailsRepo.list(CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.costElementId(request.getCostElementId()) // assume request's costing element is set
+				.documentRef(request.getDocumentRef())
+				.amtType(request.getAmtType())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
 	{
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
@@ -140,12 +179,21 @@ public class CostDetailService implements ICostDetailService
 	public List<CostDetail> getAllForDocument(final CostingDocumentRef documentRef)
 	{
 		return costDetailsRepo.getAllForDocument(documentRef);
+=======
+	public List<CostDetail> getAllForDocument(final CostingDocumentRef documentRef)
+	{
+		return costDetailsRepo.listByDocumentRef(documentRef);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
 	public List<CostDetail> getAllForDocumentAndAcctSchemaId(final CostingDocumentRef documentRef, final AcctSchemaId acctSchemaId)
 	{
+<<<<<<< HEAD
 		return costDetailsRepo.getAllForDocumentAndAcctSchemaId(documentRef, acctSchemaId);
+=======
+		return costDetailsRepo.listByDocumentRefAndAcctSchemaId(documentRef, acctSchemaId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -154,11 +202,26 @@ public class CostDetailService implements ICostDetailService
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
+<<<<<<< HEAD
 				.amt(costDetail.getAmt())
 				.qty(costDetail.getQty())
 				.build();
 	}
 
+=======
+				.amtAndQty(costDetail.getAmtAndQtyDetailed())
+				.build();
+	}
+
+	@Override
+	public CostDetailCreateResultsList toCostDetailCreateResultsList(final Collection<CostDetail> costDetails)
+	{
+		return costDetails.stream()
+				.map(this::toCostDetailCreateResult)
+				.collect(CostDetailCreateResultsList.collect());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private CostSegment extractCostSegment(final CostDetail costDetail)
 	{
 		final AcctSchema acctSchema = getAcctSchemaById(costDetail.getAcctSchemaId());
@@ -240,4 +303,14 @@ public class CostDetailService implements ICostDetailService
 	{
 		costDetailsRepo.delete(costDetail);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.stream(query);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

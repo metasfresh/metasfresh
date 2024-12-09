@@ -22,18 +22,29 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class DunningUtil implements IDunningUtil
 {
@@ -42,7 +53,11 @@ public class DunningUtil implements IDunningUtil
 			BigDecimal Amt,
 			int CurFrom_ID,
 			int CurTo_ID,
+<<<<<<< HEAD
 			Timestamp ConvDate,
+=======
+			@NonNull Timestamp ConvDate,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			CurrencyConversionTypeId conversionTypeId,
 			int AD_Client_ID,
 			int AD_Org_ID)
@@ -51,7 +66,11 @@ public class DunningUtil implements IDunningUtil
 				Amt,
 				CurrencyId.ofRepoId(CurFrom_ID),
 				CurrencyId.ofRepoId(CurTo_ID),
+<<<<<<< HEAD
 				TimeUtil.asLocalDate(ConvDate),
+=======
+				ConvDate.toInstant(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				conversionTypeId,
 				ClientId.ofRepoId(AD_Client_ID),
 				OrgId.ofRepoId(AD_Org_ID));

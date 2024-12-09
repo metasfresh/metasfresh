@@ -158,7 +158,11 @@ public class Merge
 			{
 				sql = "DELETE FROM " + TableName + " WHERE " + ColumnName + "=" + from_ID;
 
+<<<<<<< HEAD
 				if (DB.executeUpdate(sql, m_trx.getTrxName()) < 0)
+=======
+				if (DB.executeUpdateAndSaveErrorOnFail(sql, m_trx.getTrxName()) < 0)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					m_errorLog.append(Env.NL).append("DELETE FROM ").append(TableName)
 							.append(" - ");
@@ -235,7 +239,11 @@ public class Merge
 					+ " AND " + X_M_Cost.COLUMNNAME_CumulatedQty + "=0";
 		}
 
+<<<<<<< HEAD
 		int count = DB.executeUpdate(sql, m_trx.getTrxName());
+=======
+		int count = DB.executeUpdateAndSaveErrorOnFail(sql, m_trx.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (count < 0)
 		{

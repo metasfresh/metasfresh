@@ -16,16 +16,37 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+=======
+import de.metas.acct.Account;
+import de.metas.acct.accounts.BPartnerCustomerAccountType;
+import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.accounts.CashAccountType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+<<<<<<< HEAD
+=======
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -42,14 +63,22 @@ import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+<<<<<<< HEAD
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+=======
+import org.compiere.util.DB;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+<<<<<<< HEAD
+=======
+import java.sql.SQLException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -148,6 +177,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	@Override
 	public String toString()
 	{
+<<<<<<< HEAD
 		final StringBuilder sb = new StringBuilder("DocLine_Allocation[");
 		sb.append(get_ID())
 				.append(",Amt=").append(getAllocatedAmt())
@@ -160,6 +190,18 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				.append("]");
 		return sb.toString();
 	}    // toString
+=======
+		return "DocLine_Allocation[" + get_ID()
+				+ ",Amt=" + getAllocatedAmt()
+				+ ",Discount=" + getDiscountAmt()
+				+ ",WriteOff=" + getWriteOffAmt()
+				+ ",OverUnderAmt=" + getOverUnderAmt()
+				+ " - C_Payment_ID=" + _payment
+				+ ",C_CashLine_ID=" + cashLine
+				+ ",C_Invoice_ID=" + invoice
+				+ "]";
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return allocated amount
@@ -398,12 +440,33 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getBPartnerId();
 	}
 
+<<<<<<< HEAD
 	public MAccount getPaymentAcct(final AcctSchema as)
+=======
+	@Nullable
+	public BPartnerLocationId getInvoiceBPartnerLocationId()
+	{
+		final I_C_Invoice invoice = getC_Invoice();
+		if (invoice != null)
+		{
+			return BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		}
+
+		return getBPartnerLocationId();
+	}
+
+	@NonNull
+	public Account getPaymentAcct(final AcctSchema as)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final PaymentId paymentId = getPaymentId();
 		if (paymentId != null)
 		{
+<<<<<<< HEAD
 			final MAccount paymentAcct = getPaymentAcct(as, paymentId);
+=======
+			final Account paymentAcct = getPaymentAcct(as, paymentId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			Check.assumeNotNull(paymentAcct, "paymentAcct not null");
 			return paymentAcct;
 		}
@@ -411,7 +474,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		final I_C_CashLine cashLine = getC_CashLine();
 		if (cashLine != null)
 		{
+<<<<<<< HEAD
 			final MAccount cashbookAcct = getCashAcct(as, cashLine.getC_CashLine_ID());
+=======
+			final Account cashbookAcct = getCashAcct(as, cashLine.getC_CashLine_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			Check.assumeNotNull(cashbookAcct, "cashbookAcct not null");
 			return cashbookAcct;
 		}
@@ -425,6 +492,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	/**
 	 * Get Payment (Unallocated Payment or Payment Selection) Acct of Bank Account
 	 */
+<<<<<<< HEAD
 	private MAccount getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
 	{
 		final Doc_AllocationHdr doc = getDoc();
@@ -432,6 +500,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		// AccountType.UnallocatedCash (AR) or C_Prepayment
 		// or AccountType.PaymentSelect (AP) or V_Prepayment
 		AccountType accountType = AccountType.UnallocatedCash;
+=======
+	@NonNull
+	private Account getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
+	{
+		final Doc_AllocationHdr doc = getDoc();
+		doc.setBPBankAccountId(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		final String sql = "SELECT p.C_BP_BankAccount_ID, d.DocBaseType, p.IsReceipt, p.IsPrepayment "
 				+ "FROM C_Payment p INNER JOIN C_DocType d ON (p.C_DocType_ID=d.C_DocType_ID) "
@@ -447,10 +522,17 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
+<<<<<<< HEAD
 				final String docBaseType = rs.getString(2);
 				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
 				{
 					accountType = AccountType.PaymentSelect;
+=======
+				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
+				if (DocBaseType.PurchasePayment.equals(docBaseType))
+				{
+					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 
 				// Prepayment
@@ -460,6 +542,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
 					if (isReceipt)
 					{
+<<<<<<< HEAD
 						accountType = AccountType.C_Prepayment;
 					}
 					else
@@ -470,12 +553,36 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			}
 		}
 		catch (final Exception e)
+=======
+						return doc.getCustomerAccount(BPartnerCustomerAccountType.C_Prepayment, as);
+					}
+					else
+					{
+						return doc.getVendorAccount(BPartnerVendorAccountType.V_Prepayment, as);
+					}
+				}
+			}
+
+			if (doc.getBPBankAccountId() != null)
+			{
+				return doc.getBankAccountAccount(BankAccountAcctType.B_UnallocatedCash_Acct, as);
+			}
+
+			//
+			throw doc.newPostingException()
+					.setDocLine(this)
+					.setAcctSchema(as)
+					.setDetailMessage("No payment account found for " + paymentId);
+		}
+		catch (final SQLException e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			throw new DBException(e, sql);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
 		}
@@ -491,28 +598,52 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 		return doc.getAccount(accountType, as);
 	}    // getPaymentAcct
+=======
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Cash (Transfer) Acct of CashBook
 	 */
+<<<<<<< HEAD
 	private MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
+=======
+	@NonNull
+	private Account getCashAcct(final AcctSchema as, final int C_CashLine_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
 				+ "FROM C_Cash c, C_CashLine cl "
 				+ "WHERE c.C_Cash_ID=cl.C_Cash_ID AND cl.C_CashLine_ID=?";
+<<<<<<< HEAD
 		doc.setC_CashBook_ID(DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID));
 		if (doc.getC_CashBook_ID() <= 0)
+=======
+		final int cashBookId = DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID);
+		if (cashBookId <= 0)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
+<<<<<<< HEAD
 		return doc.getAccount(AccountType.CashTransfer, as);
 	}    // getCashAcct
 
 	public Optional<MAccount> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
+=======
+
+		//doc.setC_CashBook_ID(cashBookId);
+
+		return doc.getAccountProvider().getCashAccount(as.getId(), cashBookId, CashAccountType.CashTransfer);
+	}    // getCashAcct
+
+	public Optional<Account> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment == null)
@@ -526,9 +657,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return Optional.empty();
 		}
 
+<<<<<<< HEAD
 		return services.getBankAccountAcct(bankAccountId, acctSchemaId)
 				.getPaymentWriteOffAcct()
 				.map(services::getAccountById);
+=======
+		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
@@ -539,10 +674,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			Check.assumeNotNull(invoice, "invoice not null");
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+<<<<<<< HEAD
 					TimeUtil.asLocalDate(invoice.getDateAcct()),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					ClientId.ofRepoId(invoice.getAD_Client_ID()),
 					OrgId.ofRepoId(invoice.getAD_Org_ID()));
+=======
+					LocalDateAndOrgId.ofTimestamp(invoice.getDateAcct(), OrgId.ofRepoId(invoice.getAD_Org_ID()), services::getTimeZone),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+					ClientId.ofRepoId(invoice.getAD_Client_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return invoiceCurrencyConversionCtx;
 	}
@@ -563,10 +704,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+<<<<<<< HEAD
 						TimeUtil.asLocalDate(cashJournal.getDateAcct()),
 						(CurrencyConversionTypeId)null, // C_ConversionType_ID - default
 						ClientId.ofRepoId(cashLine.getAD_Client_ID()),
 						OrgId.ofRepoId(cashLine.getAD_Org_ID()));
+=======
+						InstantAndOrgId.ofTimestamp(cashJournal.getDateAcct(), OrgId.ofRepoId(cashLine.getAD_Org_ID())),
+						null, // C_ConversionType_ID - default
+						ClientId.ofRepoId(cashLine.getAD_Client_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
@@ -610,6 +757,21 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getBPartnerId();
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	public final BPartnerLocationId getPaymentBPartnerLocationId()
+	{
+		final I_C_Payment payment = getC_Payment();
+		if (payment != null)
+		{
+			return BPartnerLocationId.ofRepoIdOrNull(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
+		}
+
+		return getBPartnerLocationId();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isPaymentReceipt()
 	{
 		Check.assumeNotNull(paymentReceipt, "payment document exists");

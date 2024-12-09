@@ -105,8 +105,15 @@ public interface DocumentHandler
 		docFields.setDocAction(IDocument.ACTION_None);
 	}
 
+<<<<<<< HEAD
 	//@formatter:off
 	void reactivateIt(DocumentTableFields docFields);
 	//@formatter:on
+=======
+	default void reactivateIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException("Reactivate action is not supported");
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 }

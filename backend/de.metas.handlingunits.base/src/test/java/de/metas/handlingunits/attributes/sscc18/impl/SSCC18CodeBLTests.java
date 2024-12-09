@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attributes.sscc18.impl;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -27,6 +28,12 @@ import java.util.Map;
  * #L%
  */
 
+=======
+import de.metas.handlingunits.StaticHUAssert;
+import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -35,10 +42,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+<<<<<<< HEAD
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+=======
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class SSCC18CodeBLTests
 {
@@ -50,7 +64,12 @@ public class SSCC18CodeBLTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+<<<<<<< HEAD
 		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++nextSSCC18SerialNumber);
+=======
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++nextSSCC18SerialNumber);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static void setManufacturerCode(final String manufacturerCode)
@@ -164,7 +183,12 @@ public class SSCC18CodeBLTests
 	public void testGenerateSSCC18value9DigitManufacturerCode()
 	{
 		setManufacturerCode("123456789");
+<<<<<<< HEAD
 		final SSCC18CodeBL sscc18CodeBL = new SSCC18CodeBL(orgId -> 23);
+=======
+		final SSCC18CodeBL sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> 23);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY);
 
 		// then

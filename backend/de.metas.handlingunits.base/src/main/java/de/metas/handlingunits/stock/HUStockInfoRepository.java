@@ -1,5 +1,6 @@
 package de.metas.handlingunits.stock;
 
+<<<<<<< HEAD
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -11,6 +12,9 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Repository;
 
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Stock_Detail_V;
@@ -23,6 +27,18 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.springframework.stereotype.Repository;
+
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -92,10 +108,17 @@ public class HUStockInfoRepository
 
 	private HUStockInfo ofRecord(@NonNull final I_M_HU_Stock_Detail_V record)
 	{
+<<<<<<< HEAD
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 		final ITranslatableString huStatus = adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final ITranslatableString huStatus = adReferenceService.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return HUStockInfo.builder()
 				.attributeId(AttributeId.ofRepoIdOrNull(record.getM_Attribute_ID()))

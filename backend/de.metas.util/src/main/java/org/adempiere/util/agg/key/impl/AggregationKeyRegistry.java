@@ -22,16 +22,26 @@ package org.adempiere.util.agg.key.impl;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
+import org.adempiere.util.lang.ObjectUtils;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+<<<<<<< HEAD
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * {@link IAggregationKeyRegistry} default implementation
  *
@@ -39,9 +49,15 @@ import org.adempiere.util.lang.ObjectUtils;
  */
 public class AggregationKeyRegistry implements IAggregationKeyRegistry
 {
+<<<<<<< HEAD
 	private static final Map<String, List<String>> dependsOnColumnNames = new HashMap<String, List<String>>();
 
 	private static final Map<String, CompositeAggregationKeyValueHandler> _valueHandlers = new HashMap<String, CompositeAggregationKeyValueHandler>();
+=======
+	private static final Map<String, List<String>> dependsOnColumnNames = new HashMap<>();
+
+	private static final Map<String, CompositeAggregationKeyValueHandler> _valueHandlers = new HashMap<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public void registerDependsOnColumnnames(final String registrationKey, final String... columnNames)
@@ -55,7 +71,11 @@ public class AggregationKeyRegistry implements IAggregationKeyRegistry
 		return dependsOnColumnNames.get(registrationKey);
 	}
 
+<<<<<<< HEAD
 	private final CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(final String registrationKey)
+=======
+	private CompositeAggregationKeyValueHandler getCompositeKeyValueHandler(@NonNull final String registrationKey)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		CompositeAggregationKeyValueHandler compositeKeyValueHandler = _valueHandlers.get(registrationKey);
 		if (compositeKeyValueHandler == null)

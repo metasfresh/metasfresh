@@ -129,7 +129,11 @@ public class BOMExploderCommand
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
 
 			final UomId bomUomId = UomId.ofRepoId(bomLine.getC_UOM_ID());
+<<<<<<< HEAD
 			final Quantity bomLineQty = Quantitys.create(bomService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty().toBigDecimal()), bomUomId);
+=======
+			final Quantity bomLineQty = Quantitys.of(bomService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty().toBigDecimal()), bomUomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final AttributeSetInstanceId bomLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
 			final ImmutableAttributeSet attributes = asiBL.getImmutableAttributeSetById(bomLineAsiId);

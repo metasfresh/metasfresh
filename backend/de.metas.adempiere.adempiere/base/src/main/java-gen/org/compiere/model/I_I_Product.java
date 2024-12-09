@@ -1487,21 +1487,37 @@ public interface I_I_Product
 	 * Set Regaltiefe.
 	 * Shelf depth required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setShelfDepth (int ShelfDepth);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShelfDepth (BigDecimal ShelfDepth);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Regaltiefe.
 	 * Shelf depth required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getShelfDepth();
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShelfDepth();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_I_Product, Object> COLUMN_ShelfDepth = new ModelColumn<>(I_I_Product.class, "ShelfDepth", null);
 	String COLUMNNAME_ShelfDepth = "ShelfDepth";
@@ -1510,21 +1526,37 @@ public interface I_I_Product
 	 * Set Regalhöhe.
 	 * Shelf height required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setShelfHeight (int ShelfHeight);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShelfHeight (BigDecimal ShelfHeight);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Regalhöhe.
 	 * Shelf height required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getShelfHeight();
+=======
+	 * <br>Type: BigDecimal
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShelfHeight();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_I_Product, Object> COLUMN_ShelfHeight = new ModelColumn<>(I_I_Product.class, "ShelfHeight", null);
 	String COLUMNNAME_ShelfHeight = "ShelfHeight";
@@ -1533,21 +1565,37 @@ public interface I_I_Product
 	 * Set Regalbreite.
 	 * Shelf width required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setShelfWidth (int ShelfWidth);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShelfWidth (BigDecimal ShelfWidth);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Regalbreite.
 	 * Shelf width required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getShelfWidth();
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShelfWidth();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_I_Product, Object> COLUMN_ShelfWidth = new ModelColumn<>(I_I_Product.class, "ShelfWidth", null);
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";
@@ -1740,21 +1788,37 @@ public interface I_I_Product
 	 * Set Volume.
 	 * Volume of a product
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setVolume (int Volume);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVolume (BigDecimal Volume);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Volume.
 	 * Volume of a product
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getVolume();
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getVolume();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_I_Product, Object> COLUMN_Volume = new ModelColumn<>(I_I_Product.class, "Volume", null);
 	String COLUMNNAME_Volume = "Volume";

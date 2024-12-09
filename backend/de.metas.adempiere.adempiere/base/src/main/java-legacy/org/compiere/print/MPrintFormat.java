@@ -269,7 +269,11 @@ public class MPrintFormat extends X_AD_PrintFormat
 			+ "WHERE AD_PrintFormatItem_ID IN"
 			+ " (SELECT AD_PrintFormatItem_ID FROM AD_PrintFormatItem WHERE AD_PrintFormat_ID=").append(get_ID()).append(")");
 		final String sqlNative = DB.convertSqlToNative(sb.toString());
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sqlNative, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sqlNative, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("setTranslation #" + no);
 	}	//	setTranslation
 
@@ -750,7 +754,11 @@ public class MPrintFormat extends X_AD_PrintFormat
             		.append(" WHERE old.AD_Language=new.AD_Language")
             		.append(" AND AD_PrintFormatItem_ID =").append(fromID)
             		.append(")");
+<<<<<<< HEAD
             int no = DB.executeUpdate(sql.toString(), null);
+=======
+            int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             if (no == 0)	//	if first has no translation, the rest does neither
             	break;
             counter += no;

@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -9,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -16,6 +19,16 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -52,7 +65,11 @@ public class MoveCostsRequest
 	CostElement costElement;
 
 	@NonNull
+<<<<<<< HEAD
 	LocalDate date;
+=======
+	Instant date;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	ProductId productId;
@@ -72,9 +89,15 @@ public class MoveCostsRequest
 	@NonNull
 	CostingDocumentRef inboundDocumentRef;
 
+<<<<<<< HEAD
 	public boolean isAllCostElements()
 	{
 		return costElement == null;
+=======
+	public boolean isExplicitCostElement()
+	{
+		return costElement != null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostElementId getCostElementId()

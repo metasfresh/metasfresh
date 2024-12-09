@@ -1,5 +1,6 @@
 package de.metas.acct.process;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -17,6 +18,27 @@ import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.api.IRangeAwareParams;
+=======
+import de.metas.acct.Account;
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal.GL_JournalLine_Builder;
+import de.metas.acct.gljournal.GL_Journal_Builder;
+import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryAggregateBuilder;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
@@ -25,6 +47,7 @@ import org.compiere.model.X_C_ElementValue;
 import org.compiere.model.X_GL_JournalBatch;
 import org.compiere.util.TimeUtil;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
@@ -37,6 +60,14 @@ import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -92,16 +123,26 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctDr = new ModelDynAttributeAccessor<>("AmtAcctDr", BigDecimal.class);
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctCr = new ModelDynAttributeAccessor<>("AmtAcctCr", BigDecimal.class);
 
+<<<<<<< HEAD
 	private AccountId p_Account_IncomeSummaryId;
 	private AccountId p_Account_RetainedEarningId;
+=======
+	private Account p_Account_IncomeSummary;
+	private Account p_Account_RetainedEarning;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	protected void prepare()
 	{
 		acctSchema = acctSchemasRepo.getById(p_acctSchemaId);
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+<<<<<<< HEAD
 		p_Account_IncomeSummaryId = acctSchemaGL.getIncomeSummaryAcctId();
 		p_Account_RetainedEarningId = acctSchemaGL.getRetainedEarningAcctId();
+=======
+		p_Account_IncomeSummary = acctSchemaGL.getIncomeSummaryAcct();
+		p_Account_RetainedEarning = acctSchemaGL.getRetainedEarningAcct();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -146,7 +187,11 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Create bookings to transfer amount from <code>account</code> to {@link #p_Account_IncomeSummaryId}.
+=======
+	 * Create bookings to transfer amount from <code>account</code> to {@link #p_Account_IncomeSummary}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * @param glJournalBuilder
 	 * @param account
@@ -162,20 +207,32 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 		final GL_JournalLine_Builder glJournalLineBuilder = glJournalBuilder.newLine();
 		if (accountBalance.signum() > 0)
 		{
+<<<<<<< HEAD
 			glJournalLineBuilder.setAccountDR(p_Account_IncomeSummaryId);
+=======
+			glJournalLineBuilder.setAccountDR(p_Account_IncomeSummary.getAccountId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			glJournalLineBuilder.setAccountCR(account);
 			glJournalLineBuilder.setAmount(accountBalance);
 		}
 		else
 		{
 			glJournalLineBuilder.setAccountDR(account);
+<<<<<<< HEAD
 			glJournalLineBuilder.setAccountCR(p_Account_IncomeSummaryId);
+=======
+			glJournalLineBuilder.setAccountCR(p_Account_IncomeSummary.getAccountId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			glJournalLineBuilder.setAmount(accountBalance.negate());
 		}
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Create bookings to transfer amount from {@link #p_Account_IncomeSummaryId} to {@link #p_Account_RetainedEarningId}.
+=======
+	 * Create bookings to transfer amount from {@link #p_Account_IncomeSummary} to {@link #p_Account_RetainedEarning}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * @param glJournalBuilder
 	 * @param amount
@@ -190,14 +247,24 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 		final GL_JournalLine_Builder glJournalLineBuilder = glJournalBuilder.newLine();
 		if (amount.signum() > 0)
 		{
+<<<<<<< HEAD
 			glJournalLineBuilder.setAccountDR(p_Account_RetainedEarningId);
 			glJournalLineBuilder.setAccountCR(p_Account_IncomeSummaryId);
+=======
+			glJournalLineBuilder.setAccountDR(p_Account_RetainedEarning.getAccountId());
+			glJournalLineBuilder.setAccountCR(p_Account_IncomeSummary.getAccountId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			glJournalLineBuilder.setAmount(amount);
 		}
 		else
 		{
+<<<<<<< HEAD
 			glJournalLineBuilder.setAccountDR(p_Account_IncomeSummaryId);
 			glJournalLineBuilder.setAccountCR(p_Account_RetainedEarningId);
+=======
+			glJournalLineBuilder.setAccountDR(p_Account_IncomeSummary.getAccountId());
+			glJournalLineBuilder.setAccountCR(p_Account_RetainedEarning.getAccountId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			glJournalLineBuilder.setAmount(amount.negate());
 		}
 	}
@@ -221,7 +288,11 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, p_acctSchemaId)
 				.addInSubQueryFilter(I_Fact_Acct.COLUMNNAME_Account_ID, I_C_ElementValue.COLUMNNAME_C_ElementValue_ID, expenseAndRevenueAccountsQuery)
 				//
+<<<<<<< HEAD
 				.aggregateOnColumn(I_Fact_Acct.COLUMN_Account_ID);
+=======
+				.aggregateOnColumn(I_Fact_Acct.COLUMNNAME_Account_ID, I_C_ElementValue.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		aggregateOnAccountBuilder.sum(DYNATTR_AmtAcctDr, I_Fact_Acct.COLUMN_AmtAcctDr);
 		aggregateOnAccountBuilder.sum(DYNATTR_AmtAcctCr, I_Fact_Acct.COLUMN_AmtAcctCr);

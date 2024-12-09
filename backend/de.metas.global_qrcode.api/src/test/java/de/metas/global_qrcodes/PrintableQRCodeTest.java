@@ -1,5 +1,6 @@
 package de.metas.global_qrcodes;
 
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotConfig;
 import io.github.jsonSnapshot.SnapshotMatchingStrategy;
 import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
@@ -23,6 +24,17 @@ class PrintableQRCodeTest
 			public SnapshotMatchingStrategy getSnapshotMatchingStrategy() {return JSONAssertMatchingStrategy.INSTANCE_STRICT;}
 		});
 	}
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SnapshotExtension.class)
+class PrintableQRCodeTest
+{
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private PrintableQRCode newStandardPrintableQRCode()
 	{
@@ -40,6 +52,10 @@ class PrintableQRCodeTest
 	@Test
 	public void checkJsonFormatIsNotChanging()
 	{
+<<<<<<< HEAD
 		expect(newStandardPrintableQRCode()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(newStandardPrintableQRCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -3,6 +3,7 @@
  */
 package de.metas.document.sequence.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import java.util.List;
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
@@ -26,6 +30,18 @@ import de.metas.document.sequence.ValueSequenceInfoProvider.ProviderResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IClientOrgAware;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Service
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
@@ -37,6 +53,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 		this.additionalProviders = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));
 	}
 
+<<<<<<< HEAD
 	private final ValueSequenceInfoProvider tableNameBasedProvider = new ValueSequenceInfoProvider()
 	{
 		@Override
@@ -53,6 +70,20 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 			}
 			return ProviderResult.of(documentSequenceInfo);
 		};
+=======
+	private final ValueSequenceInfoProvider tableNameBasedProvider = modelRecord -> {
+		
+		final IClientOrgAware clientOrg = create(modelRecord, IClientOrgAware.class);
+
+		final String tableName = InterfaceWrapperHelper.getModelTableName(modelRecord);
+
+		final DocumentSequenceInfo documentSequenceInfo = computeDocumentSequenceInfoByTableName(tableName, clientOrg.getAD_Client_ID(), clientOrg.getAD_Org_ID());
+		if (documentSequenceInfo == null)
+		{
+			return ProviderResult.EMPTY;
+		}
+		return ProviderResult.of(documentSequenceInfo);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	};
 
 	@Override
@@ -62,7 +93,11 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	}
 
 	@Override
+<<<<<<< HEAD
 	public IDocumentNoBuilder forTableName(final String tableName, final int adClientId, final int adOrgId)
+=======
+	public IDocumentNoBuilder forTableName(@NonNull final String tableName, final int adClientId, final int adOrgId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotEmpty(tableName, "Given tableName parameter may not not ne empty");
 

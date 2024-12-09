@@ -34,6 +34,10 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
@@ -132,7 +136,11 @@ public class FTSFilterDescriptorRepository
 			@NonNull final POInfo targetTable,
 			@NonNull final AvailableSelectionKeyColumnNames availableSelectionColumnNames)
 	{
+<<<<<<< HEAD
 		final int targetColumnIndex = targetTable.getColumnIndex(record.getAD_Column_ID());
+=======
+		final int targetColumnIndex = targetTable.getColumnIndex(AdColumnId.ofRepoId(record.getAD_Column_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (targetColumnIndex < 0)
 		{
 			throw new AdempiereException("No column found for AD_Column_ID=" + record.getAD_Column_ID() + " in " + targetTable);

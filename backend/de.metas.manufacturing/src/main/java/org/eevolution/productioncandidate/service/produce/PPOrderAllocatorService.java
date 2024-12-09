@@ -68,7 +68,11 @@ public class PPOrderAllocatorService
 
 		if (resource.getCapacityPerProductionCycle().signum() == 0)
 		{
+<<<<<<< HEAD
 			return Quantitys.create(BigDecimal.ZERO, candidateUomId);
+=======
+			return Quantitys.of(BigDecimal.ZERO, candidateUomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (resource.getCapacityPerProductionCycle_UOM_ID() <= 0)
@@ -78,7 +82,11 @@ public class PPOrderAllocatorService
 					.setParameter("S_Resource_ID", resource.getS_Resource_ID());
 		}
 
+<<<<<<< HEAD
 		final Quantity capacityQty = Quantitys.create(resource.getCapacityPerProductionCycle(),
+=======
+		final Quantity capacityQty = Quantitys.of(resource.getCapacityPerProductionCycle(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 													  UomId.ofRepoId(resource.getCapacityPerProductionCycle_UOM_ID()));
 
 		return uomConversionBL

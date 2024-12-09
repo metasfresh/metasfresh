@@ -128,7 +128,11 @@ public class ImportAsset extends JavaProcess
 			+ " I_ErrorMsg = NULL,"
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(),null);		
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 
 		//	Set Currency
@@ -441,7 +445,11 @@ public class ImportAsset extends JavaProcess
 							+ "SET I_IsImported='E', I_ErrorMsg=").append(DB.TO_STRING("Insert Asset: " + ex.toString()))
 							.append(" WHERE I_Asset_ID=").append(I_Asset_ID);
 						
+<<<<<<< HEAD
 						DB.executeUpdate(sql.toString(),null);
+=======
+						DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						continue;
 					}
 				}
@@ -499,7 +507,11 @@ public class ImportAsset extends JavaProcess
 			+ "SET I_IsImported='N' " 
 			//+ "Updated= TO_DATE('"+m_DateValue+"','YYYY-MM-DD HH24:MI:SS.FFF') "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(),null);
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		addLog (0, null, new BigDecimal (noInsert), "@A_Asset_ID@: @Inserted@");
 		addLog (0, null, new BigDecimal (noUpdate), "@A_Asset_ID@: @Updated@");

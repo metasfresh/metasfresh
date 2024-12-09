@@ -119,6 +119,15 @@
             <version>10.0.0</version>
         </dependency>
 
+<<<<<<< HEAD
+=======
+        <dependency>
+            <groupId>de.metas.banking</groupId>
+            <artifactId>de.metas.banking.camt53</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>

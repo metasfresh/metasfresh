@@ -109,7 +109,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
+<<<<<<< HEAD
 				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+=======
+				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

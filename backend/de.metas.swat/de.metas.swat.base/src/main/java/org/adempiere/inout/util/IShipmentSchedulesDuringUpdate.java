@@ -1,14 +1,25 @@
 package org.adempiere.inout.util;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 
+=======
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.shipping.ShipperId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
 
+<<<<<<< HEAD
+=======
+import java.util.List;
+import java.util.Optional;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public interface IShipmentSchedulesDuringUpdate
 {
 

@@ -21,9 +21,13 @@ import de.metas.Profiles;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import org.adempiere.ad.service.ADSystemInfo;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
+=======
+import org.adempiere.ad.service.IDeveloperModeBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.serverRoot.util.WebEnv;
@@ -482,6 +486,7 @@ public class ServerMonitor extends HttpServlet
 	private boolean processEMailParameter(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
+<<<<<<< HEAD
 		final String email = WebUtil.getParameter(request, "EMail");
 		if (email == null || email.length() == 0)
 		{
@@ -513,6 +518,10 @@ public class ServerMonitor extends HttpServlet
 		m_message.addElement(client.getName() + ": " + client.testEMail());
 		return false;
 	}	// processEMailParameter
+=======
+		throw new UnsupportedOperationException();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Process Cache Parameter

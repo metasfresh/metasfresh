@@ -896,12 +896,20 @@ public class AddressBuilderTest
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
+<<<<<<< HEAD
 			final I_C_BPartner bPartner = BPartnerBuilder()
 					.name("Name1")
 					.name2("Name2")
 					.greetingId(greetingId)
 					.isCompany(false)
 					.build();
+=======
+			final I_C_BPartner bPartner = prepareBPartner ("Name1",
+					"Name2",
+					false,
+					null,
+					greetingId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
 
@@ -923,12 +931,20 @@ public class AddressBuilderTest
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
+<<<<<<< HEAD
 			final I_C_BPartner bPartner = BPartnerBuilder()
 					.name("Name1")
 					.name2("Name2")
 					.greetingId(greetingId)
 					.isCompany(false)
 					.build();
+=======
+			final I_C_BPartner bPartner = prepareBPartner ("Name1",
+					"Name2",
+					false,
+					null,
+					greetingId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
 
@@ -1057,7 +1073,10 @@ public class AddressBuilderTest
 			return location;
 		}
 
+<<<<<<< HEAD
 		@Builder(builderMethodName = "BPartnerBuilder")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
 		{
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);

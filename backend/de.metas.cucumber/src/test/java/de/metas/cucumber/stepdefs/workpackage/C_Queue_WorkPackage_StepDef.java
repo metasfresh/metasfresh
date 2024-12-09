@@ -23,16 +23,41 @@
 package de.metas.cucumber.stepdefs.workpackage;
 
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
+=======
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+<<<<<<< HEAD
 
+=======
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Table;
+
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -41,13 +66,34 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Queue_WorkPackage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
+=======
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	private final C_Queue_Processor_StepDefData processorTable;
 
+<<<<<<< HEAD
 	public C_Queue_WorkPackage_StepDef(final @NonNull C_Queue_Processor_StepDefData processorTable)
 	{
 		this.processorTable = processorTable;
+=======
+	private final C_Queue_WorkPackage_StepDefData workPackageTable;
+	private final C_Queue_Element_StepDefData queueElementTable;
+	private final C_OLCand_StepDefData candidateTable;
+
+	public C_Queue_WorkPackage_StepDef(
+			@NonNull final C_Queue_Processor_StepDefData processorTable,
+			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
+			@NonNull final C_Queue_Element_StepDefData queueElementTable,
+			@NonNull final C_OLCand_StepDefData candidateTable)
+	{
+		this.processorTable = processorTable;
+		this.workPackageTable = workPackageTable;
+		this.queueElementTable = queueElementTable;
+		this.candidateTable = candidateTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("^after not more than (.*)s, there are no C_Queue_WorkPackage pending or running in queue (.*)$")
@@ -81,4 +127,113 @@ public class C_Queue_WorkPackage_StepDef
 
 		StepDefUtil.tryAndWait(nrOfSeconds, 1000, noPendingOrRunningPackage);
 	}
+<<<<<<< HEAD
+=======
+
+	@And("locate last C_Queue_WorkPackage by enqueued element")
+	public void locate_C_Queue_WorkPackage_by_enqueued_element(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String workPackageIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final String packageProcessorInternalName = DataTableUtil.extractStringForColumnName(row, I_C_Queue_PackageProcessor.COLUMNNAME_C_Queue_PackageProcessor_ID + "." + I_C_Queue_PackageProcessor.COLUMNNAME_InternalName);
+			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_AD_Table_ID + "." + I_AD_Table.COLUMNNAME_TableName);
+			final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_Element.COLUMNNAME_Record_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final I_AD_Table adTable = tableDAO.retrieveTable(tableName);
+
+			switch (adTable.getTableName())
+			{
+				case I_C_OLCand.Table_Name:
+					final I_C_OLCand candidate = candidateTable.get(recordIdentifier);
+					final TableRecordReference candidateReference = TableRecordReference.of(candidate);
+
+					resolveWorkPackageByQueueElementAndPackageProcessor(workPackageIdentifier, candidateReference, packageProcessorInternalName);
+					break;
+
+				default:
+					throw new AdempiereException("Table not supported! TableName:" + tableName);
+			}
+		}
+	}
+
+	@And("validate enqueued elements for C_Queue_WorkPackage")
+	public void validate_enqueued_elements_for_C_Queue_WorkPackage(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String queueElementIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_Element.COLUMNNAME_C_Queue_Element_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final String workPackageIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Queue_WorkPackage workPackage = workPackageTable.get(workPackageIdentifier);
+			final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
+
+			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_AD_Table_ID + "." + I_AD_Table.COLUMNNAME_TableName);
+			final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_Element.COLUMNNAME_Record_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final I_AD_Table adTable = tableDAO.retrieveTable(tableName);
+
+			switch (adTable.getTableName())
+			{
+				case I_C_OLCand.Table_Name:
+					final I_C_OLCand candidate = candidateTable.get(recordIdentifier);
+					final TableRecordReference candidateReference = TableRecordReference.of(candidate);
+
+					validateC_Queue_Element(workPackageId, candidateReference, queueElementIdentifier);
+					break;
+
+				default:
+					throw new AdempiereException("Table not supported! TableName:" + tableName);
+			}
+
+		}
+	}
+
+	private void resolveWorkPackageByQueueElementAndPackageProcessor(
+			@NonNull final String workPackageIdentifier,
+			@NonNull final TableRecordReference reference,
+			@NonNull final String packageProcessorName)
+	{
+		final I_C_Queue_PackageProcessor packageProcessor = queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_InternalName, packageProcessorName)
+				.create()
+				.firstOnlyNotNull(I_C_Queue_PackageProcessor.class);
+
+
+		final I_C_Queue_WorkPackage workPackage = queryBL.createQueryBuilder(I_C_Queue_Element.class)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, reference.getAD_Table_ID())
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, reference.getRecord_ID())
+				.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, I_C_Queue_WorkPackage.class)
+				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Created)
+				.create()
+				.firstOptional(I_C_Queue_WorkPackage.class)
+				.orElseThrow(() -> new AdempiereException("No C_Queue_WorkPackage found for TableRecordReference and PackageProcessorName")
+						.appendParametersToMessage()
+						.setParameter("TableRecordReference", reference)
+						.setParameter("PackageProcessorName", packageProcessorName));
+
+		workPackageTable.putOrReplace(workPackageIdentifier, workPackage);
+	}
+
+	private void validateC_Queue_Element(
+			@NonNull final QueueWorkPackageId workPackageId,
+			@NonNull final TableRecordReference recordReference,
+			@NonNull final String queueElementIdentifier)
+	{
+		final I_C_Queue_Element queueElement = queryBL.createQueryBuilder(I_C_Queue_Element.class)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageId)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
+				.create()
+				.firstOptional(I_C_Queue_Element.class)
+				.orElseThrow(() -> new AdempiereException("No C_Queue_Element found for QueueWorkPackageId and TableRecordReference")
+						.appendParametersToMessage()
+						.setParameter("QueueWorkPackageId", workPackageId)
+						.setParameter("TableRecordReference", recordReference));
+
+		assertThat(queueElement).isNotNull();
+		queueElementTable.putOrReplace(queueElementIdentifier, queueElement);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

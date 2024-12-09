@@ -22,6 +22,11 @@
 
 package de.metas.contracts.interceptor;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -30,7 +35,10 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
+<<<<<<< HEAD
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -42,6 +50,11 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -64,17 +77,27 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
+<<<<<<< HEAD
 import org.compiere.model.POInfo;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -109,12 +132,25 @@ public class C_Flatrate_Term
 	private final ContractOrderService contractOrderService;
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+<<<<<<< HEAD
 
 	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
+=======
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final GLCategoryRepository glCategoryRepository;
+
+	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService,
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final GLCategoryRepository glCategoryRepository)
+	{
+		this.contractOrderService = contractOrderService;
+		this.documentLocationBL = documentLocationBL;
+		this.glCategoryRepository = glCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Init
@@ -122,6 +158,7 @@ public class C_Flatrate_Term
 	{
 		if (Ini.isSwingClient() == false) // 03429: we only need to check this on server startup
 		{
+<<<<<<< HEAD
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
@@ -132,6 +169,18 @@ public class C_Flatrate_Term
 	private void ensureDocTypesExist(final String docSubType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+=======
+			ensureDocTypesExist(DocSubType.Subscription);
+			ensureDocTypesExist(DocSubType.HoldingFee);
+			ensureDocTypesExist(DocSubType.FlatFee);
+			ensureDocTypesExist(DocSubType.CallOrder);
+		}
+	}
+
+	private void ensureDocTypesExist(final DocSubType docSubType)
+	{
+		final ClientId clientId = ClientId.METASFRESH;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
@@ -153,7 +202,11 @@ public class C_Flatrate_Term
 
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
+<<<<<<< HEAD
 							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+=======
+							.docBaseType(DocBaseType.CustomerContract)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.docSubType(docSubType)
 							.adClientId(org.getAD_Client_ID())
 							.adOrgId(org.getAD_Org_ID())
@@ -162,9 +215,13 @@ public class C_Flatrate_Term
 			{
 				continue;
 			}
+<<<<<<< HEAD
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
 			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+=======
+			final String name = ADReferenceService.get().retrieveListNameTrl(DocSubType.AD_REFERENCE_ID, docSubType.getCode())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 					.ctx(localCtx)
@@ -172,10 +229,18 @@ public class C_Flatrate_Term
 					.entityType(Contracts_Constants.ENTITY_TYPE)
 					.name(name)
 					.printName(name)
+<<<<<<< HEAD
 					.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
 					.docSubType(docSubType)
 					.isSOTrx(true)
 					.newDocNoSequenceStartNo(10000)
+=======
+					.docBaseType(DocBaseType.CustomerContract)
+					.docSubType(docSubType)
+					.isSOTrx(true)
+					.newDocNoSequenceStartNo(10000)
+					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.build());
 		}
 	}

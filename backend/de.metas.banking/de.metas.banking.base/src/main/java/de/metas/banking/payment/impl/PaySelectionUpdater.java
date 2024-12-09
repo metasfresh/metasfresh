@@ -1,5 +1,6 @@
 package de.metas.banking.payment.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -19,6 +20,30 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionTrxType;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.document.engine.DocStatus;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,6 +57,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -52,14 +78,39 @@ import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
 	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+	private static final Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
+	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private boolean _configurable = true;
 
@@ -144,7 +195,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		trxManager.runInThreadInheritedTrx(this::updateInTrx);
 	}
 
+<<<<<<< HEAD
 	private final void updateInTrx()
+=======
+	private void updateInTrx()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		assertConfigurable();
 		_configurable = false; // Lock this updater. Shall not be configurable anymore.
@@ -189,7 +244,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		cacheInvalidationForCurrentPaySelection();
 	}
 
+<<<<<<< HEAD
 	private final void assertConfigurable()
+=======
+	private void assertConfigurable()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assume(_configurable, "Not already executed");
 	}
@@ -516,7 +575,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
+<<<<<<< HEAD
 	private final void deletePaySelectionLine(final I_C_PaySelectionLine paySelectionLine)
+=======
+	private void deletePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (paySelectionLine == null)
 		{
@@ -536,7 +599,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Updates {@link I_C_PaySelectionLine} from: given candidate and current pay selection header
 	 */
+<<<<<<< HEAD
 	private final void updatePaySelectionLine(final I_C_PaySelectionLine paySelectionLine, final PaySelectionLineCandidate candidate)
+=======
+	private void updatePaySelectionLine(final I_C_PaySelectionLine paySelectionLine, final PaySelectionLineCandidate candidate)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// Update from C_PaySelection header
@@ -596,9 +663,15 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
 	{
 		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
+<<<<<<< HEAD
 		final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
 		final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
+=======
+		final ReferenceId paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
+
+		final Set<String> paymentRules = adReferenceService.getRefListById(paymentRuleReferenceId).getValues();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (paymentRules == null || paymentRules.isEmpty())
 		{
 			throw new AdempiereException("No active payment rules were found");
@@ -617,7 +690,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_PaySelection.Table_Name, paySelectionId),
 						CacheInvalidateRequest.allChildRecords(I_C_PaySelection.Table_Name, paySelectionId, I_C_PaySelectionLine.Table_Name)),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE);
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private boolean isOnlyDiscount()

@@ -2,7 +2,11 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2020 metas GmbH
+=======
+ * Copyright (C) 2024 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +27,10 @@ package org.compiere.model;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.TableRefTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
@@ -35,8 +43,13 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
+<<<<<<< HEAD
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
+=======
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -265,8 +278,13 @@ public class MLookupFactory
 		// Account
 		else if (AD_Reference_ID == DisplayType.Account)
 		{
+<<<<<<< HEAD
 			final TableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
 			info = getLookupInfo(WindowNo, accountTableRefInfo);
+=======
+			final TableRefTable accountTableRefTable = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
+			info = getLookupInfo(WindowNo, accountTableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (AD_Reference_ID == DisplayType.Location)
 		{
@@ -280,7 +298,11 @@ public class MLookupFactory
 		// do we have basic info?
 		if (info == null)
 		{
+<<<<<<< HEAD
 			s_log.error("No SQL - {}", ctxColumnName);
+=======
+			s_log.warn("No SQL for `{}`. Returning null MLookupInfo.", ctxColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return null;
 		}
 
@@ -290,7 +312,11 @@ public class MLookupFactory
 		info.setDisplayType(AD_Reference_ID);
 		//info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
+<<<<<<< HEAD
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID, ctxTableName, ctxColumnName));
+=======
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AdValRuleId.ofRepoIdOrNull(AD_Val_Rule_ID), ctxTableName, ctxColumnName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
 		// Direct Query - NO Validation/Security
@@ -460,7 +486,11 @@ public class MLookupFactory
 		return sql;
 	}    // getLookup_ListEmbed
 
+<<<<<<< HEAD
 	private static ArrayKey createCacheKey(final TableRefInfo tableRef)
+=======
+	private static ArrayKey createCacheKey(final TableRefTable tableRef)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new ArrayKey(tableRef);
 	}
@@ -476,13 +506,22 @@ public class MLookupFactory
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_Table(final int WindowNo, final int AD_Reference_Value_ID)
 	{
+<<<<<<< HEAD
 		final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
 		if (tableRefInfo == null)
+=======
+		final TableRefTable tableRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
+		if (tableRefTable == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
 
+<<<<<<< HEAD
 		return getLookupInfo(WindowNo, tableRefInfo);
+=======
+		return getLookupInfo(WindowNo, tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}    // getLookup_Table
 
 	/**
@@ -514,23 +553,41 @@ public class MLookupFactory
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_TableDir(final int WindowNo, final String ColumnName)
 	{
+<<<<<<< HEAD
 		final TableRefInfo tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
+=======
+		final TableRefTable tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return getLookupInfo(WindowNo, tableRef);
 	}
 
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
+<<<<<<< HEAD
 	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
 	{
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefInfo));
+=======
+	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final TableRefTable tableRefTable)
+	{
+		final ArrayKey cacheKey = createCacheKey(tableRefTable);
+		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefTable));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
 	{
 
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
+=======
+	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final TableRefTable tableRefTable)
+	{
+
+		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (lookupDisplayInfo == null)
 		{
 			return null;
@@ -541,12 +598,21 @@ public class MLookupFactory
 		// Do we have columns ?
 		if (displayColumns.isEmpty())
 		{
+<<<<<<< HEAD
 			s_log.error("No Identifier records found for tableRefInfo={}", tableRefInfo);
 			return null;
 		}
 
 		final String tableName = tableRefInfo.getTableName();
 		final String keyColumn = tableRefInfo.getKeyColumn();
+=======
+			s_log.warn("No display columns defined for the identifier of tableRefInfo={}. Returning null", tableRefTable);
+			return null;
+		}
+
+		final String tableName = tableRefTable.getTableName();
+		final String keyColumn = tableRefTable.getKeyColumn();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String keyColumnFQ = tableName + "." + keyColumn;
 
@@ -643,9 +709,15 @@ public class MLookupFactory
 		// SQL Where Clause
 		final String sqlWhereClauseStatic;
 		final String sqlWhereClauseDynamic;
+<<<<<<< HEAD
 		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
 		{
 			final String whereClause = tableRefInfo.getWhereClause();
+=======
+		if (!Check.isEmpty(tableRefTable.getWhereClause(), true))
+		{
+			final String whereClause = tableRefTable.getWhereClause();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (whereClause.indexOf('@') != -1)
 			{
 				sqlWhereClauseStatic = null;
@@ -657,15 +729,24 @@ public class MLookupFactory
 							+ "\n Those have very bad performances and are not optimized well."
 							+ "\n Consider using dynamic validation rules for that purpose."
 							+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
+<<<<<<< HEAD
 							+ "\n tableRefInfo=" + tableRefInfo);
+=======
+							+ "\n tableRefInfo={}", tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 			else
 			{
 				if (whereClause.indexOf('.') == -1)
 				{
+<<<<<<< HEAD
 					s_log.error("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
 							tableRefInfo.getIdentifier(), whereClause, tableRefInfo);
+=======
+					s_log.warn("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
+							tableRefTable.getIdentifier(), whereClause, tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 				sqlWhereClauseStatic = whereClause;
 				sqlWhereClauseDynamic = null;
@@ -694,13 +775,21 @@ public class MLookupFactory
 		// Order By qualified term or by Name
 		final String sqlOrderBy;
 		{
+<<<<<<< HEAD
 			final String OrderByClause = tableRefInfo.getOrderByClause();
+=======
+			final String OrderByClause = tableRefTable.getOrderByClause();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (!Check.isEmpty(OrderByClause, true))
 			{
 				sqlOrderBy = OrderByClause;
 				if (OrderByClause.indexOf('.') == -1)
 				{
+<<<<<<< HEAD
 					s_log.error("getLookup_Table - " + tableName + ": ORDER BY must fully qualified: " + OrderByClause);
+=======
+					s_log.warn("ORDER BY must fully qualified: {}", tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 			else
@@ -723,19 +812,31 @@ public class MLookupFactory
 
 		//
 		// Zoom AD_Window_IDs
+<<<<<<< HEAD
 		AdWindowId zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
+=======
+		AdWindowId zoomSO_Window_ID = tableRefTable.getZoomSO_Window_ID();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (lookupDisplayInfo.getZoomWindow() != null)
 		{
 			zoomSO_Window_ID = lookupDisplayInfo.getZoomWindow();
 		}
 
+<<<<<<< HEAD
 		AdWindowId zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
+=======
+		AdWindowId zoomPO_Window_ID = tableRefTable.getZoomPO_Window_ID();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (lookupDisplayInfo.getZoomWindowPO() != null)
 		{
 			zoomPO_Window_ID = lookupDisplayInfo.getZoomWindowPO();
 		}
 
+<<<<<<< HEAD
 		final AdWindowId zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
+=======
+		final AdWindowId zoomAD_Window_ID_Override = tableRefTable.getZoomAD_Window_ID_Override();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (zoomAD_Window_ID_Override != null)
 		{
 			zoomSO_Window_ID = zoomAD_Window_ID_Override;
@@ -766,10 +867,17 @@ public class MLookupFactory
 		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
+<<<<<<< HEAD
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
 		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
 		lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
+=======
+		lookupInfo.setAutoComplete(tableRefTable.isAutoComplete());
+		lookupInfo.setTranslated(isTranslated);
+		lookupInfo.setShowInactiveValues(tableRefTable.isShowInactiveValues());
+		lookupInfo.setTooltipType(tableRefTable.getTooltipType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return lookupInfo;
 	}

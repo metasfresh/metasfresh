@@ -16,10 +16,17 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostId;
+<<<<<<< HEAD
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.CurrencyPrecision;
+=======
+import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -29,6 +36,10 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -49,6 +60,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+<<<<<<< HEAD
+=======
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -100,6 +115,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		return queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
@@ -108,23 +124,48 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.map(this::toCurrentCost)
 				.collect(ImmutableList.toImmutableList());
 
+=======
+		final ImmutableList<I_M_Cost> records = queryBL
+				.createQueryBuilder(I_M_Cost.class)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
+				.list();
+
+		return newLoader().toCurrentCosts(records);
+	}
+
+	private CurrentCostsLoader newLoader()
+	{
+		return CurrentCostsLoader.builder()
+				.acctSchemasRepo(acctSchemasRepo)
+				.uomsRepo(uomsRepo)
+				.productCostingBL(productCostingBL)
+				.costElementRepo(costElementRepo)
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
 	public CurrentCost getOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
+<<<<<<< HEAD
 		if (costRecord == null)
 		{
 			return null;
 		}
 
 		return toCurrentCost(costRecord);
+=======
+		return costRecord != null
+				? newLoader().toCurrentCost(costRecord)
+				: null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
 	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
+<<<<<<< HEAD
 		return queryCostRecords(costSegmentAndElement)
 				.create()
 				.firstOnly(I_M_Cost.class);
@@ -145,6 +186,61 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.addEqualsFilter(I_M_Cost.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId())
 				.addEqualsFilter(I_M_Cost.COLUMN_M_CostType_ID, costSegment.getCostTypeId())
 				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID, costSegment.getAcctSchemaId());
+=======
+		return toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.firstOnly();
+	}
+
+	@Override
+	public Stream<CurrentCost> stream(@NonNull final CurrentCostQuery query)
+	{
+		return list(query).stream();
+	}
+
+	@Override
+	public ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query)
+	{
+		final ImmutableList<I_M_Cost> records = toSqlQuery(query).list();
+		return !records.isEmpty()
+				? newLoader().toCurrentCosts(records)
+				: ImmutableList.of();
+	}
+
+	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
+	{
+		final IQueryBuilder<I_M_Cost> queryBuilder = queryBL.createQueryBuilder(I_M_Cost.class);
+
+		if (query.getClientId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Client_ID, query.getClientId());
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (!query.getProductIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Product_ID, query.getProductIds());
+		}
+		if (query.getAttributeSetInstanceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
+		}
+		if (query.getCostTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostType_ID, query.getCostTypeId());
+		}
+		if (query.getAcctSchemaId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+		}
+		if (!query.getCostElementIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, query.getCostElementIds());
+		}
+
+		return queryBuilder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -173,11 +269,16 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return Optional.empty();
 		}
 
+<<<<<<< HEAD
 		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
+=======
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		final ImmutableMap<CostElement, CostPrice> costPrices = stream(query)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
 		if (costPrices.isEmpty())
 		{
@@ -203,7 +304,12 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		return getByCostSegmentAndCostElements(costSegment, costElementIds);
+=======
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		return list(query);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -211,6 +317,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final Set<CostElementId> costElementIds)
 	{
+<<<<<<< HEAD
 		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
 		return queryCostRecords(costSegment)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
@@ -218,6 +325,13 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
 				.collect(ImmutableList.toImmutableList());
+=======
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment)
+				.costElementIds(Check.assumeNotEmpty(costElementIds, "costElementIds is not empty"))
+				.build();
+
+		return list(query);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -266,6 +380,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
 	}
 
+<<<<<<< HEAD
 	private CurrentCost toCurrentCost(final I_M_Cost record)
 	{
 
@@ -308,6 +423,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	private void updateCostRecord(
+=======
+	private static void updateCostRecord(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final I_M_Cost cost,
 			final CurrentCost from)
 	{
@@ -322,10 +440,17 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		cost.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		cost.setC_UOM_ID(from.getUomId().getRepoId());
 
+<<<<<<< HEAD
 		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
 		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
 		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
 		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
+=======
+		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().toBigDecimal());
+		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().toBigDecimal());
+		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
+		cost.setCumulatedAmt(from.getCumulatedAmt().toBigDecimal());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		cost.setCumulatedQty(from.getCumulatedQty().toBigDecimal());
 	}
 
@@ -338,6 +463,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void deleteForProduct(final I_M_Product product)
 	{
+<<<<<<< HEAD
 		forEachCostSegmentAndElement(product, costSegmentAndElement -> {
 			final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
 			if (costRecord != null)
@@ -345,6 +471,23 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				InterfaceWrapperHelper.delete(costRecord);
 			}
 		});
+=======
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.delete());
+	}
+
+	@Override
+	public void updateUOMForProduct(final I_M_Product product)
+	{
+		final ICompositeQueryUpdater<I_M_Cost> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_M_Cost.class)
+				.addSetColumnValue(I_M_Cost.COLUMNNAME_C_UOM_ID, product.getC_UOM_ID());
+
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.update(queryUpdater));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void forEachCostSegmentAndElement(
@@ -355,7 +498,11 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
+<<<<<<< HEAD
 		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
+=======
+		final List<CostElement> costElements = costElementRepo.getByClientId(clientId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		for (final AcctSchema as : acctSchemasRepo.getAllByClient(clientId))
 		{
@@ -423,4 +570,16 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		saveRecord(costRecord);
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

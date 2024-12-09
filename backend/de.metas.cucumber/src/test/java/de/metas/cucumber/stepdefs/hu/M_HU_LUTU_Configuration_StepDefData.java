@@ -27,9 +27,17 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 
 public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
 {
+<<<<<<< HEAD
 	public M_HU_LUTU_Configuration_StepDefData()
 	{
 		super(I_M_HU_LUTU_Configuration.class);
 	}
 	
+=======
+    public M_HU_LUTU_Configuration_StepDefData()
+    {
+        super(I_M_HU_LUTU_Configuration.class);
+    }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

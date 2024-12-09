@@ -57,7 +57,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TableIdsCache
 {
+<<<<<<< HEAD
 	public static final transient TableIdsCache instance = new TableIdsCache();
+=======
+	public static final TableIdsCache instance = new TableIdsCache();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final Logger logger = LogManager.getLogger(TableIdsCache.class);
 
@@ -69,6 +73,14 @@ public class TableIdsCache
 
 	private final JUnitGeneratedTableInfoMap junitGeneratedTableInfoMap = new JUnitGeneratedTableInfoMap();
 
+<<<<<<< HEAD
+=======
+	public AdTableId getTableIdNotNull(@NonNull final String tableName)
+	{
+		return getTableId(tableName).orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Optional<AdTableId> getTableId(@NonNull final String tableName)
 	{
 		if (Adempiere.isUnitTestMode())
@@ -200,8 +212,13 @@ public class TableIdsCache
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String sql = "SELECT AD_Table_ID, TableName, EntityType, TooltipType FROM AD_Table";
+<<<<<<< HEAD
 		final PreparedStatement pstmt;
 		final ResultSet rs;
+=======
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
@@ -210,12 +227,16 @@ public class TableIdsCache
 			final ArrayList<TableInfo> tableInfos = new ArrayList<>();
 			while (rs.next())
 			{
+<<<<<<< HEAD
 				tableInfos.add(TableInfo.builder()
 						.adTableId(AdTableId.ofRepoId(rs.getInt("AD_Table_ID")))
 						.tableName(rs.getString("TableName"))
 						.entityType(rs.getString("EntityType"))
 						.tooltipType(TooltipType.ofCode(rs.getString("TooltipType")))
 						.build());
+=======
+				tableInfos.add(retrieveTableInfo(rs));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			final TableInfoMap result = new TableInfoMap(tableInfos);
@@ -229,6 +250,23 @@ public class TableIdsCache
 		{
 			throw new DBException(ex, sql);
 		}
+<<<<<<< HEAD
+=======
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private static TableInfo retrieveTableInfo(final ResultSet rs) throws SQLException
+	{
+		return TableInfo.builder()
+				.adTableId(AdTableId.ofRepoId(rs.getInt("AD_Table_ID")))
+				.tableName(rs.getString("TableName"))
+				.entityType(rs.getString("EntityType"))
+				.tooltipType(TooltipType.ofCode(rs.getString("TooltipType")))
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	// ignoring case, because in DLM we also deal with all-lowercase table names, and it should not matter anyways

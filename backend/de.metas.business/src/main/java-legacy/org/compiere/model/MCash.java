@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -34,6 +35,11 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.currency.ICurrencyBL;
+=======
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -45,6 +51,24 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Cash Journal Model
@@ -401,7 +425,11 @@ public class MCash extends X_C_Cash implements IDocument
 		}
 
 		// Std Period open?
+<<<<<<< HEAD
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), MDocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
+=======
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.CashJournal, getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -433,7 +461,11 @@ public class MCash extends X_C_Cash implements IDocument
 						line.getAmount(),
 						lineCurrencyId,
 						currencyId,
+<<<<<<< HEAD
 						TimeUtil.asLocalDate(getDateAcct()),
+=======
+						getDateAcct().toInstant(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
@@ -670,7 +702,11 @@ public class MCash extends X_C_Cash implements IDocument
 		}
 
 		// Can we delete posting
+<<<<<<< HEAD
 		if (!MPeriod.isOpen(getCtx(), this.getDateAcct(), X_C_DocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
+=======
+		if (!MPeriod.isOpen(getCtx(), this.getDateAcct(), DocBaseType.CashJournal, getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			throw new IllegalStateException("@PeriodClosed@");
 		}
@@ -872,7 +908,11 @@ public class MCash extends X_C_Cash implements IDocument
 		String sql = "UPDATE C_CashLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Cash_ID=" + getC_Cash_ID();
+<<<<<<< HEAD
 		int noLine = DB.executeUpdate(sql, get_TrxName());
+=======
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	// setProcessed

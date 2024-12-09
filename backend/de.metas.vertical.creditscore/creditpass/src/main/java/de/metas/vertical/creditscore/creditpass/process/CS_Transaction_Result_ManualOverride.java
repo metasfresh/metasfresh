@@ -23,10 +23,22 @@
 
 package de.metas.vertical.creditscore.creditpass.process;
 
+<<<<<<< HEAD
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.*;
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.ResultCode;
@@ -34,9 +46,14 @@ import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
+=======
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
@@ -47,14 +64,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class CS_Transaction_Result_ManualOverride extends JavaProcess implements IProcessPrecondition
 {
+<<<<<<< HEAD
 	final private TransactionResultService transactionResultService = Adempiere.getBean(TransactionResultService.class);
+=======
+	final private TransactionResultService transactionResultService = SpringContextHolder.instance.getBean(TransactionResultService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Param(mandatory = true, parameterName = CreditPassConstants.PROCESS_RESULT_OVERRIDE_PARAM)
 	private String resultOverride;
 
 	@Override protected String doIt() throws Exception
 	{
+<<<<<<< HEAD
 		I_CS_Transaction_Result transactionResult = getProcessInfo().getRecord(I_CS_Transaction_Result.class);
+=======
+		final I_CS_Transaction_Result transactionResult = getProcessInfo().getRecord(I_CS_Transaction_Result.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		transactionResult.setResponseCodeOverride(resultOverride);
 		transactionResult.setResponseCodeEffective(resultOverride);
 
@@ -72,7 +97,11 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 			else
 			{
 				order.setCreditpassFlag(true);
+<<<<<<< HEAD
 				final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
+=======
+				final String paymentRuleName = ADReferenceService.get().retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
 				order.setCreditpassStatus(message.translate(Env.getAD_Language()));
 			}
@@ -90,7 +119,11 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 				&& StringUtils.equals(order.getPaymentRule(), transactionResult.getPaymentRule());
 	}
 
+<<<<<<< HEAD
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+=======
+	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (context.isNoSelection())
 		{
@@ -103,7 +136,11 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 		}
 
 		final I_CS_Transaction_Result result = context.getSelectedModel(I_CS_Transaction_Result.class);
+<<<<<<< HEAD
 		if (ResultCode.fromName(result.getResponseCode()) != ResultCode.M)
+=======
+		if (result == null || ResultCode.fromName(result.getResponseCode()) != ResultCode.M)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Result cannot be overridden because result code is not manual");
 		}

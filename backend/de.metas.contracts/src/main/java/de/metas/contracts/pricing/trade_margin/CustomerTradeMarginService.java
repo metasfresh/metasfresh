@@ -35,6 +35,10 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+<<<<<<< HEAD
+=======
+import de.metas.organization.LocalDateAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -207,10 +211,17 @@ public class CustomerTradeMarginService
 			@NonNull final ComputeSalesRepPriceRequest request,
 			@NonNull final Money salesRepUnitPrice)
 	{
+<<<<<<< HEAD
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(request.getCommissionDate(),
 																											   ConversionTypeMethod.Spot,
 																											   Env.getClientId(),
 																											   salesRepOrgId);
+=======
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+				LocalDateAndOrgId.ofLocalDate(request.getCommissionDate(), salesRepOrgId),
+																											   ConversionTypeMethod.Spot,
+				Env.getClientId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return moneyService.convertMoneyToCurrency(salesRepUnitPrice, request.getCustomerCurrencyId(), currencyConversionContext);
 	}

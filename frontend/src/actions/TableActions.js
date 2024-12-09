@@ -140,6 +140,10 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
+<<<<<<< HEAD
+=======
+ * @param {boolean} active
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 export function setTableNavigation(id, active) {
   return {
@@ -177,6 +181,10 @@ export function createTableData(rawData) {
     // of entries as otherwise we're just passing references to frozen objects
     columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
     rows: rawData.result ? cloneDeep(rawData.result) : undefined,
+<<<<<<< HEAD
+=======
+    orderBys: rawData.orderBys,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
@@ -402,6 +410,16 @@ export function updateGridTableData({
   };
 }
 
+<<<<<<< HEAD
+=======
+export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
+  return {
+    type: types.PARTIAL_UPDATE_TABLE_DATA,
+    payload: { tableId, rowsToUpdate },
+  };
+}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * @method createTabTable
  * @summary Create a new table entry for the details view when it's created,

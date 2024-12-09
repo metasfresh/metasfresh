@@ -136,6 +136,10 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+<<<<<<< HEAD
+=======
+    mapConfig: master.mapConfig,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
@@ -394,6 +398,18 @@ export function getScope(isModal) {
   return isModal ? 'modal' : 'master';
 }
 
+<<<<<<< HEAD
+=======
+export function parseItemToDisplay({ item }) {
+  return item.fieldsByName
+    ? {
+        ...item,
+        fieldsByName: parseToDisplay(item.fieldsByName),
+      }
+    : item;
+}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }

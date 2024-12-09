@@ -16,11 +16,18 @@
  *****************************************************************************/
 package org.compiere.process;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+=======
+import de.metas.document.engine.IDocument;
+import de.metas.payment.TenderType;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
 import org.compiere.model.MInvoice;
@@ -28,10 +35,17 @@ import org.compiere.model.MPayment;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
+<<<<<<< HEAD
 import de.metas.document.engine.IDocument;
 import de.metas.payment.TenderType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+=======
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Write-off Open Invoices
@@ -195,7 +209,11 @@ public class InvoiceWriteOff extends JavaProcess
 			if (p_DateInvoiced_From != null && p_DateInvoiced_To != null)
 			{
 				sql.append(" AND TRUNC(DateInvoiced) BETWEEN ")
+<<<<<<< HEAD
 						.append(DB.TO_DATE(p_DateInvoiced_From, true))
+=======
+						.append(DB.TO_DATE(p_DateInvoiced_From))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.append(" AND ")
 						.append(DB.TO_DATE(p_DateInvoiced_To, true));
 			}

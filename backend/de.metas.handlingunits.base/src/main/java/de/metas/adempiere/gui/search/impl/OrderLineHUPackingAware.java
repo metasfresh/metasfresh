@@ -22,6 +22,7 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,12 +32,26 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class OrderLineHUPackingAware implements IHUPackingAware
 {
@@ -52,11 +67,16 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	 */
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
+<<<<<<< HEAD
 	public OrderLineHUPackingAware(final I_C_OrderLine orderLine)
 	{
 		super();
 
 		Check.assumeNotNull(orderLine, "orderLine not null");
+=======
+	public OrderLineHUPackingAware(@NonNull final I_C_OrderLine orderLine)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.orderLine = orderLine;
 	}
 
@@ -86,7 +106,11 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	/**
+<<<<<<< HEAD
 	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM()}.
+=======
+	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM_ID()}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	public BigDecimal getQty()
@@ -154,6 +178,22 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setQtyCUsPerTU(final BigDecimal qtyCUsPerTU)
+	{
+		orderLine.setQtyItemCapacity(qtyCUsPerTU);
+		values.setQtyCUsPerTU(qtyCUsPerTU);
+	}
+
+	@Override
+	public Optional<BigDecimal> getQtyCUsPerTU()
+	{
+		return Optional.of(orderLine.getQtyItemCapacity());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getC_BPartner_ID()
 	{
 		return orderLine.getC_BPartner_ID();
@@ -187,4 +227,8 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 						orderLine, getM_Product_ID(), getM_Product_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQtyTU(), getC_BPartner_ID(),
 						getM_HU_PI_Item_Product_ID(), isInDispute());
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

@@ -207,7 +207,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
 						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
+<<<<<<< HEAD
 						.debitorOrCreditorId(importRecord.getDebitorOrCreditorId())
+=======
+						.debtorOrCreditorId(importRecord.getDebitorOrCreditorId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						//
 						.eft(ElectronicFundsTransfer.builder()
 									 .trxId(importRecord.getEftTrxID())

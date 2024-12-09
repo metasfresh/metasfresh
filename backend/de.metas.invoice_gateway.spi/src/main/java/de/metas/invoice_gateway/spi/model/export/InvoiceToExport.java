@@ -1,5 +1,9 @@
 package de.metas.invoice_gateway.spi.model.export;
 
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseAndSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.model.BPartner;
@@ -49,9 +53,14 @@ public class InvoiceToExport
 	@NonNull
 	InvoiceId id;
 
+<<<<<<< HEAD
 	/** invoices can have an empty docSubType, so this needs to be nullable. */
 	@Nullable
 	String docSubType;
+=======
+	@NonNull
+	DocBaseAndSubType docBaseAndSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	MetasfreshVersion metasfreshVersion;

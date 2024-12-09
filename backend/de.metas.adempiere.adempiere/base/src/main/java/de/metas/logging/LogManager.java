@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.io.File;
 import java.io.PrintWriter;
 import java.sql.DriverManager;
@@ -46,8 +50,14 @@ public final class LogManager
 
 	/**
 	 * See {@link ILoggerCustomizer#dumpConfig()}.
+<<<<<<< HEAD
 	 *
 	 * task https://github.com/metasfresh/metasfresh/issues/288
+=======
+	 * <p>
+	 *
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/288">task</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public static String dumpCustomizerConfig()
 	{
@@ -82,11 +92,23 @@ public final class LogManager
 	}
 
 	private static final AtomicBoolean s_initialized = new AtomicBoolean(false);
+<<<<<<< HEAD
 	/** Current Log Level */
 	private static Level s_currentLevel = null;
 
 	/** Logger */
 	private static Logger log = LoggerFactory.getLogger(LogManager.class);
+=======
+	/**
+	 * Current Log Level
+	 */
+	private static Level s_currentLevel = null;
+
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LoggerFactory.getLogger(LogManager.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public static boolean isFileLoggingEnabled()
 	{
@@ -211,12 +233,25 @@ public final class LogManager
 		return setLoggerLevel(getLogger(loggerName), level);
 	}
 
+<<<<<<< HEAD
 	public static String getLoggerLevelName(final Logger logger)
+=======
+	@Nullable
+	public static String getLoggerLevelName(@Nullable final Logger logger)
+	{
+		final Level level = getLoggerLevel(logger);
+		return level == null ? null : level.toString();
+	}
+
+	@Nullable
+	public static Level getLoggerLevel(@Nullable final Logger logger)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (logger == null)
 		{
 			return null;
 		}
+<<<<<<< HEAD
 		if (logger instanceof ch.qos.logback.classic.Logger)
 		{
 			final Level level = ((ch.qos.logback.classic.Logger)logger).getEffectiveLevel();
@@ -224,14 +259,27 @@ public final class LogManager
 		}
 
 		return null;
+=======
+		else if (logger instanceof ch.qos.logback.classic.Logger)
+		{
+			return ((ch.qos.logback.classic.Logger)logger).getEffectiveLevel();
+		}
+		else
+		{
+			return null;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
 
 	/**
 	 * Set JDBC Debug
+<<<<<<< HEAD
 	 *
 	 * @param enable
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private static void setJDBCDebug(final boolean enable)
 	{
@@ -243,7 +291,11 @@ public final class LogManager
 		{
 			DriverManager.setLogWriter(null);
 		}
+<<<<<<< HEAD
 	}	// setJDBCDebug
+=======
+	}    // setJDBCDebug
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return current log level or <code>null</code> if not initialized
@@ -273,7 +325,11 @@ public final class LogManager
 		}
 
 		return level.toInt() >= currentLevel.toInt();
+<<<<<<< HEAD
 	}	// isLevel
+=======
+	}    // isLevel
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Is Logging Level FINEST logged
@@ -283,7 +339,11 @@ public final class LogManager
 	public static boolean isLevelFinest()
 	{
 		return isLevel(Level.TRACE);
+<<<<<<< HEAD
 	}	// isLevelFinest
+=======
+	}    // isLevelFinest
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Is Logging Level FINER logged
@@ -293,7 +353,11 @@ public final class LogManager
 	public static boolean isLevelFiner()
 	{
 		return isLevelFinest();
+<<<<<<< HEAD
 	}	// isLevelFiner
+=======
+	}    // isLevelFiner
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Is Logging Level FINE logged
@@ -312,7 +376,11 @@ public final class LogManager
 	{
 		// final LogManager mgr = LogManager.getLogManager();
 		// mgr.reset();
+<<<<<<< HEAD
 	}	// shutdown
+=======
+	}    // shutdown
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public static File getActiveLogFile()
 	{
@@ -368,7 +436,11 @@ public final class LogManager
 		issueAppender.skipIssueReportingForLoggerName(loggerName);
 	}
 
+<<<<<<< HEAD
 	private static final List<ch.qos.logback.classic.Level> LOGBACK_LEVELS = ImmutableList.<ch.qos.logback.classic.Level> builder()
+=======
+	private static final List<ch.qos.logback.classic.Level> LOGBACK_LEVELS = ImmutableList.<ch.qos.logback.classic.Level>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.add(ch.qos.logback.classic.Level.OFF)
 			.add(ch.qos.logback.classic.Level.ERROR)
 			.add(ch.qos.logback.classic.Level.WARN)
@@ -466,7 +538,10 @@ public final class LogManager
 	}
 
 	/**
+<<<<<<< HEAD
 	 * @param loggerName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @see #dumpAllLevelsUpToRoot(Logger)
 	 */
 	public static void dumpAllLevelsUpToRoot(final String loggerName)
@@ -494,10 +569,15 @@ public final class LogManager
 
 	/**
 	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
+<<<<<<< HEAD
 	 *
 	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
 	 *
 	 * @param logger
+=======
+	 * <p>
+	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public static void dumpAllLevelsUpToRoot(final Logger logger)
 	{

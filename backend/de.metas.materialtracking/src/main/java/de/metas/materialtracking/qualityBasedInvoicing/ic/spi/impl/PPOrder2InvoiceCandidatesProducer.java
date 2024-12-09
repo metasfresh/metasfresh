@@ -22,6 +22,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,11 +40,18 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+=======
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -67,6 +75,25 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IClientOrgAware;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.Env;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Producer which is able to take quality orders ({@link I_PP_Order}s) as input and creates invoice candidates. Called by
@@ -79,7 +106,11 @@ import lombok.NonNull;
 /* package */final class PPOrder2InvoiceCandidatesProducer
 {
 	// Services
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(PPOrder2InvoiceCandidatesProducer.class);
+=======
+	private static final Logger logger = LogManager.getLogger(PPOrder2InvoiceCandidatesProducer.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IQualityInspectionHandlerDAO qualityInspectionHandlerDAO = Services.get(IQualityInspectionHandlerDAO.class);
 	private final transient IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
 	private final transient IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
@@ -195,7 +226,15 @@ import lombok.NonNull;
 		final I_M_Material_Tracking materialTracking = materialTrackingDocuments.getM_Material_Tracking();
 
 		final List<I_C_Invoice_Candidate> originalInvoiceCandidates = qualityInspectionHandlerDAO.retrieveOriginalInvoiceCandidates(materialTracking, I_C_Invoice_Candidate.class);
+<<<<<<< HEAD
 
+=======
+		if (materialTracking.getC_Flatrate_Term_ID() <= 0)
+		{
+			loggable.addLog("M_Material_Tracking_ID={} has no C_Flatrate_Term (ppOrder={}); => Skipping it", ppOrder);
+			return ImmutableList.of();
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Collection<I_M_PriceList_Version> plvs = materialTrackingDocuments.getPriceListVersions();
 		if (plvs.isEmpty())
 		{

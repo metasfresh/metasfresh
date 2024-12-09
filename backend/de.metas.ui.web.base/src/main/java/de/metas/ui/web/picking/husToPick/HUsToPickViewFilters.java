@@ -84,10 +84,17 @@ class HUsToPickViewFilters
 				.setFrequentUsed(true)
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_Barcode)
 						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_LocatorBarcodeFilter))
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Text)
+=======
+						.fieldName(PARAM_Barcode)
+						.displayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_LocatorBarcodeFilter))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Text)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}
@@ -126,11 +133,19 @@ class HUsToPickViewFilters
 				.setFilterId(HU_IDS_FilterId)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_ConsiderAttributes)
 						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_ConsiderAttributes))
 						.setMandatory(false)
 						.setDefaultValue(true)
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
+=======
+						.fieldName(PARAM_ConsiderAttributes)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_ConsiderAttributes))
+						.mandatory(false)
+						.defaultValue(true)
+						.widgetType(DocumentFieldWidgetType.YesNo))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

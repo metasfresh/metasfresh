@@ -1,5 +1,6 @@
 package de.metas.util;
 
+<<<<<<< HEAD
 import java.awt.Color;
 import java.awt.SystemColor;
 import java.io.Serializable;
@@ -16,10 +17,26 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+=======
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.concurrent.ExecutionException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public final class MFColor implements Serializable
@@ -42,11 +59,23 @@ public final class MFColor implements Serializable
 	private Color flatColor;
 
 	private final Color textureTaintColor;
+<<<<<<< HEAD
 	/** Texture Graph URL */
 	private final URL textureURL;
 
 	public static final float DEFAULT_TextureCompositeAlpha = 0.7f;
 	/** Texture Alpha */
+=======
+	/**
+	 * Texture Graph URL
+	 */
+	private final URL textureURL;
+
+	public static final float DEFAULT_TextureCompositeAlpha = 0.7f;
+	/**
+	 * Texture Alpha
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final float textureCompositeAlpha;
 
 	private final Color lineBackColor;
@@ -55,11 +84,23 @@ public final class MFColor implements Serializable
 	private final Color lineColor;
 
 	private static final float DEFAULT_LineWidth = 1.0f;
+<<<<<<< HEAD
 	/** Line Width */
 	private final float lineWidth;
 
 	private static final int DEFAULT_LineDistance = 5;
 	/** Line Distance */
+=======
+	/**
+	 * Line Width
+	 */
+	private final float lineWidth;
+
+	private static final int DEFAULT_LineDistance = 5;
+	/**
+	 * Line Distance
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final int lineDistance;
 
 	private final Color gradientUpperColor;
@@ -68,6 +109,7 @@ public final class MFColor implements Serializable
 	private final Color gradientLowerColor;
 
 	public static final int DEFAULT_GradientStartPoint = SwingConstants.NORTH_WEST;
+<<<<<<< HEAD
 	/** Gradient Starting point */
 	private final int gradientStartPoint;
 
@@ -76,6 +118,22 @@ public final class MFColor implements Serializable
 	private final int gradientRepeatDistance;
 
 	/** Can be null if the color is not persisted in metasfresh */
+=======
+	/**
+	 * Gradient Starting point
+	 */
+	private final int gradientStartPoint;
+
+	private static final int DEFAULT_GradientRepeatDistance = 100;
+	/**
+	 * Gradient repeat distance in points
+	 */
+	private final int gradientRepeatDistance;
+
+	/**
+	 * Can be null if the color is not persisted in metasfresh
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ColorId id;
 
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
@@ -125,9 +183,15 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Gradient colors
 	 *
+<<<<<<< HEAD
 	 * @param upperColor upper Color
 	 * @param lowerColor lower Color
 	 * @param startPoint Starting point - e.g. SOUTH_WEST see SwingConstants, default NORTH_WEST
+=======
+	 * @param upperColor     upper Color
+	 * @param lowerColor     lower Color
+	 * @param startPoint     Starting point - e.g. SOUTH_WEST see SwingConstants, default NORTH_WEST
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param repeatDistance X/Y Distance to repeat gradient in points - 0 no repeats
 	 */
 	public static MFColor ofGradientColor(@NonNull final Color upperColor, @NonNull final Color lowerColor, final int startPoint, final int repeatDistance)
@@ -144,8 +208,13 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Texture
 	 *
+<<<<<<< HEAD
 	 * @param textureURL URL to a *.gif or *.jpg graphic file
 	 * @param taintColor Color to taint the texture (use white for not tainting it)
+=======
+	 * @param textureURL     URL to a *.gif or *.jpg graphic file
+	 * @param taintColor     Color to taint the texture (use white for not tainting it)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param compositeAlpha Tainting value from 0 (no - FullGraph) to 1 (full - NoGraph)
 	 */
 	public static MFColor ofTextureColor(@NonNull final URL textureURL, @NonNull final Color taintColor, final float compositeAlpha)
@@ -161,9 +230,15 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Lines
 	 *
+<<<<<<< HEAD
 	 * @param lineColor line color
 	 * @param backColor background color
 	 * @param lineWidth Stroke width in point
+=======
+	 * @param lineColor    line color
+	 * @param backColor    background color
+	 * @param lineWidth    Stroke width in point
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param lineDistance Distance between lines in points
 	 */
 	public static MFColor ofLinesColor(@NonNull final Color lineColor, @NonNull final Color backColor, final float lineWidth, final int lineDistance)
@@ -461,4 +536,21 @@ public final class MFColor implements Serializable
 				throw new IllegalStateException("Type not supported: " + getType());
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	public String toHexString()
+	{
+		final Color awtColor = toFlatColor().getFlatColor();
+		return toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+	}
+
+	public static String toHexString(final int red, final int green, final int blue)
+	{
+		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
+		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
+		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
+		return String.format("#%02x%02x%02x", red, green, blue);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

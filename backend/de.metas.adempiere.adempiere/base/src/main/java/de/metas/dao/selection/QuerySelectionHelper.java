@@ -66,7 +66,11 @@ public class QuerySelectionHelper
 		final String trxName = query.getTrxName();
 
 		final Instant now = retrieveDatabaseCurrentTime();
+<<<<<<< HEAD
 		final int rowsCount = DB.executeUpdateEx(
+=======
+		final int rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				sql,
 				params.toArray(),
 				trxName);

@@ -115,7 +115,11 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceCandAggregate;
 	}
 
+<<<<<<< HEAD
 	private final IInvoiceLineRW createInvoiceLineRW()
+=======
+	private IInvoiceLineRW createInvoiceLineRW()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
@@ -231,12 +235,20 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
+<<<<<<< HEAD
 					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
+=======
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyLeftToInvoice, qtyShippedButNotInvoiced);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 				else
 				{
 					// e.g. qtyShippedButNotInvoiced = -50 and qtyLeft = -40 => maxQtyToInvoicePerLine = -40
+<<<<<<< HEAD
 					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
+=======
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyLeftToInvoice, qtyShippedButNotInvoiced);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -375,7 +387,11 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		addLineNetAmount(candNetAmtToInvoice);
 	}
 
+<<<<<<< HEAD
 	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
+=======
+	private void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_initialized)
 		{
@@ -414,7 +430,11 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		_initialized = true;
 	}
 
+<<<<<<< HEAD
 	private final I_C_Invoice_Candidate getFirstInvoiceCandidate()
+=======
+	private I_C_Invoice_Candidate getFirstInvoiceCandidate()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_firstCand, "_firstCand not null");
 		return _firstCand;
@@ -434,13 +454,21 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
+<<<<<<< HEAD
 	private final ProductPrice getPriceActual()
+=======
+	private ProductPrice getPriceActual()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_priceActual, "_priceActual not null");
 		return _priceActual;
 	}
 
+<<<<<<< HEAD
 	private final void setPriceEntered(@NonNull final ProductPrice candPriceEntered)
+=======
+	private void setPriceEntered(@NonNull final ProductPrice candPriceEntered)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_priceEntered == null)
 		{
@@ -454,13 +482,21 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
+<<<<<<< HEAD
 	private final ProductPrice getPriceEntered()
+=======
+	private ProductPrice getPriceEntered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_priceEntered, "_priceEntered not null");
 		return _priceEntered;
 	}
 
+<<<<<<< HEAD
 	private final void setDiscount(@NonNull final Percent candDiscount)
+=======
+	private void setDiscount(@NonNull final Percent candDiscount)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_discount == null)
 		{
@@ -474,13 +510,21 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
+<<<<<<< HEAD
 	private final Percent getDiscount()
+=======
+	private Percent getDiscount()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_discount, "_discount not null");
 		return _discount;
 	}
 
+<<<<<<< HEAD
 	private final void setC_OrderLine_ID(final int candOrderLineId)
+=======
+	private void setC_OrderLine_ID(final int candOrderLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// We will retain the 1:n relation between C_OrderLine and C_InvoiceLine,
@@ -517,17 +561,29 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		Check.assume(_invoiceLineNo == candInvoiceLineNo, "All invoice candidates shall have the same InvoiceLineNo={}", _invoiceLineNo);
 	}
 
+<<<<<<< HEAD
 	private final int getInvoiceLineNo()
+=======
+	private int getInvoiceLineNo()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _invoiceLineNo;
 	}
 
+<<<<<<< HEAD
 	private final int getM_Product_ID()
+=======
+	private int getM_Product_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _productId;
 	}
 
+<<<<<<< HEAD
 	private final int getC_Charge_ID()
+=======
+	private int getC_Charge_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _chargeId;
 	}
@@ -548,12 +604,20 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	}
 
 	/** @return line net amount to invoice */
+<<<<<<< HEAD
 	private final Money getLineNetAmt()
+=======
+	private Money getLineNetAmt()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _netLineAmt;
 	}
 
+<<<<<<< HEAD
 	private final String getDescription()
+=======
+	private String getDescription()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return getFirstInvoiceCandidate().getDescription();
 	}
@@ -565,15 +629,25 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	private int getC_PaymentTerm_ID()
 	{
+<<<<<<< HEAD
 		final int paymentTermId = firstGreaterThanZero(
 				getFirstInvoiceCandidate().getC_PaymentTerm_Override_ID(),
 				getFirstInvoiceCandidate().getC_PaymentTerm_ID());
 		return paymentTermId;
+=======
+		return firstGreaterThanZero(
+				getFirstInvoiceCandidate().getC_PaymentTerm_Override_ID(),
+				getFirstInvoiceCandidate().getC_PaymentTerm_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	}
 
 	/** @return effective tax to use in invoice line */
+<<<<<<< HEAD
 	private final Tax getC_Tax()
+=======
+	private Tax getC_Tax()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_Invoice_Candidate firstCand = getFirstInvoiceCandidate();
 		return invoiceCandBL.getTaxEffective(firstCand);
@@ -647,9 +721,15 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	/**
 	 * Checks if given invoice candidate is amount based invoicing (i.e. NOT quantity based invoicing).
+<<<<<<< HEAD
 	 *
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
 	 *
+=======
+	 * <p>
+	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
 	 */
 	private boolean isAmountBasedInvoicing(final I_C_Invoice_Candidate cand)

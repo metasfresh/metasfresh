@@ -10,6 +10,11 @@ import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -63,7 +68,11 @@ public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpres
 	protected abstract ET createGeneralExpression(final ExpressionContext context, final String expressionStr, final List<Object> expressionChunks);
 
 	@Override
+<<<<<<< HEAD
 	public final ET compile(final ExpressionContext context, final String expressionStr)
+=======
+	public final ET compile(final ExpressionContext context, @Nullable final String expressionStr)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// Check if it's an empty expression
 		// NOTE: we are preserving all whitespaces from expressions, so that's why we are not trimming the string

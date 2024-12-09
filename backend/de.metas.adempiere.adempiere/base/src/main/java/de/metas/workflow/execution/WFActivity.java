@@ -22,13 +22,21 @@
 
 package de.metas.workflow.execution;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
+<<<<<<< HEAD
 import de.metas.email.templates.MailTextBuilder;
+=======
+import de.metas.email.templates.MailText;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.error.AdIssueId;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
@@ -40,7 +48,10 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.report.ReportResultData;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.DocumentApprovalConstraint;
@@ -64,6 +75,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -319,7 +334,11 @@ public class WFActivity
 
 	public TableRecordReference getDocumentRef() { return documentRef; }
 
+<<<<<<< HEAD
 	public Object getDocumentColumnValueByColumnId(final int adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
+=======
+	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public Object getDocumentColumnValueByColumnName(final String columnName) { return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName); }
 
@@ -330,6 +349,7 @@ public class WFActivity
 	Object getAttributeValue()
 	{
 		final WFNode node = getNode();
+<<<<<<< HEAD
 		if (node == null)
 		{
 			return null;
@@ -337,6 +357,10 @@ public class WFActivity
 
 		final int AD_Column_ID = node.getDocumentColumnId();
 		if (AD_Column_ID <= 0)
+=======
+		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
+		if (AD_Column_ID == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
@@ -722,9 +746,15 @@ public class WFActivity
 		{
 			final MailTemplateId mailTemplateId = getNode().getMailTemplateId();
 
+<<<<<<< HEAD
 			final MailTextBuilder mailTextBuilder = context.newMailTextBuilder(getDocumentRef(), mailTemplateId);
 
 			final String adLanguage = mailTextBuilder.getAdLanguage();
+=======
+			final MailText mailText = context.newMailTextBuilder(getDocumentRef(), mailTemplateId).build();
+
+			final String adLanguage = mailText.getAdLanguage();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			// metas: tsa: check for null strings
 			final StringBuilder subject = new StringBuilder();
@@ -733,17 +763,29 @@ public class WFActivity
 			{
 				subject.append(description);
 			}
+<<<<<<< HEAD
 			if (!Check.isBlank(mailTextBuilder.getMailHeader()))
+=======
+			if (!Check.isBlank(mailText.getMailHeader()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				if (subject.length() > 0)
 				{
 					subject.append(": ");
 				}
+<<<<<<< HEAD
 				subject.append(mailTextBuilder.getMailHeader());
 			}
 
 			// metas: tsa: check for null strings
 			final StringBuilder message = new StringBuilder(mailTextBuilder.getFullMailText());
+=======
+				subject.append(mailText.getMailHeader());
+			}
+
+			// metas: tsa: check for null strings
+			final StringBuilder message = new StringBuilder(mailText.getFullMailText());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final String help = getNode().getHelp().translate(adLanguage);
 			if (!Check.isBlank(help))
 			{
@@ -753,7 +795,11 @@ public class WFActivity
 			final EMailAddress to = getNode().getEmailTo();
 
 			final MClient client = MClient.get(Env.getCtx(), context.getClientId().getRepoId());
+<<<<<<< HEAD
 			client.sendEMail(to, subject.toString(), message.toString(), null);
+=======
+			client.sendEMail(to, subject.toString(), message.toString(), null, false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -1273,12 +1319,21 @@ public class WFActivity
 	{
 		final WFNode wfNode = getNode();
 		final MailTemplateId mailTemplateId = wfNode.getMailTemplateId();
+<<<<<<< HEAD
 		final MailTextBuilder mailTextBuilder = context.newMailTextBuilder(getDocumentRef(), mailTemplateId);
 		//
 		final IDocument doc = getDocument();
 		final String subject = doc.getDocumentInfo()
 				+ ": " + mailTextBuilder.getMailHeader();
 		final String message = mailTextBuilder.getFullMailText()
+=======
+		final MailText mailText = context.newMailTextBuilder(getDocumentRef(), mailTemplateId).build();
+		//
+		final IDocument doc = getDocument();
+		final String subject = doc.getDocumentInfo()
+				+ ": " + mailText.getMailHeader();
+		final String message = mailText.getFullMailText()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ "\n-----\n" + doc.getDocumentInfo()
 				+ "\n" + doc.getSummary();
 		final File pdf = doc.createPDF();
@@ -1293,14 +1348,22 @@ public class WFActivity
 				subject,
 				message,
 				pdf,
+<<<<<<< HEAD
 				mailTextBuilder.isHtml());
+=======
+				mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Recipient Type
 		final WFNodeEmailRecipient emailRecipient = wfNode.getEmailRecipient();
 		// email to document user
 		if (emailRecipient == null)
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+<<<<<<< HEAD
 			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+			sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentBusinessPartner))
 		{
@@ -1312,7 +1375,11 @@ public class WFActivity
 					final UserId userId = UserId.ofRepoIdOrNull((Integer)oo);
 					if (userId != null)
 					{
+<<<<<<< HEAD
 						sendEMail(client, userId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+						sendEMail(client, userId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					}
 					else
 					{
@@ -1332,7 +1399,11 @@ public class WFActivity
 		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentOwner))
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+<<<<<<< HEAD
 			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+			sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (emailRecipient.equals(WFNodeEmailRecipient.WorkflowResponsible))
 		{
@@ -1340,18 +1411,30 @@ public class WFActivity
 			if (resp.isInvoker())
 			{
 				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+<<<<<<< HEAD
 				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+				sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else if (resp.isHuman())
 			{
 				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+<<<<<<< HEAD
 				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+				sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else if (resp.isRole())
 			{
 				for (final UserId adUserId : context.getUserIdsByRoleId(resp.getRoleId()))
 				{
+<<<<<<< HEAD
 					sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+					sendEMail(client, adUserId, null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 			else if (resp.isOrganization())
@@ -1364,7 +1447,11 @@ public class WFActivity
 				}
 				else
 				{
+<<<<<<< HEAD
 					sendEMail(client, org.getSupervisorId(), null, subject, message, pdf, mailTextBuilder.isHtml());
+=======
+					sendEMail(client, org.getSupervisorId(), null, subject, message, pdf, mailText.isHtml());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -1398,7 +1485,11 @@ public class WFActivity
 			{
 				if (!m_emails.contains(email))
 				{
+<<<<<<< HEAD
 					client.sendEMail(null, user, subject, message, pdf, isHtml);
+=======
+					client.sendEMail(user, subject, message, pdf, isHtml);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					m_emails.add(email);
 				}
 			}

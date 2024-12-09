@@ -3,7 +3,11 @@
   "soTrx": "SALES",
   "product": {
     "id": 300000,
+<<<<<<< HEAD
     "stocked": false
+=======
+    "itemType": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   },
   "uomId": 110000,
   "orderedData": {
@@ -16,10 +20,15 @@
       "uomId": 100000
     }
   },
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   "deliveredData": {
     "shipmentData": {
       "productId": 300000,
       "qtyInStockUom": {
+<<<<<<< HEAD
         "qty": "0",
         "uomId": 100000
       },
@@ -32,6 +41,31 @@
     },
     "receiptData": null
   },
+=======
+        "qty": "19",
+        "uomId": 100000
+      },
+      "qtyNominal": {
+        "qty": "20",
+        "uomId": 110000
+      },
+      "deliveredQtyItems": [
+        {
+          "qtyInStockUom": {
+            "qty": "19",
+            "uomId": 100000
+          },
+          "qtyNominal": {
+            "qty": "20",
+            "uomId": 110000
+          },
+          "qtyOverride": null
+        }
+      ]
+    }
+  },
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   "pickedData": {
     "productId": 300000,
     "qtyPicked": {

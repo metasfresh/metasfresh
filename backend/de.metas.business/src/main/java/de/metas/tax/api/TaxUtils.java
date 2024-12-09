@@ -37,6 +37,10 @@ public class TaxUtils
 	{
 		return Tax.builder()
 				.taxId(TaxId.ofRepoId(from.getC_Tax_ID()))
+<<<<<<< HEAD
+=======
+				.name(from.getName())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.orgId(OrgId.ofRepoId(from.getAD_Org_ID()))
 				.validFrom(from.getValidFrom())
 				.countryId(CountryId.ofRepoIdOrNull(from.getC_Country_ID()))
@@ -47,6 +51,10 @@ public class TaxUtils
 				.requiresTaxCertificate(StringUtils.toBoolean(from.getRequiresTaxCertificate()))
 				.isSmallBusiness(StringUtils.toBoolean(from.getIsSmallbusiness(), null))
 				.isFiscalRepresentation(StringUtils.toBoolean(from.getIsFiscalRepresentation(), null))
+<<<<<<< HEAD
+=======
+				.isSalesTax(from.isSalesTax())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.isWholeTax(from.isWholeTax())
 				.isDocumentLevel(from.isDocumentLevel())
 				.isTaxExempt(from.isTaxExempt())

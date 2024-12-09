@@ -22,6 +22,11 @@
 
 package de.metas.contracts.commission.mediated.repository;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettings;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
@@ -29,6 +34,7 @@ import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,11 +50,30 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class MediatedCommissionSettingsRepoTest
 {
 	private MediatedCommissionSettingsRepo mediatedCommissionSettingsRepo;
+=======
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+@ExtendWith(SnapshotExtension.class)
+public class MediatedCommissionSettingsRepoTest
+{
+	private MediatedCommissionSettingsRepo mediatedCommissionSettingsRepo;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeAll
 	static void init()
 	{
+<<<<<<< HEAD
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		AdempiereTestHelper.get().init();
 	}
 
@@ -58,11 +83,14 @@ public class MediatedCommissionSettingsRepoTest
 		mediatedCommissionSettingsRepo = new MediatedCommissionSettingsRepo();
 	}
 
+<<<<<<< HEAD
 	@AfterAll
 	static void afterAll()
 	{
 		validateSnapshots();
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Test
 	public void givenValidId_whenGetById_thenReturnSettings()
@@ -89,7 +117,11 @@ public class MediatedCommissionSettingsRepoTest
 		final MediatedCommissionSettings mediatedCommissionSettings = mediatedCommissionSettingsRepo.getById(MediatedCommissionSettingsId.ofRepoId(settings.getC_MediatedCommissionSettings_ID()));
 
 		//then
+<<<<<<< HEAD
 		expect(mediatedCommissionSettings).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(mediatedCommissionSettings);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private I_C_MediatedCommissionSettings createMediatedSettingsRecord()

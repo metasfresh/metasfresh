@@ -2,10 +2,20 @@ package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+=======
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
@@ -19,10 +29,21 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+=======
+import org.adempiere.ad.table.api.TableAndColumnName;
+import org.adempiere.ad.table.api.TableName;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.POWrapper;
+import org.adempiere.util.lang.ITableRecordReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.model.copy.TableCloningEnabled;
 import org.compiere.model.copy.TableDownlineCloningStrategy;
@@ -87,7 +108,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	public static POInfo getPOInfo(final String tableName)
+=======
+	public static POInfo getPOInfo(@NonNull final String tableName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return getPOInfoMap().getByTableNameOrNull(tableName);
 	}
@@ -95,12 +120,22 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
 	{
+<<<<<<< HEAD
 		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
 		if (poInfo == null)
 		{
 			throw new AdempiereException("No POInfo found for " + tableName);
 		}
 		return poInfo;
+=======
+		return getPOInfoMap().getByTableName(tableName);
+	}
+	
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final AdTableId adTableId)
+	{
+		return getPOInfoMap().getByTableId(adTableId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -147,6 +182,10 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Element.Table_Name)
+<<<<<<< HEAD
+=======
+			.additionalTableNameToResetFor(I_AD_Ref_Table.Table_Name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.additionalTableNameToResetFor(I_AD_Val_Rule.Table_Name)
 			.build();
 
@@ -157,7 +196,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_isView;
 	private final ImmutableList<POInfoColumn> m_columns;
 	private final ImmutableMap<String, Integer> columnName2columnIndex;
+<<<<<<< HEAD
 	private final ImmutableMap<Integer, Integer> adColumnId2columnIndex;
+=======
+	private final ImmutableMap<AdColumnId, Integer> adColumnId2columnIndex;
+	@Getter
+	private final ImmutableSet<TableAndColumnName> tableAndRecordColumnNames;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ImmutableList<String> m_keyColumnNames;
 	/**
 	 * Single Primary Key.
@@ -195,8 +240,18 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final StringBuilder sql = new StringBuilder();
+<<<<<<< HEAD
 		sql.append("SELECT t.TableName, c.ColumnName,c.AD_Reference_ID,"        // 1..3
 				+ "c.IsMandatory,c.IsUpdateable,c.DefaultValue, "                // 4..6
+=======
+		sql.append("SELECT "
+				+ "t.TableName, " // 1
+				+ "c.ColumnName, " // 2
+				+ "c.AD_Reference_ID, "        // 3
+				+ "c.IsMandatory, " // 4
+				+ "c.IsUpdateable, " // 5
+				+ "c.DefaultValue, " // 6
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ "e.Name, "                                                    // 7
 				+ "e.Description, "                                                // 8
 				+ "c.AD_Column_ID, "                                            // 9
@@ -225,6 +280,10 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
 				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
 				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+<<<<<<< HEAD
+=======
+				+ ", c." + I_AD_Column.COLUMNNAME_IsIdentifier + " AS columnIsIdentifier"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -329,13 +388,21 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		// because role's addAccessSQL parsers are using POInfo for checking column availability,
 		// and ofc in SQL queries could be with ANY case...
 		final ImmutableSortedMap.Builder<String, Integer> columnName2columnIndexBuilder = ImmutableSortedMap.orderedBy(String.CASE_INSENSITIVE_ORDER);
+<<<<<<< HEAD
 		final ImmutableMap.Builder<Integer, Integer> adColumnId2columnIndexBuilder = ImmutableMap.builder();
+=======
+		final ImmutableMap.Builder<AdColumnId, Integer> adColumnId2columnIndexBuilder = ImmutableMap.builder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final List<String> translatedColumnNames = new ArrayList<>();
 		for (int columnIndex = 0, columnsCount = m_columns.size(); columnIndex < columnsCount; columnIndex++)
 		{
 			final POInfoColumn columnInfo = m_columns.get(columnIndex);
 			final String columnName = columnInfo.getColumnName();
+<<<<<<< HEAD
 			final int adColumnId = columnInfo.getAD_Column_ID();
+=======
+			final AdColumnId adColumnId = columnInfo.getAD_Column_ID();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			columnName2columnIndexBuilder.put(columnName, columnIndex);
 			adColumnId2columnIndexBuilder.put(adColumnId, columnIndex);
@@ -390,13 +457,36 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		//
+<<<<<<< HEAD
+=======
+		// Correct IsLazyLoading,
+		// i.e. Always load effective Key columns (Key or Parent)
+		for (final POInfoColumn column : m_columns)
+		{
+			if (column.IsLazyLoading && m_keyColumnNames.contains(column.getColumnName()))
+			{
+				column.IsLazyLoading = false;
+				logger.info("Column {}.{} was marked as IsLazyLoading but effectively it is an key column, we we set IsLazyLoading=false.", this.m_TableName, column.getColumnName());
+			}
+		}
+
+		//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Setup some pre-built SQLs which are frequently used
 		sqlSelectColumns = buildSqlSelectColumns();
 		sqlSelect = buildSqlSelect();
 		sqlWhereClauseByKeys = buildSqlWhereClauseByKeys();
 		sqlSelectByKeys = buildSqlSelectByKeys();
 
+<<<<<<< HEAD
 		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames);
+=======
+		trlInfo = !translatedColumnNames.isEmpty()
+				? POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames)
+				: POTrlInfo.NOT_TRANSLATED;
+
+		tableAndRecordColumnNames = computeTableAndRecordIdColumnNames(columnName2columnIndex.keySet());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
@@ -424,10 +514,19 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final String DefaultLogic = rs.getString(6);
 		final String Name = rs.getString(7);
 		final String Description = rs.getString(8);
+<<<<<<< HEAD
 		final int AD_Column_ID = rs.getInt(9);
 		final boolean isKeyColumn = StringUtils.toBoolean(rs.getString(10));
 		final boolean isParentColumn = StringUtils.toBoolean(rs.getString(11));
 		final int AD_Reference_Value_ID = rs.getInt(12);
+=======
+		final AdColumnId AD_Column_ID = AdColumnId.ofRepoId(rs.getInt(9));
+		final boolean isKeyColumn = StringUtils.toBoolean(rs.getString(10));
+		final boolean isParentColumn = StringUtils.toBoolean(rs.getString(11));
+		final ReferenceId AD_Reference_Value_ID = ReferenceId.ofRepoIdOrNull(rs.getInt(12));
+		final TableName AD_Reference_Value_TableName = TableName.ofNullableString(rs.getString("AD_Reference_Value_TableName"));
+		final int AD_Reference_Value_KeyColumn_DisplayType = rs.getInt("AD_Reference_Value_KeyColumn_DisplayType");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// String ValidationCode = rs.getString(13);
 		final int FieldLength = rs.getInt(14);
 		final String ValueMin = rs.getString(15);
@@ -439,11 +538,19 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean IsAllowLogging = StringUtils.toBoolean(rs.getString(21));
 		final boolean IsLazyLoading = StringUtils.toBoolean(rs.getString(23)); // metas
 		final boolean IsCalculated = StringUtils.toBoolean(rs.getString(24)); // metas
+<<<<<<< HEAD
 		final int AD_Val_Rule_ID = rs.getInt(25); // metas
+=======
+		final AdValRuleId AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(25)); // metas
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+<<<<<<< HEAD
+=======
+		final boolean isIdentifier = StringUtils.toBoolean(rs.getString("columnIsIdentifier"));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ColumnCloningStrategy cloningStrategy = ColumnCloningStrategy.ofCode(rs.getString("columnCloningStrategy"));
 
 		final POInfoColumn col = new POInfoColumn(
@@ -456,6 +563,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				isKeyColumn,
 				isParentColumn,
 				AD_Reference_Value_ID,
+<<<<<<< HEAD
+=======
+				AD_Reference_Value_TableName,
+				AD_Reference_Value_KeyColumn_DisplayType,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				AD_Val_Rule_ID,
 				FieldLength,
 				ValueMin,
@@ -464,7 +576,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsEncrypted,
 				IsAllowLogging,
 				isRestAPICustomColumn,
+<<<<<<< HEAD
 				cloningStrategy);
+=======
+				cloningStrategy,
+				isIdentifier);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -473,6 +590,61 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return col;
 	}
 
+<<<<<<< HEAD
+=======
+	private static ImmutableSet<TableAndColumnName> computeTableAndRecordIdColumnNames(final ImmutableSet<String> columnNames)
+	{
+		final ImmutableSet.Builder<TableAndColumnName> result = ImmutableSet.builder();
+		for (final String columnName : columnNames)
+		{
+			final int idx = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
+			final String prefix;
+			if (idx < 0)
+			{
+				continue;
+			}
+			else if (idx == 0)
+			{
+				prefix = "";
+			}
+			else
+			{
+				prefix = columnName.substring(0, idx);
+			}
+
+			final String tableIdColumnName = getTableIdColumnNameByPrefix(prefix, columnNames);
+			if (tableIdColumnName == null)
+			{
+				continue;
+			}
+
+			result.add(TableAndColumnName.ofTableAndColumnStrings(tableIdColumnName, columnName));
+		}
+
+		return result.build();
+	}
+
+	@Nullable
+	private static String getTableIdColumnNameByPrefix(final String prefix, final ImmutableSet<String> columnNames)
+	{
+		// Try with Prefix_AD_Table_ID
+		String tableColumnName = prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID;
+		if (columnNames.contains(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		// try with Prefix_Table_ID
+		tableColumnName = prefix + "Table_ID";
+		if (columnNames.contains(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		return null;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public String toString()
 	{
@@ -627,6 +799,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 	public int getColumnIndex(@NonNull final AdColumnId adColumnId)
 	{
+<<<<<<< HEAD
 		return getColumnIndex(adColumnId.getRepoId());
 	}
 
@@ -644,6 +817,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		final Integer columnIndex = adColumnId2columnIndex.get(AD_Column_ID);
+=======
+		final Integer columnIndex = adColumnId2columnIndex.get(adColumnId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (columnIndex != null)
 		{
 			return columnIndex;
@@ -652,10 +828,17 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		//
 		// Fallback: for some reason column index was not found
 		// => iterate columns and try to get it
+<<<<<<< HEAD
 		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", AD_Column_ID, this);
 		for (int i = 0; i < m_columns.size(); i++)
 		{
 			if (AD_Column_ID == m_columns.get(i).AD_Column_ID)
+=======
+		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", adColumnId, this);
+		for (int i = 0; i < m_columns.size(); i++)
+		{
+			if (AdColumnId.equals(adColumnId, m_columns.get(i).AD_Column_ID))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return i;
 			}
@@ -666,12 +849,21 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * @return AD_Column_ID if found, -1 if not found
 	 */
+<<<<<<< HEAD
 	public int getAD_Column_ID(final String columnName)
+=======
+	@Nullable
+	public AdColumnId getAD_Column_ID(final String columnName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		if (columnIndex < 0)
 		{
+<<<<<<< HEAD
 			return -1;
+=======
+			return null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return m_columns.get(columnIndex).getAD_Column_ID();
@@ -864,7 +1056,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return DisplayType.String;
 		}
+<<<<<<< HEAD
 		return m_columns.get(index).DisplayType;
+=======
+		return m_columns.get(index).getDisplayType();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}   // getColumnDisplayType
 
 	@Override
@@ -925,11 +1121,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
+<<<<<<< HEAD
 	public int getColumnReferenceValueId(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
 		{
 			return -1;
+=======
+	@Nullable
+	public ReferenceId getColumnReferenceValueId(final int index)
+	{
+		if (index < 0 || index >= m_columns.size())
+		{
+			return null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return m_columns.get(index).AD_Reference_Value_ID;
 	}
@@ -939,12 +1144,18 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 *
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
+<<<<<<< HEAD
 	public int getColumnReferenceValueId(final String columnName)
+=======
+	@Nullable
+	public ReferenceId getColumnReferenceValueId(final String columnName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		return getColumnReferenceValueId(columnIndex);
 	}
 
+<<<<<<< HEAD
 	public int getColumnValRuleId(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
@@ -960,6 +1171,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns.get(columnIndex).getAD_Val_Rule_ID();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isColumnUpdateable(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
@@ -976,6 +1189,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return isColumnUpdateable(columnIndex);
 	}   // isUpdateable
 
+<<<<<<< HEAD
 	/**
 	 * Set all columns updateable
 	 *
@@ -991,6 +1205,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 	}    // setUpdateable
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public String getReferencedTableNameOrNull(final String columnName)
 	{
@@ -1005,12 +1221,15 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns.get(columnIndex).getLookup(ctx, Env.WINDOW_None);
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	public Lookup getColumnLookup(final Properties ctx, final int windowNo, final int columnIndex)
 	{
 		return m_columns.get(columnIndex).getLookup(ctx, windowNo);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isKey(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
@@ -1481,6 +1700,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableId.get(tableId);
 		}
+<<<<<<< HEAD
+=======
+		
+		@NonNull
+		public POInfo getByTableId(@NonNull final AdTableId tableId)
+		{
+			final POInfo poInfo = getByTableIdOrNull(tableId);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableId);
+			}
+			return poInfo;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		@Nullable
 		public POInfo getByTableNameOrNull(@NonNull final String tableName)
@@ -1488,6 +1721,24 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
 
+<<<<<<< HEAD
 		public Stream<POInfo> stream() {return byTableId.values().stream();}
+=======
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
+		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
+		public ImmutableCollection<POInfo> toCollection() {return byTableId.values();}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }   // POInfo

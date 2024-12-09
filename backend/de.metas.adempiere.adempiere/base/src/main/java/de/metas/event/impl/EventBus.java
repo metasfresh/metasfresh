@@ -55,7 +55,11 @@ import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
+=======
+	private static final Logger logger = EventBusConfig.getLogger(EventBus.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Log all event bus exceptions

@@ -229,7 +229,11 @@ public class EDI_Desadv_Pack_Item_StepDef
 		{
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
+<<<<<<< HEAD
 			softly.assertThat(desadvPackItemRecord.getM_InOut_ID()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - M_InOut_ID", packIdentifier, packItemId).isEqualTo(shipmentRecord.getM_InOut_ID());
+=======
+			softly.assertThat(desadvPackItemRecord.getM_InOut_ID()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s; M_InOut_ID.Identifier=%s - M_InOut_ID", packIdentifier, packItemId, shipmentIdentifier).isEqualTo(shipmentRecord.getM_InOut_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -301,6 +305,10 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private void truncateEDIDesadvPackItem()
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

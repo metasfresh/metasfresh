@@ -37,6 +37,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.MobileApplicationRepoId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;
@@ -180,6 +184,12 @@ class UserRolePermissions implements IUserRolePermissions
 	@Getter(AccessLevel.PACKAGE)
 	private final GenericPermissions miscPermissions;
 
+<<<<<<< HEAD
+=======
+	@Getter(AccessLevel.PACKAGE)
+	private final ElementPermissions mobileApplicationPermissions;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
 	/**
@@ -213,6 +223,10 @@ class UserRolePermissions implements IUserRolePermissions
 		taskPermissions = builder.getTaskPermissions();
 		workflowPermissions = builder.getWorkflowPermissions();
 		formPermissions = builder.getFormPermissions();
+<<<<<<< HEAD
+=======
+		mobileApplicationPermissions = builder.getMobileApplicationAccesses();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		miscPermissions = builder.getMiscPermissions();
 		constraints = builder.getConstraints();
@@ -258,12 +272,21 @@ class UserRolePermissions implements IUserRolePermissions
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
 				.appendTo(sb, miscPermissions, constraints, orgPermissions, tableOrgPermissions, tablePermissions, columnPermissions
+<<<<<<< HEAD
 						  // don't show followings because they could be to big, mainly when is not a manual role:
 						  // , windowPermissions
 						  // , processPermissions
 						  // , taskPermissions
 						  // , formPermissions
 						  // , workflowPermissions
+=======
+						// don't show followings because they could be to big, mainly when is not a manual role:
+						// , windowPermissions
+						// , processPermissions
+						// , taskPermissions
+						// , formPermissions
+						// , workflowPermissions
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				);
 
 		return sb.toString();
@@ -720,6 +743,15 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public ElementPermission checkMobileApplicationPermission(@NonNull final MobileApplicationRepoId applicationId)
+	{
+		return mobileApplicationPermissions.getPermission(applicationId.getRepoId());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String addAccessSQL(
 			final String sql,
 			final String tableNameIn,

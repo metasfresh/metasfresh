@@ -1,5 +1,9 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.accounts.ProductAcctType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductCategoryId;

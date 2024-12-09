@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * #%L
  * de.metas.acct.base
@@ -20,6 +21,8 @@
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 DROP FUNCTION IF EXISTS "de_metas_acct".get_C_ValidCombination_Records(
     p_AccountValueLike text
 )

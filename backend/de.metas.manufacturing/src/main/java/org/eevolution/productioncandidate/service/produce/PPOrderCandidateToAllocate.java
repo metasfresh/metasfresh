@@ -49,7 +49,11 @@ public class PPOrderCandidateToAllocate
 	{
 		final UomId uomId = UomId.ofRepoId(candidate.getC_UOM_ID());
 
+<<<<<<< HEAD
 		final Quantity openQty = Quantitys.create(candidate.getQtyToProcess(), uomId);
+=======
+		final Quantity openQty = Quantitys.of(candidate.getQtyToProcess(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return new PPOrderCandidateToAllocate(candidate, headerAggregationKey, openQty);
 	}

@@ -104,7 +104,11 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 
 			//
 			// Create target Capacities
+<<<<<<< HEAD
 			final Quantity qtyToDeliver = Quantitys.create(
+=======
+			final Quantity qtyToDeliver = Quantitys.of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					line.getQtyOrdered().subtract(line.getQtyDelivered()),
 					UomId.ofRepoId(line.getC_UOM_ID()));
 			final Capacity targetCapacity = Capacity.createCapacity(

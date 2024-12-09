@@ -47,14 +47,21 @@ public class PP_Order_MaterialTracking_HandlerDAO
 
 	/**
 	 * Gets a filter which accepts only those {@link I_PP_Order}s which are invoiceable.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * More precisely, manufacturing orders which:
 	 * <ul>
 	 * <li>reference a M_Material_Tracking and
 	 * <li>are closed
 	 * </ul>
+<<<<<<< HEAD
 	 *
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private IQueryFilter<I_PP_Order> getPP_OrderInvoiceableFilter(final Object contextProvider)
 	{

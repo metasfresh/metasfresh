@@ -298,7 +298,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.productName(loadingSupportingServices.getProductName(productId))
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
+<<<<<<< HEAD
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+=======
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.salesOrderAndLineId(orderAndLineId)
 				.orderLineSeqNo(loadingSupportingServices.getSalesOrderLineSeqNo(orderAndLineId))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -335,7 +339,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				// What?
 				.productId(productId)
 				.productName(loadingSupportingServices.getProductName(productId))
+<<<<<<< HEAD
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
+=======
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				// Pick From
 				.pickFroms(PickingJobStepPickFromMap.ofList(pickFroms))
@@ -418,7 +426,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
+<<<<<<< HEAD
 				? Optional.of(QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reasonCode))
+=======
+				? Optional.of(QtyRejectedWithReason.of(Quantitys.of(record.getQtyRejectedToPick(), uomId), reasonCode))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				: Optional.empty();
 	}
 
@@ -438,7 +450,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
 				.actualPickedHU(extractPickedHUInfo(record))
+<<<<<<< HEAD
 				.qtyPicked(Quantitys.create(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
+=======
+				.qtyPicked(Quantitys.of(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.catchWeight(extractCatchWeight(record))
 				.build();
 	}
@@ -461,7 +477,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	{
 		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(record.getCatch_UOM_ID());
 		return catchWeightUomId != null
+<<<<<<< HEAD
 				? Quantitys.create(record.getCatchWeight(), catchWeightUomId)
+=======
+				? Quantitys.of(record.getCatchWeight(), catchWeightUomId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				: null;
 	}
 
@@ -492,7 +512,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
+<<<<<<< HEAD
 				? Optional.of(QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reasonCode))
+=======
+				? Optional.of(QtyRejectedWithReason.of(Quantitys.of(record.getQtyRejectedToPick(), uomId), reasonCode))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				: Optional.empty();
 	}
 
@@ -509,7 +533,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.build())
 				.pickFromHU(getHUInfo(pickFromHUId))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+<<<<<<< HEAD
 				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
+=======
+				.qtyAvailable(Quantitys.of(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

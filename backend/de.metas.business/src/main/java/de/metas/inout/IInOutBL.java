@@ -1,8 +1,19 @@
 package de.metas.inout;
 
+<<<<<<< HEAD
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+=======
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
+import de.metas.order.OrderLineId;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.quantity.Quantity;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
@@ -20,6 +31,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -56,6 +71,16 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
+<<<<<<< HEAD
+=======
+	Quantity getQtyEntered(@NonNull I_M_InOutLine inoutLine);
+
+	/**
+	 * @see #getStockQtyAndQtyInUOM(I_M_InOutLine)
+	 */
+	Quantity getMovementQty(I_M_InOutLine inoutLine);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return the quantity, with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present <b>only</b> if the given line effectively has a catch quantity.
 	 */
@@ -68,6 +93,17 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
 
+<<<<<<< HEAD
+=======
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
+
+	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 * <p>
@@ -190,5 +226,20 @@ public interface IInOutBL extends ISingletonService
 
 	String getLocationEmail(InOutId ofRepoId);
 
+<<<<<<< HEAD
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+=======
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
+
+	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
+
+	Money getCOGSBySalesOrderId(
+			@NonNull OrderLineId salesOrderLineId,
+			@NonNull AcctSchemaId acctSchemaId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -39,8 +39,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
@@ -97,6 +100,7 @@ public class C_RemittanceAdvice
 	{
 		final I_C_DocType targetPaymentDocType = docTypeDAO.getById(record.getC_Payment_Doctype_Target_ID());
 
+<<<<<<< HEAD
 		if (targetPaymentDocType == null)
 		{
 			throw new AdempiereException("No doc type found for C_Payment_Doctype_Target_ID!")
@@ -104,6 +108,8 @@ public class C_RemittanceAdvice
 					.setParameter("C_Payment_Doctype_Target_ID", record.getC_Payment_Doctype_Target_ID());
 		}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		record.setIsSOTrx(targetPaymentDocType.isSOTrx());
 	}
 

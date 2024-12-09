@@ -1,13 +1,22 @@
 package org.compiere.acct;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+<<<<<<< HEAD
 import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.acct.base

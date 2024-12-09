@@ -225,6 +225,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+<<<<<<< HEAD
+=======
+		docOutboundLogRecord.setPOReference(archiveRecord.getPOReference());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
@@ -253,7 +257,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		return docOutboundLogRecord;
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(

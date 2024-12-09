@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.exceptions;
 
+<<<<<<< HEAD
+=======
+import de.metas.i18n.AdMessageKey;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
@@ -33,6 +37,7 @@ import javax.annotation.Nullable;
 @ResponseStatus(code = HttpStatus.FORBIDDEN)
 public class DocumentFieldReadonlyException extends AdempiereException
 {
+<<<<<<< HEAD
 	public DocumentFieldReadonlyException(@NonNull final String fieldName, @Nullable final Object value)
 	{
 		super(buildMsg(fieldName, value));
@@ -43,3 +48,13 @@ public class DocumentFieldReadonlyException extends AdempiereException
 		return "Changing " + fieldName + " to '" + value + "' is not allowed because the field is readonly";
 	}
 }
+=======
+	public static final AdMessageKey CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR = AdMessageKey.of("de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg");
+
+	public DocumentFieldReadonlyException(@NonNull final String fieldName, @Nullable final Object value)
+	{
+		super(CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR, fieldName, value);
+	}
+}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

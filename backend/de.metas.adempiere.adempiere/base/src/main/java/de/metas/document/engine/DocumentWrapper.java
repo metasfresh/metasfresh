@@ -1,10 +1,15 @@
 package de.metas.document.engine;
 
+<<<<<<< HEAD
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
+=======
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -12,11 +17,19 @@ import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
+<<<<<<< HEAD
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -49,8 +62,11 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		return new DocumentWrapper(docActionModel, handler);
 	}
 
+<<<<<<< HEAD
 	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final DocumentTableFields model;
 	private final DocumentHandler handler;
 
@@ -305,12 +321,15 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Logger get_Logger()
 	{
 		return logger;
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String get_TrxName()
 	{
 		return InterfaceWrapperHelper.getTrxName(model);

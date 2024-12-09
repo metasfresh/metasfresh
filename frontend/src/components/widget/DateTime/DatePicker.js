@@ -13,6 +13,10 @@ import {
 } from '../../../constants/Constants';
 import {
   convertMomentToTimezone,
+<<<<<<< HEAD
+=======
+  setMomentToEndOfDay,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   setTimezoneToMoment,
 } from '../../../utils/dateHelpers';
 
@@ -50,6 +54,21 @@ class DatePicker extends PureComponent {
     }
   }
 
+<<<<<<< HEAD
+=======
+  componentDidUpdate(prevProps) {
+    const { datePatched } = this.state;
+
+    // If "value" property changed then update the "datePatched" state variable.
+    if (
+      !this.isSameMoment(prevProps.value, this.props.value) &&
+      !this.isSameMoment(datePatched, this.props.value)
+    ) {
+      this.setState({ datePatched: this.props.value });
+    }
+  }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   handleDateChange = (dateObj) => {
     // console.log('handleDateChange', { dateObj });
     if (!dateObj) {
@@ -110,7 +129,11 @@ class DatePicker extends PureComponent {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
+<<<<<<< HEAD
         // console.log('callPatchIfNeeded: patching date', { date, datePatched });
+=======
+        //console.log('callPatchIfNeeded: patching date', { date, datePatched });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         patch && patch(date);
       } else {
         // console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', {
@@ -133,12 +156,53 @@ class DatePicker extends PureComponent {
     // NOTE: for some reason `dateObj` is not always the up-to-date value of the date
     // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
 
+<<<<<<< HEAD
+=======
+    //
+    // Cover some corner cases when user is writing something into date/time field and then is TABing out
+    const moment = this.convertInputStringToMomentOnBlur();
+    if (moment !== undefined && moment?.isValid()) {
+      this.callPatchIfNeeded(moment);
+    }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     this.closeCalendarAndResetToLastPatchedDate();
 
     const { handleBackdropLock } = this.props;
     handleBackdropLock && handleBackdropLock(false);
   };
 
+<<<<<<< HEAD
+=======
+  convertInputStringToMomentOnBlur = () => {
+    const inputValue = this.inputElement.value;
+    if (!inputValue) {
+      return undefined;
+    }
+
+    //
+    // Case: user wrote a date(w/o time) into a date+time field
+    // => convert that date to end of day date+time
+    if (this.isDateAndTime()) {
+      const dateFormat = this.getMomentDisplayFormat_DatePart(inputValue);
+      const { timeZone } = this.props;
+      const moment = MomentTZ(inputValue, dateFormat, true, timeZone);
+      if (moment && moment.isValid()) {
+        setMomentToEndOfDay(moment);
+        return moment;
+      }
+    }
+
+    //
+    return undefined;
+  };
+
+  isDateAndTime = () => {
+    const { dateFormat, timeFormat } = this.props;
+    return dateFormat && timeFormat;
+  };
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   isSameMoment = (date1, date2) => {
     const moment1 = this.convertToMoment(date1);
     const moment2 = this.convertToMoment(date2);
@@ -240,6 +304,7 @@ class DatePicker extends PureComponent {
   };
 
   getMomentDisplayFormat = (dateToParse = null) => {
+<<<<<<< HEAD
     const { dateFormat, timeFormat } = this.props;
 
     let format = '';
@@ -259,6 +324,17 @@ class DatePicker extends PureComponent {
       format += dateFormatEffective;
     }
 
+=======
+    let format = '';
+
+    const dateFormatEffective =
+      this.getMomentDisplayFormat_DatePart(dateToParse);
+    if (dateFormatEffective) {
+      format += dateFormatEffective;
+    }
+
+    const { timeFormat } = this.props;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     if (timeFormat) {
       const timeFormatEffective = timeFormat === true ? 'LT' : timeFormat;
       if (format !== '') {
@@ -270,6 +346,27 @@ class DatePicker extends PureComponent {
     return format;
   };
 
+<<<<<<< HEAD
+=======
+  getMomentDisplayFormat_DatePart = (dateToParse = null) => {
+    const { dateFormat } = this.props;
+
+    if (!dateFormat) {
+      return '';
+    }
+
+    if (
+      dateToParse &&
+      typeof dateToParse === 'string' &&
+      dateToParse.includes('-')
+    ) {
+      return 'YYYY-MM-DD';
+    } else {
+      return dateFormat === true ? 'L' : dateFormat;
+    }
+  };
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   getMomentNormalizedFormat = () => {
     const { dateFormat, timeFormat } = this.props;
     if (dateFormat) {

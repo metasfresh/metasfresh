@@ -53,7 +53,11 @@ public class DesadvLines
 	public List<EDIExpDesadvLineType> getAllLines()
 	{
 		return Stream.concat(lineId2LineWithNoPacks.values().stream(),
+<<<<<<< HEAD
 							 lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+=======
+						lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -61,7 +65,11 @@ public class DesadvLines
 	public List<EDIExpDesadvLineType> getAllSortedByLine()
 	{
 		return Stream.concat(lineId2LineWithNoPacks.values().stream(),
+<<<<<<< HEAD
 							 lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+=======
+						lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.sorted(Comparator.comparing(EDIExpDesadvLineType::getLine))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -73,4 +81,8 @@ public class DesadvLines
 				.map(DesadvLineWithPacks::getSinglePacks)
 				.orElseGet(ImmutableList::of);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

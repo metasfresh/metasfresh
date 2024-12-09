@@ -26,13 +26,21 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.ad_reference.TableRefTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,7 +51,10 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
+<<<<<<< HEAD
 import org.adempiere.ad.service.TableRefInfo;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -247,17 +258,28 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ExplainedOptional<TableRefInfo> getTableRefInfo(final int referenceRepoId)
+=======
+	public ExplainedOptional<TableRefTable> getTableRefInfo(final int referenceRepoId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
 		return getTableRefInfoMap().getById(referenceId);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public TableRefInfo retrieveTableRefInfo(final int referenceRepoId)
 	{
 		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
 		final ExplainedOptional<TableRefInfo> tableRefInfo = getTableRefInfoMap().getById(referenceId);
+=======
+	public TableRefTable retrieveTableRefInfo(final int referenceRepoId)
+	{
+		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
+		final ExplainedOptional<TableRefTable> tableRefInfo = getTableRefInfoMap().getById(referenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (tableRefInfo.isPresent())
 		{
 			return tableRefInfo.get();
@@ -322,11 +344,19 @@ public class LookupDAO implements ILookupDAO
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 
+<<<<<<< HEAD
 			final ImmutableMap.Builder<ReferenceId, ExplainedOptional<TableRefInfo>> map = ImmutableMap.builder();
 			while (rs.next())
 			{
 				final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
 				final ExplainedOptional<TableRefInfo> tableRefInfo = retrieveTableRefInfo(rs);
+=======
+			final ImmutableMap.Builder<ReferenceId, ExplainedOptional<TableRefTable>> map = ImmutableMap.builder();
+			while (rs.next())
+			{
+				final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
+				final ExplainedOptional<TableRefTable> tableRefInfo = retrieveTableRefInfo(rs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				map.put(referenceId, tableRefInfo);
 			}
 
@@ -344,7 +374,11 @@ public class LookupDAO implements ILookupDAO
 		}
 	}
 
+<<<<<<< HEAD
 	private static ExplainedOptional<TableRefInfo> retrieveTableRefInfo(final ResultSet rs) throws SQLException
+=======
+	private static ExplainedOptional<TableRefTable> retrieveTableRefInfo(final ResultSet rs) throws SQLException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
 		final String TableName = rs.getString(1);
@@ -378,7 +412,11 @@ public class LookupDAO implements ILookupDAO
 		final String referenceName = rs.getString("ReferenceName");
 		final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
 
+<<<<<<< HEAD
 		return ExplainedOptional.of(TableRefInfo.builder()
+=======
+		return ExplainedOptional.of(TableRefTable.builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.identifier("AD_Reference[ID=" + referenceId.getRepoId() + ",Name=" + referenceName + "]")
 				.tableName(TableName)
 				.keyColumn(KeyColumn)
@@ -399,7 +437,11 @@ public class LookupDAO implements ILookupDAO
 
 	@Override
 	@Cached
+<<<<<<< HEAD
 	public TableRefInfo retrieveTableDirectRefInfo(final String columnName)
+=======
+	public TableRefTable retrieveTableDirectRefInfo(final String columnName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotEmpty(columnName, "ColumnName not empty");
 
@@ -434,7 +476,11 @@ public class LookupDAO implements ILookupDAO
 
 		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(tableName);
 
+<<<<<<< HEAD
 		return TableRefInfo.builder()
+=======
+		return TableRefTable.builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.identifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
 				.tableName(tableName)
 				.keyColumn(keyColumn)
@@ -444,10 +490,17 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public TableRefInfo retrieveAccountTableRefInfo()
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		return TableRefInfo.builder()
+=======
+	public TableRefTable retrieveAccountTableRefInfo()
+	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		return TableRefTable.builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.identifier("Account - C_ValidCombination_ID")
 				.tableName(I_C_ValidCombination.Table_Name)
 				.keyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
@@ -457,7 +510,11 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ILookupDisplayInfo retrieveLookupDisplayInfo(@NonNull final TableRefInfo tableRefInfo)
+=======
+	public ILookupDisplayInfo retrieveLookupDisplayInfo(@NonNull final TableRefTable tableRefTable)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
@@ -471,7 +528,11 @@ public class LookupDAO implements ILookupDAO
 		final StringBuilder sqlOrderBy = new StringBuilder();
 		final List<Object> sqlOrderByParams = new ArrayList<>();
 		//
+<<<<<<< HEAD
 		if (tableRefInfo.isValueDisplayed())
+=======
+		if (tableRefTable.isValueDisplayed())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (sqlWhereClauseColumn.length() > 0)
 			{
@@ -490,7 +551,11 @@ public class LookupDAO implements ILookupDAO
 		//
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
+<<<<<<< HEAD
 			if (I_AD_Table.Table_Name.equals(tableRefInfo.getTableName()))
+=======
+			if (I_AD_Table.Table_Name.equals(tableRefTable.getTableName()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				if (sqlWhereClauseColumn.length() > 0)
 				{
@@ -501,7 +566,11 @@ public class LookupDAO implements ILookupDAO
 			}
 		}
 		//
+<<<<<<< HEAD
 		if (Check.isEmpty(tableRefInfo.getDisplayColumn(), true))
+=======
+		if (Check.isEmpty(tableRefTable.getDisplayColumn(), true))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			// Fetch IsIdentifier fields
 			if (sqlWhereClauseColumn.length() > 0)
@@ -524,7 +593,11 @@ public class LookupDAO implements ILookupDAO
 				sqlWhereClauseColumn.append(" OR ");
 			}
 			sqlWhereClauseColumn.append("c.").append(I_AD_Column.COLUMNNAME_ColumnName).append("=?");
+<<<<<<< HEAD
 			sqlWhereClauseColumnParams.add(tableRefInfo.getDisplayColumn());
+=======
+			sqlWhereClauseColumnParams.add(tableRefTable.getDisplayColumn());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final List<Object> sqlParams = new ArrayList<>();
@@ -542,7 +615,11 @@ public class LookupDAO implements ILookupDAO
 
 		sql.append(" WHERE ");
 		sql.append("t.").append(I_AD_Table.COLUMNNAME_TableName).append("=?");
+<<<<<<< HEAD
 		sqlParams.add(tableRefInfo.getTableName());
+=======
+		sqlParams.add(tableRefTable.getTableName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (sqlWhereClauseColumn.length() > 0)
 		{
@@ -600,7 +677,11 @@ public class LookupDAO implements ILookupDAO
 		// Make sure we have some display columns defined.
 		if (lookupDisplayColumns.isEmpty())
 		{
+<<<<<<< HEAD
 			throw new AdempiereException("There are no lookup display columns defined for " + tableRefInfo.getTableName() + " table."
+=======
+			throw new AdempiereException("There are no lookup display columns defined for " + tableRefTable.getTableName() + " table."
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ "\n HINT: please go to Table and columns, and set IsIdentifier=Y on columns which you want to be part of record's display string.");
 		}
 
@@ -1000,9 +1081,15 @@ public class LookupDAO implements ILookupDAO
 
 	private static class TableRefInfoMap
 	{
+<<<<<<< HEAD
 		private final ImmutableMap<ReferenceId, ExplainedOptional<TableRefInfo>> map;
 
 		public TableRefInfoMap(final Map<ReferenceId, ExplainedOptional<TableRefInfo>> map)
+=======
+		private final ImmutableMap<ReferenceId, ExplainedOptional<TableRefTable>> map;
+
+		public TableRefInfoMap(final Map<ReferenceId, ExplainedOptional<TableRefTable>> map)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.map = ImmutableMap.copyOf(map);
 		}
@@ -1017,6 +1104,7 @@ public class LookupDAO implements ILookupDAO
 
 		public boolean hasTableReference(@NonNull final ReferenceId referenceId)
 		{
+<<<<<<< HEAD
 			final ExplainedOptional<TableRefInfo> result = map.get(referenceId);
 			return result != null && result.isPresent();
 		}
@@ -1024,6 +1112,15 @@ public class LookupDAO implements ILookupDAO
 		public ExplainedOptional<TableRefInfo> getById(@NonNull final ReferenceId referenceId)
 		{
 			final ExplainedOptional<TableRefInfo> result = map.get(referenceId);
+=======
+			final ExplainedOptional<TableRefTable> result = map.get(referenceId);
+			return result != null && result.isPresent();
+		}
+
+		public ExplainedOptional<TableRefTable> getById(@NonNull final ReferenceId referenceId)
+		{
+			final ExplainedOptional<TableRefTable> result = map.get(referenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return result != null
 					? result
 					: ExplainedOptional.emptyBecause("Unknown AD_Reference_ID=" + referenceId.getRepoId());

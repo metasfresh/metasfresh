@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Optional;
@@ -15,6 +16,19 @@ import de.metas.email.mailboxes.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import de.metas.cache.CCache;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.MailboxId;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -41,7 +55,11 @@ import de.metas.util.Services;
 @Repository
 public class DerKurierShipperConfigRepository
 {
+<<<<<<< HEAD
 	private static CCache<Integer, Optional<DerKurierShipperConfig>> cache = CCache.newCache(
+=======
+	private static final CCache<Integer, Optional<DerKurierShipperConfig>> cache = CCache.newCache(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			I_DerKurier_Shipper_Config.Table_Name + "#by#" + I_DerKurier_Shipper_Config.COLUMNNAME_M_Shipper_ID,
 			10,
 			CCache.EXPIREMINUTES_Never);
@@ -78,7 +96,11 @@ public class DerKurierShipperConfigRepository
 				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())
 				.customerNumber(shipperConfigRecord.getDK_CustomerNumber())
 				.parcelNumberAdSequenceId(shipperConfigRecord.getAD_Sequence_ID())
+<<<<<<< HEAD
 				.deliveryOrderMailBoxOrNull(loadMailboxOrNull(shipperConfigRecord.getAD_MailBox_ID()))
+=======
+				.deliveryOrderMailBoxId(MailboxId.ofRepoIdOrNull(shipperConfigRecord.getAD_MailBox_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.deliveryOrderRecipientEmailOrNull(EMailAddress.ofNullableString(shipperConfigRecord.getEMail_To()))
 				.collectorCode(shipperConfigRecord.getCollectorCode())
 				.customerCode(shipperConfigRecord.getCustomerCode())
@@ -88,6 +110,7 @@ public class DerKurierShipperConfigRepository
 
 		return Optional.of(shipperConfig);
 	}
+<<<<<<< HEAD
 
 	private Mailbox loadMailboxOrNull(final int mailBoxId)
 	{
@@ -109,4 +132,6 @@ public class DerKurierShipperConfigRepository
 				.build();
 		return mailbox;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

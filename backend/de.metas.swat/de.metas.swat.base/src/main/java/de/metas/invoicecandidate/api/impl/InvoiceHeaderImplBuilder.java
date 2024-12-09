@@ -3,6 +3,11 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocTypeId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -11,11 +16,20 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+<<<<<<< HEAD
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
+=======
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -31,9 +45,24 @@ import java.util.Set;
  *
  * @author tsa
  */
+<<<<<<< HEAD
 public class InvoiceHeaderImplBuilder
 {
 	private I_C_DocType docTypeInvoice = null;
+=======
+@ToString
+public class InvoiceHeaderImplBuilder
+{
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
+
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
+
+	@Setter
+	@Getter
+	private boolean takeDocTypeFromPool = false;
+
+	private DocTypeId docTypeInvoiceId = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -42,6 +71,10 @@ public class InvoiceHeaderImplBuilder
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
+<<<<<<< HEAD
+=======
+	@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private int AD_Org_ID;
 
 	@Nullable
@@ -53,6 +86,7 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
 
+<<<<<<< HEAD
 	private BPartnerInfo billTo;
 
 	private String paymentRule;
@@ -62,6 +96,21 @@ public class InvoiceHeaderImplBuilder
 	private int SalesRep_User_ID;
 
 	// 03805: add attribute C_Currency_ID
+=======
+	@Getter
+	private BPartnerInfo billTo;
+
+	@Getter
+	private String paymentRule;
+
+	@Getter
+	private int Sales_BPartner_ID;
+
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
+
+	// 03805: add attribute C_Currency_ID
+	@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private int C_Currency_ID;
 
 	// 04258
@@ -88,12 +137,15 @@ public class InvoiceHeaderImplBuilder
 		super();
 	}
 
+<<<<<<< HEAD
 	@Override
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public InvoiceHeaderImpl build()
 	{
 		final InvoiceHeaderImpl invoiceHeader = new InvoiceHeaderImpl();
@@ -101,8 +153,15 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
+<<<<<<< HEAD
 		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());
 		invoiceHeader.setIsSOTrx(isSOTrx());
+=======
+		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
+		invoiceHeader.setDocTypeInvoiceId(getDocTypeInvoiceId());
+		invoiceHeader.setIsSOTrx(isSOTrx());
+		invoiceHeader.setIsTakeDocTypeFromPool(isTakeDocTypeFromPool());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
@@ -178,6 +237,7 @@ public class InvoiceHeaderImplBuilder
 		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
+<<<<<<< HEAD
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
@@ -188,6 +248,58 @@ public class InvoiceHeaderImplBuilder
 		this.docTypeInvoice = checkOverrideModel("DocTypeInvoice", this.docTypeInvoice, docTypeInvoice);
 	}
 
+=======
+	@Nullable
+	public DocTypeInvoicingPoolId getDocTypeInvoicingPoolId()
+	{
+		return docTypeInvoicingPoolId;
+	}
+
+	public void setDocTypeInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		if (this.docTypeInvoicingPoolId != null && !this.docTypeInvoicingPoolId.equals(docTypeInvoicingPoolId))
+		{
+			throw new AdempiereException("DocTypeInvoicingPoolIds do not match!")
+					.appendParametersToMessage()
+					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
+					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
+		}
+
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Nullable
+	public DocTypeId getDocTypeInvoiceId()
+	{
+		return docTypeInvoiceId;
+	}
+
+	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
+	{
+		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId,docTypeInvoiceId))
+		{
+			if (isEnforceUnique)
+			{
+				throw new AdempiereException("DocTypeInvoiceIds do not match!")
+						.appendParametersToMessage()
+						.setParameter("this.docTypeInvoiceId", this.docTypeInvoiceId)
+						.setParameter("docTypeInvoiceId", docTypeInvoiceId);
+			}
+
+			else
+			{
+				this.takeDocTypeFromPool = true;
+			}
+		}
+
+		else
+		{
+			this.docTypeInvoiceId = docTypeInvoiceId;
+		}
+	}
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getPOReference()
 	{
 		return CollectionUtils.singleElementOrNull(POReferences);
@@ -198,7 +310,11 @@ public class InvoiceHeaderImplBuilder
 		normalizeAndAddIfNotNull(POReferences, poReference);
 	}
 
+<<<<<<< HEAD
 	public String getEmail()
+=======
+	public @Nullable String getEmail()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return CollectionUtils.singleElementOrNull(eMails);
 	}
@@ -235,21 +351,27 @@ public class InvoiceHeaderImplBuilder
 		this.paymentRule = paymentRule;
 	}
 
+<<<<<<< HEAD
 	public String getPaymentRule()
 	{
 		return paymentRule;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
+<<<<<<< HEAD
 	public int getAD_Org_ID()
 	{
 		return AD_Org_ID;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setAD_Org_ID(final int adOrgId)
 	{
 		AD_Org_ID = checkOverrideID("AD_Org_ID", AD_Org_ID, adOrgId);
@@ -297,13 +419,18 @@ public class InvoiceHeaderImplBuilder
 			}
 		}
 
+<<<<<<< HEAD
 
 		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+=======
+		if (this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.billTo = billTo.withContactId(null);
 		}
 	}
 
+<<<<<<< HEAD
 	public BPartnerInfo getBillTo()
 	{
 		return billTo;
@@ -314,6 +441,8 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int get_SaleRep_ID ()
 	{
 		return SalesRep_User_ID;
@@ -328,12 +457,23 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
+<<<<<<< HEAD
 		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
 	}
 
 	public int getC_Currency_ID()
 	{
 		return C_Currency_ID;
+=======
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
+	}
+		else if (salesRep_ID != SalesRep_User_ID)
+	{
+			SalesRep_User_ID = -1;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void setC_Currency_ID(final int currencyId)
@@ -341,6 +481,10 @@ public class InvoiceHeaderImplBuilder
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public InputDataSourceId getAD_InputDataSource_ID()
 	{
 		return inputDataSourceId;
@@ -407,7 +551,11 @@ public class InvoiceHeaderImplBuilder
 		return taxIncluded;
 	}
 
+<<<<<<< HEAD
 	public void setTaxIncluded(boolean taxIncluded)
+=======
+	public void setTaxIncluded(final boolean taxIncluded)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.taxIncluded = checkOverrideBoolean("IsTaxIncluded", this.taxIncluded, taxIncluded);
 	}
@@ -438,7 +586,12 @@ public class InvoiceHeaderImplBuilder
 		collection.add(id);
 	}
 
+<<<<<<< HEAD
 	private static <T> T checkOverride(final String name, final T value, final T valueNew)
+=======
+	@Nullable
+	private static <T> T checkOverride(final String name, final @Nullable T value, @Nullable final T valueNew)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (value == null)
 		{
@@ -482,7 +635,11 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
+<<<<<<< HEAD
 	private static <T> T checkOverrideModel(final String name, final T model, final T modelNew)
+=======
+	private static <T> @Nullable T checkOverrideModel(final String name, final T model, final T modelNew)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (model == null)
 		{
@@ -538,5 +695,8 @@ public class InvoiceHeaderImplBuilder
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -29,10 +29,17 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+<<<<<<< HEAD
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+=======
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -48,6 +55,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -90,11 +101,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ShipmentScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+<<<<<<< HEAD
 	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+	@NonNull private final ModelCacheInvalidationService cacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -271,7 +290,11 @@ public class ShipmentScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE);
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ShipmentSchedule> shipmentSchedules)

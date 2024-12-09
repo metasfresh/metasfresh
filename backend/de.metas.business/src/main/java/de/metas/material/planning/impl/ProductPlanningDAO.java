@@ -177,20 +177,40 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			return null;
 		}
 
+<<<<<<< HEAD
 		return Quantitys.create(maxManufacturedQtyPerOrderDispo, uomId);
+=======
+		return Quantitys.of(maxManufacturedQtyPerOrderDispo, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
 	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery query)
 	{
 		return toSql(query)
+<<<<<<< HEAD
 				.create()
 				.firstOptional(I_PP_Product_Planning.class)
+=======
+				.firstOptional()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.map(ProductPlanningDAO::fromRecord);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ResourceId findPlant(
+=======
+	public Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query)
+	{
+		return toSql(query)
+				.stream()
+				.map(ProductPlanningDAO::fromRecord);
+	}
+
+	@Override
+	public ResourceId findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final int orgRepoId,
 			final I_M_Warehouse warehouse,
 			final int productRepoId,
@@ -295,7 +315,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
+<<<<<<< HEAD
 				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
+=======
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.endOrderBy();
 	}
 

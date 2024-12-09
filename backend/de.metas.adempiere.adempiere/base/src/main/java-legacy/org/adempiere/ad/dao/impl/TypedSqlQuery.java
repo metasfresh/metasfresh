@@ -436,6 +436,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
 	 *
 	 * @return first PO
@@ -450,6 +451,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
 	 */
@@ -1567,7 +1570,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql, params, trxName);
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
@@ -1599,7 +1606,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql, params, trxName);
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -1698,7 +1709,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -1756,7 +1771,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -1850,7 +1869,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute the INSERT and return how many records were inserted
+<<<<<<< HEAD
 		final int countInsert = DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+=======
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

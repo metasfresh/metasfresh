@@ -247,7 +247,11 @@ public class DunningDAO extends AbstractDunningDAO
 			@Override
 			public void run(final String localTrxName)
 			{
+<<<<<<< HEAD
 				result[0] = DB.executeUpdateEx(deleteSQL, new Object[] { Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID() }, localTrxName);
+=======
+				result[0] = DB.executeUpdateAndThrowExceptionOnFail(deleteSQL, new Object[] { Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID() }, localTrxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		});
 		return result[0];

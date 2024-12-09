@@ -93,6 +93,11 @@ public class Adempiere
 			.fullVersion("Version info not loaded")
 			.build();
 
+<<<<<<< HEAD
+=======
+	public static final String ENDPOINT_API_V2 = "/api/v2";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Detail Version as date Used for Client/Server
 	 */

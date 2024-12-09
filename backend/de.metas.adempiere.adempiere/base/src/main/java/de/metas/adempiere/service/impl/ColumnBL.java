@@ -1,9 +1,15 @@
 package de.metas.adempiere.service.impl;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+=======
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -13,9 +19,15 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.util.Check;
 import lombok.NonNull;
+=======
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -43,6 +55,7 @@ public class ColumnBL implements IColumnBL
 {
 
 	@Override
+<<<<<<< HEAD
 	public boolean isRecordIdColumnName(final String columnName)
 	{
 		if (columnName == null)
@@ -73,6 +86,8 @@ public class ColumnBL implements IColumnBL
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getContextADTableID(final Properties m_ctx, final int m_curWindowNo, final String columnName)
 	{
 		if (columnName == null)
@@ -81,7 +96,11 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
+<<<<<<< HEAD
 		if (!isRecordIdColumnName(columnName))
+=======
+		if (!IColumnBL.isRecordIdColumnName(columnName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return 0;
 		}

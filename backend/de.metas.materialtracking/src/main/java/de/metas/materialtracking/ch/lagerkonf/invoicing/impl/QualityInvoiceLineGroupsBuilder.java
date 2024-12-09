@@ -1,5 +1,6 @@
 package de.metas.materialtracking.ch.lagerkonf.invoicing.impl;
 
+<<<<<<< HEAD
 import static java.math.BigDecimal.ONE;
 
 /*
@@ -42,6 +43,9 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -77,10 +81,34 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+<<<<<<< HEAD
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
  *
+=======
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.math.BigDecimal.ONE;
+
+/**
+ * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
+ * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * Before you start using it you need to configure this builder:
  * <ul>
  * <li>{@link #setPricingContext(IPricingContext)} - set pricing context to be used when calculating the prices
@@ -88,10 +116,17 @@ import lombok.NonNull;
  * </ul>
  *
  * To generate the {@link IQualityInvoiceLineGroup}s you need to call: {@link #create()}.
+<<<<<<< HEAD
  *
  * To get the results you need to call: {@link #getCreatedInvoiceLineGroups()}.
  *
  * See https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view
+=======
+ * <p>
+ * To get the results you need to call: {@link #getCreatedInvoiceLineGroups()}.
+ * <p>
+ * See <a href="https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view">https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  *
  * @author tsa
  *
@@ -112,7 +147,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	private IVendorReceipt<?> _receiptFromVendor;
 	private IPricingContext _pricingContext;
 
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
+=======
+	private static final Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	// Result
 	private final List<IQualityInvoiceLineGroup> _createdInvoiceLineGroups = new ArrayList<>();
@@ -162,6 +201,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return new ArrayList<>(_createdInvoiceLineGroups);
 	}
 
+<<<<<<< HEAD
 	private void addCreatedInvoiceLineGroup(final IQualityInvoiceLineGroup invoiceLineGroup)
 	{
 		//
@@ -169,6 +209,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		Check.assumeNotNull(invoiceLineGroup, "invoiceLineGroup not null");
 
 		//
+=======
+	private void addCreatedInvoiceLineGroup(@NonNull final IQualityInvoiceLineGroup invoiceLineGroup)
+	{
+		//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Validate the invoiceable line
 		final IQualityInvoiceLine invoiceableLine = invoiceLineGroup.getInvoiceableLine();
 		Check.assumeNotNull(invoiceableLine, "invoiceLineGroup shall have invoiceable line set: {}", invoiceLineGroup);
@@ -213,7 +258,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return _pricingContext;
 	}
 
+<<<<<<< HEAD
 	private final IQualityInspectionLinesCollection getQualityInspectionLinesCollection()
+=======
+	private IQualityInspectionLinesCollection getQualityInspectionLinesCollection()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_qiLines == null)
 		{
@@ -280,14 +329,34 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		}
 
 		//
+<<<<<<< HEAD
 		// Additional fees
+=======
+		// Produced Total Without By Product Additional Fees
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// e.g.
 		// Abzug für Beitrag Basic-Linie 9831.2 kg -0.06 -589.88
 		// Abzug für Beitrag Verkaufsförderung
 		boolean firstItem = true; //
+<<<<<<< HEAD
 		for (final IInvoicingItem feeItem : getQualityBasedConfig().getAdditionalFeeProducts())
 		{
 			createQualityInvoiceLineGroup_AditionalFees(feeItem, firstItem); // is called with firstItem==true only one time
+=======
+		for (final IInvoicingItem feeItem : getQualityBasedConfig().getProducedTotalWithoutByProductsAdditionalFeeProducts())
+		{
+			createQualityInvoiceLineGroup_AdditionalFees(feeItem, QualityInspectionLineType.ProducedTotalWithoutByProducts, firstItem); // is called with firstItem==true only one time
+			firstItem = false;
+		}
+
+		//
+		// Raw Additional Fees
+		// e.g.
+		// Abzug ungewaschene BIO Karotten
+		for (final IInvoicingItem feeItem : getQualityBasedConfig().getRawAdditionalFeeProducts())
+		{
+			createQualityInvoiceLineGroup_AdditionalFees(feeItem, QualityInspectionLineType.Raw, firstItem); // is called with firstItem==true only one time
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			firstItem = false;
 		}
 
@@ -349,8 +418,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Returns the first {@link IQualityInvoiceLineGroup} that is supposed to be displayed
+<<<<<<< HEAD
 	 *
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private IQualityInvoiceLineGroup getFirstDisplayedGroupOrNull()
 	{
@@ -372,8 +444,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Creates <b>one</b> "Auslagerung per..." record with the date of the qualityInspectionOrder and the full quantity that was received so far.
+<<<<<<< HEAD
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/09668_Karotten_Frisch_L%C3%B6sung_ohne_Qualit%C3%A4tslagerausgleich_%28103397626711%29
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private void createQualityInvoiceLineGroups_RegularOrdersSimplified()
 	{
@@ -735,6 +810,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
 	 * @param feeItem
 	 * @param firstItem indicates if this is the first fee-item. If it is, then the method will prepend a details line that is about the total produced goods (without By-Products).
@@ -742,6 +818,13 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 */
 	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_AditionalFees(
 			final IInvoicingItem feeItem,
+=======
+	 * @param firstItem indicates if this is the first fee-item. If it is, then the method will prepend a details line that is about the total produced goods (without By-Products) or about raw goods.
+	 */
+	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_AdditionalFees(
+			@NonNull final IInvoicingItem feeItem,
+			@NonNull final QualityInspectionLineType type,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean firstItem)
 	{
 		//
@@ -752,10 +835,17 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// Detail: our reference line which we will use to calculate the fee invoiceable line
 		// (i.e. Ausbeute (Marktfähige Ware))
 		// Create the detail only if it's first line
+<<<<<<< HEAD
 		final IQualityInspectionLine producedTotalWithoutByProductsLine = getQualityInspectionLinesCollection().getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
 		if (firstItem)
 		{
 			final QualityInvoiceLine detail = createQualityInvoiceLine(producedTotalWithoutByProductsLine);
+=======
+		final IQualityInspectionLine qualityInspectionLine = getQualityInspectionLinesCollection().getByType(type);
+		if (firstItem)
+		{
+			final QualityInvoiceLine detail = createQualityInvoiceLine(qualityInspectionLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			detail.setDisplayed(true);
 			invoiceLineGroup.addDetailBefore(detail);
 		}
@@ -768,7 +858,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			invoiceableLine.setDisplayed(true);
 			invoiceableLine.setM_Product(feeItem.getM_Product());
+<<<<<<< HEAD
 			invoiceableLine.setQty(Quantity.of(producedTotalWithoutByProductsLine.getQtyProjected(), producedTotalWithoutByProductsLine.getC_UOM()));
+=======
+			invoiceableLine.setQty(Quantity.of(qualityInspectionLine.getQtyProjected(), qualityInspectionLine.getC_UOM()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			// Pricing
 			final IEditablePricingContext pricingCtx = createPricingContext(invoiceableLine);
@@ -777,7 +871,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			pricingResult.setPriceStd(pricingResult.getPriceStd().negate());
 			pricingResult.setPriceLimit(pricingResult.getPriceLimit().negate());
 			// NOTE: we need to set the Price UOM to same UOM as Qty to avoid conversion errors like (cannot convert from Kg to Stuck)
+<<<<<<< HEAD
 			pricingResult.setPriceUomId(UomId.ofRepoId(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID()));
+=======
+			pricingResult.setPriceUomId(UomId.ofRepoId(qualityInspectionLine.getC_UOM().getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			invoiceableLine.setPrice(pricingResult);
 		}
 
@@ -858,9 +956,12 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Applies for Main Product, Co-Product and By-Product
+<<<<<<< HEAD
 	 *
 	 * @param producedMaterial
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_ProducedMaterial(
 			final IQualityInspectionLine producedMaterial,
@@ -1030,12 +1131,15 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 * Creates and returns a single QualityInvoiceLine that references the given <code>productionOrder</code>.
 	 * <p>
 	 * Note: we also return a line if there is no QualityAdjustment to be invoiced, in order to keep track of every single regular PP_Order.
+<<<<<<< HEAD
 	 * TODO cleanup javadoc
 	 *
 	 * @param productionOrder
 	 * @param overallAvgProducedQtyPerTU
 	 * @param labelToUse
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@VisibleForTesting
 	private QualityInvoiceLine createQualityInvoiceLineDetail_RegularOrder(
@@ -1089,9 +1193,12 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Checks if our config has a QualityAdjustment for the given date.
+<<<<<<< HEAD
 	 *
 	 * @param dateOfProduction
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private boolean isInvoiceRegularOrderForDate(final Timestamp dateOfProduction)
 	{
@@ -1111,6 +1218,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return true;
 	}
 
+<<<<<<< HEAD
 	// private QualityInvoiceLine createDetailLineForRegularOrder(
 	// final Timestamp date,
 	// final I_C_UOM uom,
@@ -1125,6 +1233,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	// return detail;
 	// }
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private QualityInvoiceLine createDetailForSingleRegularOrder(
 			@NonNull final I_C_UOM uom,
 			final IHandlingUnitsInfo huInfo,
@@ -1218,11 +1328,16 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Creates an {@link QualityInvoiceLine} instance.
+<<<<<<< HEAD
 	 *
 	 * Product, Qty, UOM are copied from given {@link IQualityInspectionLine}.
 	 *
 	 * @param qiLine
 	 * @return
+=======
+	 * <p>
+	 * Product, Qty, UOM are copied from given {@link IQualityInspectionLine}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private QualityInvoiceLine createQualityInvoiceLine(final IQualityInspectionLine qiLine)
 	{

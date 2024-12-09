@@ -1,5 +1,6 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
+<<<<<<< HEAD
     "id" : 100024,
     "orgId" : 100016,
     "vendorBPartnerId" : 2,
@@ -30,12 +31,34 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
         }
       }
     ]
+=======
+    "currencyId": 100023,
+    "id": 100024,
+    "mediatedOrderLines": [
+      {
+        "id": 100025,
+        "invoicedCommissionPoints": 200.00,
+        "orderedQty": {
+          "qty": "10",
+          "uomId": 100022
+        },
+        "productId": 100,
+        "updated": "1970-01-19T21:05:57.038Z"
+      }
+    ],
+    "orderDateAcct": "2021-03-18",
+    "orgBPartnerId": 1,
+    "orgId": 100016,
+    "updated": "1970-01-19T21:05:57.038Z",
+    "vendorBPartnerId": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxNotIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
+<<<<<<< HEAD
     "id" : 100034,
     "orgId" : 100026,
     "vendorBPartnerId" : 2,
@@ -66,5 +89,26 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
         }
       }
     ]
+=======
+    "currencyId": 100033,
+    "id": 100034,
+    "mediatedOrderLines": [
+      {
+        "id": 100035,
+        "invoicedCommissionPoints": 220,
+        "orderedQty": {
+          "qty": "10",
+          "uomId": 100032
+        },
+        "productId": 100,
+        "updated": "1970-01-19T21:05:57.038Z"
+      }
+    ],
+    "orderDateAcct": "2021-03-18",
+    "orgBPartnerId": 1,
+    "orgId": 100026,
+    "updated": "1970-01-19T21:05:57.038Z",
+    "vendorBPartnerId": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

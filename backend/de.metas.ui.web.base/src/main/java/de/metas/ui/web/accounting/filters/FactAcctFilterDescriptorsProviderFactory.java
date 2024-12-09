@@ -30,8 +30,13 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+=======
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +44,10 @@ import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Component
 public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -54,9 +62,13 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 
 	@Override
 	@NonNull
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (!isValidTable(context.getTableName()))
 		{
@@ -71,6 +83,7 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 						.setDisplayName(msgBL.translatable("AccountNumber"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 								.setMandatory(true)
 								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
 								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
@@ -81,6 +94,20 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
 								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
 								.setWidgetType(DocumentFieldWidgetType.Text)
+=======
+											  .mandatory(true)
+											  .fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
+											  .displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
+											  .widgetType(DocumentFieldWidgetType.Text)
+											  .operator(Operator.EQUAL)
+						)
+						.addParameter(DocumentFilterParamDescriptor.builder()
+											  .mandatory(true)
+											  .fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
+											  .displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
+											  .widgetType(DocumentFieldWidgetType.Text)
+											  .operator(Operator.EQUAL)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						)
 						//
 						.build()

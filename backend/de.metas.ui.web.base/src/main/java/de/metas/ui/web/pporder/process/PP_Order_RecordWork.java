@@ -193,7 +193,11 @@ public class PP_Order_RecordWork
 				.order(order)
 				.orderActivity(orderRoutingActivity)
 				.movementDate(SystemTime.asZonedDateTime())
+<<<<<<< HEAD
 				.qtyMoved(Quantitys.createZero(finishedGoodsUomId))
+=======
+				.qtyMoved(Quantitys.zero(finishedGoodsUomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.durationSetup(Duration.ZERO)
 				.duration(duration)
 				.build());

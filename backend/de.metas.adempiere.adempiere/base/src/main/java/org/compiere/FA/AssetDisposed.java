@@ -109,7 +109,11 @@ public class AssetDisposed extends JavaProcess
 				  + "WHERE Processed='Y'" 
 				  + " AND A_Entry_Type = 'DIS'" + clientCheck;
 			
+<<<<<<< HEAD
 			no = DB.executeUpdate (sql,null);
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		
@@ -141,7 +145,11 @@ public class AssetDisposed extends JavaProcess
 			      	  + "SET A_ACCUMULATED_DEPR = " + v_Balance 
 			    	  + "WHERE A_DEPRECIATION_WORKFILE.A_ASSET_ID = " + AssetDisposed.getA_Asset_ID()
 			    	  + "AND A_DEPRECIATION_WORKFILE.POSTINGTYPE = '" + v_PostingType + "'";
+<<<<<<< HEAD
 			      DB.executeUpdate(sql,null);
+=======
+			      DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			      
 			      v_Balance = new BigDecimal("0.0");
 			      v_PostingType = rs.getString("PostingType");
@@ -209,13 +217,21 @@ public class AssetDisposed extends JavaProcess
 			    + " ASSETDISPOSALDATE = " + DB.TO_DATE(AssetDisposed.getA_Disposed_Date())
 			    + " WHERE A_ASSET_ID = " + AssetDisposed.getA_Asset_ID();
 			
+<<<<<<< HEAD
 			DB.executeUpdate(sql,null);
+=======
+			DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			
 			sql = "UPDATE A_DEPRECIATION_WORKFILE "
 		      	  + "SET A_ACCUMULATED_DEPR = " + v_Balance 
 		    	  + "WHERE A_DEPRECIATION_WORKFILE.A_ASSET_ID = " + AssetDisposed.getA_Asset_ID()
 		    	  + "AND A_DEPRECIATION_WORKFILE.POSTINGTYPE = '" + v_PostingType + "'";
+<<<<<<< HEAD
 		    DB.executeUpdate(sql,null);
+=======
+		    DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		    
 		    MAssetChange change = new MAssetChange (getCtx(), 0, null);
 			change.setA_Asset_ID(AssetDisposed.getA_Asset_ID());			

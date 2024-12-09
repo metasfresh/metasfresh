@@ -65,6 +65,11 @@ export const ARROW_UP_KEY = 'ArrowUp';
  */
 export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
 
+<<<<<<< HEAD
+=======
+export const NUMERIC_FIELD_TYPES = [...AMOUNT_FIELD_TYPES, 'Integer', 'Number'];
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @constant
  * @type {array} ToDo: Description for the constant.

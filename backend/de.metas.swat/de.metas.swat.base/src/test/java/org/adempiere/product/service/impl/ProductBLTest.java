@@ -21,7 +21,11 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class ProductBLTest
 {
@@ -55,7 +59,11 @@ public class ProductBLTest
 			save(product1);
 
 			assertThat(productBL.getAttributeSetId(product1)).isEqualTo(AttributeSetId.NONE);
+<<<<<<< HEAD
 		}
+=======
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		@Test
 		public void ProductCategory()

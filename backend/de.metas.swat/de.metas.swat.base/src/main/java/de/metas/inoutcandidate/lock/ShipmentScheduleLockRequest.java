@@ -1,10 +1,14 @@
 package de.metas.inoutcandidate.lock;
 
+<<<<<<< HEAD
 import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -13,6 +17,12 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.swat.base

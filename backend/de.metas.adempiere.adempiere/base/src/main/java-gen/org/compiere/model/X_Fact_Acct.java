@@ -82,6 +82,21 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void setAccountConceptualName (final java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName()
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 //	@Override
 //	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
 //	{
@@ -356,6 +371,24 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1)
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -393,6 +426,24 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1)
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
@@ -578,6 +629,36 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1)
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
@@ -1235,6 +1316,21 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void setIsOpenItemsReconciled (final boolean IsOpenItemsReconciled)
+	{
+		set_Value (COLUMNNAME_IsOpenItemsReconciled, IsOpenItemsReconciled);
+	}
+
+	@Override
+	public boolean isOpenItemsReconciled()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItemsReconciled);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/** Set Line ID.
 		@param Line_ID 
 		Transaction line ID (internal)
@@ -1261,6 +1357,36 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
@@ -1334,6 +1460,80 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void setOI_OpenAmount (final @Nullable BigDecimal OI_OpenAmount)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmount, OI_OpenAmount);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmount()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setOI_OpenAmountSource (final @Nullable BigDecimal OI_OpenAmountSource)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmountSource, OI_OpenAmountSource);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmountSource()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmountSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/**
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType()
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
+	}
+
+	@Override
+	public void setOpenItemKey (final @Nullable java.lang.String OpenItemKey)
+	{
+		set_Value (COLUMNNAME_OpenItemKey, OpenItemKey);
+	}
+
+	@Override
+	public java.lang.String getOpenItemKey()
+	{
+		return get_ValueAsString(COLUMNNAME_OpenItemKey);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/** 
 	 * PostingType AD_Reference_ID=125
 	 * Reference name: _Posting Type

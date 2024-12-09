@@ -243,6 +243,7 @@ public final class JSONViewLayout
 		return description;
 	}
 
+<<<<<<< HEAD
 	public String getEmptyResultText()
 	{
 		return emptyResultText;
@@ -253,21 +254,27 @@ public final class JSONViewLayout
 		return emptyResultHint;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
 	}
 
+<<<<<<< HEAD
 	public boolean hasElements()
 	{
 		return !elements.isEmpty();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
 	}
 
+<<<<<<< HEAD
 	public boolean isSupportAttributes()
 	{
 		return supportAttributes;
@@ -289,6 +296,8 @@ public final class JSONViewLayout
 		this.newRecordCaption = newRecordCaption;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setViewId(final String viewId)
 	{
 		this.viewId = viewId;

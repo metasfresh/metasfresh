@@ -22,7 +22,10 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.databind.JsonNode;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
@@ -30,6 +33,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+<<<<<<< HEAD
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor;
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor;
@@ -55,6 +59,34 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+=======
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.processor.BuildOrdersContextProcessor;
+import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonProductLookup;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -72,13 +104,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.loadAsString;
+<<<<<<< HEAD
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_ADDRESS_HTTP_URL;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_SALUTATION_DISPLAY_NAME;
@@ -87,6 +125,7 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CREATE_PAYMENT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
+<<<<<<< HEAD
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_DISPLAY_NAME;
@@ -97,6 +136,20 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+=======
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_PROCESS;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_DISPLAY_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_ID;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_OLCAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -127,7 +180,11 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = HAPPY_FLOW_ZERO_TAX + "65_JsonESRuntimeParameterUpsertRequest.json";
 
+<<<<<<< HEAD
 	private static final String JSON_OL_CAND_CLEAR_REQUEST = HAPPY_FLOW_ZERO_TAX + "70_JsonOLCandClearRequest.json";
+=======
+	private static final String JSON_OL_CAND_PROCESS_REQUEST = HAPPY_FLOW_ZERO_TAX + "70_JsonOLCandProcessRequest.json";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -164,6 +221,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	{
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
+<<<<<<< HEAD
 		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
 		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
@@ -173,6 +231,19 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 							   successfullyClearOrdersProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor);
+=======
+		final MockSuccessfullyProcessOLCandProcessor successfullyProcessOLCandProcessor = new MockSuccessfullyProcessOLCandProcessor();
+		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
+		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
+
+		prepareRouteForTesting(createdBPartnerProcessor,
+							   successfullyCreatedOLCandProcessor,
+							   successfullyProcessOLCandProcessor,
+							   runtimeParamsProcessor,
+							   createPaymentProcessor,
+							   successfullyCalledGetOrderPage);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		context.start();
 
@@ -191,11 +262,19 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		final MockEndpoint olCandMockEndpoint = getMockEndpoint(MOCK_OL_CAND_CREATE);
 		olCandMockEndpoint.expectedBodiesReceived(objectMapper.readValue(olCandCreateRequestIS, JsonOLCandCreateBulkRequest.class));
 
+<<<<<<< HEAD
 		//validate JsonOLCandClearRequest
 		final InputStream jsonOLCandClearRequest = this.getClass().getResourceAsStream(JSON_OL_CAND_CLEAR_REQUEST);
 
 		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
 		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
+=======
+		//validate JsonOLCandProcessRequest
+		final InputStream jsonOLCandProcessRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_PROCESS_REQUEST);
+
+		final MockEndpoint olCandProcessEndpoint = getMockEndpoint(MOCK_OL_CAND_PROCESS);
+		olCandProcessEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandProcessRequestIS, JsonOLCandProcessRequest.class));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//validate create payment request
 		final InputStream jsonCreatePaymentRequest = this.getClass().getResourceAsStream(JSON_ORDER_PAYMENT_CREATE_REQUEST);
@@ -213,15 +292,23 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
+<<<<<<< HEAD
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+=======
+		assertThat(successfullyProcessOLCandProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertMockEndpointsSatisfied();
 	}
 
 	private void prepareRouteForTesting(
 			final MockUpsertBPartnerProcessor upsertBPartnerProcessor,
 			final MockSuccessfullyCreatedOLCandProcessor olCandProcessor,
+<<<<<<< HEAD
 			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
 			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor) throws Exception
@@ -230,6 +317,22 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 									  .replace()
 									  .process(new MockGetOrdersProcessor()));
+=======
+			final MockSuccessfullyProcessOLCandProcessor processOLCandProcessor,
+			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage) throws Exception
+	{
+		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
+							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
+									  .replace()
+									  .process(new MockBuildOrdersContextProcessor()));
+
+		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
+							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)
+									  .after()
+									  .process(successfullyCalledGetOrderPage));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
@@ -255,11 +358,19 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 										  .process(createPaymentProcessor);
 							  });
 
+<<<<<<< HEAD
 		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_OL_CAND_CLEAR)
 									  .process(olCandClearProcessor));
+=======
+		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_OL_CAND_PROCESS)
+									  .process(processOLCandProcessor));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
@@ -268,15 +379,28 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 									  .process(runtimeParamsProcessor));
 	}
 
+<<<<<<< HEAD
 	public static class MockGetOrdersProcessor implements Processor
 	{
 		@Override
 		public void process(final Exchange exchange) throws IOException
 		{
+=======
+	public static class MockBuildOrdersContextProcessor implements Processor
+	{
+		protected int called = 0;
+
+		@Override
+		public void process(final Exchange exchange) throws IOException
+		{
+			called++;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			// mock getOrders
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new JavaTimeModule());
 
+<<<<<<< HEAD
 			final InputStream root = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonNode rootNode = mapper.readValue(root, JsonNode.class);
 			final JsonNode arrayJsonNode = rootNode.get(JSON_NODE_DATA);
@@ -298,6 +422,8 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			//set up the exchange
 			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
@@ -311,16 +437,35 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
 					.productLookup(JsonProductLookup.ProductId)
 					.build();
+<<<<<<< HEAD
 			final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
 
 			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 			exchange.getIn().setBody(orderCandidates);
+=======
+			final MultiQueryRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE));
+
+			// mock shopware client
+			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper, externalSystemRequest);
+
+			final ImportOrdersRouteContext ordersContext = BuildOrdersContextProcessor.buildContext(
+					externalSystemRequest,
+					shopwareClient,
+					currencyInfoProvider,
+					salutationInfoProvider,
+					ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 		}
 
 		@NonNull
+<<<<<<< HEAD
 		private ShopwareClient prepareShopwareClientMock(final ObjectMapper mapper) throws IOException
+=======
+		private ShopwareClient prepareShopwareClientMock(final ObjectMapper mapper, final JsonExternalSystemRequest externalSystemRequest) throws IOException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
 			final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
@@ -384,7 +529,24 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonCustomerGroups.class), any());
 
+<<<<<<< HEAD
 			return shopwareClientSpy;
 		}
 	}
 }
+=======
+			//8. mock get orders
+			final String orders = loadAsString(JSON_ORDERS_RESOURCE_PATH);
+
+			final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper
+					.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE));
+
+			Mockito.doReturn(ResponseEntity.ok(orders))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.POST), eq(String.class), eq(shopware6QueryRequest));
+
+			return shopwareClientSpy;
+		}
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

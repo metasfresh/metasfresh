@@ -247,7 +247,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		try
 		{
+<<<<<<< HEAD
 			final int countLocked = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			final int countLocked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
 			{
 				throw new LockFailedException("Nothing locked for selection");
@@ -362,7 +366,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return true;
 		}
 		catch (final DBUniqueConstraintException e)
@@ -428,7 +436,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+<<<<<<< HEAD
 			final int countChanged = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			final int countChanged = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return countChanged > 0;
 		}
 		catch (final Exception e)
@@ -460,8 +472,12 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+<<<<<<< HEAD
 			//noinspection UnnecessaryLocalVariable
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return countUnlocked;
 		}
 		catch (final Exception e)
@@ -486,7 +502,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+<<<<<<< HEAD
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return countUnlocked > 0;
 		}
 		catch (final Exception e)
@@ -510,8 +530,12 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+<<<<<<< HEAD
 			//noinspection UnnecessaryLocalVariable
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+=======
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return countUnlocked;
 		}
 		catch (final Exception e)
@@ -664,7 +688,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		final String sql = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE " + I_T_Lock.COLUMNNAME_IsAutoCleanup + "=?";
 		final Object[] sqlParams = new Object[] { true };
+<<<<<<< HEAD
 		final int countLocksReleased = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+=======
+		final int countLocksReleased = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (countLocksReleased > 0)
 		{
 			logger.info("Deleted {} lock records from {} which were flagged with IsAutoCleanup=true", countLocksReleased, I_T_Lock.Table_Name);

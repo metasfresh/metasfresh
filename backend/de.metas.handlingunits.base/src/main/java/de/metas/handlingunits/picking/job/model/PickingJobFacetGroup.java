@@ -22,7 +22,11 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;

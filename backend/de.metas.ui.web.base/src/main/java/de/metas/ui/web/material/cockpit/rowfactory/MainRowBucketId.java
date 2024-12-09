@@ -1,15 +1,25 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.compiere.util.TimeUtil;
 
+=======
+import de.metas.material.cockpit.ProductWithDemandSupply;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -36,6 +46,20 @@ import lombok.Value;
 @Value
 public class MainRowBucketId
 {
+<<<<<<< HEAD
+=======
+	@NonNull ProductId productId;
+	@NonNull LocalDate date;
+
+	private MainRowBucketId(
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate date)
+	{
+		this.productId = productId;
+		this.date = date;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static MainRowBucketId createInstanceForCockpitRecord(
 			@NonNull final I_MD_Cockpit dataRecord)
 	{
@@ -53,10 +77,24 @@ public class MainRowBucketId
 				date);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public static MainRowBucketId createInstanceForQuantitiesRecord(
+			@NonNull final ProductWithDemandSupply qtyRecord,
+			@NonNull final LocalDate date)
+	{
+		return new MainRowBucketId(
+				qtyRecord.getProductId(),
+				date);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final LocalDate date)
 	{
 		return new MainRowBucketId(productId, date);
 	}
+<<<<<<< HEAD
 
 	ProductId productId;
 	LocalDate date;
@@ -83,4 +121,6 @@ public class MainRowBucketId
 		this.date = date;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

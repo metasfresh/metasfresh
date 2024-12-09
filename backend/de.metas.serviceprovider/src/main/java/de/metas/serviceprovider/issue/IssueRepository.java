@@ -24,7 +24,11 @@ package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
@@ -58,9 +62,15 @@ import java.util.stream.Collectors;
 public class IssueRepository
 {
 	private final IQueryBL queryBL;
+<<<<<<< HEAD
 	private final IModelCacheInvalidationService modelCacheInvalidationService;
 
 	public IssueRepository(final IQueryBL queryBL, final IModelCacheInvalidationService modelCacheInvalidationService)
+=======
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
+
+	public IssueRepository(final IQueryBL queryBL, final ModelCacheInvalidationService modelCacheInvalidationService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.queryBL = queryBL;
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
@@ -145,7 +155,11 @@ public class IssueRepository
 		final CacheInvalidateMultiRequest multiRequest =
 				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_S_Issue.Table_Name, recordIds);
 
+<<<<<<< HEAD
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+=======
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -240,7 +254,11 @@ public class IssueRepository
 				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
+<<<<<<< HEAD
 				.invoicableChildEffort(Quantitys.create(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
+=======
+				.invoicableChildEffort(Quantitys.of(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.latestActivityOnIssue(TimeUtil.asInstant(record.getLatestActivity()))
 				.latestActivityOnSubIssues(TimeUtil.asInstant(record.getLatestActivityOnSubIssues()))
 				.externalIssueNo(record.getExternalIssueNo())

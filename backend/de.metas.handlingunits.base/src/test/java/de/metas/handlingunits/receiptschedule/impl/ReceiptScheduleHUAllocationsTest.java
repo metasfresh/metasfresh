@@ -59,7 +59,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = true;
@@ -67,7 +71,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of New HU Allocations", 10, newHUAllocations.size());
 	}
 
@@ -90,7 +98,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = false; // do not delete old TU allocations and allocate again
@@ -98,7 +110,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of New HU Allocations", 10 + 10, newHUAllocations.size());
 	}
 
@@ -122,7 +138,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations (before split)
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		//
@@ -148,7 +168,11 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations (after split)
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+=======
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertEquals("Invalid amount of New HU Allocations", 16, newHUAllocations.size());
 
 		//

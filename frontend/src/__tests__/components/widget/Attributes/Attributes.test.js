@@ -5,15 +5,37 @@ import Attributes from '../../../../components/widget/Attributes/Attributes';
 import fixtures from '../../../../../test_setup/fixtures/attributes.json';
 import AttributesDropdown
   from '../../../../components/widget/Attributes/AttributesDropdown';
+<<<<<<< HEAD
 
 nock.enableNetConnect();
 
+=======
+import { useSelector } from 'react-redux';
+import { createStore } from 'redux';
+
+nock.enableNetConnect();
+
+const mockStore = createStore((state = {}, action) => state);
+
+jest.mock("react-redux", () => ({
+  ...jest.requireActual("react-redux"),
+  useSelector: jest.fn()
+}));
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 describe('Attributes component', () => {
   beforeEach(() => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .post('/address')
       .reply(200, fixtures.data1.newInstanceResponse);
+<<<<<<< HEAD
+=======
+
+    useSelector.mockImplementation(callback => {
+      return callback(mockStore);
+    });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   });
 
   describe('renders', () => {

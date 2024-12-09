@@ -43,7 +43,11 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
+<<<<<<< HEAD
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -90,7 +94,11 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
+<<<<<<< HEAD
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -137,7 +145,11 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
+<<<<<<< HEAD
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -184,7 +196,11 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
+<<<<<<< HEAD
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }

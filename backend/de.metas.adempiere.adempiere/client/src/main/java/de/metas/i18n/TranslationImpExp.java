@@ -33,7 +33,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+<<<<<<< HEAD
 import de.metas.i18n.IMsgBL;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -537,7 +540,11 @@ public class TranslationImpExp
 				m_sql.insert(0, m_updateSQL);
 
 				// Execute
+<<<<<<< HEAD
 				final int no = DB.executeUpdate(m_sql.toString(), null);
+=======
+				final int no = DB.executeUpdateAndSaveErrorOnFail(m_sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no == 1)
 				{
 					if (LogManager.isLevelFinest())

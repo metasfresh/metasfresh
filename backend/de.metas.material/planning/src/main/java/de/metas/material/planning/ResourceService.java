@@ -26,12 +26,25 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.compiere.Adempiere;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ResourceService
 {
+<<<<<<< HEAD
+=======
+	public static ResourceService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ResourceService();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@NonNull

@@ -22,12 +22,15 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.exceptions.HUNotAssignableException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -35,6 +38,13 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Dedicated assignment listener used then HUs are assigned to receipt schedules.

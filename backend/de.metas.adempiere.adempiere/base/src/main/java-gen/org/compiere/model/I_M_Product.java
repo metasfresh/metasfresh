@@ -1646,6 +1646,30 @@ public interface I_M_Product
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcurementStatus (@Nullable java.lang.String ProcurementStatus);
+
+	/**
+	 * Get Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcurementStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ProcurementStatus = new ModelColumn<>(I_M_Product.class, "ProcurementStatus", null);
+	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Product Type.
 	 * Type of product
 	 *
@@ -1863,21 +1887,37 @@ public interface I_M_Product
 	 * Set Regaltiefe.
 	 * Shelf depth required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setShelfDepth (int ShelfDepth);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShelfDepth (BigDecimal ShelfDepth);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Regaltiefe.
 	 * Shelf depth required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getShelfDepth();
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShelfDepth();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_M_Product, Object> COLUMN_ShelfDepth = new ModelColumn<>(I_M_Product.class, "ShelfDepth", null);
 	String COLUMNNAME_ShelfDepth = "ShelfDepth";
@@ -1909,21 +1949,37 @@ public interface I_M_Product
 	 * Set Regalbreite.
 	 * Shelf width required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setShelfWidth (int ShelfWidth);
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShelfWidth (BigDecimal ShelfWidth);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Regalbreite.
 	 * Shelf width required
 	 *
+<<<<<<< HEAD
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getShelfWidth();
+=======
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShelfWidth();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_M_Product, Object> COLUMN_ShelfWidth = new ModelColumn<>(I_M_Product.class, "ShelfWidth", null);
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";

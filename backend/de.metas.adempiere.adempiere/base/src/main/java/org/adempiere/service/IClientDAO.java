@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import de.metas.email.templates.ClientMailTemplates;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -71,6 +75,11 @@ public interface IClientDAO extends ISingletonService
 
 	ClientEMailConfig getEMailConfigById(ClientId clientId);
 
+<<<<<<< HEAD
+=======
+	ClientMailTemplates getClientMailTemplatesById(ClientId clientId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean isMultilingualDocumentsEnabled(ClientId adClientId);
 
 	String getClientNameById(@NonNull ClientId clientId);

@@ -55,6 +55,7 @@ public class ProductFilterUtil
 	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Product");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+<<<<<<< HEAD
 	
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
@@ -100,6 +101,53 @@ public class ProductFilterUtil
 				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_Discontinued))
 				.setWidgetType(DocumentFieldWidgetType.YesNo)
 				.setOperator(Operator.EQUAL);
+=======
+
+	public static DocumentFilterDescriptor createFilterDescriptor()
+	{
+		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(ProductFilterVO.PARAM_ProductName)
+				.displayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
+				.widgetType(DocumentFieldWidgetType.Text)
+				.operator(Operator.LIKE_I);
+
+		final DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
+				.displayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
+				.widgetType(DocumentFieldWidgetType.Text)
+				.operator(Operator.LIKE_I);
+
+		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
+				.operator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_IsPurchased)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsPurchased))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isSoldParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_IsSold)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsSold))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isActive = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_IsActive)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsActive))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isDiscontinued = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_Discontinued)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_Discontinued))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
@@ -233,7 +281,11 @@ public class ProductFilterUtil
 			productFilter.addEqualsFilter(I_M_Product.COLUMN_Discontinued, isDiscontinued);
 			anyRestrictionAdded = true;
 		}
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		if (!anyRestrictionAdded && nullForEmptyFilterVO)
 		{
@@ -310,7 +362,11 @@ public class ProductFilterUtil
 		{
 			return false;
 		}
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return true;
 	}
 }

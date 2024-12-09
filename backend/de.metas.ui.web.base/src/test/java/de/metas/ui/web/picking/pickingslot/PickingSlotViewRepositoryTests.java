@@ -2,6 +2,10 @@ package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
@@ -13,7 +17,10 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
+<<<<<<< HEAD
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -124,7 +131,12 @@ public class PickingSlotViewRepositoryTests
 											.setTopLevel(false)
 											.build())
 									.build(),
+<<<<<<< HEAD
 							pickingSlotRowProcessed));
+=======
+							pickingSlotRowProcessed,
+							ImmutableMap.of()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			Mockito.when(pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(
 					PickingCandidatesQuery.builder()

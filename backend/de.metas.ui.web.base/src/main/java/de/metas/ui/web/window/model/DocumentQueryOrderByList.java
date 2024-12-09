@@ -5,11 +5,18 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+=======
+import de.metas.util.GuavaCollectors;
+import de.metas.util.StringUtils;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -17,6 +24,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
+<<<<<<< HEAD
+=======
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Stream;
 
 /*
@@ -29,12 +40,20 @@ import java.util.stream.Stream;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +61,10 @@ import java.util.stream.Stream;
  */
 
 @EqualsAndHashCode
+<<<<<<< HEAD
 @ToString
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class DocumentQueryOrderByList
 {
 	public static DocumentQueryOrderByList ofList(@Nullable final List<DocumentQueryOrderBy> list)
@@ -60,9 +82,16 @@ public class DocumentQueryOrderByList
 	/**
 	 * @param orderBysListStr Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered
 	 */
+<<<<<<< HEAD
 	public static DocumentQueryOrderByList parse(final String orderBysListStr)
 	{
 		if (Check.isEmpty(orderBysListStr, true))
+=======
+	public static DocumentQueryOrderByList parse(@Nullable final String orderBysListStr)
+	{
+		final String orderBysListStrNorm = StringUtils.trimBlankToNull(orderBysListStr);
+		if (orderBysListStrNorm == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return EMPTY;
 		}
@@ -70,7 +99,11 @@ public class DocumentQueryOrderByList
 		return Splitter.on(',')
 				.trimResults()
 				.omitEmptyStrings()
+<<<<<<< HEAD
 				.splitToList(orderBysListStr)
+=======
+				.splitToList(orderBysListStrNorm)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.stream()
 				.map(DocumentQueryOrderBy::parse)
 				.collect(toDocumentQueryOrderByList());
@@ -85,6 +118,28 @@ public class DocumentQueryOrderByList
 		this.list = ImmutableList.copyOf(list);
 	}
 
+<<<<<<< HEAD
+=======
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return toStringSyntax();
+	}
+
+	public String toStringSyntax()
+	{
+		if (list.isEmpty())
+		{
+			return "";
+		}
+
+		return list.stream()
+				.map(DocumentQueryOrderBy::toStringSyntax)
+				.collect(Collectors.joining(","));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ImmutableList<DocumentQueryOrderBy> toList()
 	{
 		return list;
@@ -119,7 +174,11 @@ public class DocumentQueryOrderByList
 		final Comparator<T> noopComparator = (o1, o2) -> 0;
 
 		return stream()
+<<<<<<< HEAD
 				.map(orderBy -> orderBy.<T> asComparator(fieldValueExtractor, jsonOpts))
+=======
+				.map(orderBy -> orderBy.asComparator(fieldValueExtractor, jsonOpts))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.reduce(Comparator::thenComparing)
 				.orElse(noopComparator);
 	}

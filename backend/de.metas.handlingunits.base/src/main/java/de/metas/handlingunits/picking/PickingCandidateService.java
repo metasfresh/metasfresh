@@ -1,7 +1,15 @@
 package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -37,13 +45,21 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +67,14 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Set;
+=======
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -76,12 +99,17 @@ import java.util.Set;
  */
 
 @Service
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class PickingCandidateService
 {
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+<<<<<<< HEAD
 	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
@@ -104,6 +132,14 @@ public class PickingCandidateService
 		this.inventoryService = inventoryService;
 	}
 
+=======
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final HUReservationService huReservationService;
+	private final IBPartnerBL bpartnersService;
+	private final ADReferenceService adReferenceService;
+	private final InventoryService inventoryService;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		return pickingCandidateRepository.getByIds(pickingCandidateIds);
@@ -147,6 +183,10 @@ public class PickingCandidateService
 	{
 		return AddQtyToHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+<<<<<<< HEAD
+=======
+				.pickingCandidateService(this)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.request(request)
 				.build()
 				.performAndGetQtyPicked();
@@ -241,7 +281,11 @@ public class PickingCandidateService
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+<<<<<<< HEAD
 		final I_M_ShipmentSchedule shipmentScheduleRecord = ShipmentScheduleRepo.getById(shipmentScheduleId);
+=======
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentSchedulePA.getById(shipmentScheduleId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ProductId productId = ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID());
 
 		huAttributesBL.validateMandatoryPickingAttributes(huId, productId);
@@ -379,9 +423,49 @@ public class PickingCandidateService
 		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 
+<<<<<<< HEAD
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+=======
+	public ADRefList getQtyRejectedReasons()
+	{
+		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+	}
+
+	@NonNull
+	public ImmutableMap<HuId, ImmutableSet<OrderId>> getOpenPickingOrderIdsByHuId(@NonNull final ImmutableSet<HuId> huIds)
+	{
+		final ImmutableList<PickingCandidate> openPickingCandidates = pickingCandidateRepository.getByHUIds(huIds)
+				.stream()
+				.filter(pickingCandidate -> !pickingCandidate.isProcessed())
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<HuId, ShipmentScheduleId> huId2ShipmentScheduleIds = openPickingCandidates
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(pickingCandidate -> pickingCandidate.getPickFrom().getHuId(),
+																	   PickingCandidate::getShipmentScheduleId));
+
+		final ImmutableMap<ShipmentScheduleId, OrderId> scheduleId2OrderId = shipmentSchedulePA.getByIds(ImmutableSet.copyOf(huId2ShipmentScheduleIds.values()))
+				.values()
+				.stream()
+				.filter(shipmentSchedule -> shipmentSchedule.getC_Order_ID() > 0)
+				.collect(ImmutableMap.toImmutableMap(shipSchedule -> ShipmentScheduleId.ofRepoId(shipSchedule.getM_ShipmentSchedule_ID()),
+													 shipSchedule -> OrderId.ofRepoId(shipSchedule.getC_Order_ID())));
+
+		return huIds.stream()
+				.collect(ImmutableMap.toImmutableMap(Function.identity(),
+													 huId -> {
+														 final ImmutableList<ShipmentScheduleId> scheduleIds = Optional
+																 .ofNullable(huId2ShipmentScheduleIds.get(huId))
+																 .orElseGet(ImmutableList::of);
+
+														 return scheduleIds.stream()
+																 .map(scheduleId2OrderId::get)
+																 .filter(Objects::nonNull)
+																 .collect(ImmutableSet.toImmutableSet());
+													 }));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**

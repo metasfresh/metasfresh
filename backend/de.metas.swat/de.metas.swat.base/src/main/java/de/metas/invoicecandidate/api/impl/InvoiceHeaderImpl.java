@@ -3,6 +3,11 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocTypeId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -16,12 +21,20 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
@@ -80,10 +93,23 @@ import java.util.List;
 
 	private boolean isSOTrx;
 
+<<<<<<< HEAD
 	// 06630
 	private int M_InOut_ID = -1;
 
 	private I_C_DocType docTypeInvoice;
+=======
+	private boolean isTakeDocTypeFromPool;
+
+	// 06630
+	private int M_InOut_ID = -1;
+
+	@Nullable
+	private DocTypeId docTypeInvoiceId;
+
+	@Nullable
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private boolean taxIncluded;
 	private String externalId;
@@ -114,7 +140,12 @@ import java.util.List;
 				+ ", billTo=" + billTo
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
+<<<<<<< HEAD
 				+ ", docTypeInvoiceId=" + docTypeInvoice
+=======
+				+ ", docTypeInvoiceId=" + docTypeInvoiceId
+				+ ", docTypeInvoicingPoolId=" + docTypeInvoicingPoolId
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
@@ -250,6 +281,10 @@ import java.util.List;
 		this.isSOTrx = isSOTrx;
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public int getM_InOut_ID()
 	{
@@ -262,6 +297,7 @@ import java.util.List;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
@@ -270,6 +306,46 @@ import java.util.List;
 	public void setC_DocTypeInvoice(final I_C_DocType docType)
 	{
 		this.docTypeInvoice = docType;
+=======
+	@Nullable
+	public Optional<DocTypeId> getDocTypeInvoiceId()
+	{
+		return Optional.ofNullable(docTypeInvoiceId);
+	}
+
+	@Override
+	@NonNull
+	public Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId()
+	{
+		return Optional.ofNullable(docTypeInvoicingPoolId);
+	}
+
+
+
+
+	@Override
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
+	}
+
+
+	@Override
+	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Override
+	public void setDocTypeInvoiceId(@Nullable final DocTypeId docTypeId)
+	{
+		this.docTypeInvoiceId = docTypeId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

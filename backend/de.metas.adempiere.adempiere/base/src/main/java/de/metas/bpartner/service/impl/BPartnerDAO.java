@@ -62,6 +62,10 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.report.PrintFormatId;
+<<<<<<< HEAD
+=======
+import de.metas.sales_region.SalesRegionId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -879,7 +883,11 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
+<<<<<<< HEAD
 		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+=======
+		logger.debug("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return null;
 	}
 
@@ -1947,4 +1955,14 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

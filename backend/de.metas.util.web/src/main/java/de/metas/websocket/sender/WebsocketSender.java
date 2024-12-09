@@ -57,7 +57,11 @@ import java.util.List;
 @ConditionalOnBean(SimpMessagingTemplate.class)
 public class WebsocketSender implements InitializingBean
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
+=======
+	private static final Logger logger = LogManager.getLogger(WebsocketSender.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final SimpMessagingTemplate websocketMessagingTemplate;

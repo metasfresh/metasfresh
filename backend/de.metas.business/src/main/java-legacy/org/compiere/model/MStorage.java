@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +25,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+=======
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -34,11 +42,22 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Inventory Storage Model
@@ -64,7 +83,11 @@ public class MStorage extends X_M_Storage
 	 * @return existing or null
 	 */
 	public static MStorage get(final Properties ctx, final int M_Locator_ID,
+<<<<<<< HEAD
 			final int M_Product_ID, final int M_AttributeSetInstance_ID, final String trxName)
+=======
+			final int M_Product_ID, final int M_AttributeSetInstance_ID, @Nullable final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		MStorage retValue = null;
 		String sql = "SELECT * FROM M_Storage "

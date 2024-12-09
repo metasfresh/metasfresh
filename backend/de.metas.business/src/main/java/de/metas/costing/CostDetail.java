@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -7,6 +8,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import de.metas.acct.api.AcctSchemaId;
+=======
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
+import de.metas.costing.methods.CostAmountType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -15,6 +21,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -41,6 +56,7 @@ import lombok.With;
 @Value
 public class CostDetail
 {
+<<<<<<< HEAD
 	@With
 	CostDetailId id;
 
@@ -62,6 +78,31 @@ public class CostDetail
 	CostingDocumentRef documentRef;
 
 	String description;
+=======
+	@With CostDetailId id;
+
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostElementId costElementId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+
+	@NonNull CostAmountType amtType;
+	@NonNull CostAmount amt;
+	@NonNull @With Quantity qty;
+
+	@With boolean changingCosts;
+
+	CostDetailPreviousAmounts previousAmounts;
+
+	@NonNull CostingDocumentRef documentRef;
+
+	@Nullable String description;
+
+	@NonNull @With Instant dateAcct;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private CostDetail(
@@ -72,12 +113,21 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+<<<<<<< HEAD
+=======
+			@NonNull final CostAmountType amtType,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
 			final CostDetailPreviousAmounts previousAmounts,
 			@NonNull final CostingDocumentRef documentRef,
+<<<<<<< HEAD
 			@Nullable final String description)
+=======
+			@Nullable final String description,
+			@NonNull Instant dateAcct)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.id = id;
 		this.clientId = clientId;
@@ -86,12 +136,20 @@ public class CostDetail
 		this.costElementId = costElementId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+<<<<<<< HEAD
+=======
+		this.amtType = amtType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.amt = amt;
 		this.qty = qty;
 		this.changingCosts = changingCosts;
 		this.previousAmounts = previousAmounts;
 		this.documentRef = documentRef;
 		this.description = description;
+<<<<<<< HEAD
+=======
+		this.dateAcct = dateAcct;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (this.previousAmounts != null
 				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))
@@ -117,4 +175,9 @@ public class CostDetail
 			return getQty().signum() < 0;
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

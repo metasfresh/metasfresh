@@ -1,5 +1,6 @@
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
@@ -15,24 +16,51 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "apiKey": "apiKey",
+      "baseUrl": "baseUrl",
+      "id": 100002,
+      "parentId": 100001,
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Alberta",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testAlbertaValue",
     "apiKey" : "apiKey",
     "baseUrl" : "baseUrl",
     "tenant" : "tenant"
+=======
+    "apiKey": "apiKey",
+    "baseUrl": "baseUrl",
+    "id": 100002,
+    "parentId": 100001,
+    "tenant": "tenant",
+    "value": "testAlbertaValue"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
@@ -48,12 +76,30 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "apiKey": "apiKey",
+      "baseUrl": "baseUrl",
+      "id": 100002,
+      "parentId": 100001,
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Alberta",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "GRSSignum",
     "name" : "name",
@@ -75,12 +121,36 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "createBPartnerFolders" : false
     },
     "writeAudit" : false
+=======
+    "active": true,
+    "childConfig": {
+      "authToken": "authToken",
+      "autoSendCustomers": false,
+      "autoSendVendors": false,
+      "baseUrl": "baseUrl",
+      "camelHttpResourceAuthKey": "authKey",
+      "createBPartnerFolders": false,
+      "id": 100002,
+      "parentId": 100001,
+      "syncBPartnersToRestEndpoint": true,
+      "syncHUsOnMaterialReceipt": false,
+      "syncHUsOnProductionReceipt": false,
+      "tenantId": "tenantId",
+      "value": "testGRSSignumValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "GRSSignum",
+    "writeAudit": false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testGRSSignumValue",
@@ -94,12 +164,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "syncHUsOnMaterialReceipt" : false,
     "syncHUsOnProductionReceipt" : false,
     "createBPartnerFolders" : false
+=======
+    "authToken": "authToken",
+    "autoSendCustomers": false,
+    "autoSendVendors": false,
+    "baseUrl": "baseUrl",
+    "camelHttpResourceAuthKey": "authKey",
+    "createBPartnerFolders": false,
+    "id": 100002,
+    "parentId": 100001,
+    "syncBPartnersToRestEndpoint": false,
+    "syncHUsOnMaterialReceipt": false,
+    "syncHUsOnProductionReceipt": false,
+    "tenantId": "tenantId",
+    "value": "testGRSSignumValue"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "GRSSignum",
     "name" : "name",
@@ -121,6 +207,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "createBPartnerFolders" : false
     },
     "writeAudit" : false
+=======
+    "active": true,
+    "childConfig": {
+      "authToken": "authToken",
+      "autoSendCustomers": false,
+      "autoSendVendors": false,
+      "baseUrl": "baseUrl",
+      "camelHttpResourceAuthKey": "authKey",
+      "createBPartnerFolders": false,
+      "id": 100002,
+      "parentId": 100001,
+      "syncBPartnersToRestEndpoint": true,
+      "syncHUsOnMaterialReceipt": false,
+      "syncHUsOnProductionReceipt": false,
+      "tenantId": "tenantId",
+      "value": "testGRSSignumValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "GRSSignum",
+    "writeAudit": false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
@@ -128,6 +237,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
   [
     {
+<<<<<<< HEAD
       "id" : 100001,
       "type" : "LeichUndMehl",
       "name" : "name",
@@ -145,6 +255,25 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
+=======
+      "active": true,
+      "auditFileFolder": "auditFileFolder",
+      "childConfig": {
+        "id": 100002,
+        "parentId": 100001,
+        "pluFileExportAuditEnabled": false,
+        "pluType": "CU",
+        "productBaseFolderName": "productBaseFolderName",
+        "tcpHost": "tcpHost",
+        "tcpPort": 8080,
+        "value": "testLeichMehlValue"
+      },
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "LeichUndMehl",
+      "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
@@ -152,6 +281,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testLeichMehlValue",
@@ -160,12 +290,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "tcpHost" : "tcpHost",
     "pluType" : "CU",
     "pluFileExportAuditEnabled" : false
+=======
+    "id": 100002,
+    "parentId": 100001,
+    "pluFileExportAuditEnabled": false,
+    "pluType": "CU",
+    "productBaseFolderName": "productBaseFolderName",
+    "tcpHost": "tcpHost",
+    "tcpPort": 8080,
+    "value": "testLeichMehlValue"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "LeichUndMehl",
     "name" : "name",
@@ -183,12 +324,32 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "id": 100002,
+      "parentId": 100001,
+      "pluFileExportAuditEnabled": false,
+      "pluType": "CU",
+      "productBaseFolderName": "productBaseFolderName",
+      "tcpHost": "tcpHost",
+      "tcpPort": 8080,
+      "value": "testLeichMehlValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "LeichUndMehl",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "RabbitMQ",
     "name" : "name",
@@ -210,12 +371,36 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "authToken": "authToken",
+      "autoSendSubjectWhenCreatedByUserGroup": false,
+      "id": 100002,
+      "isAutoSendWhenCreatedByUserGroup": false,
+      "isSyncBPartnerToRabbitMQ": true,
+      "isSyncExternalReferencesToRabbitMQ": false,
+      "parentId": 100001,
+      "remoteUrl": "remoteURL",
+      "routingKey": "routingKey",
+      "syncBPartnerToRabbitMQ": true,
+      "syncExternalReferencesToRabbitMQ": false,
+      "value": "testRabbitMQValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "RabbitMQ",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testRabbitMQValue",
@@ -228,12 +413,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "syncBPartnerToRabbitMQ" : true,
     "syncExternalReferencesToRabbitMQ" : false,
     "autoSendSubjectWhenCreatedByUserGroup" : false
+=======
+    "authToken": "authToken",
+    "autoSendSubjectWhenCreatedByUserGroup": false,
+    "id": 100002,
+    "isAutoSendWhenCreatedByUserGroup": false,
+    "isSyncBPartnerToRabbitMQ": true,
+    "isSyncExternalReferencesToRabbitMQ": false,
+    "parentId": 100001,
+    "remoteUrl": "remoteURL",
+    "routingKey": "routingKey",
+    "syncBPartnerToRabbitMQ": true,
+    "syncExternalReferencesToRabbitMQ": false,
+    "value": "testRabbitMQValue"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "RabbitMQ",
     "name" : "name",
@@ -256,12 +456,37 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "authToken": "authToken",
+      "autoSendSubjectWhenCreatedByUserGroup": true,
+      "id": 100002,
+      "isAutoSendWhenCreatedByUserGroup": true,
+      "isSyncBPartnerToRabbitMQ": true,
+      "isSyncExternalReferencesToRabbitMQ": false,
+      "parentId": 100001,
+      "remoteUrl": "remoteURL",
+      "routingKey": "routingKey",
+      "syncBPartnerToRabbitMQ": true,
+      "syncExternalReferencesToRabbitMQ": false,
+      "userGroupId": 1,
+      "value": "testRabbitMQValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "RabbitMQ",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
@@ -289,12 +514,42 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "baseUrl": "baseUrl",
+      "clientId": "id",
+      "clientSecret": "secret",
+      "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "priceListId": 1,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "uomShopwareMappingList": [
+        {
+          "externalSystemShopware6ConfigId": 100002,
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
+        }
+      ],
+      "value": "testShopware6Value"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByQuery=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
@@ -322,12 +577,42 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": false,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "baseUrl": "baseUrl",
+      "clientId": "id",
+      "clientSecret": "secret",
+      "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": false,
+      "parentId": 100001,
+      "priceListId": 1,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "uomShopwareMappingList": [
+        {
+          "externalSystemShopware6ConfigId": 100002,
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
+        }
+      ],
+      "value": "testShopware6Value"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "id" : 100002,
     "parentId" : 100001,
     "baseUrl" : "baseUrl",
@@ -361,12 +646,48 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "isActive" : true,
     "value" : "testShopware6Value",
     "productLookup" : "ProductNumber"
+=======
+    "baseUrl": "baseUrl",
+    "clientId": "id",
+    "clientSecret": "secret",
+    "externalSystemShopware6ConfigMappingList": [
+      {
+        "bpartnerIfExists": "UPDATE_MERGE",
+        "bpartnerIfNotExists": "FAIL",
+        "bpartnerLocationIfExists": "DONT_UPDATE",
+        "bpartnerLocationIfNotExists": "CREATE",
+        "description": "test",
+        "docTypeOrderId": 10000,
+        "isInvoiceEmailEnabled": true,
+        "paymentRule": "K",
+        "paymentTermId": 10000,
+        "seqNo": 10,
+        "sw6CustomerGroup": "testWithAnä",
+        "sw6PaymentMethod": "test"
+      }
+    ],
+    "id": 100002,
+    "isActive": true,
+    "parentId": 100001,
+    "priceListId": 1,
+    "productLookup": "ProductNumber",
+    "salesRepJSONPath": "/test/salesrep",
+    "uomShopwareMappingList": [
+      {
+        "externalSystemShopware6ConfigId": 100002,
+        "shopwareCode": "shopwareCode",
+        "uomId": 100004
+      }
+    ],
+    "value": "testShopware6Value"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
@@ -394,12 +715,42 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "baseUrl": "baseUrl",
+      "clientId": "id",
+      "clientSecret": "secret",
+      "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "priceListId": 1,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "uomShopwareMappingList": [
+        {
+          "externalSystemShopware6ConfigId": 100002,
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
+        }
+      ],
+      "value": "testShopware6Value"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_store=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
@@ -421,12 +772,36 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "baseUrl": "new-baseURL",
+      "clientId": "new-clientId",
+      "clientSecret": "new-clientSecret",
+      "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "priceListId": 2,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "uomShopwareMappingList": [ ],
+      "value": "new-value"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
@@ -440,12 +815,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "camelHttpResourceAuthKey": "authKey",
+      "id": 100002,
+      "parentId": 100001,
+      "value": "testWoocommerceValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "WOO",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getTypeAndValue=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
@@ -458,6 +849,20 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "id": 100002,
+      "parentId": 100001,
+      "value": "testWoocommerceValue"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "WOO",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
@@ -465,6 +870,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
+<<<<<<< HEAD
       "id" : 100001,
       "type" : "RabbitMQ",
       "name" : "name",
@@ -486,6 +892,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
+=======
+      "active": true,
+      "auditFileFolder": "auditFileFolder",
+      "childConfig": {
+        "authToken": "authToken",
+        "autoSendSubjectWhenCreatedByUserGroup": false,
+        "id": 100002,
+        "isAutoSendWhenCreatedByUserGroup": false,
+        "isSyncBPartnerToRabbitMQ": false,
+        "isSyncExternalReferencesToRabbitMQ": false,
+        "parentId": 100001,
+        "remoteUrl": "remoteURL",
+        "routingKey": "routingKey",
+        "syncBPartnerToRabbitMQ": false,
+        "syncExternalReferencesToRabbitMQ": false,
+        "value": "notImportant"
+      },
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "RabbitMQ",
+      "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
@@ -493,6 +922,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "LeichUndMehl",
     "name" : "name",
@@ -510,12 +940,32 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "id": 100002,
+      "parentId": 100001,
+      "pluFileExportAuditEnabled": false,
+      "pluType": "CU",
+      "productBaseFolderName": "productBaseFolderName",
+      "tcpHost": "tcpHost",
+      "tcpPort": 8080,
+      "value": "LeichMehl"
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "LeichUndMehl",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config_getById=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "type" : "Other",
     "name" : "name",
@@ -540,5 +990,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
+=======
+    "active": true,
+    "auditFileFolder": "auditFileFolder",
+    "childConfig": {
+      "id": {
+        "externalSystemParentConfigId": 100001
+      },
+      "parameters": [
+        {
+          "id": 100002,
+          "name": "name1",
+          "value": "value1"
+        },
+        {
+          "id": 100003,
+          "name": "name2",
+          "value": "value2"
+        }
+      ]
+    },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Other",
+    "writeAudit": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -22,6 +22,7 @@ package de.metas.acct.gljournal.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 
@@ -30,6 +31,8 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyPrecision;
@@ -37,6 +40,15 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_GL_JournalLine;
+
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Adapts {@link I_GL_JournalLine} to {@link ITaxAccountable}
@@ -77,12 +89,15 @@ import de.metas.util.Services;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public I_C_Tax getC_Tax()
 	{
 		return isAccountSignDR() ? glJournalLine.getDR_Tax() : glJournalLine.getCR_Tax();
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getC_Tax_ID()
 	{
 		return isAccountSignDR() ? glJournalLine.getDR_Tax_ID() : glJournalLine.getCR_Tax_ID();
@@ -91,6 +106,7 @@ import de.metas.util.Services;
 	@Override
 	public void setC_Tax(final I_C_Tax tax)
 	{
+<<<<<<< HEAD
 		if (isAccountSignDR())
 		{
 			glJournalLine.setDR_Tax(tax);
@@ -98,6 +114,16 @@ import de.metas.util.Services;
 		else
 		{
 			glJournalLine.setCR_Tax(tax);
+=======
+		final int taxId = tax != null ? tax.getC_Tax_ID() : -1;
+		if (isAccountSignDR())
+		{
+			glJournalLine.setDR_Tax_ID(taxId);
+		}
+		else
+		{
+			glJournalLine.setCR_Tax_ID(taxId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

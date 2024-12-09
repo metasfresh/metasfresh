@@ -22,6 +22,11 @@
 
 package de.metas.contracts.commission.commissioninstance.services.margin;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -48,11 +53,16 @@ import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.List;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -61,11 +71,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class MarginCommissionConfigFactoryTest
 {
 	private MarginCommissionConfigFactory marginCommissionConfigFactorySpy;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+@ExtendWith(SnapshotExtension.class)
+public class MarginCommissionConfigFactoryTest
+{
+	private MarginCommissionConfigFactory marginCommissionConfigFactorySpy;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeAll
 	static void init()
 	{
+<<<<<<< HEAD
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		AdempiereTestHelper.get().init();
 	}
 
@@ -116,7 +139,11 @@ public class MarginCommissionConfigFactoryTest
 		final List<CommissionConfig> configs = marginCommissionConfigFactorySpy.createForNewCommissionInstances(requestForNewInstance);
 
 		//then
+<<<<<<< HEAD
 		expect(configs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "contractAndComplementaryRecordsBuilder")

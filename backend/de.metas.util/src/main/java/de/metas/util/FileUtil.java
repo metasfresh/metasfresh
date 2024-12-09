@@ -35,6 +35,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+<<<<<<< HEAD
+=======
+import java.util.List;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @UtilityClass
 public final class FileUtil
@@ -253,4 +260,45 @@ public final class FileUtil
 
 		return sb.toString();
 	}
+<<<<<<< HEAD
+=======
+
+	public static File zip(@NonNull final List<File> files) throws IOException
+	{
+		final File zipFile = File.createTempFile("ZIP", ".zip");
+		zipFile.deleteOnExit();
+
+		try (final FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
+				final ZipOutputStream zip = new ZipOutputStream(fileOutputStream))
+		{
+			zip.setMethod(ZipOutputStream.DEFLATED);
+			zip.setLevel(Deflater.BEST_COMPRESSION);
+
+			for (final File file : files)
+			{
+				addToZipFile(file, zip);
+			}
+		}
+
+		return zipFile;
+	}
+
+	private static void addToZipFile(@NonNull final File file, @NonNull final ZipOutputStream zos) throws IOException
+	{
+		try (final FileInputStream fis = new FileInputStream(file))
+		{
+			final ZipEntry zipEntry = new ZipEntry(file.getName());
+			zos.putNextEntry(zipEntry);
+
+			final byte[] bytes = new byte[1024];
+			int length;
+			while ((length = fis.read(bytes)) >= 0)
+			{
+				zos.write(bytes, 0, length);
+			}
+
+			zos.closeEntry();
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

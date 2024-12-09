@@ -1,12 +1,22 @@
 package de.metas.ui.web;
 
+<<<<<<< HEAD
 import java.util.Map;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
@@ -15,6 +25,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -59,27 +73,44 @@ public class WebuiURLs
 	private static final String PARAM_ResetPasswordToken = "token";
 
 	public static final String SYSCONFIG_IsCrossSiteUsageAllowed = "webui.frontend.allow-cross-site-usage";
+<<<<<<< HEAD
 	
+=======
+
+	private static final String SYSCONFIG_APP_API_URL = "app.api.url";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
 	private static final String SYSCONFIG_RESET_PASSWORD_PATH = "webui.frontend.path.resetPassword";
 
+<<<<<<< HEAD
 	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String> builder()
+=======
+	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.put(SYSCONFIG_DOCUMENT_PATH, "/window/{" + PARAM_windowId + "}/{" + PARAM_documentId + "}")
 			.put(SYSCONFIG_VIEW_PATH, "/window/{" + PARAM_windowId + "}?viewId={" + PARAM_viewId + "}")
 			.put(SYSCONFIG_RESET_PASSWORD_PATH, "/resetPassword?token={" + PARAM_ResetPasswordToken + "}")
 			.build();
 
 	/**
+<<<<<<< HEAD
 	 *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return e.g. https://webui
 	 */
 	@Nullable
 	public String getFrontendURL()
 	{
+<<<<<<< HEAD
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))
+=======
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL));
+		if (url == null || "-".equals(url))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
@@ -120,7 +151,11 @@ public class WebuiURLs
 
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
 	{
+<<<<<<< HEAD
 		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object> builder()
+=======
+		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.put(WebuiURLs.PARAM_windowId, windowId)
 				.put(WebuiURLs.PARAM_documentId, documentId)
 				.build());
@@ -133,7 +168,11 @@ public class WebuiURLs
 
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
+<<<<<<< HEAD
 		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object> builder()
+=======
+		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.put(PARAM_windowId, windowId)
 				.put(PARAM_viewId, viewId)
 				.build());
@@ -143,7 +182,11 @@ public class WebuiURLs
 	{
 		Check.assumeNotEmpty(token, "token is not empty");
 
+<<<<<<< HEAD
 		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
+=======
+		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.put(PARAM_ResetPasswordToken, token)
 				.build());
 	}
@@ -152,4 +195,25 @@ public class WebuiURLs
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
+<<<<<<< HEAD
+=======
+
+	public String getAppApiUrl()
+	{
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_APP_API_URL));
+		if (url != null && !url.equals("-"))
+		{
+			return url;
+		}
+
+		final String frontendUrl = getFrontendURL();
+		if (frontendUrl != null)
+		{
+			return frontendUrl + "/app";
+		}
+
+		return null;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

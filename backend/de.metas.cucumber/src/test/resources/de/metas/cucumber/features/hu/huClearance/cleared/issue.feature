@@ -50,7 +50,11 @@ Feature: Cleared HU can be issued to production order
       | huProduct_inventoryLine       | createdCU          |
 
     And transform CU to new TUs
+<<<<<<< HEAD
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+=======
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
     And after not more than 60s, M_HUs should have

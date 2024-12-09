@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,6 +8,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalTime;
 import java.util.Optional;
 
+=======
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.MailboxId;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_Sequence;
@@ -14,11 +23,20 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+<<<<<<< HEAD
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.email.EMailAddress;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Services;
+=======
+import java.time.LocalTime;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -67,7 +85,11 @@ public class DerKurierShipperConfigRepositoryTest
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
 		assertThat(config.getCustomerNumber()).isEqualTo(configRecord.getDK_CustomerNumber());
 		assertThat(config.getRestApiBaseUrl()).isEqualTo(configRecord.getAPIServerBaseURL());
+<<<<<<< HEAD
 		assertThat(config.getDeliveryOrderMailBoxOrNull()).isNull();
+=======
+		assertThat(config.getDeliveryOrderMailBoxId()).isEmpty();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isNull();
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
@@ -94,7 +116,11 @@ public class DerKurierShipperConfigRepositoryTest
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
 		assertThat(config.getCustomerNumber()).isEqualTo("1234");
 		assertThat(config.getRestApiBaseUrl()).isEqualTo("https://testurl");
+<<<<<<< HEAD
 		assertThat(config.getDeliveryOrderMailBoxOrNull().getSmtpHost()).isEqualTo("smtphost");
+=======
+		assertThat(config.getDeliveryOrderMailBoxId()).contains(MailboxId.ofRepoId(mailbox.getAD_MailBox_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo(EMailAddress.ofString("we@us.test"));
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();

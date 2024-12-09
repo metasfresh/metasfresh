@@ -22,7 +22,11 @@
 
 package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
@@ -17,10 +18,17 @@
 /** Generated Model - DO NOT CHANGE */
 package org.adempiere.process.rpl.model;
 
+=======
+// Generated Model - DO NOT CHANGE
+package org.adempiere.process.rpl.model;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for EXP_ReplicationTrx
+<<<<<<< HEAD
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
@@ -45,11 +53,30 @@ public class X_EXP_ReplicationTrx extends org.compiere.model.PO implements I_EXP
 
     /** Load Constructor */
     public X_EXP_ReplicationTrx (Properties ctx, ResultSet rs, String trxName)
+=======
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_EXP_ReplicationTrx extends org.compiere.model.PO implements I_EXP_ReplicationTrx, org.compiere.model.I_Persistent 
+{
+
+	private static final long serialVersionUID = -1145021183L;
+
+    /** Standard Constructor */
+    public X_EXP_ReplicationTrx (final Properties ctx, final int EXP_ReplicationTrx_ID, @Nullable final String trxName)
+    {
+      super (ctx, EXP_ReplicationTrx_ID, trxName);
+    }
+
+    /** Load Constructor */
+    public X_EXP_ReplicationTrx (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     {
       super (ctx, rs, trxName);
     }
 
 
+<<<<<<< HEAD
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
@@ -70,10 +97,34 @@ public class X_EXP_ReplicationTrx extends org.compiere.model.PO implements I_EXP
 		@param EXP_ReplicationTrx_ID Replikationstransaktion	  */
 	@Override
 	public void setEXP_ReplicationTrx_ID (int EXP_ReplicationTrx_ID)
+=======
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setErrorMsg (final @Nullable java.lang.String ErrorMsg)
+	{
+		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
+	}
+
+	@Override
+	public java.lang.String getErrorMsg() 
+	{
+		return get_ValueAsString(COLUMNNAME_ErrorMsg);
+	}
+
+	@Override
+	public void setEXP_ReplicationTrx_ID (final int EXP_ReplicationTrx_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (EXP_ReplicationTrx_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EXP_ReplicationTrx_ID, null);
 		else 
+<<<<<<< HEAD
 			set_ValueNoCheck (COLUMNNAME_EXP_ReplicationTrx_ID, Integer.valueOf(EXP_ReplicationTrx_ID));
 	}
 
@@ -94,10 +145,48 @@ public class X_EXP_ReplicationTrx extends org.compiere.model.PO implements I_EXP
 	  */
 	@Override
 	public void setName (java.lang.String Name)
+=======
+			set_ValueNoCheck (COLUMNNAME_EXP_ReplicationTrx_ID, EXP_ReplicationTrx_ID);
+	}
+
+	@Override
+	public int getEXP_ReplicationTrx_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_ReplicationTrx_ID);
+	}
+
+	@Override
+	public void setIsError (final boolean IsError)
+	{
+		set_Value (COLUMNNAME_IsError, IsError);
+	}
+
+	@Override
+	public boolean isError() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsError);
+	}
+
+	@Override
+	public void setIsReplicationTrxFinished (final boolean IsReplicationTrxFinished)
+	{
+		set_Value (COLUMNNAME_IsReplicationTrxFinished, IsReplicationTrxFinished);
+	}
+
+	@Override
+	public boolean isReplicationTrxFinished() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationTrxFinished);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+<<<<<<< HEAD
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
@@ -105,5 +194,23 @@ public class X_EXP_ReplicationTrx extends org.compiere.model.PO implements I_EXP
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+=======
+	@Override
+	public java.lang.String getName() 
+	{
+		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setNote (final @Nullable java.lang.String Note)
+	{
+		set_Value (COLUMNNAME_Note, Note);
+	}
+
+	@Override
+	public java.lang.String getNote() 
+	{
+		return get_ValueAsString(COLUMNNAME_Note);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

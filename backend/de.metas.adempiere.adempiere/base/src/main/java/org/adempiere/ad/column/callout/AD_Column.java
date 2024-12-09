@@ -1,9 +1,15 @@
 package org.adempiere.ad.column.callout;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;

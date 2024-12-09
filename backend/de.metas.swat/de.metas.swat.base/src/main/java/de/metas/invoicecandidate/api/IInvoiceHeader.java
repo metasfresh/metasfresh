@@ -2,6 +2,11 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocTypeId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -9,11 +14,20 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserId;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import de.metas.impex.InputDataSourceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IInvoiceHeader
 {
@@ -62,9 +76,24 @@ public interface IInvoiceHeader
 
 	boolean isSOTrx();
 
+<<<<<<< HEAD
 	int getM_InOut_ID();
 
 	I_C_DocType getC_DocTypeInvoice();
+=======
+	boolean isTakeDocTypeFromPool();
+
+	int getM_InOut_ID();
+
+	Optional<DocTypeId> getDocTypeInvoiceId();
+
+	void setDocTypeInvoiceId(DocTypeId docTypeInvoiceId);
+
+	@NonNull
+	Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId();
+
+	void setDocTypeInvoicingPoolId(@Nullable DocTypeInvoicingPoolId docTypeInvoicingPoolId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	boolean isTaxIncluded();
 

@@ -1,5 +1,9 @@
 package de.metas.ui.web.mail;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonIgnore;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -50,4 +54,10 @@ public class WebuiEmail
 	boolean sent;
 
 	DocumentPath contextDocumentPath;
+<<<<<<< HEAD
+=======
+
+	@JsonIgnore
+	public UserId getFromUserId() {return from.getIdAs(UserId::ofRepoId);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

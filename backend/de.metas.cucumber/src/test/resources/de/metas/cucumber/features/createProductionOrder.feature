@@ -142,7 +142,11 @@ Feature: create production order
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID | M_AttributeSetInstance_ID |
       | oc_1                  | p_2          | 100 PCE    | CO            | boml_1                | bomLineASI                |
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     #
     # Now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
@@ -172,6 +176,7 @@ Feature: create production order
       | 5          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
 
+<<<<<<< HEAD
     
     
     
@@ -180,6 +185,16 @@ Feature: create production order
     
     
     
+=======
+
+
+
+
+
+
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ###############################################################################################################################################
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -187,6 +202,13 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+<<<<<<< HEAD
+=======
+  @Id:S0129.2_130
+  @Id:S0129.2_150
+  @Id:S0129.2_170
+  @Id:S0196_600
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it (S0129.2_130) (S0129.2_150) (S0129.2_170)
     # Basic setup
     Given metasfresh contains M_Products:
@@ -338,12 +360,21 @@ Feature: create production order
       | 8          | SUPPLY            | PRODUCTION                | p_3          | 2021-06-16T21:00:00Z | 12  | 12   | bomASI                    |
       | 9          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 120 | -220 | bomLineASI                |
 
+<<<<<<< HEAD
     
     
     
     
     
     
+=======
+
+
+
+
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ###############################################################################################################################################
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -419,6 +450,7 @@ Feature: create production order
       | 7/c_33     | SUPPLY            | PRODUCTION                | p_11         | 2021-04-12T21:00:00Z | 10   | 0    |
       | 8/c_l_3    | DEMAND            | PRODUCTION                | p_22         | 2021-04-12T21:00:00Z | -100 | -100 |
 
+<<<<<<< HEAD
     
     
     
@@ -430,6 +462,19 @@ Feature: create production order
     
     
     
+=======
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ###############################################################################################################################################
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -437,6 +482,11 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+<<<<<<< HEAD
+=======
+  @Id:S0129.2_200
+  @Id:S0196_700
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
@@ -558,6 +608,7 @@ Feature: create production order
       | 4/c_333    | SUPPLY            | PRODUCTION                | p_111        | 2021-04-11T21:00:00Z | 10   | 10   | bomASI                    |
       | 5/c_l_4    | DEMAND            | PRODUCTION                | p_222        | 2021-04-11T21:00:00Z | -100 | -100 | bomLineASI                |
 
+<<<<<<< HEAD
     
     
     
@@ -568,6 +619,18 @@ Feature: create production order
     
     
     
+=======
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ###############################################################################################################################################
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -655,6 +718,7 @@ Feature: create production order
       | 6/c_33     | SUPPLY            | PRODUCTION                | p_11         | 2021-04-15T21:00:00Z | 10  | 10   |
       | 7/c_l_3    | DEMAND            | PRODUCTION                | p_22         | 2021-04-15T21:00:00Z | 100 | -100 |
 
+<<<<<<< HEAD
     
     
     
@@ -667,6 +731,20 @@ Feature: create production order
     
     
     
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # ###############################################################################################################################################
 # ###############################################################################################################################################
 # ###############################################################################################################################################

@@ -72,7 +72,11 @@ public final class TabularStringConverterUtil
 			return Cell.ofNullable(valueBD);
 		}
 
+<<<<<<< HEAD
 		final Quantity qty = Quantitys.create(valueBD, UomId.ofRepoId(uomRepoId));
+=======
+		final Quantity qty = Quantitys.of(valueBD, UomId.ofRepoId(uomRepoId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return Cell.ofNullable(qty);
 	}
 

@@ -1,16 +1,29 @@
 package de.metas.document.refid.api.impl;
 
+<<<<<<< HEAD
 import lombok.NonNull;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
 import de.metas.util.Check;
+<<<<<<< HEAD
 
+=======
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
+import java.util.List;
+
+@EqualsAndHashCode
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 {
 	private final I_C_ReferenceNo_Type type;
@@ -52,6 +65,7 @@ class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 	{
 		return assignedTableIds;
 	}
+<<<<<<< HEAD
 
 	@Override
 	public int hashCode()
@@ -116,6 +130,9 @@ class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 		return true;
 	}
 
+=======
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public String toString()
 	{

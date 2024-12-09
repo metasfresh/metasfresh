@@ -23,9 +23,15 @@
 package de.metas.common.util;
 
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+=======
+import org.jetbrains.annotations.Contract;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 
 @UtilityClass
@@ -37,6 +43,10 @@ public class EmptyUtil
 	 * <li>an empty array</li>
 	 * <li>a blank string</li>
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isEmpty(@Nullable final Object value)
 	{
 		if (value == null)
@@ -60,6 +70,10 @@ public class EmptyUtil
 		return false;
 	}
 
+<<<<<<< HEAD
+=======
+	@Contract("null -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isEmpty(@Nullable final String str)
 	{
 		return isEmpty(str, false);
@@ -68,6 +82,10 @@ public class EmptyUtil
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isBlank(@Nullable final String str)
 	{
 		return isEmpty(str, true);
@@ -76,6 +94,10 @@ public class EmptyUtil
 	/**
 	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> false")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isNotBlank(@Nullable final String str)
 	{
 		return !isEmpty(str, true);
@@ -88,6 +110,10 @@ public class EmptyUtil
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null, _ -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		if (str == null)
@@ -96,17 +122,29 @@ public class EmptyUtil
 		}
 		if (trimWhitespaces)
 		{
+<<<<<<< HEAD
 			return str.trim().length() == 0;
 		}
 		else
 		{
 			return str.length() == 0;
+=======
+			return str.trim().isEmpty();
+		}
+		else
+		{
+			return str.isEmpty();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}    // isEmpty
 
 	/**
 	 * @return true if the array is null or it's length is zero.
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public <T> boolean isEmpty(@Nullable final T[] arr)
 	{
 		return arr == null || arr.length == 0;
@@ -115,6 +153,10 @@ public class EmptyUtil
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> true")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();

@@ -22,11 +22,14 @@
 
 package de.metas.ui.web.view.descriptor;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
@@ -41,6 +44,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ViewLayoutFactory
 {
 	private final DocumentDescriptorFactory documentDescriptorFactory;
@@ -88,7 +98,11 @@ public class ViewLayoutFactory
 				.profileId(viewLayoutKey.getProfileId())
 				.filters(filters)
 				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed)
+<<<<<<< HEAD
 				.geoLocationSupport(geoLocationDocumentService.hasGeoLocationSupport(viewLayoutOrig.getFieldNames()));
+=======
+				.geoLocationSupport(geoLocationDocumentService.containsGeoLocationFilter(filters));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Customize the view layout
@@ -116,6 +130,7 @@ public class ViewLayoutFactory
 	}
 
 	@Value
+<<<<<<< HEAD
 	private static final class ViewLayoutKey
 	{
 		@NonNull
@@ -126,6 +141,13 @@ public class ViewLayoutFactory
 
 		@Nullable
 		final ViewProfileId profileId;
+=======
+	private static class ViewLayoutKey
+	{
+		@NonNull WindowId windowId;
+		@NonNull JSONViewDataType viewDataType;
+		@Nullable ViewProfileId profileId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }

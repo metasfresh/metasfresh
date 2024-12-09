@@ -25,6 +25,13 @@ import {
 } from '../ppOrderCandidate/PPOrderCandidateViewHeader';
 import { connect } from 'react-redux';
 import { getSettingFromStateAsBoolean } from '../../utils/settings';
+<<<<<<< HEAD
+=======
+import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @file Class based component.
@@ -235,6 +242,18 @@ class DocumentList extends Component {
                 </button>
               )}
 
+<<<<<<< HEAD
+=======
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               {layout.filters && (
                 <Filters
                   {...{
@@ -245,7 +264,10 @@ class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               {staticFilters && (
                 <FiltersStatic
                   {...{

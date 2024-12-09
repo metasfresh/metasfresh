@@ -1,5 +1,6 @@
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenKnownValue_whenGetByValue_thenReturnMatchingService=[
   {
+<<<<<<< HEAD
     "id" : 100001,
     "externalSystemType" : "GRSSignum",
     "serviceValue" : "grs_service_value",
@@ -7,6 +8,15 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
     "description" : "Description",
     "enableCommand" : "EnableCommand",
     "disableCommand" : "DisableCommand"
+=======
+    "description": "Description",
+    "disableCommand": "DisableCommand",
+    "enableCommand": "EnableCommand",
+    "externalSystemType": "GRSSignum",
+    "id": 100001,
+    "name": "grs_name",
+    "serviceValue": "grs_service_value"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
@@ -14,6 +24,7 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenType_whenGetAllByType_thenReturnMatchingServices=[
   [
     {
+<<<<<<< HEAD
       "id" : 100001,
       "externalSystemType" : "GRSSignum",
       "serviceValue" : "grs_service_value",
@@ -21,6 +32,15 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
       "description" : "Description",
       "enableCommand" : "EnableCommand",
       "disableCommand" : "DisableCommand"
+=======
+      "description": "Description",
+      "disableCommand": "DisableCommand",
+      "enableCommand": "EnableCommand",
+      "externalSystemType": "GRSSignum",
+      "id": 100001,
+      "name": "grs_name",
+      "serviceValue": "grs_service_value"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]

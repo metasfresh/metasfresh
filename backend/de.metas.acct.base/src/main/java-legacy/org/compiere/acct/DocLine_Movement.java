@@ -1,9 +1,12 @@
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_MovementLine;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailReverseRequest;
@@ -16,6 +19,12 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_MovementLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -50,6 +59,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		setReversalLine_ID(movementLine.getReversalLine_ID());
 	}
 
+<<<<<<< HEAD
 	public final int getM_AttributeSetInstanceTo_ID()
 	{
 		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
@@ -57,11 +67,18 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	}
 
 	private final OrgId getFromOrgId()
+=======
+	private OrgId getFromOrgId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_Locator_ID());
 	}
 
+<<<<<<< HEAD
 	private final OrgId getToOrgId()
+=======
+	private OrgId getToOrgId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_LocatorTo_ID());
 	}
@@ -76,14 +93,20 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	@Builder
 	private static class MovementLineCostAmounts
 	{
+<<<<<<< HEAD
 		final AggregatedCostAmount outboundCosts;
 		final AggregatedCostAmount inboundCosts;
+=======
+		AggregatedCostAmount outboundCosts;
+		AggregatedCostAmount inboundCosts;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final MoveCostsResult getCreateCosts(@NonNull final AcctSchema as)
 	{
 		if (isReversalLine())
 		{
+<<<<<<< HEAD
 			final AggregatedCostAmount outboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
@@ -97,6 +120,25 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
 					.date(getDateAcct())
 					.build());
+=======
+			final AggregatedCostAmount outboundCosts = services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
+
+			final AggregatedCostAmount inboundCosts = services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			return MoveCostsResult.builder()
 					.outboundCosts(outboundCosts)
@@ -108,7 +150,11 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 			return services.moveCosts(MoveCostsRequest.builder()
 					.acctSchemaId(as.getId())
 					.clientId(getClientId())
+<<<<<<< HEAD
 					.date(getDateAcct())
+=======
+					.date(getDateAcctAsInstant())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					// .costElement(null) // all cost elements
 					.productId(getProductId())
 					.attributeSetInstanceId(getAttributeSetInstanceId())

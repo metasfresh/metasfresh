@@ -201,7 +201,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final InOutLineId expectedShipmentLineId = shipmentLineTable.getIdOptional(expectedShipmentLineIdentifier).orElse(null);
 			if (expectedShipmentLineId == null)
 			{
+<<<<<<< HEAD
 				shipmentLineTable.put(expectedShipmentLineIdentifier, inoutDAO.getLineById(actualShipmentLineId));
+=======
+				shipmentLineTable.put(expectedShipmentLineIdentifier, inoutDAO.getLineByIdInTrx(actualShipmentLineId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{

@@ -1,6 +1,10 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -68,10 +72,20 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
+<<<<<<< HEAD
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+=======
+import de.metas.test.MetasfreshSnapshotFunction;
+import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -94,7 +108,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+<<<<<<< HEAD
 import java.util.function.Function;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -102,7 +119,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PickingJobTestHelper
 {
+<<<<<<< HEAD
 	public static final Function<Object, String> snapshotSerializeFunction = SnapshotFunctionFactory.newFunction();
+=======
+	public static final MetasfreshSnapshotFunction snapshotSerializer = new MetasfreshSnapshotFunction();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//
 	// Services
@@ -128,6 +149,11 @@ public class PickingJobTestHelper
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
+<<<<<<< HEAD
+=======
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// User one record ID sequence for each table
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
@@ -145,6 +171,10 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
+<<<<<<< HEAD
+=======
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
 		pickingJobService = new PickingJobService(
@@ -157,14 +187,24 @@ public class PickingJobTestHelper
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
 						bpartnerBL,
+<<<<<<< HEAD
 						inventoryService
 				),
+=======
+						ADReferenceService.newMocked(),
+						inventoryService),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new PickingJobHUReservationService(huReservationService),
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
 						huQRCodeService,
+<<<<<<< HEAD
 						profileRepository
+=======
+						profileRepository,
+						workplaceService
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
@@ -175,7 +215,13 @@ public class PickingJobTestHelper
 				),
 				inventoryService,
 				huReservationService,
+<<<<<<< HEAD
 				profileRepository);
+=======
+				workplaceService,
+				profileRepository
+		);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -444,12 +490,20 @@ public class PickingJobTestHelper
 
 	public TestRecorder newTestRecorder()
 	{
+<<<<<<< HEAD
 		return new TestRecorder(huTracer, snapshotSerializeFunction);
+=======
+		return new TestRecorder(huTracer, snapshotSerializer::toJson);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public String toJson(final Object obj)
 	{
+<<<<<<< HEAD
 		return snapshotSerializeFunction.apply(obj);
+=======
+		return snapshotSerializer.toJson(obj);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void dumpHU(final String title, final HuId huId)

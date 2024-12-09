@@ -83,7 +83,11 @@ public class PaymentRequestProcessor implements Processor
 
 		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
 
+<<<<<<< HEAD
 		final String bPartnerIdentifier = context.getMetasfreshId().getIdentifier();
+=======
+		final String bPartnerIdentifier = context.getBPExternalIdentifier().getIdentifier();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return Optional.of(JsonOrderPaymentCreateRequest.builder()
 								   .orgCode(context.getOrgCode())

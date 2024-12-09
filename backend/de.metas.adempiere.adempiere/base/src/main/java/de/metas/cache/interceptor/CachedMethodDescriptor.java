@@ -10,18 +10,48 @@ package de.metas.cache.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.cache.CacheLabel;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheIgnore;
+import de.metas.cache.annotation.CacheModel;
+import de.metas.cache.annotation.CacheModelId;
+import de.metas.cache.annotation.CacheReloadIfTrue;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Util.ArrayKey;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -30,6 +60,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+<<<<<<< HEAD
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -82,6 +113,51 @@ import de.metas.util.Check;
 		cacheName = mkCacheName(cachedAnnotation);
 
 		final Builder<ICachedMethodPartDescriptor> descriptorsBuilder = ImmutableList.<ICachedMethodPartDescriptor> builder();
+=======
+@EqualsAndHashCode(of = "method")
+@ToString
+final class CachedMethodDescriptor
+{
+	private static final String DEFAULT_CacheName = CachedMethodDescriptor.class.getSimpleName() + "#defaultCache";
+	private static final ImmutableSet<CacheLabel> ADDITIONAL_CACHE_LABELS = ImmutableSet.of(CacheLabel.ofString(CachedMethodDescriptor.class.getSimpleName()));
+	private static final int DEFAULT_CacheInitialCapacity = 20;
+	private static final int DEFAULT_CacheExpireMinutes = 10;
+
+	@NonNull @Getter private final Method method;
+
+	private final boolean staticMethod;
+	@NonNull @Getter private final String cacheName;
+	private final int expireMinutes;
+	private final List<ICachedMethodPartDescriptor> descriptors;
+
+	CachedMethodDescriptor(@NonNull final Method method)
+	{
+		this.method = method;
+		this.staticMethod = Modifier.isStatic(method.getModifiers());
+		final Cached cachedAnnotation = extractCachedAnnotation(method);
+		this.cacheName = mkCacheName(cachedAnnotation);
+		this.expireMinutes = extractExpireMinutes(cachedAnnotation);
+		this.descriptors = extractMethodPartDescriptors(method);
+	}
+
+	@NonNull
+	private static String mkCacheName(final Cached annotation)
+	{
+		final String cacheName = StringUtils.trimBlankToNull(annotation.cacheName());
+		return cacheName != null ? cacheName : DEFAULT_CacheName;
+	}
+
+	private static Cached extractCachedAnnotation(final Method method)
+	{
+		return Check.assumeNotNull(method.getAnnotation(Cached.class), "cachedAnnotation not null");
+	}
+
+	private static ImmutableList<ICachedMethodPartDescriptor> extractMethodPartDescriptors(final Method method)
+	{
+		final Cached cachedAnnotation = extractCachedAnnotation(method);
+
+		final Builder<ICachedMethodPartDescriptor> descriptorsBuilder = ImmutableList.builder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Caching part: Target PO
@@ -93,8 +169,11 @@ import de.metas.util.Check;
 			}
 		}
 
+<<<<<<< HEAD
 		//
 		// Parse cached method parameters
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Class<?>[] parameterTypes = method.getParameterTypes();
 		final Annotation[][] parametersAnnotations = method.getParameterAnnotations();
 		for (int parameterIndex = 0; parameterIndex < parameterTypes.length; parameterIndex++)
@@ -164,6 +243,7 @@ import de.metas.util.Check;
 			}
 		}
 
+<<<<<<< HEAD
 		descriptors = descriptorsBuilder.build();
 	}
 
@@ -178,6 +258,12 @@ import de.metas.util.Check;
 	}
 
 	static final boolean containsAnnotationType(final List<Annotation> annotations, final Class<? extends Annotation> annotationType)
+=======
+		return descriptorsBuilder.build();
+	}
+
+	static boolean containsAnnotationType(final List<Annotation> annotations, final Class<? extends Annotation> annotationType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (annotations == null || annotations.isEmpty())
 		{
@@ -195,6 +281,7 @@ import de.metas.util.Check;
 		return false;
 	}
 
+<<<<<<< HEAD
 	@Override
 	public String toString()
 	{
@@ -248,6 +335,23 @@ import de.metas.util.Check;
 	public Method getMethod()
 	{
 		return method;
+=======
+	private static int extractExpireMinutes(Cached cachedAnnotation)
+	{
+		int expireMinutes = cachedAnnotation.expireMinutes();
+		if (expireMinutes == Cached.EXPIREMINUTES_Never)
+		{
+			return Cached.EXPIREMINUTES_Never;
+		}
+		else if (expireMinutes <= 0)
+		{
+			return DEFAULT_CacheExpireMinutes;
+		}
+		else
+		{
+			return expireMinutes;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CacheKeyBuilder createKeyBuilder(final Object targetObject, final Object[] methodArgs)
@@ -275,6 +379,7 @@ import de.metas.util.Check;
 
 		return keyBuilder;
 	}
+<<<<<<< HEAD
 	
 	/**
 	 * Creates a new {@link CCache} based on given {@link CachedMethodDescriptor}.
@@ -304,13 +409,29 @@ import de.metas.util.Check;
 
 		final CCache<ArrayKey, Object> cache = new CCache<>(cacheName, initialCapacity, expireMinutes);
 		return cache;
+=======
+
+	@NonNull
+	private CCache<ArrayKey, Object> createCCache()
+	{
+		return CCache.<ArrayKey, Object>builder()
+				.cacheName(cacheName)
+				.initialCapacity(DEFAULT_CacheInitialCapacity)
+				.expireMinutes(expireMinutes)
+				.additionalLabels(ADDITIONAL_CACHE_LABELS)
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Callable used to create method level cache container.
 	 */
+<<<<<<< HEAD
 	public Callable<CCache<ArrayKey, Object>> createCCacheCallable()
 	{
 		return createCCacheCallable;
 	}
+=======
+	public Callable<CCache<ArrayKey, Object>> createCCacheCallable() {return this::createCCache;}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,6 +1,7 @@
 de.metas.contracts.commission.licensefee.LicenseFeeSettingsConfigFactoryTest.givenValidRequest_whenCreateForNewCommissionInstances_thenReturnOneCommissionConfig=[
   [
     {
+<<<<<<< HEAD
       "licenseFeeContract" : {
         "@type" : "LicenseFeeContract",
         "id" : 100004,
@@ -11,6 +12,18 @@ de.metas.contracts.commission.licensefee.LicenseFeeSettingsConfigFactoryTest.giv
       "commissionPercent" : 10,
       "pointsPrecision" : 2,
       "licenseFeeSettingsLineId" : 100002
+=======
+      "commissionPercent": 10,
+      "commissionProductId": 103,
+      "licenseFeeContract": {
+        "@type": "LicenseFeeContract",
+        "contractOwnerBPartnerId": 2,
+        "id": 100004,
+        "simulation": false
+      },
+      "licenseFeeSettingsLineId": 100002,
+      "pointsPrecision": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]

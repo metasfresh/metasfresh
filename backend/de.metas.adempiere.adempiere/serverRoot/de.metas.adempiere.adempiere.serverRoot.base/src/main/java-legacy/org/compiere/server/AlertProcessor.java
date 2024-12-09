@@ -156,7 +156,11 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPreProcessing = rule.getPreProcessing();
 			if (!Check.isEmpty(sqlPreProcessing, true))
 			{
+<<<<<<< HEAD
 				int no = DB.executeUpdate(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
+=======
+				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -202,7 +206,11 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPostProcessing = rule.getPostProcessing();
 			if (!Check.isEmpty(sqlPostProcessing, true))
 			{
+<<<<<<< HEAD
 				int no = DB.executeUpdate(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
+=======
+				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();

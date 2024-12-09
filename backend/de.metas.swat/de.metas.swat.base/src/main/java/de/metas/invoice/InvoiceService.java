@@ -24,7 +24,10 @@ package de.metas.invoice;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
@@ -42,7 +45,10 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import de.metas.util.collections.CollectionUtils;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
@@ -51,6 +57,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +67,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
+=======
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.util.Env.getCtx;
 
 @Service
@@ -79,7 +92,11 @@ public class InvoiceService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
+=======
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines, @NonNull final AsyncBatchId asyncBatchId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (shipmentLines.isEmpty())
 		{
@@ -93,12 +110,22 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+<<<<<<< HEAD
 		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		processInvoiceCandidates(invoiceCandidateIds);
+=======
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+	}
+
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds,
+			@NonNull final AsyncBatchId asyncBatchId)
+	{
+		processInvoiceCandidates(ImmutableSet.copyOf(invoiceCandidateIds), asyncBatchId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return invoiceCandidateIds.stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
@@ -108,6 +135,7 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
 	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
@@ -116,6 +144,11 @@ public class InvoiceService
 		{
 			generateInvoicesForAsyncBatch(ImmutableSet.copyOf(entry.getValue()), entry.getKey());
 		}
+=======
+	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, @NonNull final AsyncBatchId asyncBatchId)
+	{
+			generateInvoicesForAsyncBatch(invoiceCandidateIds, asyncBatchId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -127,6 +160,7 @@ public class InvoiceService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBatchId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
@@ -162,6 +196,8 @@ public class InvoiceService
 		return ImmutableMap.copyOf(asyncBatchId2InvoiceCand);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);

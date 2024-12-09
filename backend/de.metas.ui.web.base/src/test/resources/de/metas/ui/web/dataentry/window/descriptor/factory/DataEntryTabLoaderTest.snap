@@ -1,6 +1,7 @@
 de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor=[
   [
     {
+<<<<<<< HEAD
       "windowId" : "5",
       "detailId" : "DataEntry_Tab-1",
       "internalName" : "dataEntryTab_internalName",
@@ -146,10 +147,149 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+      "caption": {
+        "anyLanguage": false,
+        "value": "dataEntryTab_caption"
+      },
+      "description": {
+        "anyLanguage": false,
+        "value": "dataEntryTab_description"
+      },
+      "detailId": "DataEntry_Tab-1",
+      "empty": false,
+      "internalName": "dataEntryTab_internalName",
+      "newRecordInputMode": "ALL_AVAILABLE_METHODS",
+      "queryOnActivate": true,
+      "singleRowDetailLayout": false,
+      "subTabLayouts": [
+        {
+          "caption": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab1_caption"
+          },
+          "description": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab1_description"
+          },
+          "detailId": "DataEntry_SubTab-11",
+          "empty": false,
+          "internalName": "dataEntrySubTab_internalName",
+          "newRecordInputMode": "ALL_AVAILABLE_METHODS",
+          "queryOnActivate": true,
+          "singleRowDetailLayout": true,
+          "singleRowLayout": {
+            "caption": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "description": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "empty": false,
+            "sections": [
+              {
+                "caption": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty"
+                },
+                "captionMode": "DISPLAY",
+                "closableMode": "INITIALLY_OPEN",
+                "columns": [
+                  {
+                    "elementGroups": [
+                      {
+                        "columnCount": 2,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "textField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "textField11_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1111",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1111_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "Text"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [ ]
                           }
                         ],
@@ -247,10 +387,102 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [ ]
+                          }
+                        ]
+                      },
+                      {
+                        "columnCount": 2,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "longTextField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "longTextField1_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1112",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1112_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": true,
+                                "multilineTextLines": 10,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "LongText"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -457,10 +689,203 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "numberField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "numberField11_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1113",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1113_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "Number"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "description": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection1_description"
+                },
+                "internalName": "dataEntrySection1_internalName"
+              },
+              {
+                "caption": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection12_caption"
+                },
+                "captionMode": "DISPLAY",
+                "closableMode": "INITIALLY_CLOSED",
+                "columns": [
+                  {
+                    "elementGroups": [
+                      {
+                        "columnCount": 3,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "dateField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "dateField11_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1121",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1121_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "LocalDate"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -550,10 +975,94 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "yesNoField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "yesNoField11_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1122",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1122_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "YesNo"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -792,10 +1301,235 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "listField11_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "listField11_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1123",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1123_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "List"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "description": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection12 - section with one line and 3 fields"
+                },
+                "internalName": "dataEntrySection2_internalName"
+              }
+            ],
+            "windowId": "5"
+          },
+          "subTabLayouts": [ ],
+          "windowId": "5"
+        },
+        {
+          "caption": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab2_caption"
+          },
+          "description": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab2_description"
+          },
+          "detailId": "DataEntry_SubTab-12",
+          "empty": false,
+          "internalName": "dataEntrySubTab_internalName",
+          "newRecordInputMode": "ALL_AVAILABLE_METHODS",
+          "queryOnActivate": true,
+          "singleRowDetailLayout": true,
+          "singleRowLayout": {
+            "caption": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "description": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "empty": false,
+            "sections": [
+              {
+                "caption": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty"
+                },
+                "captionMode": "DISPLAY",
+                "closableMode": "INITIALLY_OPEN",
+                "columns": [
+                  {
+                    "elementGroups": [
+                      {
+                        "columnCount": 2,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "textField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "textField21_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1211",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1211_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "Text"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [ ]
                           }
                         ],
@@ -893,10 +1627,102 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [ ]
+                          }
+                        ]
+                      },
+                      {
+                        "columnCount": 2,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "longTextField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "longTextField1_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1212",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1212_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": true,
+                                "multilineTextLines": 10,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "LongText"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -1103,10 +1929,203 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "numberField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "numberField21_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1213",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1213_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "Number"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "description": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection1_description"
+                },
+                "internalName": "dataEntrySection1_internalName"
+              },
+              {
+                "caption": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection22_caption"
+                },
+                "captionMode": "DISPLAY",
+                "closableMode": "INITIALLY_CLOSED",
+                "columns": [
+                  {
+                    "elementGroups": [
+                      {
+                        "columnCount": 3,
+                        "elementLines": [
+                          {
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "dateField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "dateField21_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1221",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1221_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "LocalDate"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -1196,10 +2215,94 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   }
                                 ],
                                 "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "yesNoField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "yesNoField21_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1222",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1222_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "YesNo"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                               }
                             ]
                           },
                           {
+<<<<<<< HEAD
                             "elements" : [
                               {
                                 "gridElement" : false,
@@ -1310,6 +2413,111 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         }
       ],
       "empty" : false
+=======
+                            "elements": [
+                              {
+                                "advancedField": false,
+                                "allowShowPassword": false,
+                                "caption": {
+                                  "anyLanguage": false,
+                                  "value": "listField21_caption"
+                                },
+                                "description": {
+                                  "anyLanguage": false,
+                                  "value": "listField21_description"
+                                },
+                                "empty": false,
+                                "fields": [
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1223",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false
+                                  },
+                                  {
+                                    "caption": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "devices": {
+                                      "empty": true,
+                                      "list": [ ]
+                                    },
+                                    "emptyFieldText": {
+                                      "anyLanguage": true,
+                                      "value": ""
+                                    },
+                                    "field": "1223_Info",
+                                    "fieldType": "Tooltip",
+                                    "listNullItemCaption": {
+                                      "defaultValue": "none",
+                                      "trlMap": {
+                                        "de_CH": "leer",
+                                        "de_DE": "leer"
+                                      }
+                                    },
+                                    "lookupSearchStartDelay": null,
+                                    "lookupSearchStringMinLength": -1,
+                                    "lookupSource": "text",
+                                    "lookupTableName": null,
+                                    "publicField": true,
+                                    "supportZoomInto": false,
+                                    "tooltipIconName": "text"
+                                  }
+                                ],
+                                "gridElement": false,
+                                "maxLength": 0,
+                                "multilineText": false,
+                                "multilineTextLines": 0,
+                                "restrictToMediaTypes": [ ],
+                                "viewAllowSorting": true,
+                                "viewEditorRenderMode": "ALWAYS",
+                                "widgetSize": null,
+                                "widgetType": "List"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "description": {
+                  "anyLanguage": false,
+                  "value": "dataEntrySection22 - section with one line and 3 fields"
+                },
+                "internalName": "dataEntrySection2_internalName"
+              }
+            ],
+            "windowId": "5"
+          },
+          "subTabLayouts": [ ],
+          "windowId": "5"
+        }
+      ],
+      "windowId": "5"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
@@ -1318,6 +2526,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
 de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createLayoutDescriptors_verify_JSONDocumentLayoutTab=[
   [
     {
+<<<<<<< HEAD
       "windowId" : "5",
       "tabId" : "DataEntry_Tab-1",
       "internalName" : "dataEntryTab_internalName",
@@ -1401,10 +2610,111 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+      "caption": "dataEntryTab_caption",
+      "defaultOrderBys": [ ],
+      "description": "dataEntryTab_description",
+      "elements": [ ],
+      "filters": [ ],
+      "internalName": "dataEntryTab_internalName",
+      "newRecordInputMode": "ALL_METHODS",
+      "queryOnActivate": true,
+      "sections": [ ],
+      "tabId": "DataEntry_Tab-1",
+      "tabs": [
+        {
+          "caption": "dataEntrySubTab1_caption",
+          "defaultOrderBys": [ ],
+          "description": "dataEntrySubTab1_description",
+          "elements": [ ],
+          "filters": [ ],
+          "internalName": "dataEntrySubTab_internalName",
+          "newRecordInputMode": "ALL_METHODS",
+          "queryOnActivate": true,
+          "sections": [
+            {
+              "closableMode": "INITIALLY_OPEN",
+              "columns": [
+                {
+                  "elementGroups": [
+                    {
+                      "columnCount": 2,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "textField11_caption",
+                              "description": "textField11_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1111"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1111_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Text"
                             }
                           ]
                         },
                         {
+                          "elements": [ ]
+                        }
+                      ]
+                    },
+                    {
+                      "columnCount": 2,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "longTextField11_caption",
+                              "description": "longTextField1_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1112"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1112_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "multilineText": true,
+                              "multilineTextLines": 10,
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "LongText"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
+                            }
+                          ]
+                        },
+                        {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "numberField11_caption",
@@ -1429,6 +2739,35 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "numberField11_caption",
+                              "description": "numberField11_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1113"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1113_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Number"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         }
@@ -1437,6 +2776,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   ]
                 }
               ],
+<<<<<<< HEAD
               "closableMode" : "INITIALLY_OPEN"
             },
             {
@@ -1473,10 +2813,52 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+              "description": "dataEntrySection1_description",
+              "title": "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty"
+            },
+            {
+              "closableMode": "INITIALLY_CLOSED",
+              "columns": [
+                {
+                  "elementGroups": [
+                    {
+                      "columnCount": 3,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "dateField11_caption",
+                              "description": "dateField11_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1121"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1121_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Date"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         },
                         {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "yesNoField11_caption",
@@ -1501,10 +2883,40 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "yesNoField11_caption",
+                              "description": "yesNoField11_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1122"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1122_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "YesNo"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         },
                         {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "listField11_caption",
@@ -1529,6 +2941,35 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "listField11_caption",
+                              "description": "listField11_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1123"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1123_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "List"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         }
@@ -1537,6 +2978,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   ]
                 }
               ],
+<<<<<<< HEAD
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
@@ -1621,10 +3063,109 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+              "description": "dataEntrySection12 - section with one line and 3 fields",
+              "title": "dataEntrySection12_caption"
+            }
+          ],
+          "singleRowDetailView": true,
+          "tabId": "DataEntry_SubTab-11",
+          "tabs": [ ],
+          "windowId": "5"
+        },
+        {
+          "caption": "dataEntrySubTab2_caption",
+          "defaultOrderBys": [ ],
+          "description": "dataEntrySubTab2_description",
+          "elements": [ ],
+          "filters": [ ],
+          "internalName": "dataEntrySubTab_internalName",
+          "newRecordInputMode": "ALL_METHODS",
+          "queryOnActivate": true,
+          "sections": [
+            {
+              "closableMode": "INITIALLY_OPEN",
+              "columns": [
+                {
+                  "elementGroups": [
+                    {
+                      "columnCount": 2,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "textField21_caption",
+                              "description": "textField21_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1211"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1211_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Text"
                             }
                           ]
                         },
                         {
+                          "elements": [ ]
+                        }
+                      ]
+                    },
+                    {
+                      "columnCount": 2,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "longTextField21_caption",
+                              "description": "longTextField1_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1212"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1212_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "multilineText": true,
+                              "multilineTextLines": 10,
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "LongText"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
+                            }
+                          ]
+                        },
+                        {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "numberField21_caption",
@@ -1649,6 +3190,35 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "numberField21_caption",
+                              "description": "numberField21_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1213"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1213_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Number"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         }
@@ -1657,6 +3227,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   ]
                 }
               ],
+<<<<<<< HEAD
               "closableMode" : "INITIALLY_OPEN"
             },
             {
@@ -1693,10 +3264,52 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+              "description": "dataEntrySection1_description",
+              "title": "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty"
+            },
+            {
+              "closableMode": "INITIALLY_CLOSED",
+              "columns": [
+                {
+                  "elementGroups": [
+                    {
+                      "columnCount": 3,
+                      "elementsLine": [
+                        {
+                          "elements": [
+                            {
+                              "caption": "dateField21_caption",
+                              "description": "dateField21_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1221"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1221_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "Date"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         },
                         {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "yesNoField21_caption",
@@ -1721,10 +3334,40 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "yesNoField21_caption",
+                              "description": "yesNoField21_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1222"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1222_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "YesNo"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         },
                         {
+<<<<<<< HEAD
                           "elements" : [
                             {
                               "caption" : "listField21_caption",
@@ -1749,6 +3392,35 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
+=======
+                          "elements": [
+                            {
+                              "caption": "listField21_caption",
+                              "description": "listField21_description",
+                              "fields": [
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1223"
+                                },
+                                {
+                                  "caption": "",
+                                  "clearValueText": "none",
+                                  "devices": [ ],
+                                  "field": "1223_Info",
+                                  "lookupSearchStartDelayMillis": 0,
+                                  "lookupSearchStringMinLength": -1,
+                                  "source": "text",
+                                  "tooltipIconName": "text",
+                                  "type": "Tooltip"
+                                }
+                              ],
+                              "restrictToMediaTypes": [ ],
+                              "size": null,
+                              "viewEditorRenderMode": "always",
+                              "widgetType": "List"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             }
                           ]
                         }
@@ -1757,6 +3429,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   ]
                 }
               ],
+<<<<<<< HEAD
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
@@ -1767,6 +3440,19 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       ],
       "queryOnActivate" : true,
       "newRecordInputMode" : "ALL_METHODS"
+=======
+              "description": "dataEntrySection22 - section with one line and 3 fields",
+              "title": "dataEntrySection22_caption"
+            }
+          ],
+          "singleRowDetailView": true,
+          "tabId": "DataEntry_SubTab-12",
+          "tabs": [ ],
+          "windowId": "5"
+        }
+      ],
+      "windowId": "5"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
@@ -1775,6 +3461,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
 de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createTabEntityDescriptors_verify_DocumentEntityDescriptor=[
   [
     {
+<<<<<<< HEAD
       "documentType" : "Window",
       "documentTypeId" : "5",
       "id" : "Window-5-DataEntry_Tab-1",
@@ -3716,6 +5403,1701 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       },
       "cloneEnabled" : false,
       "printable" : false
+=======
+      "_fieldNamesByCharacteristic": { },
+      "adTabId": null,
+      "allowCreateNewLogic": "1=0",
+      "allowDeleteLogic": "1=0",
+      "allowQuickInput": false,
+      "autodetectDefaultDateFilter": true,
+      "calloutsEnabled": false,
+      "caption": {
+        "anyLanguage": false,
+        "value": "dataEntryTab_caption"
+      },
+      "cloneEnabled": false,
+      "dataBinding": {
+        "versioningSupported": false
+      },
+      "defaultTableCalloutsEnabled": false,
+      "dependencies": {
+        "type2name2dependencies": { }
+      },
+      "description": {
+        "anyLanguage": false,
+        "value": "dataEntryTab_description"
+      },
+      "detailId": "DataEntry_Tab-1",
+      "displayLogic": "1=1",
+      "documentType": "Window",
+      "documentTypeId": "5",
+      "fields": { },
+      "filterDescriptors": { },
+      "id": "Window-5-DataEntry_Tab-1",
+      "idFields": [ ],
+      "includedEntitiesByDetailId": {
+        "DataEntry_SubTab-11": {
+          "_fieldNamesByCharacteristic": { },
+          "adTabId": null,
+          "allowCreateNewLogic": "1=1",
+          "allowDeleteLogic": "1=1",
+          "allowQuickInput": false,
+          "autodetectDefaultDateFilter": true,
+          "calloutsEnabled": false,
+          "caption": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab1_caption"
+          },
+          "cloneEnabled": false,
+          "dataBinding": {
+            "versioningSupported": false
+          },
+          "defaultTableCalloutsEnabled": false,
+          "dependencies": {
+            "type2name2dependencies": { }
+          },
+          "description": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab1_description"
+          },
+          "detailId": "DataEntry_SubTab-11",
+          "displayLogic": "1=1",
+          "documentType": "Window",
+          "documentTypeId": "5",
+          "fields": {
+            "1111": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "textField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1111",
+                "dataEntryFieldId": 1111,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "TEXT",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "textField11_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1111",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1111_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1111_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1111_Info",
+                "dataEntryFieldId": 1111,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1111_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1112": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "longTextField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1112",
+                "dataEntryFieldId": 1112,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "LONG_TEXT",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "longTextField1_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1112",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "LongText"
+            },
+            "1112_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1112_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1112_Info",
+                "dataEntryFieldId": 1112,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1112_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1113": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "numberField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1113",
+                "dataEntryFieldId": 1113,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "NUMBER",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "numberField11_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1113",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.math.BigDecimal",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Number"
+            },
+            "1113_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1113_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1113_Info",
+                "dataEntryFieldId": 1113,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1113_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1121": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "dateField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1121",
+                "dataEntryFieldId": 1121,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "DATE",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "dateField11_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1121",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.time.LocalDate",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "LocalDate"
+            },
+            "1121_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1121_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1121_Info",
+                "dataEntryFieldId": 1121,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1121_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1122": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "yesNoField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1122",
+                "dataEntryFieldId": 1122,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "YESNO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "yesNoField11_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1122",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.Boolean",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "YesNo"
+            },
+            "1122_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1122_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1122_Info",
+                "dataEntryFieldId": 1122,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1122_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1123": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "listField11_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1123",
+                "dataEntryFieldId": 1123,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "LIST",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "listField11_description"
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1123",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "lookupDescriptor": {
+                  "dataEntryListValueDataSourceFetcher": {
+                    "cached": true,
+                    "dependsOnContextVariables": [ ],
+                    "id2LookupValue": {
+                      "11231": {
+                        "active": true,
+                        "description": {
+                          "anyLanguage": false,
+                          "value": "listValue11_description"
+                        },
+                        "displayName": {
+                          "anyLanguage": false,
+                          "value": "listValue11_name"
+                        },
+                        "id": 11231
+                      },
+                      "11232": {
+                        "active": true,
+                        "description": {
+                          "anyLanguage": false,
+                          "value": "listValue12_description"
+                        },
+                        "displayName": {
+                          "anyLanguage": false,
+                          "value": "listValue12_name"
+                        },
+                        "id": 11232
+                      }
+                    },
+                    "numericKey": false
+                  },
+                  "highVolume": false,
+                  "numericKey": true
+                },
+                "numericKey": true
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "List"
+            },
+            "1123_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1123_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1123_Info",
+                "dataEntryFieldId": 1123,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1123_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "DataEntry_SubTab_ID": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "DataEntry_SubTab_ID"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "DataEntry_SubTab_ID",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "SUB_TAB_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "DataEntry_SubTab_ID",
+              "key": true,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "documentLinkColumnName": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "documentLinkColumnName"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "documentLinkColumnName",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "PARENT_LINK_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "documentLinkColumnName",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=1",
+              "parentLink": true,
+              "parentLinkFieldName": "documentLinkColumnName",
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.Integer",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Integer"
+            }
+          },
+          "filterDescriptors": { },
+          "id": "Window-5-DataEntry_SubTab-11",
+          "idFields": [
+            {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "DataEntry_SubTab_ID"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "DataEntry_SubTab_ID",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "SUB_TAB_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-11",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "DataEntry_SubTab_ID",
+              "key": true,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            }
+          ],
+          "includedEntitiesByDetailId": { },
+          "internalName": "dataEntrySubTab_internalName",
+          "parentLinkField": {
+            "allowShowPassword": false,
+            "alwaysUpdateable": false,
+            "calculated": false,
+            "callouts": [ ],
+            "caption": {
+              "anyLanguage": false,
+              "value": "documentLinkColumnName"
+            },
+            "characteristics": [
+              "PublicField"
+            ],
+            "dataBinding": {
+              "columnName": "documentLinkColumnName",
+              "defaultOrderBy": false,
+              "defaultOrderByAscending": true,
+              "fieldType": "PARENT_LINK_ID",
+              "mandatory": true
+            },
+            "defaultValueExpression": null,
+            "dependencies": {
+              "type2name2dependencies": { }
+            },
+            "description": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "detailId": "DataEntry_SubTab-11",
+            "deviceDescriptorsProvider": { },
+            "displayLogic": "1=0",
+            "fieldMaxLength": 0,
+            "fieldName": "documentLinkColumnName",
+            "key": false,
+            "lookupDescriptorProvider": {
+              "numericKey": false
+            },
+            "mandatoryLogic": "1=1",
+            "parentLink": true,
+            "parentLinkFieldName": "documentLinkColumnName",
+            "readonlyLogic": "1=1",
+            "readonlyVirtualField": false,
+            "supportZoomInto": false,
+            "valueClass": "java.lang.Integer",
+            "virtualField": false,
+            "virtualFieldValueProvider": null,
+            "widgetType": "Integer"
+          },
+          "printable": false,
+          "readonlyLogic": "1=0",
+          "refreshViewOnChangeEvents": false,
+          "soTrx": null,
+          "tableName": null
+        },
+        "DataEntry_SubTab-12": {
+          "_fieldNamesByCharacteristic": { },
+          "adTabId": null,
+          "allowCreateNewLogic": "1=1",
+          "allowDeleteLogic": "1=1",
+          "allowQuickInput": false,
+          "autodetectDefaultDateFilter": true,
+          "calloutsEnabled": false,
+          "caption": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab2_caption"
+          },
+          "cloneEnabled": false,
+          "dataBinding": {
+            "versioningSupported": false
+          },
+          "defaultTableCalloutsEnabled": false,
+          "dependencies": {
+            "type2name2dependencies": { }
+          },
+          "description": {
+            "anyLanguage": false,
+            "value": "dataEntrySubTab2_description"
+          },
+          "detailId": "DataEntry_SubTab-12",
+          "displayLogic": "1=1",
+          "documentType": "Window",
+          "documentTypeId": "5",
+          "fields": {
+            "1211": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "textField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1211",
+                "dataEntryFieldId": 1211,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "TEXT",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "textField21_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1211",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1211_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1211_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1211_Info",
+                "dataEntryFieldId": 1211,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1211_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1212": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "longTextField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1212",
+                "dataEntryFieldId": 1212,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "LONG_TEXT",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "longTextField1_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1212",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "LongText"
+            },
+            "1212_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1212_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1212_Info",
+                "dataEntryFieldId": 1212,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1212_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1213": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "numberField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1213",
+                "dataEntryFieldId": 1213,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "NUMBER",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "numberField21_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1213",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.math.BigDecimal",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Number"
+            },
+            "1213_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1213_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1213_Info",
+                "dataEntryFieldId": 1213,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1213_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1221": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "dateField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1221",
+                "dataEntryFieldId": 1221,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "DATE",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "dateField21_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1221",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.time.LocalDate",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "LocalDate"
+            },
+            "1221_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1221_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1221_Info",
+                "dataEntryFieldId": 1221,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1221_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1222": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "yesNoField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1222",
+                "dataEntryFieldId": 1222,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "YESNO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "yesNoField21_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1222",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.Boolean",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "YesNo"
+            },
+            "1222_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1222_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1222_Info",
+                "dataEntryFieldId": 1222,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1222_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "1223": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "listField21_caption"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1223",
+                "dataEntryFieldId": 1223,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "LIST",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": false,
+                "value": "listField21_description"
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1223",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "lookupDescriptor": {
+                  "dataEntryListValueDataSourceFetcher": {
+                    "cached": true,
+                    "dependsOnContextVariables": [ ],
+                    "id2LookupValue": {
+                      "12231": {
+                        "active": true,
+                        "description": {
+                          "anyLanguage": false,
+                          "value": "listValue21_description"
+                        },
+                        "displayName": {
+                          "anyLanguage": false,
+                          "value": "listValue21_name"
+                        },
+                        "id": 12231
+                      },
+                      "12232": {
+                        "active": true,
+                        "description": {
+                          "anyLanguage": false,
+                          "value": "listValue22_description"
+                        },
+                        "displayName": {
+                          "anyLanguage": false,
+                          "value": "listValue22_name"
+                        },
+                        "id": 12232
+                      }
+                    },
+                    "numericKey": false
+                  },
+                  "highVolume": false,
+                  "numericKey": true
+                },
+                "numericKey": true
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "List"
+            },
+            "1223_Info": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "1223_Info"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "1223_Info",
+                "dataEntryFieldId": 1223,
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "CREATED_UPDATED_INFO",
+                "mandatory": false
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=1",
+              "fieldMaxLength": 0,
+              "fieldName": "1223_Info",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=0",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "DataEntry_SubTab_ID": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "DataEntry_SubTab_ID"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "DataEntry_SubTab_ID",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "SUB_TAB_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "DataEntry_SubTab_ID",
+              "key": true,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            },
+            "documentLinkColumnName": {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "documentLinkColumnName"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "documentLinkColumnName",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "PARENT_LINK_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "documentLinkColumnName",
+              "key": false,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=1",
+              "parentLink": true,
+              "parentLinkFieldName": "documentLinkColumnName",
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": false,
+              "valueClass": "java.lang.Integer",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Integer"
+            }
+          },
+          "filterDescriptors": { },
+          "id": "Window-5-DataEntry_SubTab-12",
+          "idFields": [
+            {
+              "allowShowPassword": false,
+              "alwaysUpdateable": false,
+              "calculated": false,
+              "callouts": [ ],
+              "caption": {
+                "anyLanguage": false,
+                "value": "DataEntry_SubTab_ID"
+              },
+              "characteristics": [
+                "PublicField"
+              ],
+              "dataBinding": {
+                "columnName": "DataEntry_SubTab_ID",
+                "defaultOrderBy": false,
+                "defaultOrderByAscending": true,
+                "fieldType": "SUB_TAB_ID",
+                "mandatory": true
+              },
+              "defaultValueExpression": null,
+              "dependencies": {
+                "type2name2dependencies": { }
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": ""
+              },
+              "detailId": "DataEntry_SubTab-12",
+              "deviceDescriptorsProvider": { },
+              "displayLogic": "1=0",
+              "fieldMaxLength": 0,
+              "fieldName": "DataEntry_SubTab_ID",
+              "key": true,
+              "lookupDescriptorProvider": {
+                "numericKey": false
+              },
+              "mandatoryLogic": "1=0",
+              "parentLink": false,
+              "readonlyLogic": "1=1",
+              "readonlyVirtualField": false,
+              "supportZoomInto": true,
+              "valueClass": "java.lang.String",
+              "virtualField": false,
+              "virtualFieldValueProvider": null,
+              "widgetType": "Text"
+            }
+          ],
+          "includedEntitiesByDetailId": { },
+          "internalName": "dataEntrySubTab_internalName",
+          "parentLinkField": {
+            "allowShowPassword": false,
+            "alwaysUpdateable": false,
+            "calculated": false,
+            "callouts": [ ],
+            "caption": {
+              "anyLanguage": false,
+              "value": "documentLinkColumnName"
+            },
+            "characteristics": [
+              "PublicField"
+            ],
+            "dataBinding": {
+              "columnName": "documentLinkColumnName",
+              "defaultOrderBy": false,
+              "defaultOrderByAscending": true,
+              "fieldType": "PARENT_LINK_ID",
+              "mandatory": true
+            },
+            "defaultValueExpression": null,
+            "dependencies": {
+              "type2name2dependencies": { }
+            },
+            "description": {
+              "anyLanguage": true,
+              "value": ""
+            },
+            "detailId": "DataEntry_SubTab-12",
+            "deviceDescriptorsProvider": { },
+            "displayLogic": "1=0",
+            "fieldMaxLength": 0,
+            "fieldName": "documentLinkColumnName",
+            "key": false,
+            "lookupDescriptorProvider": {
+              "numericKey": false
+            },
+            "mandatoryLogic": "1=1",
+            "parentLink": true,
+            "parentLinkFieldName": "documentLinkColumnName",
+            "readonlyLogic": "1=1",
+            "readonlyVirtualField": false,
+            "supportZoomInto": false,
+            "valueClass": "java.lang.Integer",
+            "virtualField": false,
+            "virtualFieldValueProvider": null,
+            "widgetType": "Integer"
+          },
+          "printable": false,
+          "readonlyLogic": "1=0",
+          "refreshViewOnChangeEvents": false,
+          "soTrx": null,
+          "tableName": null
+        }
+      },
+      "internalName": "dataEntryTab_internalName",
+      "printable": false,
+      "readonlyLogic": "1=0",
+      "refreshViewOnChangeEvents": false,
+      "soTrx": null,
+      "tableName": null
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]

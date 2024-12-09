@@ -1,6 +1,7 @@
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenConfigIds_whenStreamByConfigIds_thenReturnMatchingInstances=[
   [
     {
+<<<<<<< HEAD
       "id" : 100004,
       "service" : {
         "id" : 100003,
@@ -13,6 +14,20 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
       },
       "configId" : 100001,
       "expectedStatus" : "INACTIVE"
+=======
+      "configId": 100001,
+      "expectedStatus": "INACTIVE",
+      "id": 100004,
+      "service": {
+        "description": "Description",
+        "disableCommand": "DisableCommand",
+        "enableCommand": "EnableCommand",
+        "externalSystemType": "GRSSignum",
+        "id": 100003,
+        "name": "Name",
+        "serviceValue": "grs_service_value"
+      }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
@@ -20,6 +35,7 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstanceRequest_whenCreate_thenCreateAndReturnInstance=[
   {
+<<<<<<< HEAD
     "id" : 100003,
     "service" : {
       "id" : 100002,
@@ -32,12 +48,27 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
     },
     "configId" : 100001,
     "expectedStatus" : "INACTIVE"
+=======
+    "configId": 100001,
+    "expectedStatus": "INACTIVE",
+    "id": 100003,
+    "service": {
+      "description": "Description",
+      "disableCommand": "DisableCommand",
+      "enableCommand": "EnableCommand",
+      "externalSystemType": "GRSSignum",
+      "id": 100002,
+      "name": "Name",
+      "serviceValue": "grs_service_value"
+    }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstance_whenUpdate_thenUpdateAndReturnInstance=[
   {
+<<<<<<< HEAD
     "id" : 100003,
     "service" : {
       "id" : 100002,
@@ -50,12 +81,27 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
     },
     "configId" : 100001,
     "expectedStatus" : "ACTIVE"
+=======
+    "configId": 100001,
+    "expectedStatus": "ACTIVE",
+    "id": 100003,
+    "service": {
+      "description": "Description",
+      "disableCommand": "DisableCommand",
+      "enableCommand": "EnableCommand",
+      "externalSystemType": "GRSSignum",
+      "id": 100002,
+      "name": "Name",
+      "serviceValue": "grs_service_value"
+    }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenValidIds_whenGetByConfigAndServiceId_thenReturnInstance=[
   {
+<<<<<<< HEAD
     "id" : 100003,
     "service" : {
       "id" : 100002,
@@ -68,5 +114,19 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
     },
     "configId" : 100001,
     "expectedStatus" : "INACTIVE"
+=======
+    "configId": 100001,
+    "expectedStatus": "INACTIVE",
+    "id": 100003,
+    "service": {
+      "description": "Description",
+      "disableCommand": "DisableCommand",
+      "enableCommand": "EnableCommand",
+      "externalSystemType": "GRSSignum",
+      "id": 100002,
+      "name": "Name",
+      "serviceValue": "grs_service_value"
+    }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

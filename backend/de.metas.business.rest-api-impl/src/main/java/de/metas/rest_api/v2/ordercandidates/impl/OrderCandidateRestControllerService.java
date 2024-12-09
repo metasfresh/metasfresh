@@ -2,7 +2,11 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,20 +27,27 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderLineInfo;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+<<<<<<< HEAD
 import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
@@ -44,6 +55,12 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+=======
+import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.impex.InputDataSourceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -51,9 +68,12 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+<<<<<<< HEAD
 import de.metas.ordercandidate.api.OLCandValidationResult;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.IdentifierString;
@@ -75,11 +95,17 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
+=======
+import java.util.Set;
+import java.util.function.Supplier;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -93,9 +119,13 @@ public class OrderCandidateRestControllerService
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
+<<<<<<< HEAD
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
 	private final OLCandValidatorService olCandValidatorService;
+=======
+	private final AlbertaOrderService albertaOrderService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final JsonInvoiceService jsonInvoiceService;
 	private final JsonShipmentService jsonShipmentService;
 	private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
@@ -104,9 +134,13 @@ public class OrderCandidateRestControllerService
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
+<<<<<<< HEAD
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
 			@NonNull final OLCandValidatorService olCandValidatorService,
+=======
+			@NonNull final AlbertaOrderService albertaOrderService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final JsonShipmentService jsonShipmentService,
 			@NonNull final JsonInvoiceService jsonInvoiceService,
 			@NonNull final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer,
@@ -114,9 +148,13 @@ public class OrderCandidateRestControllerService
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+<<<<<<< HEAD
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
 		this.olCandValidatorService = olCandValidatorService;
+=======
+		this.albertaOrderService = albertaOrderService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.jsonShipmentService = jsonShipmentService;
 		this.jsonInvoiceService = jsonInvoiceService;
 		this.processOLCandsWorkpackageEnqueuer = processOLCandsWorkpackageEnqueuer;
@@ -127,6 +165,7 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+<<<<<<< HEAD
 		final PerformanceMonitoringService.SpanMetadata spanMetadata = PerformanceMonitoringService.SpanMetadata.builder()
 				.name("CreatOrderLineCandidatesBulk")
 				.type(PerformanceMonitoringService.Type.REST_API_PROCESSING.getCode())
@@ -141,6 +180,8 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final HashMap<OLCandQuery, List<OLCand>> query2OLCandList = new HashMap<>();
 
 		final List<OLCand> olCandidates = bulkRequest
@@ -221,6 +262,7 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
 	{
 		return clearOLCandidates(clearRequest.getInputDataSourceName(), clearRequest.getExternalHeaderId(), null);
@@ -272,6 +314,22 @@ public class OrderCandidateRestControllerService
 		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{
 			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(validOlCandIds));
+=======
+	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
+	{
+		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
+
+		processValidOlCands(request, olCandIds);
+
+		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(olCandIds);
+
+		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
+				.orderResponse(buildGenerateOrdersResponse(orderIds));
+
+		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
+		{
+			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(olCandIds));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
@@ -279,6 +337,14 @@ public class OrderCandidateRestControllerService
 			responseBuilder.invoiceInfoResponse(jsonInvoiceService.buildInvoiceInfoResponseFromOrderIds(orderIds));
 		}
 
+<<<<<<< HEAD
+=======
+		if (Boolean.TRUE.equals(request.getCloseOrder()))
+		{
+			responseBuilder.invoiceInfoResponse(jsonInvoiceService.buildInvoiceInfoResponseFromOrderIds(orderIds));
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return responseBuilder.build();
 	}
 
@@ -308,6 +374,7 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private JsonOLCandClearingResponse clearOLCandidates(
 			@NonNull final String inputDataSource,
 			@NonNull final String externalHeaderId,
@@ -331,6 +398,8 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private JsonGenerateOrdersResponse buildGenerateOrdersResponse(@NonNull final Set<OrderId> orderIds)
 	{
 		final List<JsonMetasfreshId> orderMetasfreshIds = orderIds.stream()
@@ -344,7 +413,11 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private List<I_C_OLCand> getOLCands(
+=======
+	private Set<OLCandId> getOLCands(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final IdentifierString identifierString,
 			@NonNull final String externalHeaderId)
 	{
@@ -355,8 +428,14 @@ public class OrderCandidateRestControllerService
 
 		return olCandRepo.getByQuery(olCandQuery)
 				.stream()
+<<<<<<< HEAD
 				.map(OLCand::unbox)
 				.collect(ImmutableList.toImmutableList());
+=======
+				.map(OLCand::getId)
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**

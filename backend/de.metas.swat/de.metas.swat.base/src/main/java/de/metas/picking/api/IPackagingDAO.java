@@ -26,6 +26,13 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
+<<<<<<< HEAD
+=======
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

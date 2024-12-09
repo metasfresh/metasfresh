@@ -25,12 +25,19 @@ package org.compiere.model;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import de.metas.util.Check;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * AD Index Column
  * 
@@ -95,7 +102,11 @@ public class MIndexColumn extends X_AD_Index_Column {
 		final Object[] params = { indexTable.get_ID(), column.get_ID() };
 
 		MIndexColumn indexColumn = new Query(ctx, Table_Name,
+<<<<<<< HEAD
 				whereClause, trxName).setParameters(params).firstOnly();
+=======
+				whereClause, trxName).setParameters(params).firstOnly(MIndexColumn.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (indexColumn == null) {
 			

@@ -9,20 +9,36 @@ import com.google.common.collect.SetMultimap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
+=======
+import org.jetbrains.annotations.Contract;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+<<<<<<< HEAD
+=======
+import java.util.HashMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+<<<<<<< HEAD
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+=======
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -169,6 +185,71 @@ public final class CollectionUtils
 		return result.get(0);
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection)
+	{
+		return singleElementOrEmpty(collection, e -> true);
+	}
+
+	/**
+	 * @param filter filter used to match the element
+	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
+	 */
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		T singleElement = null;
+		boolean singleElementSet = false;
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				if (singleElementSet)
+				{
+					// We already have an element => return empty
+					return Optional.empty();
+				}
+				else
+				{
+					singleElementSet = true;
+					singleElement = e;
+				}
+			}
+		}
+
+		return singleElementSet
+				? Optional.of(singleElement)
+				: Optional.empty();
+	}
+
+	public static <T> Optional<T> singleElementOrEmptyIfNotFound(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		final List<T> result = new ArrayList<>();
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				result.add(e);
+			}
+		}
+
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			throw Check.mkEx("Only one matching element was expected but we got more: " + result);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
@@ -204,8 +285,14 @@ public final class CollectionUtils
 	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+<<<<<<< HEAD
 	@Nullable
 	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
+=======
+	@Contract("_, !null -> !null")
+	@Nullable
+	public static <T> T singleElementOrDefault(@Nullable final Collection<T> collection, @Nullable final T defaultValue)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (collection == null)
 		{
@@ -238,12 +325,24 @@ public final class CollectionUtils
 	/**
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("_, _, !null -> !null")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
+<<<<<<< HEAD
+=======
+		if (collection.isEmpty())
+		{
+			return defaultValue;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
@@ -265,9 +364,21 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
+<<<<<<< HEAD
 		return collection
 				.stream()
 				.map(extractFunction)
+=======
+		if (collection.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return collection
+				.stream()
+				.map(extractFunction)
+				.filter(Objects::nonNull)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -315,6 +426,59 @@ public final class CollectionUtils
 		return hasChanges ? result.build() : (ImmutableList<R>)collection;
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T> ImmutableList<T> filter(
+			@NonNull final ImmutableList<T> list,
+			@NonNull final Predicate<T> predicate)
+	{
+		if (list.isEmpty())
+		{
+			return list;
+		}
+
+		ImmutableList.Builder<T> result = null;
+		for (int i = 0, size = list.size(); i < size; i++)
+		{
+			final T item = list.get(i);
+			if (!predicate.test(item))
+			{
+				if (result == null)
+				{
+					result = ImmutableList.builder();
+					result.addAll(list.subList(0, i));
+				}
+			}
+			else
+			{
+				if (result != null)
+				{
+					result.add(item);
+				}
+			}
+		}
+
+		if (result == null)
+		{
+			return list;
+		}
+
+		return result.build();
+	}
+
+	public static <T> ImmutableSet<T> removeElement(
+			@NonNull final ImmutableSet<T> set,
+			@Nullable final T elementToRemove)
+	{
+		if (elementToRemove == null || !set.contains(elementToRemove))
+		{
+			return set;
+		}
+
+		return set.stream().filter(element -> !element.equals(elementToRemove)).collect(ImmutableSet.toImmutableSet());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static <K, V> ImmutableMap<K, V> mapValue(
 			@NonNull final ImmutableMap<K, V> map,
 			@NonNull final K key,
@@ -384,6 +548,16 @@ public final class CollectionUtils
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final Function<V, W> mappingFunction)
+	{
+		return mapValues(map, (k, v) -> mappingFunction.apply(v));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Removes first element from {@link Set} and returns it.
 	 * <p>
@@ -439,6 +613,49 @@ public final class CollectionUtils
 		return values;
 	}
 
+<<<<<<< HEAD
+=======
+	public static <K, V> Map<K, V> getAllOrLoadReturningMap(
+			@NonNull final Map<K, V> map,
+			@NonNull final Collection<K> keys,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final HashMap<K, V> result = new HashMap<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = map.get(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				result.put(key, value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			map.putAll(valuesLoaded); // add loaded values to cache
+			result.putAll(valuesLoaded); // add loaded values to the map we will return
+		}
+
+		//
+		return result;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
 			@NonNull final Stream<V> stream,
 			@NonNull final Function<? super V, ? extends K> keyFunction)
@@ -472,6 +689,27 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
@@ -497,7 +735,11 @@ public final class CollectionUtils
 		return list1;
 	}
 
+<<<<<<< HEAD
 	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
+=======
+	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable final Collection<T> excludes)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (set.isEmpty())
 		{
@@ -524,6 +766,85 @@ public final class CollectionUtils
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public static <K, V> ImmutableMap<K, V> mergeElementToMap(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final V element,
+			@NonNull final Function<V, K> keyExtractor)
+	{
+		final K key = keyExtractor.apply(element);
+		final V oldElement = map.get(key);
+		if (Objects.equals(element, oldElement))
+		{
+			return map;
+		}
+
+		final LinkedHashMap<K, V> newMap = new LinkedHashMap<>(map);
+		newMap.put(key, element);
+		return ImmutableMap.copyOf(newMap);
+	}
+
+	public static <K, V> ImmutableMap<K, V> mergeMaps(
+			@NonNull final ImmutableMap<K, V> map1,
+			@NonNull final ImmutableMap<K, V> map2)
+	{
+		if (map2.isEmpty())
+		{
+			return map1;
+		}
+		else if (map1.isEmpty())
+		{
+			return map2;
+		}
+		else
+		{
+			final LinkedHashMap<K, V> result = new LinkedHashMap<>(map1);
+			result.putAll(map2);
+			return ImmutableMap.copyOf(result);
+		}
+	}
+
+	@NonNull
+	public <K, V> Map<K, List<V>> groupMultiValueByKey(
+			@NonNull final Collection<V> values,
+			@NonNull final Function<V, K> mappingFunction)
+	{
+
+		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
+
+		values.forEach(value -> {
+			final K currentKey = mappingFunction.apply(value);
+
+			final ArrayList<V> currentValues = new ArrayList<>();
+			currentValues.add(value);
+
+			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
+		});
+
+		return ImmutableMap.copyOf(key2Values);
+	}
+
+	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
+	{
+		return collection.stream()
+				.filter(elem -> value.equals(elem))
+				.count() > 1;
+	}
+
+	@Nullable
+	public static <T> T first(@NonNull final Collection<T> collection)
+	{
+		return !collection.isEmpty() ? collection.iterator().next() : null;
+	}
+
+	public static <T> Optional<T> firstOptional(@NonNull final Collection<T> collection)
+	{
+		return Optional.ofNullable(first(collection));
+	}
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
 	{

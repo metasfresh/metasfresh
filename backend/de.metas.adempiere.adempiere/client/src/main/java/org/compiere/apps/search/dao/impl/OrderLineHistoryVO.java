@@ -22,6 +22,7 @@ package org.compiere.apps.search.dao.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -32,12 +33,25 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Contains aggregated information of ordered product quantities and their dates

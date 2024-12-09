@@ -1,9 +1,17 @@
 package de.metas.payment.esr.model.validator;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import java.util.StringJoiner;
 
+=======
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,11 +19,15 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
+<<<<<<< HEAD
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import java.util.StringJoiner;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -27,12 +39,20 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,6 +61,11 @@ import de.metas.util.Services;
 @Interceptor(I_C_PaySelection.class)
 public class C_PaySelection
 {
+<<<<<<< HEAD
+=======
+	private final IESRBPBankAccountDAO esrBPBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final AdMessageKey MSG_PaySelectionLines_No_ESRReference = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_ESRReference");
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
@@ -84,6 +109,7 @@ public class C_PaySelection
 
 	private boolean hasESRBankAccount(final I_C_PaySelectionLine paySelectionLine)
 	{
+<<<<<<< HEAD
 		final org.compiere.model.I_C_BP_BankAccount bpBankAccount = paySelectionLine.getC_BP_BankAccount();
 
 		Check.assumeNotNull(bpBankAccount, "The paySelectionLine {} cannot have a null bankAccount", paySelectionLine);
@@ -92,5 +118,14 @@ public class C_PaySelection
 
 		return esrBankAccount.isEsrAccount();
 
+=======
+		final int bpBankAccountId = paySelectionLine.getC_BP_BankAccount_ID();
+		if (bpBankAccountId <= 0)
+		{
+			throw new AdempiereException("The paySelectionLine " + paySelectionLine + " cannot have a null bankAccount");
+		}
+
+		return esrBPBankAccountDAO.isESRBankAccount(bpBankAccountId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

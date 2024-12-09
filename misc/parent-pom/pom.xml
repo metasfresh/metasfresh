@@ -34,12 +34,21 @@
         <metasfresh.java.version>1.8</metasfresh.java.version>
 
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
+<<<<<<< HEAD
         <jackson.version>2.11.4</jackson.version>
         <amqp-client.version>5.10.0</amqp-client.version>
         
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
+=======
+        <jackson.version>2.14.1</jackson.version>
+        <amqp-client.version>5.10.0</amqp-client.version>
+        
+        <jasperreports.version>6.21.2</jasperreports.version>
+
+        <itextpdf.version>5.5.13.3</itextpdf.version>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
@@ -60,15 +69,28 @@
             3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
+<<<<<<< HEAD
         <assertj.version>3.19.0</assertj.version>
         <xmlunit.version>2.6.4</xmlunit.version>
 
         <mockito.version>2.7.22</mockito.version>
+=======
+        <assertj.version>3.23.1</assertj.version>
+        <xmlunit.version>2.6.4</xmlunit.version>
+
+        <mockito.version>2.7.22</mockito.version>
+        <byte-buddy.version>1.12.20</byte-buddy.version>
+        <objenesis.version>3.3</objenesis.version>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
         <!-- please keep junit jupiter and platform versions synched up -->
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <junit-platform.version>1.9.3</junit-platform.version>
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
@@ -80,6 +102,7 @@
     </modules>
 
     <dependencies>
+<<<<<<< HEAD
         <!-- Using our own artifact, see
             https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
             and
@@ -148,6 +171,19 @@
                     <artifactId>commons-lang3</artifactId>
                 </exclusion>
             </exclusions>
+=======
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-junit5</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-plugin-jackson</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         </dependency>
         
         <!-- 
@@ -225,9 +261,15 @@
             </dependency>
 
             <dependency>
+<<<<<<< HEAD
                 <groupId>com.lowagie</groupId>
                 <artifactId>itext</artifactId>
                 <version>${itext.version}</version>
+=======
+                <groupId>com.itextpdf</groupId>
+                <artifactId>itextpdf</artifactId>
+                <version>${itextpdf.version}</version>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             </dependency>
 
             <!-- this also contains the javax.annotations -->
@@ -265,6 +307,16 @@
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
+<<<<<<< HEAD
+=======
+            
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>17.0.0</version>
+            </dependency>
+            
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         </dependencies>
 
     </dependencyManagement>
@@ -272,7 +324,11 @@
     <build>
         <plugins>
             <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
+<<<<<<< HEAD
             but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
+=======
+            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
              -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
@@ -313,6 +369,46 @@
                     -->
                 </configuration>
             </plugin>
+<<<<<<< HEAD
+=======
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-reactor-plugin</artifactId>
+                <version>1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+            </plugin>
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         </plugins>
 
         <pluginManagement>
@@ -497,14 +593,23 @@
 
                         Note that "3.0.0" is the version that I specified in pluginManagenemt -->
                     <version>3.0.0-M1</version>
+<<<<<<< HEAD
                     <dependencies>
                         <!-- needed for banDuplicateClasses -->
+=======
+                    <!--<dependencies>
+                        &lt;!&ndash; needed for banDuplicateClasses &ndash;&gt;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                         <dependency>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>extra-enforcer-rules</artifactId>
                             <version>1.0-beta-9</version>
                         </dependency>
+<<<<<<< HEAD
                     </dependencies>
+=======
+                    </dependencies>-->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                 </plugin>
 
                 <plugin>
@@ -641,6 +746,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                                                     </excludes>
                                                                 </bannedDependencies>
                                 -->
+<<<<<<< HEAD
                                 <banDuplicateClasses>
                                     <ignoreClasses>
 
@@ -739,6 +845,106 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
                                     <findAllDuplicates>true</findAllDuplicates>
                                 </banDuplicateClasses>
+=======
+                                <!--                                <banDuplicateClasses>-->
+                                <!--                                    <ignoreClasses>-->
+
+                                <!--                                        &lt;!&ndash; https://github.com/mojohaus/extra-enforcer-rules/issues/42 &ndash;&gt;-->
+                                <!--                                        <ignoreClass>*.module-info</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash; itext-2.1.7 has two different versions as dependences &ndash;&gt;-->
+                                <!--                                        <ignoreClass>org.bouncycastle.*</ignoreClass>-->
+
+                                <!--                                        <ignoreClass>javax.activation.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.annotation.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.ejb.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.el.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.management.j2ee.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.transaction.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.xml.*</ignoreClass>-->
+
+                                <!--                                        <ignoreClass>org.apache.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.codehaus.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>hidden.org.codehaus.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.junit.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.w3c.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.xml.*</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash; the following are camel/servicemix related dependencies &ndash;&gt;-->
+                                <!--                                        &lt;!&ndash; Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile-->
+                                <!--                                            net.sf.opencsv:opencsv:jar:2.1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>au.com.bytecode.*</ignoreClass>-->
+
+                                <!--                                        <ignoreClass>com.microsoft.schemas.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.etsi.uri.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.openxmlformats.schemas.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.w3.x2000.*</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash; Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>org.xmlpull.*</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash; Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.Repackager</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.Repackage</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.EditBuildScript</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash; Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile-->
+                                <!--                                            javax.servlet:javax.servlet-api:jar:3.1.0:provided &ndash;&gt;-->
+                                <!--                                        <ignoreClass>javax.servlet.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.milyn.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>com.sun.xml.bind.*</ignoreClass>-->
+
+                                <!--                                        &lt;!&ndash;  Found in: net.jcip:jcip-annotations:jar:1.0:compile-->
+                                <!--                                             com.google.code.findbugs:annotations:jar:3.0.1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>-->
+                                <!--                                    </ignoreClasses>-->
+
+                                <!--                                    <dependencies>-->
+                                <!--                                        &lt;!&ndash; See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM-->
+                                <!--                                            ("JUnit classes in JMockit jar") for background info &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <artifactId>jmockit</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.junit.runner.Runner</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
+
+                                <!--                                        &lt;!&ndash; this is a dependency of spring-boot-starter-test 1.4.1 the error-->
+                                <!--                                            message we are avoiding this was goes like this: ================= Duplicate-->
+                                <!--                                            classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test-->
+                                <!--                                            Duplicate classes: org/objectweb/asm/Type.class [...] ================= &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>net.minidev</groupId>-->
+                                <!--                                            <artifactId>accessors-smart</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.objectweb.asm.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
+
+                                <!--                                        &lt;!&ndash; see also https://www.elastic.co/blog/to-shade-or-not-to-shade &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>org.elasticsearch</groupId>-->
+                                <!--                                            <artifactId>elasticsearch</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.joda.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
+
+                                <!--                                        &lt;!&ndash; the embedded tomcat of spring-boot 1.5.3.RELEASE come with baked-in javax.persistance api classes.. &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>org.apache.tomcat.embed</groupId>-->
+                                <!--                                            <artifactId>tomcat-embed-core</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>javax.persistence.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
+
+                                <!--                                    </dependencies>-->
+
+                                <!--                                    <findAllDuplicates>true</findAllDuplicates>-->
+                                <!--                                </banDuplicateClasses>-->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                             </rules>
                             <fail>true</fail>
                         </configuration>

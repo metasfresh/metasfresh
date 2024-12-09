@@ -29,10 +29,18 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+<<<<<<< HEAD
+=======
+import de.metas.cucumber.stepdefs.StepDefDocAction;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -43,6 +51,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
@@ -82,6 +94,10 @@ public class M_ReceiptSchedule_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+<<<<<<< HEAD
+=======
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final C_Order_StepDefData orderTable;
@@ -164,6 +180,18 @@ public class M_ReceiptSchedule_StepDef
 				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
 			}
 
+<<<<<<< HEAD
+=======
+			final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
+			if (qtyMoved != null)
+			{
+				assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
+			}
+
+			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
+			assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
 		}
 	}
@@ -203,6 +231,29 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
+	{
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				receiptScheduleBL.close(receiptSchedule);
+				break;
+			case reactivated:
+				receiptScheduleBL.reopen(receiptSchedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ReceiptSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private Boolean loadReceiptSchedule(@NonNull final Map<String, String> tableRow)
 	{

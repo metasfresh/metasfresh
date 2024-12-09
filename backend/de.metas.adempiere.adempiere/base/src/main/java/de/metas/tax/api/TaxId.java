@@ -7,6 +7,10 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 
 /*
@@ -56,8 +60,15 @@ public class TaxId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+<<<<<<< HEAD
 	public static int toRepoId(@Nullable final Optional<TaxId> optional)
 	{
+=======
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static int toRepoId(@Nullable final Optional<TaxId> optional)
+	{
+		//noinspection OptionalAssignedToNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final TaxId id = optional != null ? optional.orElse(null) : null;
 		return toRepoId(id);
 	}
@@ -66,7 +77,11 @@ public class TaxId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	int repoId;
 
 	private TaxId(final int repoId)
@@ -85,4 +100,9 @@ public class TaxId implements RepoIdAware
 	{
 		return repoId == Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable TaxId id1, @Nullable TaxId id2) {return Objects.equals(id1, id2);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

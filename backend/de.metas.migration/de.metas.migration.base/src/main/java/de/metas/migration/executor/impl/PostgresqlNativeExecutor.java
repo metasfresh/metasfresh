@@ -137,7 +137,11 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		return value;
 	}
 
+<<<<<<< HEAD
 	private static final void addParameter(final List<String> args, final String paramName, final String value)
+=======
+	private static void addParameter(final List<String> args, final String paramName, final String value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (value == null || value.trim().length() == 0)
 		{

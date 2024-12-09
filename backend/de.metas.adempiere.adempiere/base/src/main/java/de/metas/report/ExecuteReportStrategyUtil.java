@@ -1,10 +1,17 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.BadPdfFormatException;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
+=======
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.BadPdfFormatException;
+import com.itextpdf.text.pdf.PdfCopy;
+import com.itextpdf.text.pdf.PdfReader;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;

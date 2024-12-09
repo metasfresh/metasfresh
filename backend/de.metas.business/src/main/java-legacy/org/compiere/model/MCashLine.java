@@ -458,7 +458,11 @@ public class MCashLine extends X_C_CashLine
 				+ " AND cl.IsActive='Y'"
 				+") "
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 1)
 		{
 			log.warn("Difference #" + no);
@@ -467,7 +471,11 @@ public class MCashLine extends X_C_CashLine
 		sql = "UPDATE C_Cash"
 			+ " SET EndingBalance = BeginningBalance + StatementDifference "
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 1)
 		{
 			log.warn("Balance #" + no);

@@ -22,6 +22,7 @@ package de.metas.acct.tax.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +31,22 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+=======
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.tax.ITaxAccountable;
+import de.metas.acct.tax.ITaxDeclarationDAO;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,13 +58,17 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
+<<<<<<< HEAD
 import org.compiere.model.I_C_InvoiceTax;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
+<<<<<<< HEAD
 import org.compiere.util.TrxRunnable;
 
 import de.metas.acct.api.IFactAcctDAO;
@@ -61,6 +82,15 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+=======
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Builder class which creates the {@link I_C_TaxDeclarationLine}s and {@link I_C_TaxDeclarationAcct}s.
@@ -114,7 +144,11 @@ public class TaxDeclarationLinesBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final I_C_TaxDeclaration getC_TaxDeclaration()
+=======
+	private I_C_TaxDeclaration getC_TaxDeclaration()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_taxDeclaration, "_taxDeclaration not null");
 		return _taxDeclaration;
@@ -171,18 +205,30 @@ public class TaxDeclarationLinesBuilder
 		}
 	}
 
+<<<<<<< HEAD
 	private final <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass)
+=======
+	private <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return queryBL.createQueryBuilder(modelClass, getC_TaxDeclaration()) // FIXME
 		;
 	}
 
+<<<<<<< HEAD
 	private final Properties getCtx()
+=======
+	private Properties getCtx()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return InterfaceWrapperHelper.getCtx(getC_TaxDeclaration());
 	}
 
+<<<<<<< HEAD
 	private final String getTrxNameInitial()
+=======
+	private String getTrxNameInitial()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return InterfaceWrapperHelper.getTrxName(getC_TaxDeclaration());
 	}
@@ -256,7 +302,11 @@ public class TaxDeclarationLinesBuilder
 	private boolean addInvoice(final I_C_Invoice invoice)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
+<<<<<<< HEAD
 		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+=======
+		trxManager.run(getTrxNameInitial(), localTrxName -> {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean added = addInvoice0(invoice);
 			addedRef.set(added);
 		});
@@ -276,11 +326,19 @@ public class TaxDeclarationLinesBuilder
 
 		//
 		// Tax declaration lines (one for each invoice tax record)
+<<<<<<< HEAD
 		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
 		final Map<Integer, I_C_TaxDeclarationLine> taxId2taxDeclarationLine = new HashMap<>(invoiceTaxes.size());
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			final int taxId = invoiceTax.getC_Tax_ID();
+=======
+		final List<InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final Map<TaxId, I_C_TaxDeclarationLine> taxId2taxDeclarationLine = new HashMap<>(invoiceTaxes.size());
+		for (final InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			final TaxId taxId = invoiceTax.getTaxId();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final I_C_TaxDeclarationLine taxDeclarationLine = createTaxDeclarationLine(invoice, invoiceTax);
 			final I_C_TaxDeclarationLine taxDeclarationLineOld = taxId2taxDeclarationLine.put(taxId, taxDeclarationLine);
 			Check.assumeNull(taxDeclarationLineOld, "More than one invoice tax line for {}, taxId={}", invoice, taxId);
@@ -290,8 +348,13 @@ public class TaxDeclarationLinesBuilder
 		// Tax declaration accounting records
 		final List<I_Fact_Acct> factAcctRecords = factAcctDAO.retrieveQueryForDocument(documentBL.getDocument(invoice))
 				// fetch only those Fact_Acct records which are about taxes, i.e.
+<<<<<<< HEAD
 				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Tax_ID, null) // C_Tax_ID is set
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // Line_ID is NOT set
+=======
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Tax_ID, null) // C_Tax_ID is set
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // Line_ID is NOT set
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.create()
 				.list();
@@ -304,7 +367,11 @@ public class TaxDeclarationLinesBuilder
 			I_C_TaxDeclarationLine taxDeclarationLine = null;
 			if (factAcctRecord.getLine_ID() <= 0)
 			{
+<<<<<<< HEAD
 				final int taxId = factAcctRecord.getC_Tax_ID();
+=======
+				final TaxId taxId = TaxId.ofRepoId(factAcctRecord.getC_Tax_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				taxDeclarationLine = taxId2taxDeclarationLine.get(taxId);
 			}
 
@@ -314,7 +381,11 @@ public class TaxDeclarationLinesBuilder
 		return true;
 	}
 
+<<<<<<< HEAD
 	private final I_C_TaxDeclarationLine newTaxDeclarationLine()
+=======
+	private I_C_TaxDeclarationLine newTaxDeclarationLine()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 		final I_C_TaxDeclarationLine taxDeclarationLine = InterfaceWrapperHelper.create(getCtx(), I_C_TaxDeclarationLine.class, ITrx.TRXNAME_ThreadInherited);
@@ -323,7 +394,11 @@ public class TaxDeclarationLinesBuilder
 		return taxDeclarationLine;
 	}
 
+<<<<<<< HEAD
 	private final I_C_TaxDeclarationLine createTaxDeclarationLine(final I_C_Invoice invoice, final I_C_InvoiceTax invoiceTax)
+=======
+	private I_C_TaxDeclarationLine createTaxDeclarationLine(final I_C_Invoice invoice, final InvoiceTax invoiceTax)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_TaxDeclarationLine taxDeclarationLine = newTaxDeclarationLine();
 
@@ -338,7 +413,11 @@ public class TaxDeclarationLinesBuilder
 		taxDeclarationLine.setC_DocType_ID(invoice.getC_DocType_ID());
 		taxDeclarationLine.setDocumentNo(invoice.getDocumentNo());
 		//
+<<<<<<< HEAD
 		taxDeclarationLine.setC_Tax_ID(invoiceTax.getC_Tax_ID());
+=======
+		taxDeclarationLine.setC_Tax_ID(invoiceTax.getTaxId().getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		taxDeclarationLine.setTaxBaseAmt(invoiceTax.getTaxBaseAmt());
 		taxDeclarationLine.setTaxAmt(invoiceTax.getTaxAmt());
 
@@ -347,7 +426,11 @@ public class TaxDeclarationLinesBuilder
 		return taxDeclarationLine;
 	}
 
+<<<<<<< HEAD
 	private final void save(final I_C_TaxDeclarationLine taxDeclarationLine)
+=======
+	private void save(final I_C_TaxDeclarationLine taxDeclarationLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final int line = lineNoOffset_TaxDeclarationLine + (countLinesCreated + 1) * 10;
 
@@ -365,7 +448,11 @@ public class TaxDeclarationLinesBuilder
 		}
 	}
 
+<<<<<<< HEAD
 	private final I_C_TaxDeclarationAcct createTaxDeclarationAcct(final I_C_TaxDeclarationLine taxDeclarationLine, final I_Fact_Acct fact)
+=======
+	private void createTaxDeclarationAcct(final I_C_TaxDeclarationLine taxDeclarationLine, final I_Fact_Acct fact)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 
@@ -394,10 +481,16 @@ public class TaxDeclarationLinesBuilder
 		InterfaceWrapperHelper.save(taxDeclarationAcct);
 		countAcctLinesCreated++;
 
+<<<<<<< HEAD
 		return taxDeclarationAcct;
 	}
 
 	private final Iterator<I_GL_JournalLine> retrieveGLJournalLines()
+=======
+	}
+
+	private Iterator<I_GL_JournalLine> retrieveGLJournalLines()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 
@@ -440,7 +533,11 @@ public class TaxDeclarationLinesBuilder
 	private boolean addGLJournalLine(final I_GL_JournalLine glJournalLine)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
+<<<<<<< HEAD
 		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+=======
+		trxManager.run(getTrxNameInitial(), localTrxName -> {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean added = addGLJournalLine0(glJournalLine);
 			addedRef.set(added);
 		});
@@ -467,7 +564,11 @@ public class TaxDeclarationLinesBuilder
 		return true;
 	}
 
+<<<<<<< HEAD
 	private final I_C_TaxDeclarationLine createTaxDeclarationLine(final I_GL_JournalLine glJournalLine)
+=======
+	private I_C_TaxDeclarationLine createTaxDeclarationLine(final I_GL_JournalLine glJournalLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String summary = journalLineBL.getDocumentNo(glJournalLine);
 

@@ -123,7 +123,11 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			}
 
 			final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
+<<<<<<< HEAD
 			final Quantity qty = Quantitys.create(candidate.getQty(), UomId.ofRepoId(candidate.getC_UOM_ID()));
+=======
+			final Quantity qty = Quantitys.of(candidate.getQty(), UomId.ofRepoId(candidate.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(candidate.getPP_Order_BOMLine_ID());
 
 			if (orderBOMLineId == null)

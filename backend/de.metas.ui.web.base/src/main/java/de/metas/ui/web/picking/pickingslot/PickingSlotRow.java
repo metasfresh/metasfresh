@@ -7,6 +7,10 @@ import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -28,12 +32,20 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.function.Predicate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Stream;
 
 /*
@@ -92,6 +104,10 @@ public final class PickingSlotRow implements IViewRow
 	//
 	// HU
 	private final boolean huTopLevel;
+<<<<<<< HEAD
+=======
+	private final ImmutableMap<HuId, ImmutableSet<OrderId>> huId2OpenPickingOrderIds;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
@@ -142,6 +158,10 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
 		huTopLevel = topLevelHU;
+<<<<<<< HEAD
+=======
+		huId2OpenPickingOrderIds = ImmutableMap.of();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Picking slot info
@@ -193,6 +213,10 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = null;
 		huQtyCU = null;
 		huTopLevel = false;
+<<<<<<< HEAD
+=======
+		huId2OpenPickingOrderIds = ImmutableMap.of();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Picking slot info
 		this.pickingSlotWarehouse = pickingSlotWarehouse;
@@ -236,6 +260,10 @@ public final class PickingSlotRow implements IViewRow
 			final String packingInfo,
 			final BigDecimal qtyCU,
 			final boolean topLevelHU,
+<<<<<<< HEAD
+=======
+			@NonNull final ImmutableMap<HuId, ImmutableSet<OrderId>> huId2OpenPickingOrderIds,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			//
 			final List<PickingSlotRow> includedHURows)
 	{
@@ -252,6 +280,10 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
 		huTopLevel = topLevelHU;
+<<<<<<< HEAD
+=======
+		this.huId2OpenPickingOrderIds = huId2OpenPickingOrderIds;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Picking slot info
 		pickingSlotWarehouse = null;
@@ -472,4 +504,49 @@ public final class PickingSlotRow implements IViewRow
 	{
 		return pickingSlotBPLocation != null ? pickingSlotBPLocation.getIdAsInt() : -1;
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	public Optional<PickingSlotRow> findRowMatching(@NonNull final Predicate<PickingSlotRow> predicate)
+	{
+		return streamThisRowAndIncludedRowsRecursivelly()
+				.filter(predicate)
+				.findFirst();
+	}
+
+	public boolean thereIsAnOpenPickingForOrderId(@NonNull final OrderId orderId)
+	{
+		final HuId huId = getHuId();
+
+		if (huId == null)
+		{
+			throw new AdempiereException("Not a PickedHURow!")
+					.appendParametersToMessage()
+					.setParameter("PickingSlotRow", this);
+		}
+
+		final boolean hasOpenPickingForOrderId = getPickingOrderIdsForHUId(huId).contains(orderId);
+
+		if (hasOpenPickingForOrderId)
+		{
+			return true;
+		}
+
+		if (isLU())
+		{
+			return findRowMatching(row -> !row.isLU() && row.thereIsAnOpenPickingForOrderId(orderId))
+					.isPresent();
+		}
+
+		return false;
+	}
+
+	@NonNull
+	private ImmutableSet<OrderId> getPickingOrderIdsForHUId(@NonNull final HuId huId)
+	{
+		return Optional.ofNullable(huId2OpenPickingOrderIds.get(huId))
+				.orElse(ImmutableSet.of());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+=======
+// Generated Model - DO NOT CHANGE
+package org.compiere.model;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_AttributeSet
+<<<<<<< HEAD
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
@@ -54,10 +62,43 @@ public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_Attri
 		@param Description Beschreibung	  */
 	@Override
 	public void setDescription (java.lang.String Description)
+=======
+ *  @author metasfresh (generated)
+ */
+@SuppressWarnings("unused")
+public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_AttributeSet, org.compiere.model.I_Persistent
+{
+
+	private static final long serialVersionUID = -1636107389L;
+
+	/** Standard Constructor */
+	public X_M_AttributeSet (final Properties ctx, final int M_AttributeSet_ID, @Nullable final String trxName)
+	{
+		super (ctx, M_AttributeSet_ID, trxName);
+	}
+
+	/** Load Constructor */
+	public X_M_AttributeSet (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
+
+
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+<<<<<<< HEAD
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
@@ -386,6 +427,27 @@ public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_Attri
 	}
 
 	/** 
+=======
+	@Override
+	public java.lang.String getDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsInstanceAttribute (final boolean IsInstanceAttribute)
+	{
+		set_Value (COLUMNNAME_IsInstanceAttribute, IsInstanceAttribute);
+	}
+
+	@Override
+	public boolean isInstanceAttribute()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInstanceAttribute);
+	}
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * MandatoryType AD_Reference_ID=324
 	 * Reference name: M_AttributeSet MandatoryType
 	 */
@@ -396,6 +458,7 @@ public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_Attri
 	public static final String MANDATORYTYPE_AlwaysMandatory = "Y";
 	/** WhenShipping = S */
 	public static final String MANDATORYTYPE_WhenShipping = "S";
+<<<<<<< HEAD
 	/** Set Mandatory Type.
 		@param MandatoryType 
 		The specification of a Product Attribute Instance is mandatory
@@ -422,10 +485,42 @@ public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_Attri
 	  */
 	@Override
 	public void setName (java.lang.String Name)
+=======
+	@Override
+	public void setMandatoryType (final java.lang.String MandatoryType)
+	{
+		set_Value (COLUMNNAME_MandatoryType, MandatoryType);
+	}
+
+	@Override
+	public java.lang.String getMandatoryType()
+	{
+		return get_ValueAsString(COLUMNNAME_MandatoryType);
+	}
+
+	@Override
+	public void setM_AttributeSet_ID (final int M_AttributeSet_ID)
+	{
+		if (M_AttributeSet_ID < 0)
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID);
+	}
+
+	@Override
+	public int getM_AttributeSet_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSet_ID);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+<<<<<<< HEAD
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
@@ -471,5 +566,11 @@ public class X_M_AttributeSet extends org.compiere.model.PO implements I_M_Attri
 	public java.lang.String getSerNoCharSOverwrite () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SerNoCharSOverwrite);
+=======
+	@Override
+	public java.lang.String getName()
+	{
+		return get_ValueAsString(COLUMNNAME_Name);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

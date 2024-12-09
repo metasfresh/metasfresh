@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
 
 /*
@@ -23,6 +24,19 @@ import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.InSetPredicate;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.ecs.xhtml.code;
+import org.compiere.util.DB;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +46,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,6 +59,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+=======
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * In Array Query filter: Checks if given columnName is in a list of values.
@@ -117,6 +135,14 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T> InArrayQueryFilter<T> ofInSetPredicate(@NonNull final String columnName, @NonNull final InSetPredicate<?> values)
+	{
+		return new InArrayQueryFilter<>(columnName, values);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public String toString()
 	{

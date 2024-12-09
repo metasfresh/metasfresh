@@ -16,10 +16,23 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+=======
+import de.metas.acct.Account;
+import de.metas.acct.accounts.CashAccountType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
+import de.metas.document.DocBaseType;
+import de.metas.money.CurrencyId;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
@@ -27,6 +40,7 @@ import org.compiere.model.MCash;
 import org.compiere.model.MCashBook;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -36,20 +50,42 @@ import de.metas.money.CurrencyId;
 /**
  * Post Invoice Documents.
  * 
+=======
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Post Invoice Documents.
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * <pre>
  *  Table:              C_Cash (407)
  *  Document Types:     CMC
  * </pre>
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * @author Jorg Janke
  * @version $Id: Doc_Cash.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_Cash extends Doc<DocLine_Cash>
 {
+<<<<<<< HEAD
 	public Doc_Cash(final AcctDocContext ctx)
 	{
 		super(ctx, DOCTYPE_CashJournal);
 	}	// Doc_Cash
+=======
+	private int m_C_CashBook_ID = -1;
+
+	public Doc_Cash(final AcctDocContext ctx)
+	{
+		super(ctx, DocBaseType.CashJournal);
+	}    // Doc_Cash
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	protected void loadDocumentDetails()
@@ -81,11 +117,19 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		}
 
 		return list;
+<<<<<<< HEAD
 	}	// loadLines
 
 	/**************************************************************************
 	 * Get Source Currency Balance - subtracts line amounts from total - no rounding
 	 * 
+=======
+	}    // loadLines
+
+	/**************************************************************************
+	 * Get Source Currency Balance - subtracts line amounts from total - no rounding
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return positive amount, if total invoice is bigger than lines
 	 */
 	@Override
@@ -97,7 +141,11 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 	/**
 	 * Create Facts (the accounting logic) for
 	 * CMC.
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * <pre>
 	 *  Expense
 	 *          CashExpense     DR
@@ -118,7 +166,11 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 	 *          BankInTransit   DR
 	 *          CashAsset               CR
 	 * </pre>
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param as account schema
 	 * @return Fact
 	 */
@@ -150,16 +202,24 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 
 			if (CashType.equals(DocLine_Cash.CASHTYPE_EXPENSE))
 			{   // amount is negative
+<<<<<<< HEAD
 				   // CashExpense DR
 				   // CashAsset CR
 				fact.createLine(line, getAccount(AccountType.CashExpense, as),
 						getCurrencyId(), line.getAmount().negate(), null);
+=======
+				// CashExpense DR
+				// CashAsset CR
+				fact.createLine(line, getCashAccount(CashAccountType.CashExpense, as),
+								getCurrencyId(), line.getAmount().negate(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, null, line.getAmount().negate());
 				assetAmt = assetAmt.subtract(line.getAmount().negate());
 			}
 			else if (CashType.equals(DocLine_Cash.CASHTYPE_RECEIPT))
 			{   // amount is positive
+<<<<<<< HEAD
 				   // CashAsset DR
 				   // CashReceipt CR
 				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
@@ -174,31 +234,61 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 				   // CashAsset CR
 				fact.createLine(line, line.getChargeAccount(as, line.getAmount().negate()),
 						getCurrencyId(), line.getAmount().negate());
+=======
+				// CashAsset DR
+				// CashReceipt CR
+				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
+				// p_vo.C_Currency_ID, line.getAmount(), null);
+				assetAmt = assetAmt.add(line.getAmount());
+				fact.createLine(line, getCashAccount(CashAccountType.CashReceipt, as),
+								getCurrencyId(), null, line.getAmount());
+			}
+			else if (CashType.equals(DocLine_Cash.CASHTYPE_CHARGE))
+			{   // amount is negative
+				// Charge DR
+				// CashAsset CR
+				fact.createLine(line, line.getChargeAccount(as, line.getAmount().negate()),
+								getCurrencyId(), line.getAmount().negate());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, null, line.getAmount().negate());
 				assetAmt = assetAmt.subtract(line.getAmount().negate());
 			}
 			else if (CashType.equals(DocLine_Cash.CASHTYPE_DIFFERENCE))
 			{   // amount is pos/neg
+<<<<<<< HEAD
 				   // CashDifference DR
 				   // CashAsset CR
 				fact.createLine(line, getAccount(AccountType.CashDifference, as),
 						getCurrencyId(), line.getAmount().negate());
+=======
+				// CashDifference DR
+				// CashAsset CR
+				fact.createLine(line, getCashAccount(CashAccountType.CashDifference, as),
+								getCurrencyId(), line.getAmount().negate());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, line.getAmount());
 				assetAmt = assetAmt.add(line.getAmount());
 			}
 			else if (CashType.equals(DocLine_Cash.CASHTYPE_INVOICE))
 			{   // amount is pos/neg
+<<<<<<< HEAD
 				   // CashAsset DR dr -- Invoice is in Invoice Currency !
 				   // CashTransfer cr CR
 				if(CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+=======
+				// CashAsset DR dr -- Invoice is in Invoice Currency !
+				// CashTransfer cr CR
+				if (CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					assetAmt = assetAmt.add(line.getAmount());
 				}
 				else
 				{
 					fact.createLine(line,
+<<<<<<< HEAD
 							getAccount(AccountType.CashAsset, as),
 							line.getCurrencyId(), line.getAmount());
 				}
@@ -217,12 +307,33 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 						line.getCurrencyId(), line.getAmount().negate());
 				setBPBankAccountId(temp);
 				if(CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+=======
+									getCashAccount(CashAccountType.CashAsset, as),
+									line.getCurrencyId(), line.getAmount());
+				}
+				fact.createLine(line,
+								getCashAccount(CashAccountType.CashTransfer, as),
+								line.getCurrencyId(), line.getAmount().negate());
+			}
+			else if (CashType.equals(DocLine_Cash.CASHTYPE_TRANSFER))
+			{   // amount is pos/neg
+				// BankInTransit DR dr -- Transfer is in Bank Account Currency
+				// CashAsset dr CR
+				BankAccountId temp = getBPBankAccountId();
+				setBPBankAccountId(line.getC_BP_BankAccount_ID());
+				fact.createLine(line,
+								getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as),
+								line.getCurrencyId(), line.getAmount().negate());
+				setBPBankAccountId(temp);
+				if (CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					assetAmt = assetAmt.add(line.getAmount());
 				}
 				else
 				{
 					fact.createLine(line,
+<<<<<<< HEAD
 							getAccount(AccountType.CashAsset, as),
 							line.getCurrencyId(), line.getAmount());
 				}
@@ -232,6 +343,17 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		// Cash Asset
 		fact.createLine(null, getAccount(AccountType.CashAsset, as),
 				getCurrencyId(), assetAmt);
+=======
+									getCashAccount(CashAccountType.CashAsset, as),
+									line.getCurrencyId(), line.getAmount());
+				}
+			}
+		}    // lines
+
+		// Cash Asset
+		fact.createLine(null, getCashAccount(CashAccountType.CashAsset, as),
+						getCurrencyId(), assetAmt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		ArrayList<Fact> facts = new ArrayList<>();
@@ -239,4 +361,32 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		return facts;
 	}   // createFact
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	private Account getCashAccount(final CashAccountType acctType, final AcctSchema as)
+	{
+		final int cashBookId = getC_CashBook_ID();
+		return getAccountProvider().getCashAccount(as.getId(), cashBookId, acctType);
+	}
+
+	protected final int getC_CashBook_ID()
+	{
+		if (m_C_CashBook_ID == -1)
+		{
+			m_C_CashBook_ID = getValueAsIntOrZero("C_CashBook_ID");
+			if (m_C_CashBook_ID <= 0)
+			{
+				m_C_CashBook_ID = 0;
+			}
+		}
+		return m_C_CashBook_ID;
+	}
+
+	protected final void setC_CashBook_ID(final int C_CashBook_ID)
+	{
+		m_C_CashBook_ID = C_CashBook_ID;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }   // Doc_Cash

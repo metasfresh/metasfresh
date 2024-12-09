@@ -36,7 +36,11 @@ import java.math.RoundingMode;
  */
 
 @Value
+<<<<<<< HEAD
 public class Percent
+=======
+public class Percent implements Comparable<Percent>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	@JsonCreator
 	public static Percent of(@NonNull final String value)
@@ -99,6 +103,14 @@ public class Percent
 		return of(numerator, denominator, 2);
 	}
 
+<<<<<<< HEAD
+=======
+	public static Percent of(final long numerator, final long denominator)
+	{
+		return of(BigDecimal.valueOf(numerator), BigDecimal.valueOf(denominator));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with "half-up".
 	 * <p>
@@ -160,7 +172,11 @@ public class Percent
 		}
 		return percent.toBigDecimal();
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final BigDecimal ONE_HUNDRED_VALUE = BigDecimal.valueOf(100);
 	public static final Percent ONE_HUNDRED = new Percent(ONE_HUNDRED_VALUE);
 
@@ -381,4 +397,10 @@ public class Percent
 
 		return Percent.of(newPercentValue);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public int compareTo(final Percent other) {return this.value.compareTo(other.value);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

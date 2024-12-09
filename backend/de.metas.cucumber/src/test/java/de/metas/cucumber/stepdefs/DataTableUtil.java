@@ -38,6 +38,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+<<<<<<< HEAD
+=======
+import java.time.LocalDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -78,7 +82,11 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -102,6 +110,17 @@ public class DataTableUtil
 
 	@Nullable
 	public Integer extractIntegerOrNullForColumnName(
+<<<<<<< HEAD
+=======
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -109,7 +128,10 @@ public class DataTableUtil
 
 		try
 		{
+<<<<<<< HEAD
 			//noinspection DataFlowIssue
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -190,10 +212,18 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
 		return value == null || NULL_STRING.equals(value) ? null : value;
+=======
+	@Contract("null -> null")
+	@Nullable
+	public String nullToken2Null(@Nullable final String value)
+	{
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -261,6 +291,43 @@ public class DataTableUtil
 	}
 
 	@Nullable
+<<<<<<< HEAD
+=======
+	public static LocalDate extractLocalDateOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		try
+		{
+			return Check.isBlank(string) ? null : LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@NonNull
+	public static LocalDate extractLocalDateForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -352,7 +419,10 @@ public class DataTableUtil
 
 		try
 		{
+<<<<<<< HEAD
 			//noinspection DataFlowIssue
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -432,6 +502,10 @@ public class DataTableUtil
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static Boolean extractBooleanForColumnNameOrNull(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
@@ -474,7 +548,10 @@ public class DataTableUtil
 
 		try
 		{
+<<<<<<< HEAD
 			//noinspection DataFlowIssue
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

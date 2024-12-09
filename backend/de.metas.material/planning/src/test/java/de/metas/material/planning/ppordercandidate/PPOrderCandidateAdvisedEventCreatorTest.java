@@ -96,7 +96,11 @@ class PPOrderCandidateAdvisedEventCreatorTest
 
 	private Quantity qty(final String value)
 	{
+<<<<<<< HEAD
 		return Quantitys.create(value, uomId);
+=======
+		return Quantitys.of(value, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nested

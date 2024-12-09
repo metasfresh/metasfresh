@@ -78,7 +78,11 @@ public class PromotionValidator implements ModelValidator {
 							order, promotionCode, promotionID);
 					if (M_PromotionPreCondition_ID > 0) {
 						String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter + 1 WHERE M_PromotionPreCondition_ID = ?";
+<<<<<<< HEAD
 						DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					}
 				}
 			}
@@ -97,7 +101,11 @@ public class PromotionValidator implements ModelValidator {
 							order, promotionCode, promotionID);
 					if (M_PromotionPreCondition_ID > 0) {
 						String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter - 1 WHERE M_PromotionPreCondition_ID = ?";
+<<<<<<< HEAD
 						DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					}
 				}
 			}
@@ -180,7 +188,11 @@ public class PromotionValidator implements ModelValidator {
 								order, promotionCode, promotionID);
 						if (M_PromotionPreCondition_ID > 0) {
 							String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter - 1 WHERE M_PromotionPreCondition_ID = ?";
+<<<<<<< HEAD
 							DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+=======
+							DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						}
 					}
 				}

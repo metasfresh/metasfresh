@@ -24,6 +24,10 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -153,6 +157,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
 		final SqlAndParams sql = sqlBuilder.getSql();
 		final String adLanguage = sqlBuilder.getAD_Language();
+<<<<<<< HEAD
+=======
+		final DocumentQueryOrderByList orderBys = sqlBuilder.getOrderBysEffective();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Retrieving records: {}", sql);
 
 		final int loadLimitWarn = getLoadLimitWarn();
@@ -163,7 +171,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			maxRowsToFetch = loadLimitMax;
 		}
 
+<<<<<<< HEAD
 		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
+=======
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(orderBys);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

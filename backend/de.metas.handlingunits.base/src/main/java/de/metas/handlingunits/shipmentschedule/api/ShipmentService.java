@@ -49,25 +49,43 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+<<<<<<< HEAD
 import de.metas.uom.IUOMConversionBL;
+=======
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+=======
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +97,10 @@ import java.util.Set;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
 @Service
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ShipmentService implements IShipmentService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -90,10 +112,16 @@ public class ShipmentService implements IShipmentService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+<<<<<<< HEAD
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
 	private final AsyncBatchService asyncBatchService;
+=======
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+
+	@NonNull private final AsyncBatchService asyncBatchService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	public static IShipmentService getInstance()
@@ -108,11 +136,14 @@ public class ShipmentService implements IShipmentService
 		}
 	}
 
+<<<<<<< HEAD
 	public ShipmentService(@NonNull final AsyncBatchService asyncBatchService)
 	{
 		this.asyncBatchService = asyncBatchService;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * <b>Important:</b> if called with {@link GenerateShipmentsRequest#isWaitForShipments()} {@code false},<br/>
 	 * and there is already an unprocessed workpackage with the same shipment-schedules, the method will fail.<br/>
@@ -166,7 +197,11 @@ public class ShipmentService implements IShipmentService
 									.asyncBatchId(asyncBatchId)
 									.scheduleIds(shipmentScheduleIds)
 									.scheduleToExternalInfo(ImmutableMap.of())
+<<<<<<< HEAD
 									.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
+=======
+									.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.EMPTY)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 									.quantityTypeToUse(request.getQuantityTypeToUse())
 									.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 									.isShipDateToday(request.getIsShipDateToday())
@@ -227,7 +262,11 @@ public class ShipmentService implements IShipmentService
 	{
 		return retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
 				.stream()
+<<<<<<< HEAD
 				.map(inOutDAO::getLineById)
+=======
+				.map(inOutDAO::getLineByIdInTrx) // better getting it within trx because if not sure if this method is called as part of a comprehensive processing.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -368,9 +407,15 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
+<<<<<<< HEAD
 		final ImmutableMap<ShipmentScheduleId, BigDecimal> shipmentScheduleIdToQtyToDeliver = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
 
 		if (shipmentScheduleIdToQtyToDeliver.isEmpty())
+=======
+		QtyToDeliverMap qtyToDeliverMap = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
+
+		if (qtyToDeliverMap.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return ImmutableSet.of();
 		}
@@ -378,9 +423,15 @@ public class ShipmentService implements IShipmentService
 		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
 		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
 				.asyncBatchId(olCandsAsyncBatchId)
+<<<<<<< HEAD
 				.scheduleIds(shipmentScheduleIdToQtyToDeliver.keySet())
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyToDeliver)
+=======
+				.scheduleIds(qtyToDeliverMap.getShipmentScheduleIds())
+				.scheduleToExternalInfo(ImmutableMap.of())
+				.scheduleToQuantityToDeliverOverride(qtyToDeliverMap)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.onTheFlyPickToPackingInstructions(true) // we might need to create a shipper transportation, so we need TUs
 				.isCompleteShipment(true)
@@ -388,10 +439,17 @@ public class ShipmentService implements IShipmentService
 
 		generateShipments(generateShipmentsRequest);
 
+<<<<<<< HEAD
 		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyToDeliver.keySet());
 	}
 
 	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
+=======
+		return retrieveInOutIdsByScheduleIds(qtyToDeliverMap.getShipmentScheduleIds());
+	}
+
+	private QtyToDeliverMap getShipmentScheduleId2QtyToDeliver(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
@@ -399,12 +457,20 @@ public class ShipmentService implements IShipmentService
 
 		if (olCandId2OrderLineId == null || olCandId2OrderLineId.isEmpty())
 		{
+<<<<<<< HEAD
 			return ImmutableMap.of();
+=======
+			return QtyToDeliverMap.EMPTY;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final Map<OLCandId, I_C_OLCand> olCandsById = olCandDAO.retrieveByIds(olCandIds);
 
+<<<<<<< HEAD
 		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleId2QtyShipped = ImmutableMap.builder();
+=======
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleId2QtyShipped = ImmutableMap.builder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entrySet())
 		{
@@ -430,6 +496,7 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
+<<<<<<< HEAD
 			if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
 				// not specified; -> let metasfresh decide
@@ -452,5 +519,41 @@ public class ShipmentService implements IShipmentService
 		}
 
 		return scheduleId2QtyShipped.build();
+=======
+			final StockQtyAndUOMQty qtyToDeliver = getQtyToDeliver(shipmentSchedule, olCand);
+			if (qtyToDeliver != null)
+			{
+				scheduleId2QtyShipped.put(scheduleId, qtyToDeliver);
+			}
+		}
+
+		return QtyToDeliverMap.ofMap(scheduleId2QtyShipped.build());
+	}
+
+	/**
+	 * @return qty to deliver or null if the caller wants *no* shipment
+	 */
+	@Nullable
+	private StockQtyAndUOMQty getQtyToDeliver(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule, final I_C_OLCand olCand)
+	{
+		final StockQtyAndUOMQty qtyShipped = olCandEffectiveValuesBL.getQtyShipped(olCand).orElse(null);
+		if (qtyShipped == null)
+		{
+			// not specified; -> let metasfresh decide
+			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
+			final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+			return StockQtyAndUOMQtys.ofQtyInStockUOM(qtyToDeliver, productId);
+		}
+		else if (qtyShipped.signum() <= 0)
+		{
+			// the caller wants *no* shipment
+			return null;
+		}
+		else
+		{
+			return qtyShipped;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

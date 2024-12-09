@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.cache.CCache.CCacheStats;
+=======
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;

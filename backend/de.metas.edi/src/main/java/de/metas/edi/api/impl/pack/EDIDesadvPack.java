@@ -41,7 +41,11 @@ import java.util.List;
 import java.util.Objects;
 
 @Value
+<<<<<<< HEAD
 @Builder
+=======
+@Builder(toBuilder = true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class EDIDesadvPack
 {
 	@NonNull
@@ -50,6 +54,11 @@ public class EDIDesadvPack
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
+<<<<<<< HEAD
+=======
+	int seqNo;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	String sscc18;
 
@@ -60,10 +69,17 @@ public class EDIDesadvPack
 	HuId huId;
 
 	@Nullable
+<<<<<<< HEAD
 	PackagingCodeId huPackagingCodeLuId;
 
 	@Nullable
 	String gtinLuPackingMaterial;
+=======
+	PackagingCodeId huPackagingCodeId;
+
+	@Nullable
+	String gtinPackingMaterial;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	@Singular
@@ -109,6 +125,11 @@ public class EDIDesadvPack
 		@NonNull
 		EDIDesadvLineId ediDesadvLineId;
 
+<<<<<<< HEAD
+=======
+		int line;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@NonNull
 		BigDecimal movementQty;
 

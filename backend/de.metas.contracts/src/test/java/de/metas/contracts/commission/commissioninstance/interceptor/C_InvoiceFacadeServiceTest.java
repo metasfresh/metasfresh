@@ -2,6 +2,10 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.business.TestInvoice;
@@ -31,6 +35,10 @@ import de.metas.contracts.commission.model.X_C_Commission_Instance;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.currency.CurrencyRepository;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -49,7 +57,10 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +75,12 @@ import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMN
 import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
 import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -172,7 +188,12 @@ class C_InvoiceFacadeServiceTest
 				.createDocType(DocTypeCreateRequest.builder()
 									   .ctx(Env.getCtx())
 									   .name("creditmemo")
+<<<<<<< HEAD
 									   .docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo)
+=======
+									   .docBaseType(DocBaseType.SalesCreditMemo)
+						.glCategoryId(GLCategoryId.ofRepoId(123))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 									   .build());
 
 		HierarchyCommissionConfigFactoryTest.flatrateConditionsBuilder()

@@ -3,6 +3,10 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -152,6 +156,10 @@ public class WEBUI_M_HU_Transform
 		final HUEditorRow selectedRow = getSingleSelectedRow();
 
 		return WebuiHUTransformParametersFiller.builder()
+<<<<<<< HEAD
+=======
+				.adReferenceService(ADReferenceService.get())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.view(view)
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))

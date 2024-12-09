@@ -22,7 +22,13 @@
 
 package de.metas.ui.web.window.descriptor;
 
+<<<<<<< HEAD
 import lombok.Builder;
+=======
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Value;
 import org.adempiere.ad.element.api.AdTabId;
 
@@ -32,6 +38,7 @@ import javax.annotation.Nullable;
 @Builder
 public class CreateFiltersProviderContext
 {
+<<<<<<< HEAD
 	@Nullable
 	final AdTabId adTabId;
 
@@ -40,4 +47,11 @@ public class CreateFiltersProviderContext
 
 	@Builder.Default
 	boolean isAutodetectDefaultDateFilter = true;
+=======
+	@Nullable AdTabId adTabId;
+	@Nullable String tableName;
+	@Builder.Default boolean isAutodetectDefaultDateFilter = true;
+	@NonNull ImmutableList<DocumentFieldDescriptor> fields;
+	@NonNull ImmutableList<DocumentEntityDescriptor> includedEntities;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

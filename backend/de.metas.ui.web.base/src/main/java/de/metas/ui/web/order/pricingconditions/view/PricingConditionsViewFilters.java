@@ -45,11 +45,19 @@ import lombok.NonNull;
 
 class PricingConditionsViewFilters
 {
+<<<<<<< HEAD
 	private static String FILTERID_IsCustomer = "IsCustomer";
 	private static String PARAM_IsCustomer = "IsCustomer";
 
 	private static String FILTERID_IsVendor = "IsVendor";
 	private static String PARAM_IsVendor = "IsVendor";
+=======
+	private static final String FILTERID_IsCustomer = "IsCustomer";
+	private static final String PARAM_IsCustomer = "IsCustomer";
+
+	private static final String FILTERID_IsVendor = "IsVendor";
+	private static final String PARAM_IsVendor = "IsVendor";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider; // lazy
 	private DocumentFilterList defaultFilters; // lazy
@@ -81,9 +89,15 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsCustomer)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_IsCustomer)
 						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
+=======
+						.fieldName(PARAM_IsCustomer)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
+						.widgetType(DocumentFieldWidgetType.YesNo))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -93,9 +107,15 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsVendor)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_IsVendor)
 						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
+=======
+						.fieldName(PARAM_IsVendor)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
+						.widgetType(DocumentFieldWidgetType.YesNo))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

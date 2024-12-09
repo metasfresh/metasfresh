@@ -53,6 +53,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+<<<<<<< HEAD
+=======
+import java.util.Stack;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -646,6 +650,33 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		return customProcessApplyPredicate.test(this, processDescriptor);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ImmutableSet<HuId> getAllHuIds()
+	{
+		final ImmutableSet.Builder<HuId> huIdCollector = ImmutableSet.builder();
+		huIdCollector.add(getHuId());
+
+		final Stack<HUEditorRow> rowsToProcess = new Stack<>();
+		if (includedRows != null)
+		{
+			includedRows.forEach(rowsToProcess::push);
+		}
+
+		while (!rowsToProcess.isEmpty())
+		{
+			final HUEditorRow currentRow = rowsToProcess.pop();
+			huIdCollector.add(currentRow.getHuId());
+
+			Optional.ofNullable(currentRow.getIncludedRows())
+					.ifPresent(inclRows -> inclRows.forEach(rowsToProcess::push));
+		}
+
+		return huIdCollector.build();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	//
 	//
 	//

@@ -24,6 +24,10 @@ package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.ProductId;
+<<<<<<< HEAD
+=======
+import de.metas.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.StringUtils;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -40,12 +44,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class PasswordGeneratorTest
 {
 	@Nested
+<<<<<<< HEAD
 	class GetPasswordTest
+=======
+	class generatePassword
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		private final PasswordGenerator generator = new PasswordGenerator();
 
@@ -120,7 +132,11 @@ class PasswordGeneratorTest
 			AdempiereTestHelper.get().init();
 
 			{
+<<<<<<< HEAD
 				mkAttribute(AttributeConstants.RouterPassword);
+=======
+				PasswordGenerator.supportedAttributes.forEach(this::mkAttribute);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				mkAttribute(AttributeConstants.RouterMAC1);
 				mkAttribute(AttributeConstants.RouterMAC2);
 				mkAttribute(AttributeConstants.RouterMAC3);
@@ -143,13 +159,26 @@ class PasswordGeneratorTest
 				InterfaceWrapperHelper.save(generatorPo);
 				passwordGeneratorId = generatorPo.getPP_ComponentGenerator_ID();
 			}
+<<<<<<< HEAD
+=======
+
+			mkPasswordParams(14, true, true, true, true, "-", 4);
+		}
+
+		private boolean isNotBlank(final Object obj)
+		{
+			return obj != null && Check.isNotBlank(obj.toString());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Test
 		void noPasswordExists()
 		{
+<<<<<<< HEAD
 			mkPasswordParams(14, true, true, true, true, "-", 4);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
 							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, null).build())
@@ -160,13 +189,20 @@ class PasswordGeneratorTest
 							.build());
 
 			assertThat(actualPasswords.getAttributes()).hasSize(1);
+<<<<<<< HEAD
+=======
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword)).matches(this::isNotBlank);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Test
 		void passwordExists()
 		{
+<<<<<<< HEAD
 			mkPasswordParams(14, true, true, true, true, "-", 4);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
 							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, "1234").build())
@@ -176,7 +212,31 @@ class PasswordGeneratorTest
 							.clientId(ClientId.METASFRESH)
 							.build());
 
+<<<<<<< HEAD
 			assertThat(actualPasswords.getAttributes()).hasSize(0);
+=======
+			assertThat(actualPasswords.getAttributes()).isEmpty();
+		}
+
+		@Test
+		void twoPasswords()
+		{
+			final ImmutableAttributeSet actualPasswords = generatorService.generate(
+					GeneratedComponentRequest.builder()
+							.targetHUAttributes(ImmutableAttributeSet.builder()
+									.attributeValue(AttributeConstants.RouterPassword, null)
+									.attributeValue(AttributeConstants.RouterPassword2, null)
+									.build())
+							.bomLineAttributes(ImmutableAttributeSet.EMPTY)
+							.productId(passwordProductId)
+							.qty(2)
+							.clientId(ClientId.METASFRESH)
+							.build());
+
+			assertThat(actualPasswords.getAttributes()).hasSize(2);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword)).matches(this::isNotBlank);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword2)).matches(this::isNotBlank);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@SuppressWarnings({ "ConstantConditions", "SameParameterValue" })

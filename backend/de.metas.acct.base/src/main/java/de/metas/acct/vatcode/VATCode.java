@@ -1,9 +1,17 @@
 package de.metas.acct.vatcode;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+=======
+import de.metas.tax.api.VatCodeId;
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.ToString;
 
 /*
@@ -32,16 +40,23 @@ import lombok.ToString;
 @ToString
 public final class VATCode
 {
+<<<<<<< HEAD
 	public static final VATCode NULL = new VATCode();
 
 	public static VATCode of(final String code)
 	{
 		return new VATCode(code);
+=======
+	public static VATCode of(final String code, final int vatCodeId)
+	{
+		return new VATCode(code, VatCodeId.ofRepoId(vatCodeId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Getter
 	private final String code;
 
+<<<<<<< HEAD
 	/** null constructor */
 	private VATCode()
 	{
@@ -52,5 +67,15 @@ public final class VATCode
 	{
 		Check.assumeNotEmpty(code, "code not empty");
 		this.code = code;
+=======
+	@Getter
+	private final VatCodeId vatCodeId;
+
+	private VATCode(final String code, @NonNull final VatCodeId vatCodeId)
+	{
+		Check.assumeNotEmpty(code, "code not empty");
+		this.code = code;
+		this.vatCodeId = vatCodeId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

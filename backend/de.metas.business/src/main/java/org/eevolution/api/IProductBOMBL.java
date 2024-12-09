@@ -22,12 +22,21 @@ package org.eevolution.api;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.material.event.commons.ProductDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -35,6 +44,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 import java.util.Set;
 
@@ -96,4 +109,11 @@ public interface IProductBOMBL extends ISingletonService
 			@NonNull I_PP_Product_BOM bom);
 
 	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
+<<<<<<< HEAD
+=======
+
+	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest request);
+
+	Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull Quantity qty, @NonNull ProductBOM productBOM);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

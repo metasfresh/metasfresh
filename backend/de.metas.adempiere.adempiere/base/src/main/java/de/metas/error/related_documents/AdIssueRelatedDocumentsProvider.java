@@ -24,6 +24,10 @@ package de.metas.error.related_documents;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
@@ -39,7 +43,10 @@ import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
@@ -54,11 +61,23 @@ import java.util.function.Supplier;
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 	private final boolean onlyNotAcknowledged = true;
 
+<<<<<<< HEAD
+=======
+	public AdIssueRelatedDocumentsProvider(@NonNull final ADReferenceService adReferenceService)
+	{
+		this.adReferenceService = adReferenceService;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
 			@NonNull final IZoomSource fromDocument,
@@ -86,7 +105,11 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
 			final RelatedDocumentsId id = RelatedDocumentsId.ofString("issues-" + issueCategory.getCode());
+<<<<<<< HEAD
 			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
+=======
+			final ITranslatableString issueCategoryDisplayName = adReferenceService.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			groupBuilder.candidate(
 					RelatedDocumentsCandidate.builder()

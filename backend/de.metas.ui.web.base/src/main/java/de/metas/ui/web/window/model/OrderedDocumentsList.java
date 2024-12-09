@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -13,6 +14,20 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.ToString;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -37,15 +52,23 @@ import lombok.ToString;
 
 /**
  * Mutable ordered documents list.
+<<<<<<< HEAD
  * 
  * It also contains {@link #getOrderBys()}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
+=======
+ * <p>
+ * It also contains {@link #getOrderBys()}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @ToString
 public final class OrderedDocumentsList
 {
+<<<<<<< HEAD
 	public static OrderedDocumentsList of(final Collection<Document> documents, final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(documents, orderBys);
@@ -63,6 +86,10 @@ public final class OrderedDocumentsList
 
 	private final ArrayList<Document> documents;
 	private final DocumentQueryOrderByList orderBys;
+=======
+	@NonNull private final ArrayList<Document> documents;
+	@NonNull @Getter private final DocumentQueryOrderByList orderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private OrderedDocumentsList(
 			@Nullable final Collection<Document> documents,
@@ -72,6 +99,40 @@ public final class OrderedDocumentsList
 		this.orderBys = orderBys;
 	}
 
+<<<<<<< HEAD
+=======
+	public static OrderedDocumentsList of(@NonNull final Collection<Document> documents, @NonNull final DocumentQueryOrderByList orderBys)
+	{
+		return new OrderedDocumentsList(documents, orderBys);
+	}
+
+	public static OrderedDocumentsList of(@NonNull final Document document)
+	{
+		return new OrderedDocumentsList(ImmutableList.of(document), DocumentQueryOrderByList.EMPTY);
+	}
+
+	public static OrderedDocumentsList of(@NonNull final Document document, @NonNull final DocumentQueryOrderByList orderBys)
+	{
+		return new OrderedDocumentsList(ImmutableList.of(document), orderBys);
+	}
+
+	@NonNull
+	public static OrderedDocumentsList ofNullable(@Nullable final Document document)
+	{
+		return document != null ? of(document) : newEmpty();
+	}
+
+	public static OrderedDocumentsList newEmpty()
+	{
+		return new OrderedDocumentsList(ImmutableList.of(), DocumentQueryOrderByList.EMPTY);
+	}
+
+	public static OrderedDocumentsList newEmpty(@NonNull final DocumentQueryOrderByList orderBys)
+	{
+		return new OrderedDocumentsList(ImmutableList.of(), orderBys);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ArrayList<Document> toList()
 	{
 		return documents;
@@ -111,9 +172,12 @@ public final class OrderedDocumentsList
 	{
 		return documents.get(index);
 	}
+<<<<<<< HEAD
 
 	public DocumentQueryOrderByList getOrderBys()
 	{
 		return orderBys;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

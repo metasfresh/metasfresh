@@ -1,5 +1,6 @@
 de.metas.audit.apirequest.response.ApiResponseAuditRepositoryTest.save=[
   {
+<<<<<<< HEAD
     "apiResponseAuditId" : 100001,
     "orgId" : 1,
     "apiRequestAuditId" : 2,
@@ -9,5 +10,13 @@ de.metas.audit.apirequest.response.ApiResponseAuditRepositoryTest.save=[
       "seconds" : 0,
       "nanos" : 0
     }
+=======
+    "apiRequestAuditId": 2,
+    "apiResponseAuditId": 100001,
+    "body": "body",
+    "httpCode": "200",
+    "orgId": 1,
+    "time": "1970-01-01T00:00:00Z"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

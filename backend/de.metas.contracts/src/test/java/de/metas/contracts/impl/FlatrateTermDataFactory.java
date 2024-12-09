@@ -341,7 +341,11 @@ public class FlatrateTermDataFactory
 	public static I_M_PriceList_Version createPriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validFrom)
 	{
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
+<<<<<<< HEAD
 		priceListVersion.setM_PriceList(priceList);
+=======
+		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		priceListVersion.setName(valuePricingSystem);
 		priceListVersion.setValidFrom(validFrom);
 		save(priceListVersion);

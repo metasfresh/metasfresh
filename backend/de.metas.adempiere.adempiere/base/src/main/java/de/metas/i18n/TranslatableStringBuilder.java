@@ -15,6 +15,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+<<<<<<< HEAD
+=======
+import java.time.temporal.Temporal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -222,6 +226,16 @@ public final class TranslatableStringBuilder
 		return value != null ? appendDate(value) : append(defaultValueIfNull);
 	}
 
+<<<<<<< HEAD
+=======
+	public TranslatableStringBuilder appendTemporal(
+			@Nullable final Temporal value,
+			@Nullable final String defaultValueIfNull)
+	{
+		return value != null ? append(TranslatableStrings.temporal(value)) : append(defaultValueIfNull);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public TranslatableStringBuilder appendDateTime(@NonNull final Date value)
 	{
 		return append(TranslatableStrings.dateAndTime(value));

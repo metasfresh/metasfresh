@@ -243,7 +243,13 @@ public class AD_Column
 		{
 			if (!columnName.endsWith("_ID")
 					&& !columnName.equals("CreatedBy")
+<<<<<<< HEAD
 					&& !columnName.equals("UpdatedBy"))
+=======
+					&& !columnName.equals("UpdatedBy")
+					&& !columnName.equals("AD_Language")
+					&& !columnName.equals("EntityType"))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
 			}

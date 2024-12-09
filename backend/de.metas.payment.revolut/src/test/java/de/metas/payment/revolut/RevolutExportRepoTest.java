@@ -22,6 +22,11 @@
 
 package de.metas.payment.revolut;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -32,14 +37,21 @@ import de.metas.payment.revolut.model.RevolutPaymentExport;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_PaySelection;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.util.List;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -48,6 +60,15 @@ import static org.assertj.core.api.Assertions.*;
 public class RevolutExportRepoTest
 {
 	private RevolutExportRepo revolutExportRepo;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class RevolutExportRepoTest
+{
+	private RevolutExportRepo revolutExportRepo;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -56,6 +77,7 @@ public class RevolutExportRepoTest
 		revolutExportRepo = new RevolutExportRepo();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -68,6 +90,8 @@ public class RevolutExportRepoTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void saveAll()
 	{
@@ -79,7 +103,11 @@ public class RevolutExportRepoTest
 
 		//then
 		assertThat(savedList.size()).isEqualTo(1);
+<<<<<<< HEAD
 		expect(savedList).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(savedList);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private RevolutPaymentExport createMockRevolutPaymentExportModel()

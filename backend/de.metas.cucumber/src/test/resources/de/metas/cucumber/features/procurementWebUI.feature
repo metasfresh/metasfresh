@@ -4,7 +4,12 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
 
   @from:cucumber
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
+<<<<<<< HEAD
     Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
+=======
+    Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains M_Products:
       | Identifier | Name             |
       | p_1        | contractProduct1 |

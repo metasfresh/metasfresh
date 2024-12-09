@@ -47,7 +47,11 @@ public class GenerateShipmentsRequest
 	ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
 
 	@NonNull
+<<<<<<< HEAD
 	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
+=======
+	QtyToDeliverMap scheduleToQuantityToDeliverOverride;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;

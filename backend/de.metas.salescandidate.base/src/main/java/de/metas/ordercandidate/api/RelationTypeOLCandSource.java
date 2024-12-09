@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
+<<<<<<< HEAD
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -21,6 +22,12 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+=======
+import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_OLCandProcessor;
+import de.metas.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -29,7 +36,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import java.util.Objects;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Stream;
 
 /*
@@ -56,9 +66,12 @@ import java.util.stream.Stream;
 
 final class RelationTypeOLCandSource implements OLCandSource
 {
+<<<<<<< HEAD
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final OLCandOrderDefaults orderDefaults;
 	private final int olCandProcessorId;
 	private final String relationTypeInternalName;
@@ -105,6 +118,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 
 	private OLCand toOLCand(@NonNull final I_C_OLCand olCandRecord)
 	{
+<<<<<<< HEAD
 		final BPartnerOrderParams params = olCandBL.getBPartnerOrderParams(olCandRecord);
 
 		final DeliveryRule deliveryRule = olCandBL.getDeliveryRule(olCandRecord, params, orderDefaults);
@@ -154,5 +168,9 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.email(olCandRecord.getEMail())
 				.phone(olCandRecord.getPhone())
 				.build();
+=======
+		final OLCandFactory olCandFactory = new OLCandFactory();
+		return olCandFactory.toOLCand(olCandRecord,orderDefaults);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -23,12 +23,19 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
@@ -70,10 +77,17 @@ public class ShipmentServiceTestImpl implements IShipmentService
 
 		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService
 				.createShipmentSchedulesWithHU(shipmentSchedules,
+<<<<<<< HEAD
 											   request.getQuantityTypeToUse(),
 											   request.isOnTheFlyPickToPackingInstructions(),
 											   ImmutableMap.of(),
 											   true  /* backwards compatibility: true - fail if no picked HUs found*/
+=======
+						request.getQuantityTypeToUse(),
+						request.isOnTheFlyPickToPackingInstructions(),
+						QtyToDeliverMap.EMPTY,
+						true  /* backwards compatibility: true - fail if no picked HUs found*/
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				);
 
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());

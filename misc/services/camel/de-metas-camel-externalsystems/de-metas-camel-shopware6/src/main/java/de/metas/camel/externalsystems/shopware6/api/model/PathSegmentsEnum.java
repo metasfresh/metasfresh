@@ -45,7 +45,14 @@ public enum PathSegmentsEnum
 	CUSTOMER("customer"),
 	GROUP("group"),
 	TRANSACTIONS("transactions"),
+<<<<<<< HEAD
 	PAYMENT_METHOD("payment-method");
+=======
+	PAYMENT_METHOD("payment-method"),
+
+	CUSTOMER_GROUP("customer-group"),
+	CUSTOMER_ADDRESS("customer-address");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final String value;
 }

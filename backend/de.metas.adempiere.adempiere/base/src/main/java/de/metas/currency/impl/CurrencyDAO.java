@@ -3,6 +3,7 @@
  */
 package de.metas.currency.impl;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +25,9 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -38,8 +42,29 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 
 import javax.annotation.Nullable;
+=======
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ConversionType_Default;
+import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Currency;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -98,13 +123,21 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+<<<<<<< HEAD
 				.map(currencyRecord -> toCurrency(currencyRecord))
+=======
+				.map(CurrencyDAO::toCurrency)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		return new CurrenciesMap(currencies);
 	}
 
+<<<<<<< HEAD
 	public static final Currency toCurrency(@NonNull final I_C_Currency record)
+=======
+	public static Currency toCurrency(@NonNull final I_C_Currency record)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(record);
 		return Currency.builder()
@@ -154,7 +187,11 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+<<<<<<< HEAD
 				.map(routingRecord -> toCurrencyConversionTypeRouting(routingRecord))
+=======
+				.map(CurrencyDAO::toCurrencyConversionTypeRouting)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<CurrencyConversionType> types = queryBL
@@ -162,7 +199,11 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+<<<<<<< HEAD
 				.map(record -> toCurrencyConversionType(record))
+=======
+				.map(CurrencyDAO::toCurrencyConversionType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		return CurrencyConversionTypesMap.builder()
@@ -176,7 +217,11 @@ public class CurrencyDAO implements ICurrencyDAO
 		return CurrencyConversionTypeRouting.builder()
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+<<<<<<< HEAD
 				.validFrom(TimeUtil.asLocalDate(record.getValidFrom()))
+=======
+				.validFrom(record.getValidFrom().toInstant())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.conversionTypeId(CurrencyConversionTypeId.ofRepoId(record.getC_ConversionType_ID()))
 				.build();
 	}
@@ -194,7 +239,11 @@ public class CurrencyDAO implements ICurrencyDAO
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
+<<<<<<< HEAD
 			@NonNull final LocalDate date)
+=======
+			@NonNull final Instant date)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return getConversionTypesMap()
 				.getDefaultConversionType(adClientId, adOrgId, date)
@@ -221,7 +270,11 @@ public class CurrencyDAO implements ICurrencyDAO
 			@NonNull final CurrencyId currencyToId)
 	{
 		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
+<<<<<<< HEAD
 		final LocalDate conversionDate = conversionCtx.getConversionDate();
+=======
+		final Instant conversionDate = conversionCtx.getConversionDate();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
@@ -261,7 +314,11 @@ public class CurrencyDAO implements ICurrencyDAO
 		}
 
 		final Map<String, Object> record = recordsList.get(0);
+<<<<<<< HEAD
 		final BigDecimal rate = (BigDecimal)record.get(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
 		return rate;
+=======
+		return (BigDecimal)record.get(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

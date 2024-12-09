@@ -1,14 +1,23 @@
 package de.metas.ui.web.material.cockpit;
 
+<<<<<<< HEAD
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import de.metas.common.util.CoalesceUtil;
+=======
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -48,6 +57,11 @@ public final class MaterialCockpitUtil
 
 	public static final String SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS = "de.metas.ui.web.material.cockpit.DisplayPerPlantDetailRows";
 
+<<<<<<< HEAD
+=======
+	private static final String SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE = "de.metas.ui.web.material.cockpit.I_QtyDemand_QtySupply_V.IsActive";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final String DONT_FILTER = "DONT_FILTER";
 	public static final String NON_EMPTY = "NON_EMPTY";
 
@@ -72,4 +86,12 @@ public final class MaterialCockpitUtil
 
 		return Check.assumeNotNull(dimensionSpec, "Unable to load DIM_Dimension_Spec record with InternalName={}", dimSpecName);
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean isI_QtyDemand_QtySupply_VActive()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE, true);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

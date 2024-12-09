@@ -245,7 +245,11 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.createIssues(extractedCUs)
 				.stream()
 				.map(ppOrderQty -> {
+<<<<<<< HEAD
 					final Quantity qtyIssued = Quantitys.create(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
+=======
+					final Quantity qtyIssued = Quantitys.of(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					return PPOrderIssueScheduleCreateRequest.builder()
 							.ppOrderId(ppOrderId)
 							.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(ppOrderQty.getPP_Order_BOMLine_ID()))

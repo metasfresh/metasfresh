@@ -22,6 +22,23 @@ package org.adempiere.inout.util;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
+import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;

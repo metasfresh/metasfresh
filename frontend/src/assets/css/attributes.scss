@@ -28,6 +28,33 @@
   z-index: 50;
   margin-top: 5px;
   width: 450px;
+<<<<<<< HEAD
+=======
+  overflow: auto;
+}
+
+.attributes-dropdown {
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $brand-light-color;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }
 
 .attributes-dropup {

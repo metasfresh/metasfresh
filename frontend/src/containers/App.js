@@ -1,6 +1,10 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
+<<<<<<< HEAD
 import React from 'react';
+=======
+import React, { useEffect } from 'react';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
@@ -10,6 +14,7 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
+<<<<<<< HEAD
   setProcessSaved,
   initHotkeys,
   initKeymap,
@@ -17,6 +22,15 @@ import {
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
 import { connectionError } from '../actions/AppActions';
+=======
+  connectionError,
+  initHotkeys,
+  initKeymap,
+  setLanguages,
+  setProcessSaved,
+} from '../actions/AppActions';
+import { getAvailableLang } from '../api';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
@@ -28,11 +42,39 @@ import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
+<<<<<<< HEAD
+=======
+import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
+<<<<<<< HEAD
+=======
+const computeTitleFromState = (state) => {
+  if (state?.appHandler?.isLogged) {
+    const breadcrumb = state?.menuHandler?.breadcrumb;
+    if (breadcrumb?.length > 0) {
+      const lastElement = breadcrumb.slice(-1)[0];
+      const caption = lastElement?.caption;
+      if (caption) {
+        let title = caption;
+        const docSummary = getDocSummaryDataFromState(state)?.value;
+        if (docSummary) {
+          title += ' / ' + docSummary;
+        }
+        return title;
+      }
+    }
+    return 'metasfresh';
+  } else {
+    return 'Login';
+  }
+};
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @file Functional component.
  * @module App
@@ -269,6 +311,14 @@ const App = () => {
   //   return null;
   // }
 
+<<<<<<< HEAD
+=======
+  const title = useSelector((state) => computeTitleFromState(state));
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   return (
     <ShortcutProvider>
       <Translation>

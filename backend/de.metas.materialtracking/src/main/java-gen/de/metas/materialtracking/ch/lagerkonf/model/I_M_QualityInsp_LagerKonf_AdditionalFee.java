@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
@@ -41,11 +42,36 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
+=======
+package de.metas.materialtracking.ch.lagerkonf.model;
+
+import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
+
+/** Generated Interface for M_QualityInsp_LagerKonf_AdditionalFee
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public interface I_M_QualityInsp_LagerKonf_AdditionalFee 
+{
+
+	String Table_Name = "M_QualityInsp_LagerKonf_AdditionalFee";
+
+//	/** AD_Table_ID=540619 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getAD_Client_ID();
 
 	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
@@ -54,6 +80,33 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
     public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_AD_Client>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+=======
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Beitrag pro Einheit.
@@ -62,7 +115,11 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setAdditional_Fee_Amt_Per_UOM (java.math.BigDecimal Additional_Fee_Amt_Per_UOM);
+=======
+	void setAdditional_Fee_Amt_Per_UOM (BigDecimal Additional_Fee_Amt_Per_UOM);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Beitrag pro Einheit.
@@ -71,6 +128,7 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.math.BigDecimal getAdditional_Fee_Amt_Per_UOM();
 
     /** Column definition for Additional_Fee_Amt_Per_UOM */
@@ -110,11 +168,45 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
+=======
+	BigDecimal getAdditional_Fee_Amt_Per_UOM();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_Additional_Fee_Amt_Per_UOM = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "Additional_Fee_Amt_Per_UOM", null);
+	String COLUMNNAME_Additional_Fee_Amt_Per_UOM = "Additional_Fee_Amt_Per_UOM";
+
+	/**
+	 * Set Apply Fee To.
+	 * Apply Fee To Quality Inspection Line Type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setApplyFeeTo (String ApplyFeeTo);
+
+	/**
+	 * Get Apply Fee To.
+	 * Apply Fee To Quality Inspection Line Type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	String getApplyFeeTo();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_ApplyFeeTo = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "ApplyFeeTo", null);
+	String COLUMNNAME_ApplyFeeTo = "ApplyFeeTo";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -125,11 +217,22 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Get Erstellt durch.
 	 * Nutzer, der diesen Eintrag erstellt hat
+=======
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_Created = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -140,21 +243,39 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
+=======
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
 	 * Der Eintrag ist im System aktiv
+=======
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -165,21 +286,40 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
+=======
+	boolean isActive();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_IsActive = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Produkt.
 	 * Produkt, Leistung, Artikel
+=======
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_Product_ID();
 
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
@@ -190,6 +330,11 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
     public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_M_Product>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+=======
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Zusätzlicher Beitrag.
@@ -198,7 +343,11 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_QualityInsp_LagerKonf_AdditionalFee_ID (int M_QualityInsp_LagerKonf_AdditionalFee_ID);
+=======
+	void setM_QualityInsp_LagerKonf_AdditionalFee_ID (int M_QualityInsp_LagerKonf_AdditionalFee_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Zusätzlicher Beitrag.
@@ -207,12 +356,19 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_QualityInsp_LagerKonf_AdditionalFee_ID();
 
     /** Column definition for M_QualityInsp_LagerKonf_AdditionalFee_ID */
     public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_M_QualityInsp_LagerKonf_AdditionalFee_ID = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "M_QualityInsp_LagerKonf_AdditionalFee_ID", null);
     /** Column name M_QualityInsp_LagerKonf_AdditionalFee_ID */
     public static final String COLUMNNAME_M_QualityInsp_LagerKonf_AdditionalFee_ID = "M_QualityInsp_LagerKonf_AdditionalFee_ID";
+=======
+	int getM_QualityInsp_LagerKonf_AdditionalFee_ID();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_M_QualityInsp_LagerKonf_AdditionalFee_ID = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "M_QualityInsp_LagerKonf_AdditionalFee_ID", null);
+	String COLUMNNAME_M_QualityInsp_LagerKonf_AdditionalFee_ID = "M_QualityInsp_LagerKonf_AdditionalFee_ID";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Lagerkonferenz-Version.
@@ -221,7 +377,11 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_QualityInsp_LagerKonf_Version_ID (int M_QualityInsp_LagerKonf_Version_ID);
+=======
+	void setM_QualityInsp_LagerKonf_Version_ID (int M_QualityInsp_LagerKonf_Version_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Lagerkonferenz-Version.
@@ -230,6 +390,7 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_QualityInsp_LagerKonf_Version_ID();
 
 	public I_M_QualityInsp_LagerKonf_Version getM_QualityInsp_LagerKonf_Version() throws RuntimeException;
@@ -245,22 +406,47 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	 * Set Reihenfolge.
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
+=======
+	int getM_QualityInsp_LagerKonf_Version_ID();
+
+	I_M_QualityInsp_LagerKonf_Version getM_QualityInsp_LagerKonf_Version();
+
+	void setM_QualityInsp_LagerKonf_Version(I_M_QualityInsp_LagerKonf_Version M_QualityInsp_LagerKonf_Version);
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, I_M_QualityInsp_LagerKonf_Version> COLUMN_M_QualityInsp_LagerKonf_Version_ID = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "M_QualityInsp_LagerKonf_Version_ID", I_M_QualityInsp_LagerKonf_Version.class);
+	String COLUMNNAME_M_QualityInsp_LagerKonf_Version_ID = "M_QualityInsp_LagerKonf_Version_ID";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setSeqNo (int SeqNo);
 
 	/**
 	 * Get Reihenfolge.
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
+=======
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getSeqNo();
 
     /** Column definition for SeqNo */
@@ -271,11 +457,22 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
+=======
+	int getSeqNo();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_SeqNo = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -286,15 +483,31 @@ public interface I_M_QualityInsp_LagerKonf_AdditionalFee
 	/**
 	 * Get Aktualisiert durch.
 	 * Nutzer, der diesen Eintrag aktualisiert hat
+=======
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, Object> COLUMN_Updated = new ModelColumn<>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
     public static final org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_QualityInsp_LagerKonf_AdditionalFee, org.compiere.model.I_AD_User>(I_M_QualityInsp_LagerKonf_AdditionalFee.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+=======
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

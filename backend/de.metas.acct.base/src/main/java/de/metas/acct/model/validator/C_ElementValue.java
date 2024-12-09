@@ -113,7 +113,11 @@ public class C_ElementValue
 			return;
 		}
 
+<<<<<<< HEAD
 		final ElementValue elementValue = ElementValueRepository.toElementValue(record);
+=======
+		final ElementValue elementValue = ElementValueRepository.fromRecord(record);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		treeNodeService.updateTreeNode(elementValue);
 	}
 }

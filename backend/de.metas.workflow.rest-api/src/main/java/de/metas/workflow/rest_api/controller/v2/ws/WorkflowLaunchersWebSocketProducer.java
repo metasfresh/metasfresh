@@ -8,7 +8,11 @@ import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+=======
+import de.metas.mobile.application.MobileApplicationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;

@@ -68,9 +68,18 @@ public class C_Order_AutoProcess_Async
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createMissingShipmentSchedules(@NonNull final I_C_Order orderRecord)
 	{
+<<<<<<< HEAD
 		trxManager
 				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
 				.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
+=======
+		if (orderRecord.isSOTrx())
+		{
+			trxManager
+					.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
+					.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void enqueueGenerateSchedulesAfterCommit(@NonNull final I_C_Order orderRecord)

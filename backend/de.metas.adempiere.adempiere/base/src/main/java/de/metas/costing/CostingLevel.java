@@ -1,19 +1,32 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.organization.OrgId;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_AcctSchema;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.organization.OrgId;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
+=======
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -51,17 +64,28 @@ public enum CostingLevel
 		this.code = code;
 	}
 
+<<<<<<< HEAD
 	public static CostingLevel forNullableCode(final String code)
+=======
+	public static CostingLevel ofNullableCode(final String code)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (code == null)
 		{
 			return null;
 		}
 
+<<<<<<< HEAD
 		return forCode(code);
 	}
 
 	public static CostingLevel forCode(final String code)
+=======
+		return ofCode(code);
+	}
+
+	public static CostingLevel ofCode(final String code)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final CostingLevel type = code2type.get(code);
 		if (type == null)

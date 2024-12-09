@@ -119,7 +119,11 @@ public class MMShippingPackage extends X_M_ShippingPackage
 			+ " SET (PackageWeight,PackageNetTotal)="
 				+ "(SELECT COALESCE(SUM(PackageWeight),0), COALESCE(SUM(PackageNetTotal),0) FROM M_ShippingPackage sp WHERE sp.M_ShipperTransportation_ID=st.M_ShipperTransportation_ID) "
 			+ "WHERE st.M_ShipperTransportation_ID=?");
+<<<<<<< HEAD
 		int no = DB.executeUpdateEx(sql, new Object[]{getM_ShipperTransportation_ID()}, get_TrxName());
+=======
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[]{getM_ShipperTransportation_ID()}, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 1)
 			log.warn("(1) #" + no);
 

@@ -88,7 +88,11 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 		MInvoiceTax retValue = new Query(line.getCtx(), Table_Name, "C_Invoice_ID=? AND C_Tax_ID=?", trxName)
 				.setParameters(new Object[] { line.getC_Invoice_ID(), C_Tax_ID })
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(MInvoiceTax.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (retValue != null)
 		{
 			retValue.set_TrxName(trxName);
@@ -264,7 +268,11 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				}
 				else
 				{
+<<<<<<< HEAD
 					amt = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+=======
+					amt = taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 				//
 				taxAmt = taxAmt.add(amt);
@@ -294,7 +302,11 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		// Calculate Tax
 		if (documentLevel || taxAmt.signum() == 0)
 		{
+<<<<<<< HEAD
 			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+=======
+			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		setTaxAmt(taxAmt);
 

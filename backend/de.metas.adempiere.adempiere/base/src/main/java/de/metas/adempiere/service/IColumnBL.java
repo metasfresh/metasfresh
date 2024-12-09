@@ -1,5 +1,6 @@
 package de.metas.adempiere.service;
 
+<<<<<<< HEAD
 import java.util.Optional;
 import java.util.Properties;
 
@@ -7,6 +8,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.util.ISingletonService;
 
+=======
+import de.metas.util.ISingletonService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -50,7 +61,33 @@ public interface IColumnBL extends ISingletonService
 	 * @param columnName
 	 * @return true if record_ID form, false otherwise
 	 */
+<<<<<<< HEAD
 	boolean isRecordIdColumnName(String columnName);
+=======
+	static boolean isRecordIdColumnName(@Nullable final String columnName)
+	{
+		if (columnName == null)
+		{
+			// should not happen
+			return false;
+		}
+
+		// name must end with "Record_ID"
+		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return false;
+		}
+
+		// classical case
+		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return true;
+		}
+
+		// Column name must end with "_Record_ID"
+		return columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get the primary key column for the given <code>tableName</code>.

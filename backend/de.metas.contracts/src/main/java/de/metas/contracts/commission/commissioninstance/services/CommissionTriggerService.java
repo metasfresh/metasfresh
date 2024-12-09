@@ -27,8 +27,13 @@ import de.metas.contracts.ICommissionTriggerService;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.dao.CommissionInstanceDAO;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -60,7 +65,11 @@ public class CommissionTriggerService implements ICommissionTriggerService
 		final Set<SalesInvoiceLineDocumentId> invoiceLineIds = invoiceDAO.retrieveLines(invoiceId)
 				.stream()
 				.map(I_C_InvoiceLine::getC_InvoiceLine_ID)
+<<<<<<< HEAD
 				.map(invoiceLineId -> InvoiceLineId.ofRepoId(invoiceId, invoiceLineId))
+=======
+				.map(invoiceLineId -> InvoiceAndLineId.ofRepoId(invoiceId, invoiceLineId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.map(SalesInvoiceLineDocumentId::new)
 				.collect(ImmutableSet.toImmutableSet());
 

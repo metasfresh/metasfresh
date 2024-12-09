@@ -22,6 +22,7 @@ package de.metas.payment.spi.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -29,11 +30,22 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
 import de.metas.payment.esr.api.impl.ESRBPBankAccountDAO;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.apache.commons.lang3.StringUtils;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Using this name for lack of better inspiration to differentiate from the {@link ESRRegularLineParser}.<br>

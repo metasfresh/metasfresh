@@ -46,6 +46,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+<<<<<<< HEAD
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.swat.base
@@ -396,7 +401,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 		receiptSchedule.setIsActive(false);
+<<<<<<< HEAD
 		InterfaceWrapperHelper.delete(receiptSchedule);
+=======
+		deleteRecord(receiptSchedule);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**

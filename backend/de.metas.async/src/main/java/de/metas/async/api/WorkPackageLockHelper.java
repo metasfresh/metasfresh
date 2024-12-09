@@ -44,7 +44,11 @@ public class WorkPackageLockHelper
 		}
 		catch (final Exception e)
 		{
+<<<<<<< HEAD
 			logger.warn("Got exception while unlocking " + workPackage, e, workPackage);
+=======
+			logger.warn("Got exception while unlocking " + workPackage, e);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return false;
 		}
 	}

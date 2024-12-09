@@ -31,7 +31,11 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -45,7 +49,11 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	public NoCurrencyRateFoundException(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
+<<<<<<< HEAD
 			@Nullable final LocalDate conversionDate,
+=======
+			@Nullable final Instant conversionDate,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
@@ -54,13 +62,21 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static ITranslatableString buildMsg(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
+<<<<<<< HEAD
 			@Nullable final LocalDate conversionDate,
+=======
+			@Nullable final Instant conversionDate,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG).append(" ")
 				.appendObj(currencyFrom).appendObj("->").appendObj(currencyTo)
+<<<<<<< HEAD
 				.append(", ").appendADElement("ConversionDate").append(": ").appendDate(conversionDate, "?")
+=======
+				.append(", ").appendADElement("ConversionDate").append(": ").appendTemporal(conversionDate, "?")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.append(", ").appendADElement("C_ConversionType_ID").append(": ").append(conversionTypeMethod != null ? conversionTypeMethod.name() : "?")
 				.build();
 	}

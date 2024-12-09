@@ -2,6 +2,10 @@ import { delete as del, get, patch, post } from 'axios';
 
 import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
+<<<<<<< HEAD
+=======
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 export function getData({
   entity,
@@ -17,7 +21,11 @@ export function getData({
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
+<<<<<<< HEAD
     orderBy: orderBy,
+=======
+    orderBy: orderBy ? toOrderBysCommaSeparatedString(orderBy) : null,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   });
 
   return get(
@@ -217,6 +225,10 @@ export async function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
+<<<<<<< HEAD
+=======
+  viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   selectedIds,
   childView,
   parentView,
@@ -225,6 +237,10 @@ export async function quickActionsRequest({
   if (childView && childView.viewId) {
     requestBody = {
       viewProfileId,
+<<<<<<< HEAD
+=======
+      viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
@@ -232,6 +248,10 @@ export async function quickActionsRequest({
   } else if (parentView && parentView.viewId) {
     requestBody = {
       viewProfileId,
+<<<<<<< HEAD
+=======
+      viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
@@ -239,6 +259,10 @@ export async function quickActionsRequest({
   } else {
     requestBody = {
       viewProfileId,
+<<<<<<< HEAD
+=======
+      viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       selectedIds,
     };
   }

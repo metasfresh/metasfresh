@@ -16,19 +16,33 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+=======
+import de.metas.cache.CCache;
+import de.metas.document.DocBaseType;
+import de.metas.document.IDocTypeDAO;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.cache.CCache;
 import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Counter Document Type Model
@@ -75,7 +89,11 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return -1;
 		}
 
+<<<<<<< HEAD
 		final String cDocBaseType = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dt.getDocBaseType()).orElse(null);
+=======
+		final DocBaseType cDocBaseType = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(DocBaseType.ofCode(dt.getDocBaseType())).orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cDocBaseType == null)
 		{
 			return 0;
@@ -315,12 +333,21 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return "No Counter Document Type";
 		}
 		//
+<<<<<<< HEAD
 		String dtBT = dt.getDocBaseType();
 		String c_dtBT = c_dt.getDocBaseType();
 		log.debug(dtBT + " -> " + c_dtBT);
 
 		boolean valid = true;
 		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dtBT).orElse(null);
+=======
+		DocBaseType dtBT = DocBaseType.ofCode(dt.getDocBaseType());
+		DocBaseType c_dtBT = DocBaseType.ofCode(c_dt.getDocBaseType());
+		log.debug(dtBT + " -> " + c_dtBT);
+
+		boolean valid = true;
+		final DocBaseType docBaseTypeCounter = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dtBT).orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (c_dtBT == null)
 		{

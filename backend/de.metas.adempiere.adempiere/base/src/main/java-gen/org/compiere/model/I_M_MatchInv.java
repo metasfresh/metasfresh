@@ -53,6 +53,56 @@ public interface I_M_MatchInv
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Cost_Type_ID (int C_Cost_Type_ID);
+
+	/**
+	 * Get Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Cost_Type_ID();
+
+	@Nullable org.compiere.model.I_C_Cost_Type getC_Cost_Type();
+
+	void setC_Cost_Type(@Nullable org.compiere.model.I_C_Cost_Type C_Cost_Type);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_C_Cost_Type> COLUMN_C_Cost_Type_ID = new ModelColumn<>(I_M_MatchInv.class, "C_Cost_Type_ID", org.compiere.model.I_C_Cost_Type.class);
+	String COLUMNNAME_C_Cost_Type_ID = "C_Cost_Type_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -107,6 +157,51 @@ public interface I_M_MatchInv
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmount (@Nullable BigDecimal CostAmount);
+
+	/**
+	 * Get Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmount();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_CostAmount = new ModelColumn<>(I_M_MatchInv.class, "CostAmount", null);
+	String COLUMNNAME_CostAmount = "CostAmount";
+
+	/**
+	 * Set Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmountInvoiced (@Nullable BigDecimal CostAmountInvoiced);
+
+	/**
+	 * Get Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmountInvoiced();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_CostAmountInvoiced = new ModelColumn<>(I_M_MatchInv.class, "CostAmountInvoiced", null);
+	String COLUMNNAME_CostAmountInvoiced = "CostAmountInvoiced";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -317,6 +412,61 @@ public interface I_M_MatchInv
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_MatchInv.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
+	 * Set Shipment/Receipt Costs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOut_Cost_ID (int M_InOut_Cost_ID);
+
+	/**
+	 * Get Shipment/Receipt Costs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOut_Cost_ID();
+
+	@Nullable org.compiere.model.I_M_InOut_Cost getM_InOut_Cost();
+
+	void setM_InOut_Cost(@Nullable org.compiere.model.I_M_InOut_Cost M_InOut_Cost);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_M_InOut_Cost> COLUMN_M_InOut_Cost_ID = new ModelColumn<>(I_M_MatchInv.class, "M_InOut_Cost_ID", org.compiere.model.I_M_InOut_Cost.class);
+	String COLUMNNAME_M_InOut_Cost_ID = "M_InOut_Cost_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -371,7 +521,11 @@ public interface I_M_MatchInv
 	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Abgleich Rechnung.
+=======
+	 * Set Match Invoice.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: ID
@@ -381,7 +535,11 @@ public interface I_M_MatchInv
 	void setM_MatchInv_ID (int M_MatchInv_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Abgleich Rechnung.
+=======
+	 * Get Match Invoice.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: ID
@@ -545,6 +703,32 @@ public interface I_M_MatchInv
 	String COLUMNNAME_QtyInUOM = "QtyInUOM";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setType (java.lang.String Type);
+
+	/**
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getType();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_Type = new ModelColumn<>(I_M_MatchInv.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Updated.
 	 * Date this record was updated
 	 *

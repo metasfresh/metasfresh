@@ -1,5 +1,6 @@
 package de.metas.banking.api;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
@@ -9,11 +10,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.location.LocationId;
 import lombok.Builder;
+<<<<<<< HEAD
+=======
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -96,6 +110,10 @@ public class BankRepositoryTest
 							.cashBank(true)
 							.locationId(LocationId.ofRepoId(123))
 							.esrPostBank(true)
+<<<<<<< HEAD
+=======
+							.importAsSingleSummaryLine(false)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.build());
 		}
 	}

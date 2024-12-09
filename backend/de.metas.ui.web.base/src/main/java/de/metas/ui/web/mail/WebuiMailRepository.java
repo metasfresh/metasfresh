@@ -27,6 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -82,9 +86,15 @@ public class WebuiMailRepository
 
 	public WebuiEmail createNewEmail(
 			@NonNull final UserId ownerUserId,
+<<<<<<< HEAD
 			final LookupValue from,
 			final LookupValuesList toList,
 			final DocumentPath contextDocumentPath)
+=======
+			@NonNull final LookupValue from,
+			@NonNull final LookupValuesList toList,
+			@Nullable final DocumentPath contextDocumentPath)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
 
@@ -116,7 +126,11 @@ public class WebuiMailRepository
 		return getEmailEntry(emailId).getEmail();
 	}
 
+<<<<<<< HEAD
 	public WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+=======
+	WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return getEmailEntry(emailId).compute(emailModifier);
 	}

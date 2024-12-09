@@ -59,6 +59,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
+<<<<<<< HEAD
+=======
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;

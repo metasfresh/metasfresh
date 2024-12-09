@@ -1,16 +1,27 @@
 package de.metas.ui.web.view.template;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+=======
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+<<<<<<< HEAD
+=======
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -35,9 +46,15 @@ import lombok.experimental.UtilityClass;
 
 
 @UtilityClass
+<<<<<<< HEAD
 class RowsDataTool
 {
 	static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
+=======
+public class RowsDataTool
+{
+	public static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
 		topLevelRows.forEach(topLevelRow -> {

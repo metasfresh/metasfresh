@@ -8,11 +8,22 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
 
+=======
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

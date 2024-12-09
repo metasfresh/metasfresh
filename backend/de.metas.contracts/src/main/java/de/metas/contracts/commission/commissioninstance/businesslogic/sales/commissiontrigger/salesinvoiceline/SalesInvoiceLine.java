@@ -1,7 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -38,7 +42,11 @@ import java.time.Instant;
 public class SalesInvoiceLine
 {
 	@NonNull
+<<<<<<< HEAD
 	InvoiceLineId id;
+=======
+	InvoiceAndLineId id;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	ProductId productId;

@@ -3,18 +3,30 @@
  */
 package de.metas.currency;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+<<<<<<< HEAD
 
 import javax.annotation.Nullable;
+=======
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -61,7 +73,11 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
+<<<<<<< HEAD
 	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
+=======
+	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, Instant date);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 

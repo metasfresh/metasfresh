@@ -18,7 +18,11 @@ public interface I_AD_Archive
 
 
 	/**
+<<<<<<< HEAD
 	 * Set Archiv.
+=======
+	 * Set Archive.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Archiv für Belege und Berichte
 	 *
 	 * <br>Type: ID
@@ -28,7 +32,11 @@ public interface I_AD_Archive
 	void setAD_Archive_ID (int AD_Archive_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Archiv.
+=======
+	 * Get Archive.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Archiv für Belege und Berichte
 	 *
 	 * <br>Type: ID
@@ -395,8 +403,13 @@ public interface I_AD_Archive
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
 	 * Set In Druck-Warteschlange.
 	 * Entscheidet, ob beim erstellen des DruckstÃ¼cks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+=======
+	 * Set Is Direct Enqueue.
+	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,8 +418,13 @@ public interface I_AD_Archive
 	void setIsDirectEnqueue (boolean IsDirectEnqueue);
 
 	/**
+<<<<<<< HEAD
 	 * Get In Druck-Warteschlange.
 	 * Entscheidet, ob beim erstellen des DruckstÃ¼cks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+=======
+	 * Get Is Direct Enqueue.
+	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -462,7 +480,11 @@ public interface I_AD_Archive
 	String COLUMNNAME_IsFileSystem = "IsFileSystem";
 
 	/**
+<<<<<<< HEAD
 	 * Set Bericht.
+=======
+	 * Set Report.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -472,7 +494,11 @@ public interface I_AD_Archive
 	void setIsReport (boolean IsReport);
 
 	/**
+<<<<<<< HEAD
 	 * Get Bericht.
+=======
+	 * Get Report.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -506,6 +532,32 @@ public interface I_AD_Archive
 	String COLUMNNAME_Name = "Name";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_POReference = new ModelColumn<>(I_AD_Archive.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *

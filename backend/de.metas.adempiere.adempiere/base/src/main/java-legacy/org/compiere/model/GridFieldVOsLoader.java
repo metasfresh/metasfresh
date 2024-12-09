@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -9,17 +10,34 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+=======
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -58,6 +76,10 @@ import de.metas.util.Check;
 	private AdWindowId _adWindowId;
 	private int _adTabId;
 	private int _templateTabId;
+<<<<<<< HEAD
+=======
+	@Nullable private TabIncludeFiltersStrategy tabIncludeFiltersStrategy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private boolean _tabReadOnly;
 	private boolean _loadAllLanguages = false;
 	private boolean _applyRolePermissions = true;
@@ -115,6 +137,10 @@ import de.metas.util.Check;
 							AD_Window_ID,
 							adTabId,
 							tabReadOnly,
+<<<<<<< HEAD
+=======
+							tabIncludeFiltersStrategy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							loadAllLanguages,
 							applyRolePermissions,
 							rs);
@@ -214,6 +240,15 @@ import de.metas.util.Check;
 		return _templateTabId > 0 ? _templateTabId : getAD_Tab_ID();
 	}
 
+<<<<<<< HEAD
+=======
+	public GridFieldVOsLoader setTabIncludeFiltersStrategy(@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy)
+	{
+		this.tabIncludeFiltersStrategy = tabIncludeFiltersStrategy;
+		return this;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public GridFieldVOsLoader setTabReadOnly(final boolean tabReadOnly)
 	{
 		_tabReadOnly = tabReadOnly;

@@ -88,11 +88,17 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
+<<<<<<< HEAD
 	public MenuTree getUserSessionMenuTree()
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = userSession.getUserRolePermissionsKey();
 		final String adLanguage = userSession.getAD_Language();
 		return getMenuTree(userRolePermissionsKey, adLanguage);
+=======
+	public MenuTree getMenuTree(@NonNull final UserRolePermissionsKey userRolePermissionsKey)
+	{
+		return getMenuTree(userRolePermissionsKey, userSession.getAD_Language());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public MenuTree getMenuTree(final UserRolePermissionsKey userRolePermissionsKey, final String adLanguage)

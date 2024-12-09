@@ -66,7 +66,11 @@ final class AccoutingDocsToRepostDBTableRepository
 
 	public void delete(@NonNull final AccountingDocToRepost docToRepost)
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx(
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				"DELETE FROM " + Table_Name + " WHERE SeqNo=?",
 				new Object[] { docToRepost.getSeqNo() },
 				ITrx.TRXNAME_None);

@@ -28,8 +28,11 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+<<<<<<< HEAD
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;
@@ -58,7 +61,11 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 	{
 		try
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Truncated table {}", tableName);
 		}
 		catch (final Exception ex)

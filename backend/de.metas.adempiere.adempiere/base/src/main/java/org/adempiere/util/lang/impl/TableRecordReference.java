@@ -481,6 +481,16 @@ public final class TableRecordReference implements ITableRecordReference
 		return InterfaceWrapperHelper.create(getModel(context), modelClass);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final IContextAware context, @NonNull final Class<T> modelClass)
+	{
+		final T model = InterfaceWrapperHelper.create(getModel(context), modelClass);
+		return Check.assumeNotNull(model, "Model for this TableRecordReference={} may not be null", this);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public void notifyModelStaled()
 	{
@@ -520,6 +530,15 @@ public final class TableRecordReference implements ITableRecordReference
 		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final Class<T> modelClass)
+	{
+		return getModelNonNull(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static <T> List<T> getModels(
 			@NonNull final Collection<? extends ITableRecordReference> references,
 			@NonNull final Class<T> modelClass)

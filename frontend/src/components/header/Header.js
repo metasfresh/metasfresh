@@ -10,9 +10,15 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import {
   openModal,
+<<<<<<< HEAD
   setPrintingOptions,
   resetPrintingOptions,
   openPrintingOptionsModal,
+=======
+  openPrintingOptionsModal,
+  resetPrintingOptions,
+  setPrintingOptions,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -32,6 +38,13 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+<<<<<<< HEAD
+=======
+import {
+  getDocActionElementFromState,
+  getDocSummaryDataFromState,
+} from '../../reducers/windowHandlerUtils';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -966,6 +979,7 @@ Header.propTypes = {
 const mapStateToProps = (state) => {
   const {
     indicator,
+<<<<<<< HEAD
     master: {
       layout: { docActionElement, documentSummaryElement },
       data,
@@ -976,12 +990,22 @@ const mapStateToProps = (state) => {
   const docSummaryData =
     documentSummaryElement && data[documentSummaryElement.fields[0].field];
 
+=======
+    master: { saveStatus },
+  } = state.windowHandler;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
+<<<<<<< HEAD
     docStatus: docActionElement,
     docSummaryData,
+=======
+    docStatus: getDocActionElementFromState(state),
+    docSummaryData: getDocSummaryDataFromState(state),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     indicator,
     saveStatus,
   };

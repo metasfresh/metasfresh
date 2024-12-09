@@ -39,8 +39,14 @@ import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.ViewRowCustomizer;
+<<<<<<< HEAD
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+=======
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -71,6 +77,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final String _tableAlias;
 
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
+<<<<<<< HEAD
 	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
@@ -81,25 +88,57 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final ViewRowCustomizer rowCustomizer;
 
 	private final DocumentQueryOrderByList defaultOrderBys;
+=======
+	@Getter private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+
+	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
+
+	@Getter private final SqlViewSelectData sqlViewSelect;
+	private final IStringExpression sqlWhereClause;
+	@Getter private final ViewRowCustomizer rowCustomizer;
+
+	@Getter private final DocumentQueryOrderByList defaultOrderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final OrderByFieldNameAliasMap orderByFieldNameAliasMap;
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 	private final SqlDocumentFilterConvertersList filterConverters;
+<<<<<<< HEAD
 	@Getter
 	private final boolean refreshViewOnChangeEvents;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
+=======
+	@Getter private final boolean refreshViewOnChangeEvents;
+
+	@Getter private final SqlViewRowIdsConverter rowIdsConverter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final SqlViewGroupingBinding groupingBinding;
 	private final Optional<SqlDocumentFilterConverterDecorator> filterConverterDecorator;
 
+<<<<<<< HEAD
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+=======
+	@Getter private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
+	@NonNull @Getter private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public static Builder builder()
 	{
 		return new Builder();
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public static ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> getIncludedEntitiesDescriptors(@NonNull final SqlEntityBinding binding)
+	{
+		return binding instanceof SqlViewBinding ? ((SqlViewBinding)binding).getIncludedEntitiesDescriptors() : ImmutableMap.of();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private SqlViewBinding(final Builder builder)
 	{
 		_tableName = builder.getTableName();
@@ -125,6 +164,7 @@ public class SqlViewBinding implements SqlEntityBinding
 				.build();
 		sqlWhereClause = builder.getSqlWhereClause();
 
+<<<<<<< HEAD
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
 		for (final SqlViewRowFieldBinding field : allFields)
 		{
@@ -142,6 +182,8 @@ public class SqlViewBinding implements SqlEntityBinding
 			}
 		}
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.rowCustomizer = builder.getRowCustomizer();
 
 		orderByFieldNameAliasMap = builder.buildOrderByFieldNameAliasMap();
@@ -157,6 +199,13 @@ public class SqlViewBinding implements SqlEntityBinding
 		rowIdsConverter = builder.getRowIdsConverter();
 
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
+<<<<<<< HEAD
+=======
+
+		includedEntitiesDescriptors = builder.includedEntitiesDescriptors != null
+				? ImmutableMap.copyOf(builder.includedEntitiesDescriptors)
+				: ImmutableMap.of();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -200,6 +249,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
+<<<<<<< HEAD
 	public ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return widgetTypesByFieldName;
@@ -210,17 +260,22 @@ public class SqlViewBinding implements SqlEntityBinding
 		return sqlViewSelect;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;
 	}
 
+<<<<<<< HEAD
 	public ViewRowCustomizer getRowCustomizer()
 	{
 		return rowCustomizer;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
@@ -244,6 +299,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return filterConverterDecorator;
 	}
 
+<<<<<<< HEAD
 	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return rowIdsConverter;
@@ -254,6 +310,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		return defaultOrderBys;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(final DocumentQueryOrderBy orderBy)
 	{
 		return orderByFieldNameAliasMap.flatMapEffectiveFieldNames(orderBy);
@@ -297,11 +355,14 @@ public class SqlViewBinding implements SqlEntityBinding
 		return groupingBinding.isAggregated(fieldName);
 	}
 
+<<<<<<< HEAD
 	public IViewInvalidationAdvisor getViewInvalidationAdvisor()
 	{
 		return viewInvalidationAdvisor;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@lombok.Value
 	private static class OrderByFieldNameAliasMap
 	{
@@ -334,6 +395,10 @@ public class SqlViewBinding implements SqlEntityBinding
 	//
 	//
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("UnusedReturnValue")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final class Builder
 	{
 		private String _sqlTableName;
@@ -357,6 +422,10 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
+<<<<<<< HEAD
+=======
+		private Map<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private Builder()
 		{
@@ -469,6 +538,15 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _fieldsByFieldName;
 		}
 
+<<<<<<< HEAD
+=======
+		public Builder fields(@NonNull final Collection<SqlViewRowFieldBinding> fields)
+		{
+			fields.forEach(this::field);
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public Builder field(@NonNull final SqlViewRowFieldBinding field)
 		{
 			_fieldsByFieldName.put(field.getFieldName(), field);
@@ -600,5 +678,15 @@ public class SqlViewBinding implements SqlEntityBinding
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;
 		}
+<<<<<<< HEAD
+=======
+
+		public Builder includedEntitiesDescriptors(final Map<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors)
+		{
+			this.includedEntitiesDescriptors = includedEntitiesDescriptors;
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

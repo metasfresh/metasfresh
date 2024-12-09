@@ -7,13 +7,19 @@ import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;
+<<<<<<< HEAD
 import de.metas.i18n.TranslatableStrings;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,15 +44,25 @@ public class PickingJobSlotService implements PickingSlotConnectedComponent
 		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotId);
 	}
 
+<<<<<<< HEAD
 	public void allocate(
 			@NonNull final PickingSlotIdAndCaption pickingSlot,
 			@NonNull final BPartnerLocationId deliveryBPLocationId)
 	{
 		final BooleanWithReason allocated = pickingSlotBL.allocatePickingSlotIfPossible(
+=======
+	@NonNull
+	public BooleanWithReason allocate(
+			@NonNull final PickingSlotIdAndCaption pickingSlot,
+			@NonNull final BPartnerLocationId deliveryBPLocationId)
+	{
+		return pickingSlotBL.allocatePickingSlotIfPossible(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				PickingSlotAllocateRequest.builder()
 						.pickingSlotId(pickingSlot.getPickingSlotId())
 						.bpartnerAndLocationId(deliveryBPLocationId)
 						.build());
+<<<<<<< HEAD
 		if (allocated.isFalse())
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
@@ -54,6 +70,8 @@ public class PickingJobSlotService implements PickingSlotConnectedComponent
 					.append(allocated.getReason())
 					.build());
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void release(

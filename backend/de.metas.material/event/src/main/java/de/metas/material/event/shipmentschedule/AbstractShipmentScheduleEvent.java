@@ -2,12 +2,20 @@ package de.metas.material.event.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.commons.DocumentLineDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -51,27 +59,72 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	@JsonInclude(NON_NULL)
 	private final MinMaxDescriptor minMaxDescriptor;
 
+<<<<<<< HEAD
 	private final BigDecimal reservedQuantity;
 
 	private final int shipmentScheduleId;
 
+=======
+	private final ShipmentScheduleDetail shipmentScheduleDetail;
+
+	private final int shipmentScheduleId;
+
+	private final DocumentLineDescriptor documentLineDescriptor;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
+<<<<<<< HEAD
 			final BigDecimal reservedQuantity,
 			final int shipmentScheduleId)
+=======
+			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
+			final int shipmentScheduleId,
+			@Nullable final DocumentLineDescriptor documentLineDescriptor)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
 		this.minMaxDescriptor = minMaxDescriptor;
+<<<<<<< HEAD
 		this.reservedQuantity = reservedQuantity;
 	}
 
 	public abstract BigDecimal getOrderedQuantityDelta();
 
 	public abstract BigDecimal getReservedQuantityDelta();
+=======
+		this.shipmentScheduleDetail = shipmentScheduleDetail;
+		this.documentLineDescriptor = documentLineDescriptor;
+	}
+
+	@NonNull
+	public abstract BigDecimal getReservedQuantityDelta();
+
+	@NonNull
+	public abstract BigDecimal getOrderedQuantityDelta();
+
+	@NonNull
+	public BigDecimal getOrderedQuantity()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity();
+	}
+
+	@NonNull
+	public BigDecimal getReservedQuantity()
+	{
+		return getShipmentScheduleDetail().getReservedQuantity();
+	}
+
+	@Nullable
+	public OldShipmentScheduleData getOldShipmentScheduleData()
+	{
+		return getShipmentScheduleDetail().getOldShipmentScheduleData();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@OverridingMethodsMustInvokeSuper
 	public void validate()
@@ -80,6 +133,9 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
+<<<<<<< HEAD
 		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

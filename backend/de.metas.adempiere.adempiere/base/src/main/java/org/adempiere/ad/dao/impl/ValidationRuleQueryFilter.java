@@ -60,7 +60,11 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 		final IValidationRule valRule = validationRuleFactory.create(
 				tableName,
+<<<<<<< HEAD
 				adValRuleId.getRepoId(),
+=======
+				adValRuleId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				null, // ctx table name
 				null // ctx column name
 		);

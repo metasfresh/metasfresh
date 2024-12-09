@@ -44,7 +44,10 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -72,7 +75,10 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +111,11 @@ class CommentsServiceTest
 			{
 				@Nullable
 				@Override
+<<<<<<< HEAD
 				public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context, final @NonNull Collection<DocumentFieldDescriptor> fields)
+=======
+				public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					return null;
 				}

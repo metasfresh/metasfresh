@@ -1,6 +1,11 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -19,12 +24,20 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.picking.PickingCandidateService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
@@ -38,6 +51,10 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
+=======
+import org.apache.commons.collections4.CollectionUtils;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -80,12 +97,20 @@ public class AddQtyToHUCommand
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
+<<<<<<< HEAD
+=======
+	private final PickingCandidateService pickingCandidateService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ImmutableList<HuId> sourceHUIds;
 	private final Quantity qtyToPack;
 	private final HuId packToHuId;
 	private final PickingSlotId pickingSlotId;
 	private final boolean allowOverDelivery;
+<<<<<<< HEAD
+=======
+	private final boolean isForbidAggCUsForDifferentOrders;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final I_M_ShipmentSchedule shipmentSchedule;
@@ -94,6 +119,10 @@ public class AddQtyToHUCommand
 
 	@Builder
 	private AddQtyToHUCommand(
+<<<<<<< HEAD
+=======
+			@NonNull final PickingCandidateService pickingCandidateService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final AddQtyToHURequest request)
 	{
@@ -102,9 +131,17 @@ public class AddQtyToHUCommand
 		this.sourceHUIds = request.getSourceHUIds();
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
+<<<<<<< HEAD
 		this.packToHuId = request.getPackToHuId();
 		this.pickingSlotId = request.getPickingSlotId();
 		this.allowOverDelivery = request.isAllowOverDelivery();
+=======
+		this.pickingCandidateService = pickingCandidateService;
+		this.packToHuId = request.getPackToHuId();
+		this.pickingSlotId = request.getPickingSlotId();
+		this.allowOverDelivery = request.isAllowOverDelivery();
+		this.isForbidAggCUsForDifferentOrders = request.isForbidAggCUsForDifferentOrders();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
@@ -112,7 +149,10 @@ public class AddQtyToHUCommand
 		qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
 
 		this.qtyToPack = request.getQtyToPack();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -126,10 +166,22 @@ public class AddQtyToHUCommand
 			assertNotOverDelivery();
 		}
 
+<<<<<<< HEAD
 		final PickingCandidate candidate = getOrCreatePickingCandidate();
 
 		final HUListAllocationSourceDestination source = createFromSourceHUsAllocationSource();
 		final IAllocationDestination destination = createAllocationDestination(packToHuId);
+=======
+		if (isForbidAggCUsForDifferentOrders)
+		{
+			assertNotAggregatingCUsToDiffOrders();
+		}
+
+		final PickingCandidate candidate = getOrCreatePickingCandidate();
+
+		final HUListAllocationSourceDestination source = createFromSourceHUsAllocationSource();
+		final IAllocationDestination destination = createAllocationDestination();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// NOTE: create the context with the tread-inherited transaction,
 		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
@@ -196,9 +248,15 @@ public class AddQtyToHUCommand
 		return source;
 	}
 
+<<<<<<< HEAD
 	private IAllocationDestination createAllocationDestination(final HuId huId)
 	{
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+=======
+	private IAllocationDestination createAllocationDestination()
+	{
+		final I_M_HU hu = handlingUnitsDAO.getById(packToHuId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
 		if (!huStatusBL.isStatusActive(hu))
@@ -264,4 +322,41 @@ public class AddQtyToHUCommand
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	private void assertNotAggregatingCUsToDiffOrders()
+	{
+		final OrderId pickingForOrderId = OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+
+		if (pickingForOrderId == null)
+		{
+			throw new AdempiereException("When isForbidAggCUsForDifferentOrders='Y' the pickingForOrderId must be known!")
+					.appendParametersToMessage()
+					.setParameter("ShipmentScheduleId", shipmentSchedule.getM_ShipmentSchedule_ID());
+		}
+
+		final I_M_HU hu = handlingUnitsDAO.getById(packToHuId);
+		final boolean isLoadingUnit = handlingUnitsBL.isLoadingUnit(hu);
+
+		if (isLoadingUnit)
+		{
+			throw new AdempiereException("packToHuId cannot be an LU, as picking to unknown TU is not allowed when isForbidAggCUsForDifferentOrders='Y'");
+		}
+
+		final ImmutableMap<HuId, ImmutableSet<OrderId>> huId2OpenPickingOrderIds = pickingCandidateService
+				.getOpenPickingOrderIdsByHuId(ImmutableSet.of(packToHuId));
+
+		final boolean thereAreOpenPickingOrdersForHU = CollectionUtils.isNotEmpty(huId2OpenPickingOrderIds.get(packToHuId));
+		final boolean noneOfThePickingOrdersMatchesTheCurrentOrder = !huId2OpenPickingOrderIds.get(packToHuId).contains(pickingForOrderId);
+
+		if (thereAreOpenPickingOrdersForHU && noneOfThePickingOrdersMatchesTheCurrentOrder)
+		{
+			throw new AdempiereException("Cannot pick to an HU with an open picking candidate pointing to a different order!")
+					.appendParametersToMessage()
+					.setParameter("shipmentScheduleId", shipmentSchedule.getM_ShipmentSchedule_ID())
+					.setParameter("huId", packToHuId);
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

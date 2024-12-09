@@ -13,6 +13,10 @@ import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -35,6 +39,10 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+<<<<<<< HEAD
+=======
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -90,12 +98,31 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+=======
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
 	{
 		final Set<Integer> ids = inoutLineIds.stream().map(InOutLineId::getRepoId).collect(Collectors.toSet());
@@ -120,12 +147,15 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
+<<<<<<< HEAD
 	@Override
 	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
 		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 		return inoutLine;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -234,6 +264,25 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public <T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(final I_M_InOut inOut, final Class<T> clazz)
 	{
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
@@ -490,4 +539,21 @@ public class InOutDAO implements IInOutDAO
 
 		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

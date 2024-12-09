@@ -1,5 +1,6 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner.AlbertaBPartnerRepositoryTest.save_allFields=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaId" : 100001,
     "bPartnerId" : 1,
     "title" : "title",
@@ -10,15 +11,31 @@ de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner.AlbertaBPa
       "nanos" : 0
     },
     "archived" : true
+=======
+    "archived": true,
+    "bPartnerAlbertaId": 100001,
+    "bPartnerId": 1,
+    "isArchived": true,
+    "timestamp": "2019-11-22T00:00:00Z",
+    "title": "title",
+    "titleShort": "titleShort"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner.AlbertaBPartnerRepositoryTest.save_onlyMandatory=[
   {
+<<<<<<< HEAD
     "bPartnerAlbertaId" : 100001,
     "bPartnerId" : 1,
     "isArchived" : false,
     "archived" : false
+=======
+    "archived": false,
+    "bPartnerAlbertaId": 100001,
+    "bPartnerId": 1,
+    "isArchived": false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

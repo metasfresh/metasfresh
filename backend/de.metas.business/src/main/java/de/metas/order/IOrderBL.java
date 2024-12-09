@@ -25,15 +25,32 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+=======
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+<<<<<<< HEAD
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
+=======
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.request.RequestTypeId;
+import de.metas.tax.api.Tax;
+import de.metas.uom.UomId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -42,6 +59,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPCostCollectorId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -49,6 +70,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IOrderBL extends ISingletonService
 {
@@ -99,7 +124,12 @@ public interface IOrderBL extends ISingletonService
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
 	 */
+<<<<<<< HEAD
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
+=======
+	@NonNull
+	BPartnerContactId getBillToContactId(I_C_Order order);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
@@ -117,6 +147,15 @@ public interface IOrderBL extends ISingletonService
 	 */
 	boolean setBill_User_ID(I_C_Order order);
 
+<<<<<<< HEAD
+=======
+	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
+
+	Map<OrderAndLineId, de.metas.interfaces.I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds);
+
+	de.metas.interfaces.I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
 	 * <ul>
@@ -282,10 +321,47 @@ public interface IOrderBL extends ISingletonService
 	@NonNull
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 
+<<<<<<< HEAD
 	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
 
 	void setWeightFromLines(@NonNull I_C_Order order);
 	
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+=======
+	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
+	void setWeightFromLines(@NonNull I_C_Order order);
+
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	static Money extractLineNetAmt(final I_C_OrderLine orderLine)
+	{
+		return Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+	}
+
+	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
+	{
+		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		return Quantitys.of(orderLine.getQtyEntered(), uomId);
+	}
+
+	DocStatus getDocStatus(OrderId orderId);
+
+	void save(I_C_OrderLine orderLine);
+
+	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
+
+	void setProductId(
+			@NonNull I_C_OrderLine orderLine,
+			@NonNull ProductId productId,
+			boolean setUOM);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
+
+	void deleteLineById(final OrderAndLineId orderAndLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

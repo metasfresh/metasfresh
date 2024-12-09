@@ -770,7 +770,11 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
+<<<<<<< HEAD
 					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
+=======
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt()).getTaxAmount();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

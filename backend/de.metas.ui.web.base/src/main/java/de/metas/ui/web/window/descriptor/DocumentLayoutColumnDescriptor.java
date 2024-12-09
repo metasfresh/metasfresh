@@ -1,9 +1,21 @@
 package de.metas.ui.web.window.descriptor;
 
+<<<<<<< HEAD
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
+import org.slf4j.Logger;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+<<<<<<< HEAD
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -13,6 +25,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -37,13 +51,21 @@ import lombok.NonNull;
 
 public class DocumentLayoutColumnDescriptor
 {
+<<<<<<< HEAD
 	public static final Builder builder()
+=======
+	public static Builder builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new Builder();
 	}
 
 	private final String internalName;
+<<<<<<< HEAD
 	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+=======
+	@Getter private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
@@ -61,11 +83,14 @@ public class DocumentLayoutColumnDescriptor
 				.toString();
 	}
 
+<<<<<<< HEAD
 	public List<DocumentLayoutElementGroupDescriptor> getElementGroups()
 	{
 		return elementGroups;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean hasElementGroups()
 	{
 		return !elementGroups.isEmpty();
@@ -104,8 +129,13 @@ public class DocumentLayoutColumnDescriptor
 		{
 			return elementGroupsBuilders
 					.stream()
+<<<<<<< HEAD
 					.map(elementGroupBuilder -> elementGroupBuilder.build())
 					.filter(elementGroup -> checkValid(elementGroup))
+=======
+					.map(DocumentLayoutElementGroupDescriptor.Builder::build)
+					.filter(this::checkValid)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
@@ -126,7 +156,11 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+=======
+		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			elementGroupsBuilders.addAll(elementGroupBuilders);
 			return this;

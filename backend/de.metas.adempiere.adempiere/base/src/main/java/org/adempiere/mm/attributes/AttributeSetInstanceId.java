@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes;
 
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,17 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -55,6 +67,10 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return asiId != null ? asiId : NONE;
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static AttributeSetInstanceId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == NONE.repoId)
@@ -100,7 +116,13 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId == NONE.repoId;
 	}
 
+<<<<<<< HEAD
 	/** @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}. */
+=======
+	/**
+	 * @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isRegular()
 	{
 		return repoId > NONE.repoId;
@@ -110,4 +132,26 @@ public class AttributeSetInstanceId implements RepoIdAware
 	{
 		return asiId != null && asiId.isRegular();
 	}
+<<<<<<< HEAD
+=======
+
+	@Nullable
+	public AttributeSetInstanceId asRegularOrNull() {return isRegular() ? this : null;}
+
+	/**
+	 * Note that currently, according to this method, "NONE" ist not equal to an emptpy ASI
+	 */
+	public static boolean equals(@Nullable final AttributeSetInstanceId id1, @Nullable final AttributeSetInstanceId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
+	public void assertRegular()
+	{
+		if (!isRegular())
+		{
+			throw new AdempiereException("Expected regular ASI but got " + this);
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

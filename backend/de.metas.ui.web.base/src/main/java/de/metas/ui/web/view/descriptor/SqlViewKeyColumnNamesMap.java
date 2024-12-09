@@ -1,3 +1,28 @@
+<<<<<<< HEAD
+=======
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 package de.metas.ui.web.view.descriptor;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +44,10 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
+<<<<<<< HEAD
+=======
+import org.compiere.util.TimeUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
@@ -31,6 +60,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 /*
  * #%L
  * metasfresh-webui-api
@@ -53,6 +83,8 @@ import java.util.stream.Collectors;
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @ToString(of = "keyColumnsInfosByKeyColumnName")
 public final class SqlViewKeyColumnNamesMap
 {
@@ -105,6 +137,10 @@ public final class SqlViewKeyColumnNamesMap
 	{
 		final ArrayList<String> availableIntKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
 		final ArrayList<String> availableStringKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
+<<<<<<< HEAD
+=======
+		final ArrayList<String> availableTimestampKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_TimestampKeys);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ImmutableMap.Builder<String, KeyColumnNameInfo> keyColumnName2selectionColumnName = ImmutableMap.builder();
 		for (final SqlEntityFieldBinding keyField : keyFields)
@@ -119,9 +155,19 @@ public final class SqlViewKeyColumnNamesMap
 			{
 				availableKeys = availableStringKeys;
 			}
+<<<<<<< HEAD
 			else
 			{
 				throw new AdempiereException("Only integer or string types are supported for key columns: " + keyField);
+=======
+			else if (TimeUtil.isDateOrTimeClass(keyField.getSqlValueClass()))
+			{
+				availableKeys = availableTimestampKeys;
+			}
+			else
+			{
+				throw new AdempiereException("Only integer, timestamp or string types are supported for key columns: " + keyField);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			if (availableKeys.isEmpty())

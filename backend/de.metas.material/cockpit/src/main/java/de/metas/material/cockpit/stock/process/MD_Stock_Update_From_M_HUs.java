@@ -109,7 +109,11 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
+<<<<<<< HEAD
 		final Quantity qtyInStorageUOM = Quantitys.create(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
+=======
+		final Quantity qtyInStorageUOM = Quantitys.of(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		return StockDataUpdateRequest.builder()

@@ -14,7 +14,12 @@
         "email": "orderCustomerEmail@example.com",
         "customFields": {
           "externalReference": "customerId1",
+<<<<<<< HEAD
           "userId": "userId1"
+=======
+          "userId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         }
       },
       "currencyId": "currencyId",

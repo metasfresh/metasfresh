@@ -29,6 +29,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
+<<<<<<< HEAD
+=======
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,6 +44,10 @@ import java.util.List;
 
 @Value
 @Builder
+<<<<<<< HEAD
+=======
+@AllArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
 {
@@ -47,6 +56,13 @@ public class JsonProduct
 	String id;
 
 	@Nullable
+<<<<<<< HEAD
+=======
+	@JsonProperty("parentId")
+	String parentId;
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("name")
 	String name;
 
@@ -95,4 +111,8 @@ public class JsonProduct
 
 		return createdAt;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -14,6 +14,10 @@ import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.window.descriptor.DetailId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -142,6 +146,7 @@ public class SqlViewBindingFactory
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
+<<<<<<< HEAD
 
 		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
 				.filterDescriptors(filterDescriptors)
@@ -149,6 +154,24 @@ public class SqlViewBindingFactory
 				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
 
 		builder.filterConverters(filterConverters);
+=======
+		final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors = entityDescriptor.getIncludedEntities()
+				.stream()
+				.filter(includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.isAssignableFrom(includedEntityDescriptor.getDataBinding()))
+				.collect(ImmutableMap.toImmutableMap(
+						DocumentEntityDescriptor::getDetailId,
+						includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.cast(includedEntityDescriptor.getDataBinding())
+				));
+
+		final SqlViewBinding.Builder builder = prepareSqlViewBinding(entityBinding)
+				.includedEntitiesDescriptors(includedEntitiesDescriptors)
+				.fields(createViewFieldBindings(entityBinding, displayFieldNames))
+				.displayFieldNames(displayFieldNames)
+				.filterDescriptors(filterDescriptors)
+				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
+				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId))
+				.filterConverters(filterConverters);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (filterConvertorDecorators.containsKey(windowId))
 		{
@@ -166,6 +189,7 @@ public class SqlViewBindingFactory
 		return builder.build();
 	}
 
+<<<<<<< HEAD
 	private SqlViewBinding.Builder createBuilderForEntityBindingAndFieldNames(
 			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
 			@NonNull final Set<String> displayFieldNames)
@@ -180,6 +204,8 @@ public class SqlViewBindingFactory
 		return builder;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static SqlViewBinding.Builder prepareSqlViewBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
 	{
 		return SqlViewBinding.builder()
@@ -189,6 +215,19 @@ public class SqlViewBindingFactory
 				.defaultOrderBys(entityBinding.getDefaultOrderBys());
 	}
 
+<<<<<<< HEAD
+=======
+	public static ImmutableList<SqlViewRowFieldBinding> createViewFieldBindings(
+			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
+			@NonNull final Collection<String> availableDisplayColumnNames)
+	{
+		return entityBinding.getFields()
+				.stream()
+				.map(documentField -> createViewFieldBinding(documentField, availableDisplayColumnNames))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static SqlViewRowFieldBinding createViewFieldBinding(
 			@NonNull final SqlDocumentFieldDataBindingDescriptor documentField,
 			@NonNull final Collection<String> availableDisplayColumnNames)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_order_description(IN record_id   numeric,
                                                                                         IN ad_language Character Varying(6))
 ;
@@ -28,6 +29,41 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_order_d
                 datepromised     timestamp WITH TIME ZONE,
                 dt_description   text,
                 offer_documentno character varying
+=======
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(IN record_id   numeric,
+                                                                                        IN ad_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(record_id   numeric,
+                                                                                           ad_language character varying)
+    RETURNS TABLE
+            (
+                description       character varying,
+                documentno        character varying,
+                dateordered       timestamp WITHOUT TIME ZONE,
+                reference         text,
+                isoffer           character,
+                isprepay          character,
+                offervaliddate    timestamp WITHOUT TIME ZONE,
+                offervaliddays    numeric,
+                bp_value          character varying,
+                eori              character varying,
+                cont_name         text,
+                cont_phone        character varying,
+                cont_fax          character varying,
+                cont_email        character varying,
+                sr_name           text,
+                sr_phone          character varying,
+                sr_fax            character varying,
+                sr_email          character varying,
+                printname         character varying,
+                datepromised      timestamp WITH TIME ZONE,
+                dt_description    text,
+                offer_documentno  character varying,
+                deliverytoaddress character varying,
+                validuntil        timestamp,
+                versionno           character varying
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             )
     STABLE
     LANGUAGE sql
@@ -68,7 +104,23 @@ SELECT o.description                             AS description,
        COALESCE(dtt.PrintName, dt.PrintName)     AS PrintName,
        o.datepromised,
        COALESCE(dtt.Description, dt.Description) AS dt_description,
+<<<<<<< HEAD
        offer.documentno                          AS offer_documentno
+=======
+       offer.documentno                          AS offer_documentno,
+       REPLACE(
+               REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
+               E'\n', ' | '
+       )                                         AS deliverytoaddress,
+       CASE
+           WHEN o.OrderType = 'ON'
+               THEN o.validuntil
+       END                                       AS validuntil,
+       CASE
+           WHEN o.OrderType = 'ON'
+               THEN o.versionno
+       END                                       AS versionno
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
@@ -89,6 +141,9 @@ WHERE o.C_Order_ID = $1
 $$
 ;
 
+<<<<<<< HEAD
 ALTER FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_order_description(numeric, varchar) OWNER TO metasfresh
 ;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

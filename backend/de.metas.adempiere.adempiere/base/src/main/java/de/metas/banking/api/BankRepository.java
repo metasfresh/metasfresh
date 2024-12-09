@@ -39,6 +39,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -99,14 +103,26 @@ public class BankRepository
 				// ESR:
 				.esrPostBank(record.isESR_PostBank())
 				//
+<<<<<<< HEAD
 				.build();
 	}
 
+=======
+				.importAsSingleSummaryLine(record.isImportAsSingleSummaryLine())
+				.build();
+	}
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Optional<BankId> getBankIdBySwiftCode(final String swiftCode)
 	{
 		return bankIdsBySwiftCode.getOrLoad(swiftCode, this::retrieveBankIdBySwiftCode);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Optional<BankId> retrieveBankIdBySwiftCode(final String swiftCode)
 	{
 		final int bankRepoId = queryBL.createQueryBuilderOutOfTrx(I_C_Bank.class)
@@ -158,4 +174,18 @@ public class BankRepository
 				this::retrieveDefaultBankDataImportConfigId);
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankId bankId)	{ return getById(bankId).isImportAsSingleSummaryLine(); 	}
+
+	@NonNull
+	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)
+	{
+		return queryBL.createQueryBuilder(I_C_Bank.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, true)
+				.create()
+				.listIds(BankId::ofRepoId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

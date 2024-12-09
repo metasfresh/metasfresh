@@ -17,16 +17,39 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+=======
+import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
+import de.metas.i18n.Language;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.sql.ResultSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.impl.ClientDAO;
 import org.adempiere.util.LegacyAdapters;
@@ -58,6 +81,18 @@ import de.metas.util.Services;
  *    [ 1619085 ] Client setup creates duplicate trees
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>BF [ 1886480 ] Print Format Item Trl not updated even if not multilingual
+=======
+/**
+ * Client Model
+ *
+ * @author Jorg Janke
+ * @author Carlos Ruiz - globalqss
+ * integrate bug fix reported by Teo Sarca
+ * [ 1619085 ] Client setup creates duplicate trees
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ * <li>BF [ 1886480 ] Print Format Item Trl not updated even if not multilingual
+ * @version $Id: MClient.java,v 1.2 2006/07/30 00:58:37 jjanke Exp $
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class MClient extends X_AD_Client
 {
@@ -66,17 +101,28 @@ public class MClient extends X_AD_Client
 	 */
 	private static final long serialVersionUID = -6482473737885701403L;
 
+<<<<<<< HEAD
 
 	/**
 	 * Get client
 	 *
 	 * @param ctx context
+=======
+	/**
+	 * Get client
+	 *
+	 * @param ctx          context
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param AD_Client_ID id
 	 * @return client
 	 * @deprecated Please use {@link IClientDAO#retriveClient(Properties, int)}
 	 */
 	@Deprecated
+<<<<<<< HEAD
 	public static MClient get (Properties ctx, int AD_Client_ID)
+=======
+	public static MClient get(Properties ctx, int AD_Client_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (AD_Client_ID < 0)
 		{
@@ -85,7 +131,11 @@ public class MClient extends X_AD_Client
 
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, AD_Client_ID);
 		return LegacyAdapters.convertToPO(client);
+<<<<<<< HEAD
 	}	//	get
+=======
+	}    //	get
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get all clients
@@ -99,7 +149,11 @@ public class MClient extends X_AD_Client
 	{
 		final List<I_AD_Client> clients = Services.get(IClientDAO.class).retrieveAllClients(ctx);
 		return LegacyAdapters.convertToPOArray(clients, MClient.class);
+<<<<<<< HEAD
 	}	// getAll
+=======
+	}    // getAll
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get optionally cached client
@@ -113,11 +167,19 @@ public class MClient extends X_AD_Client
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx);
 		return LegacyAdapters.convertToPO(client);
+<<<<<<< HEAD
 	}	// get
 
 	public MClient (Properties ctx, int AD_Client_ID, String trxName)
 	{
 		super (ctx, AD_Client_ID, trxName);
+=======
+	}    // get
+
+	public MClient(Properties ctx, int AD_Client_ID, String trxName)
+	{
+		super(ctx, AD_Client_ID, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (is_new())
 		{
 			// setValue (null);
@@ -129,13 +191,18 @@ public class MClient extends X_AD_Client
 			setIsServerEMail(false);
 			setAD_Language(Language.getBaseAD_Language());
 			setAutoArchive(AUTOARCHIVE_None);
+<<<<<<< HEAD
 			setMMPolicy(MMPOLICY_FiFo);	// F
+=======
+			setMMPolicy(MMPOLICY_FiFo);    // F
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			setIsPostImmediate(false);
 			setIsCostImmediate(false);
 		}
 	}
 
 	/**
+<<<<<<< HEAD
 	 * 	Load Constructor
 	 *	@param ctx context
 	 *	@param rs result set
@@ -164,6 +231,39 @@ public class MClient extends X_AD_Client
 	/**
 	 *	Get SMTP Host
 	 *	@return SMTP or loaclhost
+=======
+	 * Load Constructor
+	 *
+	 * @param ctx     context
+	 * @param rs      result set
+	 * @param trxName transaction
+	 */
+	public MClient(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}    //	MClient
+
+	/**
+	 * Simplified Constructor
+	 *
+	 * @param ctx     context
+	 * @param trxName transaction
+	 */
+	public MClient(Properties ctx, String trxName)
+	{
+		this(ctx, Env.getAD_Client_ID(ctx), trxName);
+	}    //	MClient
+
+	/**
+	 * Language
+	 */
+	private Language m_language = null;
+
+	/**
+	 * Get SMTP Host
+	 *
+	 * @return SMTP or loaclhost
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	public String getSMTPHost()
@@ -174,24 +274,43 @@ public class MClient extends X_AD_Client
 			s = "localhost";
 		}
 		return s;
+<<<<<<< HEAD
 	}	//	getSMTPHost
 
 	/**
 	 *	Get Client Info
 	 *	@return Client Info
+=======
+	}    //	getSMTPHost
+
+	/**
+	 * Get Client Info
+	 *
+	 * @return Client Info
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public I_AD_ClientInfo getInfo()
 	{
 		return Services.get(IClientDAO.class).retrieveClientInfo(getCtx(), getAD_Client_ID());
+<<<<<<< HEAD
 	}	//	getMClientInfo
 
 	/**
 	 * 	String Representation
 	 *	@return info
+=======
+	}    //	getMClientInfo
+
+	/**
+	 * String Representation
+	 *
+	 * @return info
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	public String toString()
 	{
+<<<<<<< HEAD
 		StringBuilder sb = new StringBuilder ("MClient[")
 			.append(get_ID()).append("-").append(getValue())
 			.append("]");
@@ -201,6 +320,15 @@ public class MClient extends X_AD_Client
 	/**
 	 * 	Get Language
 	 *	@return client language
+=======
+		return "MClient[" + get_ID() + "-" + getValue() + "]";
+	}
+
+	/**
+	 * Get Language
+	 *
+	 * @return client language
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public Language getLanguage()
 	{
@@ -210,6 +338,7 @@ public class MClient extends X_AD_Client
 			m_language = Env.verifyLanguageFallbackToBase(m_language);
 		}
 		return m_language;
+<<<<<<< HEAD
 	}	//	getLanguage
 
 
@@ -232,16 +361,50 @@ public class MClient extends X_AD_Client
 	public String getAD_Language ()
 	{
 		String s = super.getAD_Language ();
+=======
+	}    //	getLanguage
+
+	/**
+	 * Set AD_Language
+	 *
+	 * @param AD_Language new language
+	 */
+	@Override
+	public void setAD_Language(String AD_Language)
+	{
+		m_language = null;
+		super.setAD_Language(AD_Language);
+	}    //	setAD_Language
+
+	/**
+	 * Get AD_Language
+	 *
+	 * @return Language
+	 */
+	@Override
+	public String getAD_Language()
+	{
+		String s = super.getAD_Language();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (s == null)
 		{
 			return Language.getBaseAD_Language();
 		}
 		return s;
+<<<<<<< HEAD
 	}	//	getAD_Language
 
 	/**
 	 * 	Get Locale
 	 *	@return locale
+=======
+	}    //	getAD_Language
+
+	/**
+	 * Get Locale
+	 *
+	 * @return locale
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public Locale getLocale()
 	{
@@ -251,6 +414,7 @@ public class MClient extends X_AD_Client
 			return lang.getLocale();
 		}
 		return Locale.getDefault();
+<<<<<<< HEAD
 	}	//	getLocale
 
 
@@ -537,21 +701,77 @@ public class MClient extends X_AD_Client
 	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment)
 	{
 		return sendEMail(to, subject, message, attachment, false);
+=======
+	}    //	getLocale
+
+	/**
+	 * Send EMail from Request User - with trace
+	 *
+	 * @param recipientUserId recipient
+	 * @param subject         subject
+	 * @param message         message
+	 * @param attachment      optional attachment
+	 * @return true if sent
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
+	 */
+	@Deprecated
+	public boolean sendEMail(UserId recipientUserId, String subject, String message, @Nullable File attachment)
+	{
+		final IUserBL userBL = Services.get(IUserBL.class);
+		final EMailAddress to = userBL.getEMailAddressById(recipientUserId).orElse(null);
+		if (to == null)
+		{
+			log.warn("No EMail for recipient: {}", to);
+			return false;
+		}
+		EMail email = createEMail(to, subject, message, false);
+		if (email == null)
+		{
+			return false;
+		}
+		
+		if (attachment != null)
+		{
+			email.addAttachment(attachment);
+		}
+		
+		try
+		{
+			return sendEmailNow(recipientUserId, email);
+		}
+		catch (Exception ex)
+		{
+			log.error("Failed sending email: {}", email, ex);
+			return false;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Send EMail from Request User - no trace
+<<<<<<< HEAD
 	 * 
 	 * @param to recipient email address
 	 * @param subject subject
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @param html
+=======
+	 *
+	 * @param to         recipient email address
+	 * @param subject    subject
+	 * @param message    message
+	 * @param attachment optional attachment
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
+<<<<<<< HEAD
 	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment, boolean html)
+=======
+	public boolean sendEMail(EMailAddress to, String subject, String message, File attachment, boolean html)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final EMail email = createEMail(to, subject, message, html);
 		if (email == null)
@@ -567,19 +787,28 @@ public class MClient extends X_AD_Client
 			final EMailSentStatus emailSentStatus = email.send();
 			if (emailSentStatus.isSentOK())
 			{
+<<<<<<< HEAD
 				log.info("Sent EMail " + subject + " to " + to);
+=======
+				log.info("Sent EMail {} to {}", subject, to);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return true;
 			}
 			else
 			{
+<<<<<<< HEAD
 				log.warn("Could NOT Send Email: " + subject 
 					+ " to " + to + ": " + emailSentStatus.getSentMsg()
 					+ " (" + getName() + ")");
+=======
+				log.warn("Could NOT Send Email: {} to {}: {} ({})", subject, to, emailSentStatus.getSentMsg(), getName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return false;
 			}
 		}
 		catch (Exception ex)
 		{
+<<<<<<< HEAD
 			log.error(getName() + " - " + ex.getLocalizedMessage());
 			return false;
 		}
@@ -593,10 +822,21 @@ public class MClient extends X_AD_Client
 	 * @param subject subject
 	 * @param message message
 	 * @param attachment optional attachment
+=======
+			log.error("Failed sending mail: {}", email, ex);
+			return false;
+		}
+	}    //	sendEMail
+
+	/**
+	 * Send EMail from User
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
+<<<<<<< HEAD
 	public boolean sendEMail (UserEMailConfig from, I_AD_User to, String subject, String message, File attachment)
 	{
 		return sendEMail(from, to, subject, message, attachment, false);
@@ -612,6 +852,23 @@ public class MClient extends X_AD_Client
 	public boolean sendEMail (UserEMailConfig fromUserEmailConfig, I_AD_User to, String subject, String message, File attachment, boolean isHtml)
 	{
 		EMail email = createEMail(fromUserEmailConfig, to, subject, message, isHtml);
+=======
+	public boolean sendEMail(I_AD_User to, String subject, String message, File attachment, boolean isHtml)
+	{
+		if (to == null)
+		{
+			log.warn("No To user");
+			return false;
+		}
+		final EMailAddress mailTo = EMailAddress.ofNullableString(to.getEMail());
+		if (mailTo == null)
+		{
+			log.warn("No To address: {}", to);
+			return false;
+		}
+
+		EMail email = createEMail(mailTo, subject, message, isHtml);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (email == null)
 		{
 			return false;
@@ -621,6 +878,7 @@ public class MClient extends X_AD_Client
 		{
 			email.addAttachment(attachment);
 		}
+<<<<<<< HEAD
 		EMailAddress emailFrom = email.getFrom();
 		try
 		{
@@ -639,17 +897,41 @@ public class MClient extends X_AD_Client
 	 * @param from optional from user
 	 * @param to to user
 	 * @param email email
+=======
+		try
+		{
+			return sendEmailNow(UserId.ofRepoId(to.getAD_User_ID()), email);
+		}
+		catch (Exception ex)
+		{
+			log.error("Failed sending mail: {}", email, ex);
+			return false;
+		}
+	}    //	sendEMail
+
+	/**
+	 * Send Email Now
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
+<<<<<<< HEAD
 	public boolean sendEmailNow(UserEMailConfig from, I_AD_User to, EMail email)
+=======
+	private boolean sendEmailNow(UserId toUserId, EMail email)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final EMailSentStatus emailSentStatus = email.send();
 		//
 		X_AD_UserMail um = new X_AD_UserMail(getCtx(), 0, null);
 		um.setClientOrg(this);
+<<<<<<< HEAD
 		um.setAD_User_ID(to.getAD_User_ID());
+=======
+		um.setAD_User_ID(toUserId.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		um.setSubject(email.getSubject());
 		um.setMailText(email.getMessageCRLF());
 		if (emailSentStatus.isSentOK())
@@ -667,6 +949,7 @@ public class MClient extends X_AD_Client
 		//
 		if (emailSentStatus.isSentOK())
 		{
+<<<<<<< HEAD
 			if (from != null)
 			{
 				log.info("Sent Email: " + email.getSubject()
@@ -678,10 +961,14 @@ public class MClient extends X_AD_Client
 				log.info("Sent Email: " + email.getSubject()
 					+ " to " + to.getEMail());
 			}
+=======
+			log.info("Sent Email: {} to {}", email.getSubject(), toUserId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return true;
 		}
 		else
 		{
+<<<<<<< HEAD
 			if (from != null)
 			{
 				log.warn("Could NOT Send Email: " + email.getSubject()
@@ -748,10 +1035,24 @@ public class MClient extends X_AD_Client
 	/**
 	 * Create EMail from User
 	 * 
+=======
+			log.warn("Could NOT Send Email: {} to {}: {} ({})", email.getSubject(), toUserId, emailSentStatus.getSentMsg(), getName());
+			return false;
+		}
+	}    //	sendEmailNow
+
+	/**
+	 * Create EMail from User
+	 *
+	 * @param to                  recipient
+	 * @param subject             sunject
+	 * @param message             nessage
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return EMail
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
+<<<<<<< HEAD
 	private EMail createEMail (UserEMailConfig fromUserEmailConfig, I_AD_User userTo, String subject, String message, boolean html)
 	{
 		if (userTo == null)
@@ -784,23 +1085,36 @@ public class MClient extends X_AD_Client
 	public EMail createEMail (
 			final UserEMailConfig fromUserEmailConfig, 
 			final EMailAddress to, 
+=======
+	public EMail createEMail(
+			final EMailAddress to,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final String subject,
 			final String message,
 			final boolean html)
 	{
 		try
 		{
+<<<<<<< HEAD
 			final MailService mailService = Adempiere.getBean(MailService.class);
 			
 			final EMailCustomType mailCustomType = null;
 			final ClientEMailConfig tenantEmailConfig = ClientDAO.toClientEMailConfig(this);
 			return mailService.createEMail(tenantEmailConfig, mailCustomType, fromUserEmailConfig, to, subject, message, html);
+=======
+			final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+
+			final Mailbox mailbox = mailService.findMailbox(MailboxQuery.ofClientId(ClientId.ofRepoId(getAD_Client_ID())));
+			
+			return mailService.createEMail(mailbox, to, subject, message, html);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (Exception ex)
 		{
 			log.error("Failed to create the email", ex);
 			return null;
 		}
+<<<<<<< HEAD
 	}	//	createEMail
 
 	/**
@@ -856,3 +1170,9 @@ public class MClient extends X_AD_Client
 	}
 // metas end
 }	//	MClient
+=======
+	}    //	createEMail
+
+	// metas end
+}    //	MClient
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

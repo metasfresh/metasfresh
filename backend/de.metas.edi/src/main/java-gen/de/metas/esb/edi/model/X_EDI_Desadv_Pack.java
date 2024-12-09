@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * #%L
  * de.metas.edi
@@ -20,6 +21,8 @@
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
@@ -34,7 +37,11 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_Desadv_Pack, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -1795597529L;
+=======
+	private static final long serialVersionUID = -1886649508L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack (final Properties ctx, final int EDI_Desadv_Pack_ID, @Nullable final String trxName)
@@ -126,6 +133,7 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setGTIN_LU_PackingMaterial (final @Nullable java.lang.String GTIN_LU_PackingMaterial)
 	{
 		set_Value (COLUMNNAME_GTIN_LU_PackingMaterial, GTIN_LU_PackingMaterial);
@@ -135,6 +143,17 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	public java.lang.String getGTIN_LU_PackingMaterial() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_LU_PackingMaterial);
+=======
+	public void setGTIN_PackingMaterial (final @Nullable java.lang.String GTIN_PackingMaterial)
+	{
+		set_Value (COLUMNNAME_GTIN_PackingMaterial, GTIN_PackingMaterial);
+	}
+
+	@Override
+	public java.lang.String getGTIN_PackingMaterial() 
+	{
+		return get_ValueAsString(COLUMNNAME_GTIN_PackingMaterial);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -162,6 +181,7 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -174,6 +194,8 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
@@ -189,6 +211,7 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setM_HU_PackagingCode_LU_ID (final int M_HU_PackagingCode_LU_ID)
 	{
 		if (M_HU_PackagingCode_LU_ID < 1) 
@@ -212,5 +235,65 @@ public class X_EDI_Desadv_Pack extends org.compiere.model.PO implements I_EDI_De
 	public java.lang.String getM_HU_PackagingCode_LU_Text() 
 	{
 		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_LU_Text);
+=======
+	public void setM_HU_PackagingCode_ID (final int M_HU_PackagingCode_ID)
+	{
+		if (M_HU_PackagingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, M_HU_PackagingCode_ID);
+	}
+
+	@Override
+	public int getM_HU_PackagingCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_ID);
+	}
+
+	@Override
+	public void setM_HU_PackagingCode_Text (final @Nullable java.lang.String M_HU_PackagingCode_Text)
+	{
+		throw new IllegalArgumentException ("M_HU_PackagingCode_Text is virtual column");	}
+
+	@Override
+	public java.lang.String getM_HU_PackagingCode_Text() 
+	{
+		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_Text);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	@Override
+	public void setM_InOut_ID (final int M_InOut_ID)
+	{
+		throw new IllegalArgumentException ("M_InOut_ID is virtual column");	}
+
+	@Override
+	public int getM_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

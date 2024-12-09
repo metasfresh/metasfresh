@@ -9,6 +9,10 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -48,13 +52,18 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	public ShipmentScheduleDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+<<<<<<< HEAD
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
+=======
+			@JsonProperty("shipmentScheduleDetail") final ShipmentScheduleDetail shipmentScheduleDetail,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(
 				eventDescriptor,
 				materialDescriptor,
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
+<<<<<<< HEAD
 				reservedQuantity,
 				shipmentScheduleId);
 	}
@@ -69,5 +78,24 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	public BigDecimal getReservedQuantityDelta()
 	{
 		return getReservedQuantity().negate();
+=======
+				shipmentScheduleDetail,
+				shipmentScheduleId,
+				null);
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getReservedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getReservedQuantity().negate();
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity().negate();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

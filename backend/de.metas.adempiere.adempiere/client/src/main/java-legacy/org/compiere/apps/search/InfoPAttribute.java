@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
+<<<<<<< HEAD
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -29,6 +30,13 @@ import java.util.ArrayList;
 
 import javax.swing.Box;
 
+=======
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -50,11 +58,22 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+=======
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *	Search by Product Attribute.
@@ -425,7 +444,11 @@ public class InfoPAttribute extends CDialog
 				sb.append("=");
 			else
 				sb.append(">");
+<<<<<<< HEAD
 			sb.append(DB.TO_DATE(ts,true));
+=======
+			sb.append(DB.TO_DATE(ts));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		
 		//	Instance Editors

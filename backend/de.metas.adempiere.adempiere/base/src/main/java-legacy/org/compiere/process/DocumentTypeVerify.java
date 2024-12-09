@@ -150,7 +150,11 @@ public class DocumentTypeVerify extends JavaProcess
 				+ "(SELECT MIN(C_PeriodControl_ID) "
 				+ "FROM C_PeriodControl pc3 "
 				+ "GROUP BY C_Period_ID, DocBaseType)";
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, false, trxName);
+=======
+		int no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		s_log.info("Duplicates deleted #" + no);
 		
 		//	Insert Missing

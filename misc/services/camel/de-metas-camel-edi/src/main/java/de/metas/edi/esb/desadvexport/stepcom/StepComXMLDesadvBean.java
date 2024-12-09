@@ -221,7 +221,11 @@ public class StepComXMLDesadvBean
 			@NonNull final String supplierGln)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = validateObject(xmlDesadv.getCBPartnerLocationID(),
+<<<<<<< HEAD
 																		"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
+=======
+				"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final HADRE1 buyerAddress = DESADV_objectFactory.createHADRE1();
 		buyerAddress.setDOCUMENTID(header.getDOCUMENTID());
@@ -322,7 +326,11 @@ public class StepComXMLDesadvBean
 						if (settings.isDesadvLinePackagingCodeLURequired())
 						{
 							final String packagingCodeLU = validateString(
+<<<<<<< HEAD
 									lineAndPack.getSinglePack().getPack().getMHUPackagingCodeLUText(),
+=======
+									lineAndPack.getSinglePack().getPack().getMHUPackagingCodeText(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 									"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
 							ppack1.setPACKAGINGCODE(packagingCodeLU);
 							ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
@@ -444,7 +452,11 @@ public class StepComXMLDesadvBean
 				}
 				else
 				{
+<<<<<<< HEAD
 					packagingCodeLU = StringUtils.isEmpty(pack.getPack().getMHUPackagingCodeLUText()) ? "NONE" : pack.getPack().getMHUPackagingCodeLUText();
+=======
+					packagingCodeLU = StringUtils.isEmpty(pack.getPack().getMHUPackagingCodeText()) ? "NONE" : pack.getPack().getMHUPackagingCodeText();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 
 				packingLUGroupings.add(packagingCodeLU, line, pack);
@@ -545,7 +557,11 @@ public class StepComXMLDesadvBean
 			if (settings.isDesadvLineCUTURequired())
 			{
 				final BigDecimal qtyItemCapacity = validateObject(packItem.getQtyCUsPerTU(),
+<<<<<<< HEAD
 																  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+=======
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 				cuTuQuantity.setMEASUREMENTUNIT(measurementUnitName);
@@ -558,7 +574,11 @@ public class StepComXMLDesadvBean
 			if (dmark1Required)
 			{
 				final String lotNumber = validateString(packItem.getLotNumber(),
+<<<<<<< HEAD
 														"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
+=======
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
 				dmark1.setDOCUMENTID(documentId);
@@ -568,7 +588,11 @@ public class StepComXMLDesadvBean
 				if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
 				{
 					final XMLGregorianCalendar bestBefore = validateObject(packItem.getBestBeforeDate(),
+<<<<<<< HEAD
 																		   "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
+=======
+							"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
 				}
 				detail.getDMARK1().add(dmark1);
@@ -615,7 +639,11 @@ public class StepComXMLDesadvBean
 		if (qtyDelivered.signum() > 0 && settings.isDesadvLineCUTURequired())
 		{
 			final BigDecimal qtyItemCapacity = validateObject(qtyCU,
+<<<<<<< HEAD
 															  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 			cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 			cuTuQuantity.setMEASUREMENTUNIT(measurementUnitName);
@@ -682,7 +710,11 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANCRequired())
 		{
 			final String eanc = ValidationHelper.validateString(line.getEANCU(),
+<<<<<<< HEAD
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANCU@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANCU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -694,7 +726,11 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANTRequired())
 		{
 			final String eant = ValidationHelper.validateString(line.getEANTU(),
+<<<<<<< HEAD
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANTU@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANTU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -703,10 +739,17 @@ public class StepComXMLDesadvBean
 			eancProdInfo.setPRODUCTID(eant);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
+<<<<<<< HEAD
 		if (settings.isDesadvLineGTINRequired())
 		{
 			final String gtin = ValidationHelper.validateString(line.getGTIN(),
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN@");
+=======
+		if (settings.isDesadvLineGTINTURequired())
+		{
+			final String gtin = ValidationHelper.validateString(line.getGTINTU(),
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN_TU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
 			gtinProdInfo.setDOCUMENTID(documentId);
@@ -717,8 +760,13 @@ public class StepComXMLDesadvBean
 		}
 		if (settings.isDesadvLineUPCCRequired())
 		{
+<<<<<<< HEAD
 			final String upcc = ValidationHelper.validateString(line.getUPC(),
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPC@");
+=======
+			final String upcc = ValidationHelper.validateString(line.getUPCCU(),
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCCU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
@@ -729,7 +777,11 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineUPCCRequired())
 		{
 			final String upct = ValidationHelper.validateString(line.getUPCTU(),
+<<<<<<< HEAD
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCTU@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCTU@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -742,7 +794,11 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineBUYRRequired())
 		{
 			final String buyr = ValidationHelper.validateString(line.getProductNo(),
+<<<<<<< HEAD
 																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @ProductNo@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @ProductNo@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
 			prodInfo.setDOCUMENTID(documentId);
@@ -764,7 +820,11 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLinePRICRequired())
 		{
 			final BigDecimal priceActual = validateObject(line.getPriceActual(),
+<<<<<<< HEAD
 														  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @PriceActual@");
+=======
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @PriceActual@");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
 			prodDescr.setDOCUMENTID(documentId);
@@ -852,7 +912,11 @@ public class StepComXMLDesadvBean
 			@Nullable final String isSubsequentDeliveryPlanned,
 			@NonNull final BigDecimal diff)
 	{
+<<<<<<< HEAD
 		DiscrepencyCode discrepancyCode;
+=======
+		final DiscrepencyCode discrepancyCode;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (diff.signum() > 0)
 		{
 			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped

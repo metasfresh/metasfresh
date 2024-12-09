@@ -22,7 +22,18 @@
 
 package de.metas.material.dispo.service.interceptor;
 
+<<<<<<< HEAD
 import de.metas.material.dispo.commons.candidate.CandidateType;
+=======
+import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
@@ -31,7 +42,14 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
+<<<<<<< HEAD
 import lombok.NonNull;
+=======
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,12 +59,19 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+<<<<<<< HEAD
 
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_Processed;
+=======
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated;
 
 @Interceptor(I_MD_Candidate.class)
 @Component
+<<<<<<< HEAD
 public class MD_Candidate
 {
 	private final PostMaterialEventService materialEventService;
@@ -61,10 +86,26 @@ public class MD_Candidate
 	{
 		if (!CandidateType.STOCK.getCode().equals(candidate.getMD_Candidate_Type())
 				|| !MD_CANDIDATE_STATUS_Processed.equals(candidate.getMD_Candidate_Status()))
+=======
+@RequiredArgsConstructor
+public class MD_Candidate
+{
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_MD_Candidate.COLUMNNAME_Qty })
+	public void fire_UpdateMainDataRequest_qtySupplyRequired(@NonNull final I_MD_Candidate candidate,
+															 @NonNull final ModelChangeType timingType)
+	{
+		if (!CandidateType.ofCode(candidate.getMD_Candidate_Type()).isSupply()
+				|| isSimulated(candidate))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
 
+<<<<<<< HEAD
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
 
 		final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
@@ -79,6 +120,84 @@ public class MD_Candidate
 	public void fireQtyRequiredFulfilled(@NonNull final I_MD_Candidate candidate)
 	{
 		if (MD_CANDIDATE_STATUS_Simulated.equals(candidate.getMD_Candidate_Status()))
+=======
+		if (timingType.isNew())
+		{
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty());
+		}
+		else if (timingType.isChange())
+		{
+			final I_MD_Candidate candidateOld = InterfaceWrapperHelper.createOld(candidate, I_MD_Candidate.class);
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidateOld), toEventDescriptor(candidateOld), candidateOld.getQty().negate());
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty());
+		}
+		else if (timingType.isDelete())
+		{
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty().negate());
+		}
+	}
+
+	private static boolean isSimulated(final @NonNull I_MD_Candidate candidate)
+	{
+		return MD_CANDIDATE_STATUS_Simulated.equals(candidate.getMD_Candidate_Status());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE })
+	public void fireStockChangedEvent(
+			@NonNull final I_MD_Candidate candidate,
+			@NonNull final ModelChangeType timingType)
+	{
+		if (!CandidateType.ofCode(candidate.getMD_Candidate_Type()).isStock()
+				|| isSimulated(candidate))
+		{
+			return;
+		}
+
+		final I_MD_Candidate oldCandidateRecord = InterfaceWrapperHelper.createOld(candidate, I_MD_Candidate.class);
+
+		if (isUpdateOldStockRequired(timingType, oldCandidateRecord, candidate))
+		{
+			final CandidatesQuery findPreviousStockQuery = buildCandidateStockQueryForReplacingOld(oldCandidateRecord);
+
+			final Candidate lastMatchingStockForOldMaterialDescriptor = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(findPreviousStockQuery);
+
+			final EventDescriptor eventDescriptor = toEventDescriptor(oldCandidateRecord);
+
+			final MaterialDescriptor materialDescriptor = toMaterialDescriptorBuilder(oldCandidateRecord)
+					.quantity(lastMatchingStockForOldMaterialDescriptor != null ? lastMatchingStockForOldMaterialDescriptor.getQuantity() : BigDecimal.ZERO)
+					.build();
+
+			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.materialDescriptor(materialDescriptor)
+					.build();
+
+			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+		}
+
+		if (isUpdateCurrentStockRequired(timingType))
+		{
+			final EventDescriptor eventDescriptor = toEventDescriptor(candidate);
+
+			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.materialDescriptor(toMaterialDescriptor(candidate))
+					.build();
+
+			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+		}
+	}
+
+	private static EventDescriptor toEventDescriptor(final I_MD_Candidate oldCandidateRecord)
+	{
+		return EventDescriptor.ofClientAndOrg(oldCandidateRecord.getAD_Client_ID(), oldCandidateRecord.getAD_Org_ID());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled)
+	public void fireQtyRequiredFulfilled(@NonNull final I_MD_Candidate candidate)
+	{
+		if (isSimulated(candidate))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
@@ -90,7 +209,11 @@ public class MD_Candidate
 			return;
 		}
 
+<<<<<<< HEAD
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
+=======
+		final EventDescriptor eventDescriptor = toEventDescriptor(candidate);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final boolean isNew = InterfaceWrapperHelper.isNew(candidate);
 
@@ -115,7 +238,11 @@ public class MD_Candidate
 
 		final MaterialCandidateChangedEvent materialCandidateChangedEvent = MaterialCandidateChangedEvent.builder()
 				.eventDescriptor(eventDescriptor)
+<<<<<<< HEAD
 				.materialDescriptor(getMaterialDescriptor(candidate))
+=======
+				.materialDescriptor(toMaterialDescriptor(candidate))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyFulfilledDelta(qtyFulfilledDelta)
 				.build();
 
@@ -123,16 +250,91 @@ public class MD_Candidate
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private MaterialDescriptor getMaterialDescriptor(@NonNull final I_MD_Candidate candidate)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(candidate.getM_Product_ID(),
 																							  AttributesKey.ofString(candidate.getStorageAttributesKey()));
+=======
+	private static MaterialDescriptor toMaterialDescriptor(@NonNull final I_MD_Candidate candidate)
+	{
+		return toMaterialDescriptorBuilder(candidate)
+				.quantity(candidate.getQty())
+				.build();
+	}
+
+	@NonNull
+	private static MaterialDescriptor.MaterialDescriptorBuilder toMaterialDescriptorBuilder(@NonNull final I_MD_Candidate candidate)
+	{
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(candidate.getM_Product_ID(),
+				AttributesKey.ofString(candidate.getStorageAttributesKey()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(candidate.getDateProjected()))
 				.productDescriptor(productDescriptor)
+<<<<<<< HEAD
 				.warehouseId(WarehouseId.ofRepoId(candidate.getM_Warehouse_ID()))
 				.quantity(candidate.getQty())
 				.build();
 	}
+=======
+				.warehouseId(WarehouseId.ofRepoId(candidate.getM_Warehouse_ID()));
+	}
+
+	@NonNull
+	private static CandidatesQuery buildCandidateStockQueryForReplacingOld(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return CandidatesQuery.builder()
+				.materialDescriptorQuery(buildMaterialDescriptorQueryForReplacingOld(candidateRecord))
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.build();
+	}
+
+	@NonNull
+	private static MaterialDescriptorQuery buildMaterialDescriptorQueryForReplacingOld(@NonNull final I_MD_Candidate oldCandidateRecord)
+	{
+		final Instant endOfTheDay = oldCandidateRecord.getDateProjected()
+				.toInstant()
+				.plus(1, ChronoUnit.DAYS)
+				.truncatedTo(ChronoUnit.DAYS);
+
+		return MaterialDescriptorQuery
+				.builder()
+				.warehouseId(WarehouseId.ofRepoId(oldCandidateRecord.getM_Warehouse_ID()))
+				.productId(oldCandidateRecord.getM_Product_ID())
+				.storageAttributesKey(AttributesKey.ofString(oldCandidateRecord.getStorageAttributesKey()))
+				.customer(BPartnerClassifier.specificOrAny(BPartnerId.ofRepoIdOrNull(oldCandidateRecord.getC_BPartner_Customer_ID())))
+				.customerIdOperator(MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_ONLY)
+				.timeRangeEnd(DateAndSeqNo.builder()
+						.date(endOfTheDay)
+						.operator(DateAndSeqNo.Operator.EXCLUSIVE)
+						.build())
+				.build();
+	}
+
+	private static boolean isMaterialDescriptorChanged(
+			@NonNull final I_MD_Candidate oldCandidateRecord,
+			@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return !candidateRecord.getDateProjected().equals(oldCandidateRecord.getDateProjected())
+				|| !candidateRecord.getStorageAttributesKey().equals(oldCandidateRecord.getStorageAttributesKey())
+				|| oldCandidateRecord.getM_Warehouse_ID() != candidateRecord.getM_Warehouse_ID()
+				|| oldCandidateRecord.getM_Product_ID() != candidateRecord.getM_Product_ID();
+	}
+
+	private static boolean isUpdateOldStockRequired(
+			@NonNull final ModelChangeType timingType,
+			@NonNull final I_MD_Candidate oldCandidateRecord,
+			@NonNull final I_MD_Candidate candidate)
+	{
+		return timingType.isDelete() || (timingType.isChange() && isMaterialDescriptorChanged(oldCandidateRecord, candidate));
+	}
+
+	private static boolean isUpdateCurrentStockRequired(@NonNull final ModelChangeType timingType)
+	{
+		return !timingType.isDelete();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

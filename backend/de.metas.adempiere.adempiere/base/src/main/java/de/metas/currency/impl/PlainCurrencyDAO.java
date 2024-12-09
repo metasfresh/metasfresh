@@ -1,5 +1,6 @@
 package de.metas.currency.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -22,6 +23,8 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -33,6 +36,31 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ConversionType_Default;
+import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Currency;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -106,8 +134,11 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	 * <li>Client/Org: from {@link Env#getCtx()}
 	 * </ul>
 	 *
+<<<<<<< HEAD
 	 * @param currencyFrom
 	 * @param currencyTo
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param rate
 	 */
 	public void setRate(
@@ -120,7 +151,11 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		final Properties ctx = Env.getCtx();
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
+<<<<<<< HEAD
 		final LocalDate date = LocalDate.of(1970, Month.JANUARY, 1);
+=======
+		final Instant date = LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CurrencyConversionTypeId conversionTypeId = getDefaultConversionTypeId(clientId, orgId, date);
 		final CurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
 				.clientId(clientId)

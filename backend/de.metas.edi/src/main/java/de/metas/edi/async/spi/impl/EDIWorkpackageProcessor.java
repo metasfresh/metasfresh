@@ -39,6 +39,10 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ISysConfigBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,6 +52,17 @@ import java.util.Set;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
+<<<<<<< HEAD
+=======
+	// If enabled, the EDI document will be computed for each shipment. Note: when the sys config is enabled, the 'EXP_M_InOut_Desadv_V' EXP_Format must be manually activated and the default 'EDI_Exp_Desadv' inactivated.
+	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
+
+	// Services
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
 	 * aggregation in the synchronous enqueuing process and have the code here much cleaner.
@@ -55,10 +70,13 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
+<<<<<<< HEAD
 		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final List<Exception> feedback = new ArrayList<Exception>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
@@ -122,7 +140,11 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		final String tableName = InterfaceWrapperHelper.getModelTableName(ediDocument);
 
 		final Object model;
+<<<<<<< HEAD
 		if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName))
+=======
+		if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName) && !sysConfigBL.getBooleanValue(SYS_CONFIG_OneDesadvPerShipment, false))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final I_M_InOut inOut = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
 			model = inOut.getEDI_Desadv(); // use DESADV for InOut documents

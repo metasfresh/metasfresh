@@ -36,10 +36,19 @@ import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 
 import java.util.Properties;
@@ -58,6 +67,10 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	private final QueueProcessorStatistics statistics;
 	private final IWorkpackageLogsRepository logsRepository;
 
+<<<<<<< HEAD
+=======
+	private PerformanceMonitoringService _performanceMonitoringService = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public AbstractQueueProcessor(
 			@NonNull final IWorkPackageQueue queue,
@@ -203,7 +216,12 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		try
 		{
 			final IWorkpackageProcessor workPackageProcessor = getWorkpackageProcessor(workPackage);
+<<<<<<< HEAD
 			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
+=======
+			final PerformanceMonitoringService perfMonService = getPerfMonService();
+			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			executeTask(task);
 			success = true;
 			return true;
@@ -230,6 +248,21 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		return factory.getWorkpackageProcessor(ctx, packageProcessorId);
 	}
 
+<<<<<<< HEAD
+=======
+	private PerformanceMonitoringService getPerfMonService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private IQueueProcessorEventDispatcher getEventDispatcher()
 	{
 		return queueProcessorFactory.getQueueProcessorEventDispatcher();

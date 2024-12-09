@@ -19,8 +19,12 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+<<<<<<< HEAD
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
@@ -81,7 +85,11 @@ public class ImportInOutConfirm extends JavaProcess
 		{
 			sql = new StringBuffer ("DELETE FROM I_InOutLineConfirm "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
+<<<<<<< HEAD
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Deleted Old Imported =" + no);
 		}
 
@@ -95,7 +103,11 @@ public class ImportInOutConfirm extends JavaProcess
 			+ " I_ErrorMsg = ' ',"
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("Reset=" + no);
 
 		//	Set Client from Name
@@ -103,7 +115,11 @@ public class ImportInOutConfirm extends JavaProcess
 			+ "SET AD_Client_ID=COALESCE (AD_Client_ID,").append (p_AD_Client_ID).append (") "
 			+ "WHERE (AD_Client_ID IS NULL OR AD_Client_ID=0)"
 			+ " AND I_IsImported<>'Y'");
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set Client from Value=" + no);
 
 		//	Error Confirmation Line
@@ -112,7 +128,11 @@ public class ImportInOutConfirm extends JavaProcess
 			+ "WHERE (M_InOutLineConfirm_ID IS NULL OR M_InOutLineConfirm_ID=0"
 			+ " OR NOT EXISTS (SELECT * FROM M_InOutLineConfirm c WHERE i.M_InOutLineConfirm_ID=c.M_InOutLineConfirm_ID))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid InOutLineConfirm=" + no);
 
@@ -121,7 +141,11 @@ public class ImportInOutConfirm extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Missing Confirmation No, '"
 			+ "WHERE (ConfirmationNo IS NULL OR ConfirmationNo='')"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid ConfirmationNo=" + no);
 		
@@ -132,7 +156,11 @@ public class ImportInOutConfirm extends JavaProcess
 				+ "WHERE i.M_InOutLineConfirm_ID=c.M_InOutLineConfirm_ID"
 				+ " AND c.TargetQty<>(i.ConfirmedQty+i.ScrappedQty+i.DifferenceQty))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid Qty=" + no);
 		

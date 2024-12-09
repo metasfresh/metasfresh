@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.segments;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Collections;
 import java.util.Set;
 
@@ -30,6 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -38,6 +42,14 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSe
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Collections;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @ToString
 public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentScheduleSegment
@@ -60,7 +72,11 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 		attributeSegments = ImmutableSet.of(attributeSegment);
 	}
 
+<<<<<<< HEAD
 	private final void loadIfNeeded()
+=======
+	private void loadIfNeeded()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (loaded)
 		{
@@ -72,7 +88,11 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 		loaded = true;
 	}
 
+<<<<<<< HEAD
 	private final void load()
+=======
+	private void load()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// Load the HU

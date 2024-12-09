@@ -1,5 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -20,13 +25,17 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+<<<<<<< HEAD
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+<<<<<<< HEAD
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
@@ -35,6 +44,16 @@ import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
+import de.metas.contracts.commission.model.I_C_Commission_Fact;
+import de.metas.contracts.commission.model.I_C_Commission_Instance;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -43,17 +62,26 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -66,11 +94,19 @@ import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+=======
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -94,6 +130,10 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class CommissionInstanceRepositoryTest
 {
 	private static final long START_TIMESTAMP = 1568720955000L; // Tuesday, September 17, 2019 11:49:15 AM
@@ -112,6 +152,11 @@ class CommissionInstanceRepositoryTest
 	private ProductId commissionProductId;
 	private BPartnerId payerId;
 
+<<<<<<< HEAD
+=======
+	private Expect expect;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@BeforeEach
 	void beforeEach()
 	{
@@ -133,6 +178,7 @@ class CommissionInstanceRepositoryTest
 		uom = BusinessTestHelper.createUOM("uom");
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -147,6 +193,8 @@ class CommissionInstanceRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void getByDocumentId_InvoiceCandidateId()
 	{
@@ -156,7 +204,11 @@ class CommissionInstanceRepositoryTest
 		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceCandidateDocumentId(C_INVOICE_CANDIDATE_ID));
 
 		assertThat(result).isPresent();
+<<<<<<< HEAD
 		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createCommissionData_InvoiceCandidateId(@NonNull final OrgId orgId)
@@ -260,7 +312,11 @@ class CommissionInstanceRepositoryTest
 	@Test
 	void getByDocumentId_InvoiceLineId()
 	{
+<<<<<<< HEAD
 		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(10, 15);
+=======
+		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(10, 15);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ConfigData configData = TestCommissionConfig.builder()
 				.orgId(orgId)
@@ -277,7 +333,11 @@ class CommissionInstanceRepositoryTest
 
 		TestCommissionInstance.builder()
 				.orgId(orgId)
+<<<<<<< HEAD
 				.invoiceLineId(invoiceLineId)
+=======
+				.invoiceAndLineId(invoiceAndLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.pointsBase_Forecasted("0")
 				.pointsBase_Invoiceable("0")
 				.pointsBase_Invoiced("100")
@@ -298,10 +358,17 @@ class CommissionInstanceRepositoryTest
 				.createCommissionData();
 
 		// invoke the method under test
+<<<<<<< HEAD
 		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceLineId));
 
 		assertThat(result).isPresent();
 		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
+=======
+		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceAndLineId));
+
+		assertThat(result).isPresent();
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private long incAndGetTimestamp()
@@ -471,6 +538,10 @@ class CommissionInstanceRepositoryTest
 
 		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getById(result);
+<<<<<<< HEAD
 		SnapshotMatcher.expect(reloadedInstance).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(reloadedInstance);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

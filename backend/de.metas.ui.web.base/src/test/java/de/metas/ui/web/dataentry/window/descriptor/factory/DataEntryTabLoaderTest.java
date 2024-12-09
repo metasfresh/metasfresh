@@ -1,5 +1,6 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -18,6 +19,11 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
@@ -42,6 +48,19 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.user.UserRepository;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
+
+import static java.lang.Integer.parseInt;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -65,11 +84,19 @@ import de.metas.user.UserRepository;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class DataEntryTabLoaderTest
 {
 
 	private JSONDocumentLayoutOptions jsonLayoutOptions;
 	private DataEntryTabLoader dataEntryTabLoader;
+<<<<<<< HEAD
+=======
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void init()
@@ -102,6 +129,7 @@ public class DataEntryTabLoaderTest
 				.build();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	public static void beforeAll()
 	{
@@ -116,6 +144,10 @@ public class DataEntryTabLoaderTest
 
 	@Test
 	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor() throws JsonProcessingException
+=======
+	@Test
+	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
@@ -127,11 +159,19 @@ public class DataEntryTabLoaderTest
 						.tab(dataEntryTab)
 						.build());
 
+<<<<<<< HEAD
 		expect(descriptors).toMatchSnapshot();
 	}
 
 	@Test
 	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab() throws JsonProcessingException
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(descriptors);
+	}
+
+	@Test
+	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
@@ -144,7 +184,11 @@ public class DataEntryTabLoaderTest
 						.build());
 
 		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonLayoutOptions);
+<<<<<<< HEAD
 		expect(jsonTabs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(jsonTabs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -160,7 +204,11 @@ public class DataEntryTabLoaderTest
 						.tab(dataEntryTab)
 						.build());
 
+<<<<<<< HEAD
 		expect(descriptors).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(descriptors);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static DataEntryTab createSimpleDataEntryTab()

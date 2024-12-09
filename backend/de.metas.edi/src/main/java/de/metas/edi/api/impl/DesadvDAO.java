@@ -23,8 +23,17 @@
 package de.metas.edi.api.impl;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIDesadvQuery;
+import de.metas.edi.api.EDIExportStatus;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
@@ -33,7 +42,15 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+=======
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
+import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,7 +58,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+<<<<<<< HEAD
 import org.adempiere.util.lang.IContextAware;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.IQuery;
 
 import java.math.BigDecimal;
@@ -58,6 +78,7 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 
 	@Override
 	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final String poReference, @NonNull final IContextAware ctxAware)
@@ -71,6 +92,37 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false)
 				.create()
 				.firstOnly(I_EDI_Desadv.class);
+=======
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@Override
+	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final EDIDesadvQuery query)
+	{
+		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, query.getCtxAware())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv.COLUMN_POReference, query.getPoReference())
+				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processed, false)
+				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false);
+
+		final BPartnerId bPartnerId = query.getBPartnerId();
+		if (bPartnerId != null)
+		{
+			queryBuilder.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId);
+		}
+
+		final OrderId orderId = query.getOrderId();
+		if (orderId != null)
+		{
+			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_C_Order.COLUMNNAME_EDI_Desadv_ID, orderQuery);
+		}
+
+		return queryBuilder.create().firstOnly(I_EDI_Desadv.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -80,6 +132,7 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(@NonNull final I_EDI_Desadv desadv, final int line)
 	{
 		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
@@ -88,6 +141,25 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line)
 				.create()
 				.firstOnly(I_EDI_DesadvLine.class);
+=======
+	public I_EDI_DesadvLine retrieveLineById(final @NonNull EDIDesadvLineId ediDesadvLineId)
+	{
+		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+	}
+
+	@Override
+	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(
+			@NonNull final I_EDI_Desadv desadv,
+			final int line,
+			@NonNull final BPartnerId bPartnerId)
+	{
+		final IQueryBuilder<I_EDI_DesadvLine> query = queryBL.createQueryBuilder(I_EDI_DesadvLine.class, desadv)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
+
+		return query.create().firstOnly(I_EDI_DesadvLine.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -113,6 +185,7 @@ public class DesadvDAO implements IDesadvDAO
 
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	public I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId)
 	{
@@ -121,12 +194,31 @@ public class DesadvDAO implements IDesadvDAO
 
 	@Override
 	public int retrieveMaxDesadvPackLine(@NonNull final EDIDesadvId desadvId)
+=======
+	@Override
+	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
+<<<<<<< HEAD
 				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_Line);
+=======
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public int retrieveMaxDesadvPackItemLine(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.andCollectChildren(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack_Item.class)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -250,7 +342,11 @@ public class DesadvDAO implements IDesadvDAO
 	@Override
 	public BigDecimal retrieveMinimumSumPercentage()
 	{
+<<<<<<< HEAD
 		final String minimumPercentageAccepted_Value = Services.get(ISysConfigBL.class).getValue(
+=======
+		final String minimumPercentageAccepted_Value = sysConfigBL.getValue(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				SYS_CONFIG_DefaultMinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
 		try
 		{
@@ -268,4 +364,36 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		InterfaceWrapperHelper.save(ediDesadv);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
+	{
+		InterfaceWrapperHelper.save(ediDesadvLine);
+	}
+
+	@Override
+	@NonNull
+	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, statusSet)
+				.create()
+				.list(I_M_InOut.class);
+	}
+
+	@Override
+	@NonNull
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId)
+				.create()
+				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

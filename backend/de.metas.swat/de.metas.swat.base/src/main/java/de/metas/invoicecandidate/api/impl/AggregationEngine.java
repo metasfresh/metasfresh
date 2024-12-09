@@ -1,11 +1,22 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
+import de.metas.aggregation.api.IAggregationDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -18,7 +29,15 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.document.IDocTypeDAO;
+=======
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPool;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
@@ -64,6 +83,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
+<<<<<<< HEAD
+=======
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -87,9 +110,18 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public final class AggregationEngine
 {
 
+<<<<<<< HEAD
 	public static AggregationEngine newInstance()
 	{
 		return builder().build();
+=======
+	@VisibleForTesting
+	public static AggregationEngine newInstance()
+	{
+		return builder()
+				.docTypeInvoicingPoolService(SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class))
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	//
@@ -98,13 +130,21 @@ public final class AggregationEngine
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+<<<<<<< HEAD
+=======
+	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(
 			OrderEmailPropagationSysConfigRepository.class);
 
+<<<<<<< HEAD
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+=======
+	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -116,6 +156,10 @@ public final class AggregationEngine
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
+<<<<<<< HEAD
+=======
+	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -129,7 +173,12 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
+<<<<<<< HEAD
 			final boolean useDefaultBillLocationAndContactIfNotOverride)
+=======
+			final boolean useDefaultBillLocationAndContactIfNotOverride,
+			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 
@@ -143,6 +192,11 @@ public final class AggregationEngine
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
+<<<<<<< HEAD
+=======
+
+		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -267,6 +321,10 @@ public final class AggregationEngine
 		// Get and parse aggregation key
 		// => resolve last variables, right before invoicing
 		final AggregationKey headerAggregationKey;
+<<<<<<< HEAD
+=======
+		final Aggregation icAggregationOrNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final AggregationKey headerAggregationKeyUnparsed = getHeaderAggregationKey(icRecord);
 			final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
@@ -274,6 +332,13 @@ public final class AggregationEngine
 					.inoutLine(icInOutLine)
 					.build();
 			headerAggregationKey = headerAggregationKeyUnparsed.parse(evalCtx);
+<<<<<<< HEAD
+=======
+			icAggregationOrNull = Optional.of(icRecord.getHeaderAggregationKeyBuilder_ID())
+					.filter(aggregationId -> aggregationId > 0)
+					.map(aggregationId -> aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId))
+					.orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -353,7 +418,12 @@ public final class AggregationEngine
 			// }
 
 			// this is only relevant if iciol != null. Otherwise we allocate the full invoicable Qty anyways.
+<<<<<<< HEAD
 			icAggregationRequestBuilder.setAllocateRemainingQty(isLastIcIol);
+=======
+			final boolean allocateRemainingQty = isLastIcIol && (icAggregationOrNull == null || !icAggregationOrNull.hasInvoicePerShipmentAttribute());
+			icAggregationRequestBuilder.setAllocateRemainingQty(allocateRemainingQty);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -453,8 +523,35 @@ public final class AggregationEngine
 
 			if (icRecord.getC_DocTypeInvoice_ID() > 0)
 			{
+<<<<<<< HEAD
 				final I_C_DocType docTypeInvoice = docTypeDAO.getById(icRecord.getC_DocTypeInvoice_ID());
 				invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
+=======
+
+				final Optional<DocTypeInvoicingPool> docTypeInvoicingPool = getDocTypeInvoicingPool(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()));
+
+				if (docTypeInvoicingPool.isPresent())
+				{
+					invoiceHeader.setDocTypeInvoicingPoolId(docTypeInvoicingPool.get().getId());
+
+					final boolean onDistinctICTypes = docTypeInvoicingPool.get().isOnDistinctICTypes();
+
+					if (onDistinctICTypes)
+					{
+						invoiceHeader.setDocTypeInvoiceId(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()), false);
+					}
+					else
+					{
+						invoiceHeader.setDocTypeInvoiceId(null, false);
+						invoiceHeader.setTakeDocTypeFromPool(true);
+					}
+				}
+
+				else
+				{
+					invoiceHeader.setDocTypeInvoiceId(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()), true);
+				}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			// 06630: set shipment id to header
@@ -634,6 +731,10 @@ public final class AggregationEngine
 			return null;
 		}
 
+<<<<<<< HEAD
+=======
+		setDocTypeInvoiceId(invoiceHeader);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Set Invoice's DocBaseType
 		setDocBaseType(invoiceHeader);
 
@@ -644,19 +745,29 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+<<<<<<< HEAD
 		final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
+=======
+		final DocTypeId docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId().orElse(null);
+		final I_C_DocType invoiceDocType = docTypeInvoiceId == null ? null : docTypeBL.getById(docTypeInvoiceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
+<<<<<<< HEAD
 		if (invoiceHeader.getC_DocTypeInvoice() != null)
+=======
+		if (invoiceDocType != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 
+<<<<<<< HEAD
 			// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
 			if (totalAmt.signum() < 0)
 			{
@@ -666,6 +777,9 @@ public final class AggregationEngine
 			{
 				docBaseType = invoiceDocBaseType;
 			}
+=======
+			docBaseType = flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		//
 		// Case: no invoice DocType was set
@@ -709,9 +823,19 @@ public final class AggregationEngine
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
 	}
 
+<<<<<<< HEAD
 	private InvoiceDocBaseType flipDocBaseType(final InvoiceDocBaseType docBaseType, final boolean invoiceIsSOTrx)
 	{
 		if (docBaseType.isCreditMemo())
+=======
+	@NonNull
+	private InvoiceDocBaseType flipDocBaseTypeIfNeeded(
+			@NonNull final InvoiceDocBaseType docBaseType,
+			final boolean invoiceIsSOTrx,
+			@NonNull final Money totalAmt)
+	{
+		if (totalAmt.signum() > 0 && docBaseType.isCreditMemo())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (invoiceIsSOTrx)
 			{
@@ -723,12 +847,25 @@ public final class AggregationEngine
 			}
 		}
 
+<<<<<<< HEAD
 		if (invoiceIsSOTrx)
 		{
 			return InvoiceDocBaseType.CustomerCreditMemo;
 		}
 
 		return InvoiceDocBaseType.VendorCreditMemo;
+=======
+		if (totalAmt.signum() < 0 && invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.CustomerCreditMemo;
+		}
+		else if (totalAmt.signum() < 0 && !invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.VendorCreditMemo;
+		}
+
+		return docBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)
@@ -772,4 +909,48 @@ public final class AggregationEngine
 		return invoiceLinesRW.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
+<<<<<<< HEAD
+=======
+
+	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	{
+		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
+
+		final DocTypeId docTypeIdToBeUsed;
+
+		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
+		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
+		{
+			docTypeIdToBeUsed = docTypeInvoiceId.get();
+
+		}
+
+		else if (invoiceHeader.getDocTypeInvoicingPoolId().isPresent())
+		{
+			final DocTypeInvoicingPool docTypeInvoicingPool = docTypeInvoicingPoolService.getById(invoiceHeader.getDocTypeInvoicingPoolId().get());
+			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+
+			docTypeIdToBeUsed = docTypeInvoicingPool.getDocTypeId(totalAmt);
+			final I_C_DocType docTypeToBeUsedRecord = docTypeBL.getById(docTypeIdToBeUsed);
+
+			Check.assume(invoiceIsSOTrx == docTypeToBeUsedRecord.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, docTypeToBeUsedRecord);
+		}
+		else
+		{
+			docTypeIdToBeUsed = null;
+		}
+
+		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
+	}
+
+	@Nullable
+	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);
+
+		return Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docTypeInvoice.getC_DocType_Invoicing_Pool_ID()))
+				.map(docTypeInvoicingPoolService::getById);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -321,7 +321,11 @@ public class ChangeLogProcess extends JavaProcess
 			m_sqlInsert.append(m_sqlInsertValue).append(")");
 			log.info(m_sqlInsert.toString());
 			//
+<<<<<<< HEAD
 			no = DB.executeUpdate(m_sqlInsert.toString(), get_TrxName());
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(m_sqlInsert.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no == -1)
 			{
 			//	log.warn("Insert failed - " + m_sqlInsert);
@@ -340,7 +344,11 @@ public class ChangeLogProcess extends JavaProcess
 			m_sqlUpdate.append(m_sqlUpdateWhere);
 			log.info(m_sqlUpdate.toString());
 			//
+<<<<<<< HEAD
 			no = DB.executeUpdate(m_sqlUpdate.toString(), get_TrxName());
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(m_sqlUpdate.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no == -1)
 			{
 			//	log.warn("Failed - " + m_sqlUpdate);
@@ -371,7 +379,11 @@ public class ChangeLogProcess extends JavaProcess
 	{
 		log.info("");
 		String sql = "UPDATE AD_ChangeLog SET IsCustomization='N' WHERE IsCustomization='Y'";
+<<<<<<< HEAD
 		int resetNo = DB.executeUpdate(sql, get_TrxName());
+=======
+		int resetNo = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		
 		int updateNo = 0;
 		//	Get Tables
@@ -403,7 +415,11 @@ public class ChangeLogProcess extends JavaProcess
 					.append (columnName)
 					.append (" FROM ").append(tableName)
 					.append (" WHERE EntityType IN ('D','C'))");
+<<<<<<< HEAD
 				int no = DB.executeUpdate(update.toString(), get_TrxName());
+=======
+				int no = DB.executeUpdateAndSaveErrorOnFail(update.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				log.info(table.getTableName() + " = " + no);
 				updateNo += no;
 				

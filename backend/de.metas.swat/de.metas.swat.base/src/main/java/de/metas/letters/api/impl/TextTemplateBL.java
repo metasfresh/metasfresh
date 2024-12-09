@@ -226,8 +226,13 @@ public final class TextTemplateBL implements ITextTemplateBL
 				+ "?,?,?,?,?,?,?,?,?,?"
 				+ ",getdate(),0,getdate(),0,'Y'"
 				+ ")";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql,
 				new Object[] {
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												new Object[] {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						adClientId,
 						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						pinstanceId,
@@ -239,7 +244,11 @@ public final class TextTemplateBL implements ITextTemplateBL
 						request.getAddress(),
 						request.getUserId() == null ? null : request.getUserId().getRepoId(),
 				},
+<<<<<<< HEAD
 				ITrx.TRXNAME_None);
+=======
+												ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

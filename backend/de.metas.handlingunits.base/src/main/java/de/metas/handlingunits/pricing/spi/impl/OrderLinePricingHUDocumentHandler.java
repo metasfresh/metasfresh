@@ -162,6 +162,10 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		return ProductPrices.newQuery(plv)
 				.setProductId(productId)
 				.onlyAttributePricing()
+<<<<<<< HEAD
+=======
+				.onlyValidPrices(true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.retrieveDefault(I_M_ProductPrice.class);
 	}
 }

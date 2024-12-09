@@ -53,6 +53,10 @@ import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TimeUtil;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -61,7 +65,11 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
 public class M_HU_Attribute_StepDef
@@ -186,9 +194,13 @@ public class M_HU_Attribute_StepDef
 						assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
 					});
 			row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+<<<<<<< HEAD
 					.ifPresent(valueNumber -> {
 						assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber);
 					});
+=======
+					.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			row.getAsOptionalBoolean(I_M_HU_Attribute.COLUMNNAME_ValueNumber + ".IsNull")
 					.ifPresent(expectedIsNull -> {
 						final boolean actualIsNull = InterfaceWrapperHelper.isNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
@@ -202,7 +214,12 @@ public class M_HU_Attribute_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	private static String toString(final I_M_HU_Attribute huAttribute)
+=======
+	@Nullable
+	private static String toString(@Nullable final I_M_HU_Attribute huAttribute)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (huAttribute == null)
 		{

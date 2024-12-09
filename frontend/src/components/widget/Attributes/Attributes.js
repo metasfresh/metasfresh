@@ -12,6 +12,11 @@ import {
 import { getTableId } from '../../../reducers/tables';
 
 import AttributesDropdown from './AttributesDropdown';
+<<<<<<< HEAD
+=======
+import { useSelector } from 'react-redux';
+import { getSettingFromStateAsPositiveInt } from '../../../utils/settings';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @component
@@ -208,6 +213,17 @@ const Attributes = ({
 
   const buttonCaption = value?.caption || 'Edit';
 
+<<<<<<< HEAD
+=======
+  const maxHeight = useSelector((state) =>
+    getSettingFromStateAsPositiveInt(
+      state,
+      'widget.AttributesDropdown.maxHeight',
+      300
+    )
+  );
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   return (
     <div className={classnames('attributes', { 'attributes-in-table': rowId })}>
       <button
@@ -232,6 +248,10 @@ const Attributes = ({
           rowIndex={rowIndex}
           tabIndex={tabIndex}
           isModal={isModal}
+<<<<<<< HEAD
+=======
+          maxHeight={maxHeight}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           //
           onFieldChange={handleFieldChange}
           onFieldPatch={handleFieldPatch}

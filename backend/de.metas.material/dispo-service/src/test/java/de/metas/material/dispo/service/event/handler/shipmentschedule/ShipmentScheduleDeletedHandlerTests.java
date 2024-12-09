@@ -17,6 +17,10 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,6 +112,15 @@ public class ShipmentScheduleDeletedHandlerTests
 				.builder()
 				.eventDescriptor(eventDescriptor)
 				.shipmentScheduleId(shipmentScheduleId)
+<<<<<<< HEAD
+=======
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(ZERO)
+												.orderedQuantityDelta(ZERO)
+												.reservedQuantity(ZERO)
+												.reservedQuantityDelta(ZERO)
+												.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		shipmentScheduleDeletedHandler.handleEvent(shipmentScheduleDeletedEvent);

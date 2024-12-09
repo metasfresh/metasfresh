@@ -22,6 +22,10 @@
 
 package org.adempiere.ad.service;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.TableRefTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ExplainedOptional;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
@@ -104,26 +108,45 @@ public interface ILookupDAO extends ISingletonService
 
 	IColumnInfo retrieveColumnInfo(int adColumnId);
 
+<<<<<<< HEAD
 	ExplainedOptional<TableRefInfo> getTableRefInfo(int referenceRepoId);
 
 	/**
 	 * In case the {@link TableRefInfo} was not found, an warning is logged.
+=======
+	ExplainedOptional<TableRefTable> getTableRefInfo(int referenceRepoId);
+
+	/**
+	 * In case the {@link TableRefTable} was not found, an warning is logged.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * @return table reference info or <code>null</code> if not found
 	 */
 	@Nullable
+<<<<<<< HEAD
 	TableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
+=======
+	TableRefTable retrieveTableRefInfo(int AD_Reference_Value_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return true if given reference is a table reference
 	 */
 	boolean isTableReference(int AD_Reference_Value_ID);
 
+<<<<<<< HEAD
 	TableRefInfo retrieveTableDirectRefInfo(String columnName);
 
 	TableRefInfo retrieveAccountTableRefInfo();
 
 	ILookupDisplayInfo retrieveLookupDisplayInfo(TableRefInfo tableRefInfo);
+=======
+	TableRefTable retrieveTableDirectRefInfo(String columnName);
+
+	TableRefTable retrieveAccountTableRefInfo();
+
+	ILookupDisplayInfo retrieveLookupDisplayInfo(TableRefTable tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	boolean isReferenceOrderByValue(int adReferenceId);
 

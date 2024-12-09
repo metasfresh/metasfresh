@@ -27,8 +27,11 @@ import de.metas.event.Topic;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.NonNull;
 
+<<<<<<< HEAD
 import java.util.Map;
 import java.util.Objects;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.Consumer;
 
 public class EventBusMonitoringService
@@ -49,6 +52,7 @@ public class EventBusMonitoringService
 			@NonNull final Consumer<Event> enqueueEvent)
 	{
 		final Event.Builder eventToSendBuilder = event.toBuilder();
+<<<<<<< HEAD
 		final PerformanceMonitoringService.SpanMetadata request = PerformanceMonitoringService.SpanMetadata.builder()
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT.getCode())
 				.subType(PerformanceMonitoringService.SubType.EVENT_SEND.getCode())
@@ -60,6 +64,17 @@ public class EventBusMonitoringService
 				.build();
 
 		perfMonService.monitorSpan(
+=======
+		final PerformanceMonitoringService.Metadata request = PerformanceMonitoringService.Metadata.builder()
+				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
+				.className("EventBus")
+				.functionName("enqueueEvent")
+				.label("de.metas.event.distributed-event.senderId", event.getSenderId())
+				.label("de.metas.event.distributed-event.topicName", topic.getName())
+				.build();
+
+		perfMonService.monitor(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				() -> enqueueEvent.accept(eventToSendBuilder.build()),
 				request);
 	}
@@ -69,6 +84,7 @@ public class EventBusMonitoringService
 			@NonNull final Topic topic,
 			@NonNull final Runnable processEvent)
 	{
+<<<<<<< HEAD
 		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
 
 		final PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder transactionMetadata = PerformanceMonitoringService.TransactionMetadata.builder();
@@ -92,5 +108,18 @@ public class EventBusMonitoringService
 		perfMonService.monitorTransaction(
 				processEvent,
 				transactionMetadata.build());
+=======
+		final PerformanceMonitoringService.Metadata metadata = PerformanceMonitoringService.Metadata.builder()
+				.className("RabbitMQEventBusRemoteEndpoint")
+				.functionName("onEvent")
+				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
+				.label("de.metas.event.remote-event.senderId", event.getSenderId())
+				.label("de.metas.event.remote-event.topicName", topic.getName())
+				.build();
+
+		perfMonService.monitor(
+				processEvent,
+				metadata);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

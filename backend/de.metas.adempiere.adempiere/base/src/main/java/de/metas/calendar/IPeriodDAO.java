@@ -22,10 +22,17 @@ package de.metas.calendar;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_PeriodControl;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Map;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.compiere.model.I_C_PeriodControl;
 
 import de.metas.util.ISingletonService;
@@ -33,5 +40,10 @@ import de.metas.util.ISingletonService;
 public interface IPeriodDAO extends ISingletonService
 {
 	Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
+=======
+public interface IPeriodDAO extends ISingletonService
+{
+	Map<DocBaseType, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 }

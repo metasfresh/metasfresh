@@ -1,20 +1,39 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.stream.IntStream;
 
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaCosting;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.junit.Test;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+=======
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -48,6 +67,7 @@ public class AggregatedCostAmountTest
 	{
 		final AggregatedCostAmount amt = AggregatedCostAmount.builder()
 				.costSegment(createCostSegment())
+<<<<<<< HEAD
 				.amount(createCostElement(1, CostingMethod.AverageInvoice), CostAmount.of(1000, currencyId))
 				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmount.of(100, currencyId))
 				.amount(createCostElement(3, CostingMethod.AveragePO), CostAmount.of(10, currencyId))
@@ -62,6 +82,41 @@ public class AggregatedCostAmountTest
 
 		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get())
 				.isEqualTo(CostAmount.of(101, currencyId));
+=======
+				.amount(createCostElement(1, CostingMethod.AverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(1000, currencyId))).build())
+				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
+				.amount(createCostElement(3, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(10, currencyId))).build())
+				.amount(createCostElement(4, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
+				.amount(createCostElement(5, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
+				.amount(createCostElement(6, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(10, currencyId))).build())
+				.amount(createCostElement(7, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
+				.build();
+
+		final Supplier<NoSuchElementException> exc = () -> new NoSuchElementException("No value present");
+
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO)).orElseThrow(exc).getMainAmt())
+				.isEqualTo(CostAmount.of(111, currencyId));
+
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO, 2, 4)).orElseThrow(exc).getMainAmt())
+				.isEqualTo(CostAmount.of(101, currencyId));
+
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice)).orElseThrow(exc).getMainAmt())
+				.isEqualTo(CostAmount.of(111, currencyId));
+
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice, 5, 7)).orElseThrow(exc).getMainAmt())
+				.isEqualTo(CostAmount.of(101, currencyId));
+	}
+
+	private AcctSchemaCosting acctSchemaCosting(final CostingMethod costingMethod, int... postOnlyCostElementIds)
+	{
+		return AcctSchemaCosting.builder()
+				.costingPrecision(CurrencyPrecision.ofInt(4))
+				.costTypeId(CostTypeId.ofRepoId(1))
+				.costingLevel(CostingLevel.Client)
+				.costingMethod(costingMethod)
+				.postOnlyCostElementIds(costElementIds(postOnlyCostElementIds))
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private CostSegment createCostSegment()
@@ -88,7 +143,11 @@ public class AggregatedCostAmountTest
 				.build();
 	}
 
+<<<<<<< HEAD
 	private static Set<CostElementId> costElementIds(final int... ids)
+=======
+	private static ImmutableSet<CostElementId> costElementIds(final int... ids)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return IntStream.of(ids)
 				.mapToObj(CostElementId::ofRepoId)

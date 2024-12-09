@@ -1,9 +1,16 @@
 package org.adempiere.ad.table;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.logging.LogManager;
+import de.metas.util.NumberUtils;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.session.ISessionDAO;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -13,9 +20,15 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+=======
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.HashMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -139,7 +152,11 @@ final class RecordChangeLogEntryValuesResolver
 		final int displayType = poInfo.getColumnDisplayType(columnName);
 		if (DisplayType.List == displayType)
 		{
+<<<<<<< HEAD
 			final int adReferenceId = poInfo.getColumnReferenceValueId(columnName);
+=======
+			final int adReferenceId = ReferenceId.toRepoId(poInfo.getColumnReferenceValueId(columnName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (adReferenceId <= 0)
 			{
 				return null;

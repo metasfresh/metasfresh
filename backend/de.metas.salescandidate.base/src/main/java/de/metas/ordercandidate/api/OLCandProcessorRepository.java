@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
@@ -30,6 +35,20 @@ import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_Column;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -129,7 +148,11 @@ public class OLCandProcessorRepository
 
 		return OLCandAggregationColumn.builder()
 				.columnName(adColumn.getColumnName())
+<<<<<<< HEAD
 				.adColumnId(adColumn.getAD_Column_ID())
+=======
+				.adColumnId(AdColumnId.ofRepoId(adColumn.getAD_Column_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.orderBySeqNo(olCandAgg.getOrderBySeqNo())
 				.splitOrderDiscriminator(olCandAgg.isSplitOrder())
 				.groupByColumn(olCandAgg.isGroupBy())

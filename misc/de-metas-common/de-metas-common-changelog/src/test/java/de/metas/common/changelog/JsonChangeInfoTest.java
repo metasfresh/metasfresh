@@ -22,6 +22,7 @@
 
 package de.metas.common.changelog;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,6 +44,24 @@ class JsonChangeInfoTest
 	{
 		SnapshotMatcher.start();
 	}
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+class JsonChangeInfoTest
+{
+	private final ObjectMapper mapper = new ObjectMapper();
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Test
 	void test() throws IOException
@@ -73,6 +92,10 @@ class JsonChangeInfoTest
 		final JsonChangeInfo result = mapper.readValue(valueAsString, JsonChangeInfo.class);
 		assertThat(result).isEqualTo(jsonChangeInfo);
 
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -24,6 +24,10 @@ package de.metas.edi.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.IDesadvBL;
+<<<<<<< HEAD
+=======
+import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
@@ -40,6 +44,15 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
@@ -56,6 +69,11 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+<<<<<<< HEAD
+=======
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
@@ -66,6 +84,15 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+<<<<<<< HEAD
+=======
+
+		if (sysConfigBL.getBooleanValue(EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment, false))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return ProcessPreconditionsResolution.accept();
 	}
 

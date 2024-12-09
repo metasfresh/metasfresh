@@ -103,7 +103,11 @@ public class SQLStatementMigrationStepExecutor extends AbstractMigrationStepExec
 			if (X_AD_MigrationStep.DBTYPE_AllDatabaseTypes.equals(step.getDBType()))
 			{
 				// Execute script using our conversion layer
+<<<<<<< HEAD
 				DB.executeUpdateEx(sql, trxName);
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{

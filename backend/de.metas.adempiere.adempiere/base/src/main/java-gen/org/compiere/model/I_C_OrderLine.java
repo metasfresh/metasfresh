@@ -1,9 +1,15 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+=======
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -117,6 +123,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set BPartner Qty Item Capacity.
 	 *
 	 * <br>Type: Quantity
@@ -138,6 +145,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -159,6 +168,30 @@ public interface I_C_OrderLine
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartner_QtyItemCapacity (@Nullable BigDecimal BPartner_QtyItemCapacity);
+
+	/**
+	 * Get BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBPartner_QtyItemCapacity();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_BPartner_QtyItemCapacity = new ModelColumn<>(I_C_OrderLine.class, "BPartner_QtyItemCapacity", null);
+	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -293,8 +326,12 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Kosten.
 	 * Additional document charges
+=======
+	 * Set Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -303,8 +340,12 @@ public interface I_C_OrderLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Kosten.
 	 * Additional document charges
+=======
+	 * Get Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -315,6 +356,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Template Lines.
 	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
 	 *
@@ -342,6 +384,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Compensations.
 	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
@@ -369,6 +413,36 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_CompensationGroup_SchemaLine_ID = "C_CompensationGroup_SchemaLine_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
+
+	/**
+	 * Get Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_TemplateLine_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine();
+
+	void setC_CompensationGroup_Schema_TemplateLine(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine);
+
+	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine> COLUMN_C_CompensationGroup_Schema_TemplateLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_Schema_TemplateLine_ID", de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -506,7 +580,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Zahlungsbedingung.
+=======
+	 * Set Zahlungsbedingung abw..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
@@ -516,7 +594,11 @@ public interface I_C_OrderLine
 	void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Zahlungsbedingung.
+=======
+	 * Get Zahlungsbedingung abw..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: Table
@@ -604,6 +686,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Tax.
 	 * Tax identifier
 	 *
@@ -624,6 +707,31 @@ public interface I_C_OrderLine
 	int getC_Tax_ID();
 
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+=======
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Created = new ModelColumn<>(I_C_OrderLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Tax Category.
@@ -648,6 +756,31 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set BPartner UOM.
 	 *
 	 * <br>Type: Table
@@ -690,6 +823,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -716,6 +850,9 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Lieferdatum.
+=======
+	 * Set Date Delivered.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -725,7 +862,11 @@ public interface I_C_OrderLine
 	void setDateDelivered (@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferdatum.
+=======
+	 * Get Date Delivered.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -851,7 +992,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Discount = "Discount";
 
 	/**
+<<<<<<< HEAD
 	 * Set Preislimit erzwingen.
+=======
+	 * Set Enforce price limit.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -861,7 +1006,11 @@ public interface I_C_OrderLine
 	void setEnforcePriceLimit (boolean EnforcePriceLimit);
 
 	/**
+<<<<<<< HEAD
 	 * Get Preislimit erzwingen.
+=======
+	 * Get Enforce price limit.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -941,7 +1090,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
+<<<<<<< HEAD
 	 * Set Frachtbetrag.
+=======
+	 * Set Freight Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -951,7 +1104,11 @@ public interface I_C_OrderLine
 	void setFreightAmt (BigDecimal FreightAmt);
 
 	/**
+<<<<<<< HEAD
 	 * Get Frachtbetrag.
+=======
+	 * Get Freight Amount.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -964,8 +1121,13 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
+<<<<<<< HEAD
 	 * Set Häufigkeitsart.
 	 * Häufigkeitsart für Ereignisse
+=======
+	 * Set Frequency Type.
+	 * Frequency of event
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -974,8 +1136,13 @@ public interface I_C_OrderLine
 	void setFrequencyType (java.lang.String FrequencyType);
 
 	/**
+<<<<<<< HEAD
 	 * Get Häufigkeitsart.
 	 * Häufigkeitsart für Ereignisse
+=======
+	 * Get Frequency Type.
+	 * Frequency of event
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -987,6 +1154,34 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FrequencyType = "FrequencyType";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Total Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setgk196_TotalWeight (@Nullable BigDecimal gk196_TotalWeight);
+
+	/**
+	 * Get Total Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getgk196_TotalWeight();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_gk196_TotalWeight = new ModelColumn<>(I_C_OrderLine.class, "gk196_TotalWeight", null);
+	String COLUMNNAME_gk196_TotalWeight = "gk196_TotalWeight";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Compensation Amount Type.
 	 *
 	 * <br>Type: List
@@ -1117,6 +1312,30 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set CP.
 	 * Campaign Price
 	 *
@@ -1141,7 +1360,11 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description Only.
+<<<<<<< HEAD
 	 * Nur Beschreibung
+=======
+	 * if true, the line is just description and no transaction
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1151,7 +1374,11 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description Only.
+<<<<<<< HEAD
 	 * Nur Beschreibung
+=======
+	 * if true, the line is just description and no transaction
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1270,8 +1497,13 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
 
 	/**
+<<<<<<< HEAD
 	 * Set Manuelle Zahlungsbedingung.
 	 * Die Zahlungsbedingung wurde vom Nutzer ausgewählt und soll nicht durch das System überschrieben werden
+=======
+	 * Set Manual payment term.
+	 * The current payment term was set by a user and shall not be overwritten by the system.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1280,8 +1512,13 @@ public interface I_C_OrderLine
 	void setIsManualPaymentTerm (boolean IsManualPaymentTerm);
 
 	/**
+<<<<<<< HEAD
 	 * Get Manuelle Zahlungsbedingung.
 	 * Die Zahlungsbedingung wurde vom Nutzer ausgewählt und soll nicht durch das System überschrieben werden
+=======
+	 * Get Manual payment term.
+	 * The current payment term was set by a user and shall not be overwritten by the system.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1314,6 +1551,30 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInPriceUOM (boolean IsManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualQtyInPriceUOM = new ModelColumn<>(I_C_OrderLine.class, "IsManualQtyInPriceUOM", null);
+	String COLUMNNAME_IsManualQtyInPriceUOM = "IsManualQtyInPriceUOM";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Packaging Material .
 	 *
 	 * <br>Type: YesNo
@@ -1490,6 +1751,36 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
+
+	/**
+	 * Get Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_DiscountSchemaBreak_ID();
+
+	@Nullable org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak();
+
+	void setM_DiscountSchemaBreak(@Nullable org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
+	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Discount Schema.
 	 * Schema to calculate the trade discount percentage
 	 *
@@ -1517,6 +1808,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Discount Schema Break.
 	 * Rabattschema Stufe
 	 *
@@ -1546,6 +1838,10 @@ public interface I_C_OrderLine
 	/**
 	 * Set Version Preisliste.
 	 * Bezeichnet eine einzelne Version der Preisliste
+=======
+	 * Set Price List Version.
+	 * Identifies a unique instance of a Price List
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1554,8 +1850,13 @@ public interface I_C_OrderLine
 	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Version Preisliste.
 	 * Bezeichnet eine einzelne Version der Preisliste
+=======
+	 * Get Price List Version.
+	 * Identifies a unique instance of a Price List
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1566,7 +1867,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produktnotiz.
+=======
+	 * Set Product note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1575,7 +1880,11 @@ public interface I_C_OrderLine
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produktnotiz.
+=======
+	 * Get Product note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1728,6 +2037,30 @@ public interface I_C_OrderLine
 	String COLUMNNAME_NoPriceConditionsColor_ID = "NoPriceConditionsColor_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Gesamtauftragsrabbat.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderDiscount (@Nullable BigDecimal OrderDiscount);
+
+	/**
+	 * Get Gesamtauftragsrabbat.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOrderDiscount();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_OrderDiscount = new ModelColumn<>(I_C_OrderLine.class, "OrderDiscount", null);
+	String COLUMNNAME_OrderDiscount = "OrderDiscount";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Minimum Order Qty.
 	 * Minimum order quantity in UOM
 	 *
@@ -1751,6 +2084,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Order_Min = "Order_Min";
 
 	/**
+<<<<<<< HEAD
 	 * Set Gesamtauftragsrabbat.
 	 *
 	 * <br>Type: Number
@@ -1772,6 +2106,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_OrderDiscount = "OrderDiscount";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Payment Discount %.
 	 *
 	 * <br>Type: Amount
@@ -1881,6 +2217,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
+<<<<<<< HEAD
 	 * Set Price Unit.
 	 *
 	 * <br>Type: Table
@@ -1901,6 +2238,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -1966,7 +2305,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
+<<<<<<< HEAD
 	 * Set Mindestpreis.
+=======
+	 * Set Limit Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -1976,7 +2319,11 @@ public interface I_C_OrderLine
 	void setPriceLimit (BigDecimal PriceLimit);
 
 	/**
+<<<<<<< HEAD
 	 * Get Mindestpreis.
+=======
+	 * Get Limit Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -2010,8 +2357,13 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceLimitNote = "PriceLimitNote";
 
 	/**
+<<<<<<< HEAD
 	 * Set Auszeichnungspreis.
 	 * Auszeichnungspreis
+=======
+	 * Set List Price.
+	 * List Price
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -2020,8 +2372,13 @@ public interface I_C_OrderLine
 	void setPriceList (BigDecimal PriceList);
 
 	/**
+<<<<<<< HEAD
 	 * Get Auszeichnungspreis.
 	 * Auszeichnungspreis
+=======
+	 * Get List Price.
+	 * List Price
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -2077,6 +2434,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceStd = "PriceStd";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -2098,8 +2478,13 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produktbeschreibung.
 	 * Produktbeschreibung
+=======
+	 * Set Product Description.
+	 * Product Description
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2108,8 +2493,13 @@ public interface I_C_OrderLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produktbeschreibung.
 	 * Produktbeschreibung
+=======
+	 * Get Product Description.
+	 * Product Description
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2121,8 +2511,12 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
+<<<<<<< HEAD
 	 * Set Rohertragspreis.
 	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+=======
+	 * Set Gross Profit Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2131,8 +2525,12 @@ public interface I_C_OrderLine
 	void setProfitPriceActual (@Nullable BigDecimal ProfitPriceActual);
 
 	/**
+<<<<<<< HEAD
 	 * Get Rohertragspreis.
 	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+=======
+	 * Get Gross Profit Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2207,7 +2605,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_QtyEnteredInBPartnerUOM = "QtyEnteredInBPartnerUOM";
 
 	/**
+<<<<<<< HEAD
 	 * Set Bestellte Menge in Preiseinheit.
+=======
+	 * Set Quantity in price unit.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Bestellte Menge in Preiseinheit
 	 *
 	 * <br>Type: Quantity
@@ -2217,7 +2619,11 @@ public interface I_C_OrderLine
 	void setQtyEnteredInPriceUOM (@Nullable BigDecimal QtyEnteredInPriceUOM);
 
 	/**
+<<<<<<< HEAD
 	 * Get Bestellte Menge in Preiseinheit.
+=======
+	 * Get Quantity in price unit.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Bestellte Menge in Preiseinheit
 	 *
 	 * <br>Type: Quantity
@@ -2322,7 +2728,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
+<<<<<<< HEAD
 	 * Set QtyOrderedOverUnder.
+=======
+	 * Set Over-/ Under Qty.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2331,7 +2741,11 @@ public interface I_C_OrderLine
 	void setQtyOrderedOverUnder (@Nullable BigDecimal QtyOrderedOverUnder);
 
 	/**
+<<<<<<< HEAD
 	 * Get QtyOrderedOverUnder.
+=======
+	 * Get Over-/ Under Qty.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2367,7 +2781,11 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Referenced Order Line.
+<<<<<<< HEAD
 	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
+=======
+	 * Reference to corresponding Sales/Purchase Order
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2377,7 +2795,11 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Referenced Order Line.
+<<<<<<< HEAD
 	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
+=======
+	 * Reference to corresponding Sales/Purchase Order
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2464,7 +2886,11 @@ public interface I_C_OrderLine
 	String COLUMNNAME_RRStartDate = "RRStartDate";
 
 	/**
+<<<<<<< HEAD
 	 * Set Laufzeit.
+=======
+	 * Set Maximum Runs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Number of recurring runs
 	 *
 	 * <br>Type: Integer
@@ -2474,7 +2900,11 @@ public interface I_C_OrderLine
 	void setRunsMax (int RunsMax);
 
 	/**
+<<<<<<< HEAD
 	 * Get Laufzeit.
+=======
+	 * Get Maximum Runs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Number of recurring runs
 	 *
 	 * <br>Type: Integer
@@ -2487,6 +2917,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_RunsMax = "RunsMax";
 
 	/**
+<<<<<<< HEAD
 	 * Set Ressourcenzuordnung.
 	 * Resource Assignment
 	 *
@@ -2510,6 +2941,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Best Before Policy.
 	 *
 	 * <br>Type: List
@@ -2531,6 +2964,32 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Resource Assignment.
+	 * Resource Assignment
+	 *
+	 * <br>Type: Assignment
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
+
+	/**
+	 * Get Resource Assignment.
+	 * Resource Assignment
+	 *
+	 * <br>Type: Assignment
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_ResourceAssignment_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_S_ResourceAssignment_ID = new ModelColumn<>(I_C_OrderLine.class, "S_ResourceAssignment_ID", null);
+	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Positions-Steuer.
 	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
 	 *

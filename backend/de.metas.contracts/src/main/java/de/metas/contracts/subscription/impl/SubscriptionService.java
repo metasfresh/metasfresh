@@ -4,7 +4,11 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -179,12 +183,20 @@ public class SubscriptionService
 	 */
 	private static void resetCache(@NonNull final BPartnerId bpartnerId, @NonNull final FlatrateDataId flatrateDataId)
 	{
+<<<<<<< HEAD
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataId, I_C_SubscriptionProgress.Table_Name),
 						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bpartnerId, I_C_SubscriptionProgress.Table_Name)),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		);
 	}
 

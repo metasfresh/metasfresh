@@ -54,7 +54,11 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 {
 	/**
 	 * Schedule a new "update invalid invoice candidates" run.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
 	public static void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)

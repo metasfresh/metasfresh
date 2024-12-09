@@ -240,6 +240,30 @@ public interface I_C_Bank
 	String COLUMNNAME_IsCashBank = "IsCashBank";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Import As Summary Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsImportAsSingleSummaryLine (boolean IsImportAsSingleSummaryLine);
+
+	/**
+	 * Get Import As Summary Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isImportAsSingleSummaryLine();
+
+	ModelColumn<I_C_Bank, Object> COLUMN_IsImportAsSingleSummaryLine = new ModelColumn<>(I_C_Bank.class, "IsImportAsSingleSummaryLine", null);
+	String COLUMNNAME_IsImportAsSingleSummaryLine = "IsImportAsSingleSummaryLine";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Own Bank.
 	 * Bank for this Organization
 	 *

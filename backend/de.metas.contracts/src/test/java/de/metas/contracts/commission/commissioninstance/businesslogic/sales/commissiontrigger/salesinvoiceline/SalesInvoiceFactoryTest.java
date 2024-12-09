@@ -1,10 +1,18 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyRepository;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
@@ -15,19 +23,32 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+=======
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -51,11 +72,20 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class SalesInvoiceFactoryTest
 {
 
 	private SalesInvoiceFactory salesInvoiceFactory;
 
+<<<<<<< HEAD
+=======
+	private Expect expect;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@BeforeEach
 	void beforeEach()
 	{
@@ -66,6 +96,7 @@ class SalesInvoiceFactoryTest
 		salesInvoiceFactory = new SalesInvoiceFactory(new CommissionProductService());
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -80,6 +111,8 @@ class SalesInvoiceFactoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void forRecord()
 	{
@@ -125,7 +158,11 @@ class SalesInvoiceFactoryTest
 		final SalesInvoiceLine salesInvoiceLine = result.get().getInvoiceLines().get(0);
 		assertThat(salesInvoiceLine.getInvoicedCommissionPoints().toBigDecimal()).isEqualByComparingTo("-100"); // LineNetAmt * 1 because it's a credit memo
 
+<<<<<<< HEAD
 		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }

@@ -224,7 +224,11 @@ import de.metas.util.Check;
 			final Object[] sqlParams = new Object[] { paReportCubeId, paReportCube.getC_Calendar_ID() };
 
 			final long startMillis = System.currentTimeMillis();
+<<<<<<< HEAD
 			final int rows = DB.executeUpdateEx(sql, sqlParams, trxName);
+=======
+			final int rows = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final long seconds = (System.currentTimeMillis() - startMillis) / 1000;
 
 			final String insertResult = "Inserted " + rows + " in " + seconds + " s.";
@@ -350,7 +354,11 @@ import de.metas.util.Check;
 				paReportCubeId,
 		};
 
+<<<<<<< HEAD
 		final int locked = DB.executeUpdateEx(sql, sqlParams, trxName);
+=======
+		final int locked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (locked != 1)
 		{
 			throw new AdempiereException("Unable to lock cube for update:" + getPA_ReportCube().getName());
@@ -371,7 +379,11 @@ import de.metas.util.Check;
 				, paReportCubeId // PA_ReportCube_ID
 		};
 
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, sqlParams, trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private int deleteFactAcctSummary(final String where)
@@ -382,7 +394,11 @@ import de.metas.util.Check;
 		final String sql = "DELETE FROM Fact_Acct_Summary fas " + where;
 		log.debug("Delete sql: " + sql);
 
+<<<<<<< HEAD
 		final int deletedNo = DB.executeUpdateEx(sql, trxName);
+=======
+		final int deletedNo = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return deletedNo;
 	}
 

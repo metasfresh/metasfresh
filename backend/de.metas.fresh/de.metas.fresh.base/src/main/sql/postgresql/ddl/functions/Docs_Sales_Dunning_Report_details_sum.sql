@@ -7,7 +7,11 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_details_sum ( IN Record_ID nume
 		openamt numeric, 
 		feeamt numeric,
 		totalamt numeric,
+<<<<<<< HEAD
 		iso_code character
+=======
+        currency character
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	) AS 
 $$
 SELECT
@@ -16,10 +20,17 @@ SELECT
 	SUM(doc.GrandTotal - doc.PaidAmt) AS openamt,
 	SUM(dl.amt) AS feeamt,
 	SUM(invoiceopen(dc.Record_ID, 0::numeric) + dl.amt) AS totalamt,
+<<<<<<< HEAD
 	c.ISO_Code
 FROM
 	C_DunningDoc dd
 	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_Line_ID AND dl.isActive = 'Y'
+=======
+    c.cursymbol                                                                          AS currency
+FROM
+	C_DunningDoc dd
+	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID AND dl.isActive = 'Y'
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID AND dls.isActive = 'Y'
 	LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID AND dc.isActive = 'Y'
 	LEFT JOIN C_Currency c ON dc.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
@@ -40,7 +51,11 @@ WHERE
 	dd.C_DunningDoc_ID = $1 AND dd.isActive = 'Y'
 GROUP BY
 	dd.C_DunningDoc_ID,
+<<<<<<< HEAD
 	c.ISO_Code
+=======
+	c.cursymbol
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ;
 $$ 
 LANGUAGE sql STABLE;

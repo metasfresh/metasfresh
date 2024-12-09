@@ -1,10 +1,21 @@
 package de.metas.edi.process;
 
+<<<<<<< HEAD
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
+=======
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
+import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.IProcessDefaultParameter;
@@ -40,7 +51,11 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 {
 	private final IDesadvBL desadvBL = SpringContextHolder.instance.getBean(IDesadvBL.class);
 	private final SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+<<<<<<< HEAD
 	private final EDIDesadvPackRepository EDIDesadvPackRepository = SpringContextHolder.instance.getBean(EDIDesadvPackRepository.class);
+=======
+	private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final String PARAM_IsDefault = "IsDefault";
@@ -117,8 +132,14 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 		final DesadvLineSSCC18Generator desadvLineLabelsGenerator = DesadvLineSSCC18Generator.builder()
 				.sscc18CodeService(sscc18CodeService)
 				.desadvBL(desadvBL)
+<<<<<<< HEAD
 				.ediDesadvPackRepository(EDIDesadvPackRepository)
 				.printExistingLabels(true)
+=======
+				.ediDesadvPackService(ediDesadvPackService)
+				.printExistingLabels(true)
+				.bpartnerId(extractBPartnerId(desadvLines))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final LinkedHashSet<EDIDesadvPackId> lineSSCCIdsToPrint = new LinkedHashSet<>();
@@ -138,6 +159,20 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 		return lineSSCCIdsToPrint;
 	}
 
+<<<<<<< HEAD
+=======
+	private static BPartnerId extractBPartnerId(@NonNull final List<I_EDI_DesadvLine> desadvLines)
+	{
+		final I_EDI_Desadv ediDesadvRecord = desadvLines.get(0).getEDI_Desadv();
+
+		final int bpartnerRepoId = CoalesceUtil.firstGreaterThanZero(
+				ediDesadvRecord.getDropShip_BPartner_ID(),
+				ediDesadvRecord.getC_BPartner_ID());
+
+		return BPartnerId.ofRepoId(bpartnerRepoId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private List<I_EDI_DesadvLine> getSelectedLines()
 	{
 		final Set<Integer> lineIds = getSelectedLineIds();

@@ -14,6 +14,12 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+<<<<<<< HEAD
+=======
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,7 +60,13 @@ public class M_ShipmentSchedule
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+<<<<<<< HEAD
 	
+=======
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */
@@ -189,6 +201,10 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_BPartnerAddress_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
+<<<<<<< HEAD
+=======
+					I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
 			})
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
@@ -231,6 +247,32 @@ public class M_ShipmentSchedule
 		invalidSchedulesInvalidator.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
 	}
 
+<<<<<<< HEAD
+=======
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_CHANGE},
+			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_IsClosed})
+	public void updateIsDeliveryClosed(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
+		if (orderLine == null)
+		{
+			return;
+		}
+
+		if (shipmentSchedule.isClosed())
+		{
+			orderBL.closeLine(orderLine);
+			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		}
+		else
+		{
+			orderBL.reopenLine(orderLine);
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Updates the given candidate's QtyOrdered.
 	 * <p>

@@ -25,11 +25,14 @@ package de.metas.callcenter.model;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Group;
@@ -39,6 +42,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+<<<<<<< HEAD
+=======
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @author Teo Sarca, teo.sarca@gmail.com
  */
@@ -61,7 +71,11 @@ public class MRGroupProspect extends X_R_Group_Prospect
 				contact.getR_Group_ID(),
 				contact.getC_BPartner_ID(),
 				contact.getAD_User_ID()})
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(MRGroupProspect.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return gp;
 	}
 	
@@ -75,7 +89,11 @@ public class MRGroupProspect extends X_R_Group_Prospect
 				request.getR_Group_ID(),
 				request.getC_BPartner_ID(),
 				request.getAD_User_ID()})
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(MRGroupProspect.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return gp;
 	}
 	

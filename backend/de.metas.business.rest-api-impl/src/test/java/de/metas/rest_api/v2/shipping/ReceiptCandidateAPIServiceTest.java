@@ -26,6 +26,10 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+<<<<<<< HEAD
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inoutcandidate.ReceiptScheduleRepository;
@@ -59,7 +63,11 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class ReceiptCandidateAPIServiceTest
 {
@@ -108,7 +116,11 @@ class ReceiptCandidateAPIServiceTest
 
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
+<<<<<<< HEAD
 				new ReceiptScheduleRepository(),
+=======
+				new ReceiptScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);

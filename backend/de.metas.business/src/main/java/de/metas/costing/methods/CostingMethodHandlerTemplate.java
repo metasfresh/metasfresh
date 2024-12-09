@@ -1,5 +1,6 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import java.util.Optional;
 import java.util.Set;
 
@@ -15,6 +16,27 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -40,15 +62,26 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
+<<<<<<< HEAD
 	protected final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+=======
+	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
+	protected final CostingMethodHandlerUtils utils;
+
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchPO)
 			.add(CostingDocumentRef.TABLE_NAME_M_InOutLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
 			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
+<<<<<<< HEAD
+=======
+			.add(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			.build();
 
 	protected CostingMethodHandlerTemplate(@NonNull final CostingMethodHandlerUtils utils)
@@ -63,6 +96,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
 		return Optional.empty();
@@ -83,17 +117,52 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	private final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+=======
+	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+		}
+
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// Create new cost detail
 		final CostingDocumentRef documentRef = request.getDocumentRef();
 		if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchPO))
 		{
+<<<<<<< HEAD
 			return createCostForMatchPO(request);
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
 			return createCostForMatchInvoice(request);
+=======
+			return CostDetailCreateResultsList.ofNullable(createCostForMatchPO(request));
+		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
+		{
+			final CostElement costElement = request.getCostElement();
+			if (costElement == null || costElement.isMaterial())
+			{
+				return CostDetailCreateResultsList.ofNullable(createCostForMatchInvoice_MaterialCosts(request));
+			}
+			else
+			{
+				return CostDetailCreateResultsList.ofNullable(createCostForMatchInvoice_NonMaterialCosts(request));
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
@@ -104,11 +173,24 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			}
 			else
 			{
+<<<<<<< HEAD
 				return createCostForMaterialReceipt(request);
+=======
+				final CostElement costElement = request.getCostElement();
+				if (costElement == null || costElement.isMaterial())
+				{
+					return CostDetailCreateResultsList.ofNullable(createCostForMaterialReceipt(request));
+				}
+				else
+				{
+					return CostDetailCreateResultsList.ofNullable(createCostForMaterialReceipt_NonMaterialCosts(request));
+				}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MovementLine))
 		{
+<<<<<<< HEAD
 			return createCostForMovementLine(request);
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InventoryLine))
@@ -118,6 +200,21 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
 		{
 			return createCostForProjectIssue(request);
+=======
+			return CostDetailCreateResultsList.ofNullable(createCostForMovementLine(request));
+		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InventoryLine))
+		{
+			return CostDetailCreateResultsList.ofNullable(createCostForInventoryLine(request));
+		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
+		{
+			return CostDetailCreateResultsList.ofNullable(createCostForProjectIssue(request));
+		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine))
+		{
+			return CostDetailCreateResultsList.ofNullable(createCostRevaluationLine(request));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -131,7 +228,17 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// nothing on this level
 		return null;
@@ -143,11 +250,23 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForShippingNotification(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return createOutboundCostDefaultImpl(request);
 	}
 
+<<<<<<< HEAD
+=======
+	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
+	{
+		return CostDetailCreateResultsList.ofNullable(createOutboundCostDefaultImpl(request));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected CostDetailCreateResult createCostForMovementLine(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
@@ -158,10 +277,99 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForProjectIssue(
+			@SuppressWarnings("unused") final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		throw new UnsupportedOperationException();
 	}
 
+<<<<<<< HEAD
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
+=======
+	protected CostDetailCreateResult createCostRevaluationLine(
+			@NonNull final CostDetailCreateRequest request)
+	{
+		if (!request.getQty().isZero())
+		{
+			throw new AdempiereException("Cost revaluation requests shall have Qty=0");
+		}
+
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		if (explicitCostPrice == null)
+		{
+			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
+		}
+
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
+		currentCosts.setOwnCostPrice(explicitCostPrice);
+		currentCosts.addCumulatedAmt(request.getAmt());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				previousCosts);
+
+		utils.saveCurrentCost(currentCosts);
+
+		return result;
+	}
+
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(CostDetailCreateRequest request)
+	{
+		throw new AdempiereException("Costing method " + getCostingMethod() + " does not support non material costs receipt")
+				.setParameter("request", request)
+				.appendParametersToMessage();
+	}
+
+	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CurrentCost currentCost)
+	{
+		if (costDetail.getDocumentRef().isCostRevaluationLine())
+		{
+			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported)
+					.setParameter("costDetail", costDetail);
+		}
+
+		final CurrencyPrecision precision = currentCost.getPrecision();
+
+		final Quantity qty = costDetail.getQty();
+		final CostAmount oldCostAmount = costDetail.getAmt();
+		final CostAmount oldCostPrice = qty.signum() != 0
+				? oldCostAmount.divide(qty, precision)
+				: oldCostAmount;
+
+		final CostAmount newCostPrice = currentCost.getCostPrice().toCostAmount();
+		final CostAmount newCostAmount = qty.signum() != 0
+				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
+				: newCostPrice.roundToPrecisionIfNeeded(precision);
+
+		if (costDetail.isInboundTrx())
+		{
+			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
+		}
+		else
+		{
+			currentCost.addToCurrentQtyAndCumulate(qty, newCostAmount, utils.getQuantityUOMConverter());
+		}
+
+		//
+		return CostDetailAdjustment.builder()
+				.costDetailId(costDetail.getId())
+				.qty(qty)
+				.oldCostPrice(oldCostPrice)
+				.oldCostAmount(oldCostAmount)
+				.newCostPrice(newCostPrice)
+				.newCostAmount(newCostAmount)
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -22,10 +22,16 @@
 
 package de.metas.externalsystem.other;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +45,19 @@ import static org.assertj.core.api.Assertions.*;
 public class ExternalSystemOtherConfigRepositoryTest
 {
 	private ExternalSystemOtherConfigRepository externalSystemOtherConfigRepo;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class ExternalSystemOtherConfigRepositoryTest
+{
+	private ExternalSystemOtherConfigRepository externalSystemOtherConfigRepo;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -47,6 +66,7 @@ public class ExternalSystemOtherConfigRepositoryTest
 		externalSystemOtherConfigRepo = new ExternalSystemOtherConfigRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -59,6 +79,8 @@ public class ExternalSystemOtherConfigRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void getById()
 	{
@@ -77,7 +99,11 @@ public class ExternalSystemOtherConfigRepositoryTest
 
 		//then
 		assertThat(otherConfig).isNotNull();
+<<<<<<< HEAD
 		expect(otherConfig).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(otherConfig);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static void createExternalConfigParameterRecord(

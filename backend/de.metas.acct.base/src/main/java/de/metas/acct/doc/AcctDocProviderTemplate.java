@@ -1,9 +1,15 @@
 package de.metas.acct.doc;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.AcctSchema;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -12,11 +18,17 @@ import org.compiere.acct.Doc;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.AcctSchema;
 import lombok.NonNull;
+=======
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -42,9 +54,14 @@ import lombok.NonNull;
 
 /**
  * Convenient {@link IAcctDocProvider} implementation.
+<<<<<<< HEAD
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
+=======
+ *
+ * @author metas-dev <dev@metasfresh.com>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 {
@@ -56,6 +73,7 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 	}
 
 	@Override
+<<<<<<< HEAD
 	public final String toString()
 	{
 		return MoreObjects.toStringHelper(this)
@@ -64,6 +82,8 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final Set<String> getDocTableNames()
 	{
 		return docFactoriesByTableName.keySet();
@@ -90,18 +110,32 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 				.build());
 	}
 
+<<<<<<< HEAD
 	private PO retrieveDocumentModel(final TableRecordReference documentRef)
 	{
 		final PO documentModel = TableModelLoader.instance.getPO(
+=======
+	private AcctDocModel retrieveDocumentModel(final TableRecordReference documentRef)
+	{
+		final PO po = TableModelLoader.instance.getPO(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				Env.getCtx(),
 				documentRef.getTableName(),
 				documentRef.getRecord_ID(),
 				ITrx.TRXNAME_ThreadInherited);
+<<<<<<< HEAD
 		if (documentModel == null)
 		{
 			throw new AdempiereException("No ducument found for " + documentRef);
 		}
 		return documentModel;
+=======
+		if (po == null)
+		{
+			throw new AdempiereException("No document found for " + documentRef);
+		}
+		return new POAcctDocModel(po);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@FunctionalInterface

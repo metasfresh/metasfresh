@@ -1,5 +1,6 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -9,6 +10,11 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.money.Money;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.allocation.api.PaymentAllocationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.OptionalDeferredException;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,12 +30,20 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,12 +56,17 @@ public class PaymentAllocationResult
 {
 	@NonNull ImmutableList<AllocationLineCandidate> candidates;
 	@NonNull OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
+<<<<<<< HEAD
 	@NonNull ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocationIds;
+=======
+	@NonNull ImmutableMap<PaymentAllocationId, AllocationLineCandidate> paymentAllocationIds;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public boolean isOK()
 	{
 		return fullyAllocatedCheck.isNoError();
 	}
+<<<<<<< HEAD
 
 	public BigDecimal getTotalDiscountAmtAsBigDecimal()
 	{
@@ -72,4 +91,6 @@ public class PaymentAllocationResult
 				.map(line -> line.getAmounts().getWriteOffAmt())
 				.reduce(Money::add);
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,5 +1,10 @@
 package de.metas.handlingunits.qrcodes.model.json.v1;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
@@ -11,15 +16,22 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
+<<<<<<< HEAD
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+=======
+import org.adempiere.mm.attributes.AttributeCode;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.io.IOException;
 import java.util.UUID;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +40,14 @@ class JsonConverterV1Test
 {
 	@BeforeAll
 	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+class JsonConverterV1Test
+{
+	@SuppressWarnings("unused") private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static HUQRCode newStandardHUQRCode()
 	{
@@ -88,6 +108,10 @@ class JsonConverterV1Test
 	public void checkJsonFormatIsNotChanging()
 	{
 		final JsonHUQRCodeV1 json = JsonConverterV1.toJson(newStandardHUQRCode());
+<<<<<<< HEAD
 		expect(json).toMatchSnapshot();
+=======
+		expect.toMatchSnapshot(json);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

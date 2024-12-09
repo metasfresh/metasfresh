@@ -5,7 +5,10 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+<<<<<<< HEAD
 import de.metas.common.util.TryAndWaitUtil;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -31,7 +34,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+<<<<<<< HEAD
 import org.compiere.Adempiere;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
@@ -99,11 +105,22 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
 		icChangesChecker.setBeforeChanges(unorderedICs);
 
+<<<<<<< HEAD
 		//
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
 
 		ensureICsAreUpdated(pInstanceId);
+=======
+		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
+		// otherwise, we can easly run into DB-deadloacks
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+
+		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
+		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
+
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
@@ -224,6 +241,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				icLock);
 	}
 
+<<<<<<< HEAD
 	private void ensureICsAreUpdated(final @NonNull PInstanceId pinstanceId)
 	{
 		if (Adempiere.isUnitTestMode())
@@ -262,6 +280,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return true if invoice candidate is eligible for enqueueing
 	 */

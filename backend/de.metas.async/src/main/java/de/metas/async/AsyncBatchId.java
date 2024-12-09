@@ -8,6 +8,10 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -44,6 +48,10 @@ public class AsyncBatchId implements RepoIdAware
 		return new AsyncBatchId(repoId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static AsyncBatchId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AsyncBatchId(repoId) : null;
@@ -55,6 +63,15 @@ public class AsyncBatchId implements RepoIdAware
 		return repoId > 0 ? new AsyncBatchId(repoId) : NONE_ASYNC_BATCH_ID;
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public static AsyncBatchId ofRepoIdOr(final int repoId, @NonNull final Supplier<AsyncBatchId> supplier)
+	{
+		return repoId > 0 ? new AsyncBatchId(repoId) : supplier.get();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static int toRepoId(@Nullable final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchId != null ? asyncBatchId.getRepoId() : -1;

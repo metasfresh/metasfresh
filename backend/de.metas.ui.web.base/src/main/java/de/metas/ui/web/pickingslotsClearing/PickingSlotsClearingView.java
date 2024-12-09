@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +17,10 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -42,11 +47,28 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+=======
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -208,14 +230,22 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
+<<<<<<< HEAD
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+=======
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
+<<<<<<< HEAD
 				.findEntities(ctx)
 				.getValues();
+=======
+				.findEntities(ctx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -315,7 +345,10 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		packingHUsViewsCollection.put(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsView);
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void closePackingHUsView(final ViewId packingHUsViewId, final ViewCloseAction closeAction)
 	{
 		final PackingHUsViewKey key = PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId);

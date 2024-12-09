@@ -409,7 +409,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Delete
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -450,9 +454,15 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
 				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
+															   sqlParams.toArray(),
+															   ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Reset={}", no);
 
 	}
@@ -661,7 +671,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Execute
+<<<<<<< HEAD
 		DB.executeUpdateEx(
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited,
@@ -683,6 +697,19 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	}
 
+<<<<<<< HEAD
+=======
+	// protected final int markNotImportedAllWithErrors()
+	// {
+	// 	final String sql = "UPDATE " + getImportTableName()
+	// 			+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
+	// 			+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
+	// 			+ " " + getImportRecordsSelection().toSqlWhereClause();
+	// 	final int countNotImported = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+	// 	return countNotImported >= 0 ? countNotImported : 0;
+	// }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected void markImported(final ImportRecordType importRecord)
 	{
 		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, true);

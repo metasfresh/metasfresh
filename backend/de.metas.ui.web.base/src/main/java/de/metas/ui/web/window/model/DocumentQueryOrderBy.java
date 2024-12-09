@@ -115,6 +115,21 @@ public class DocumentQueryOrderBy
 		return Comparator.comparing(keyExtractor, keyComparator);
 	}
 
+<<<<<<< HEAD
+=======
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return toStringSyntax();
+	}
+
+	public String toStringSyntax()
+	{
+		return ascending ? fieldName : "-" + fieldName;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@FunctionalInterface
 	public interface FieldValueExtractor<T>
 	{
@@ -136,10 +151,17 @@ public class DocumentQueryOrderBy
 			}
 		}
 
+<<<<<<< HEAD
 		public static final transient ValueComparator ASCENDING_NULLS_FIRST = new ValueComparator(true, false);
 		public static final transient ValueComparator ASCENDING_NULLS_LAST = new ValueComparator(true, true);
 		public static final transient ValueComparator DESCENDING_NULLS_FIRST = new ValueComparator(false, false);
 		public static final transient ValueComparator DESCENDING_NULLS_LAST = new ValueComparator(false, true);
+=======
+		public static final ValueComparator ASCENDING_NULLS_FIRST = new ValueComparator(true, false);
+		public static final ValueComparator ASCENDING_NULLS_LAST = new ValueComparator(true, true);
+		public static final ValueComparator DESCENDING_NULLS_FIRST = new ValueComparator(false, false);
+		public static final ValueComparator DESCENDING_NULLS_LAST = new ValueComparator(false, true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private final boolean ascending;
 		private final boolean nullsLast;
@@ -167,8 +189,12 @@ public class DocumentQueryOrderBy
 			}
 			else if (o1 instanceof Comparable)
 			{
+<<<<<<< HEAD
 				@SuppressWarnings("unchecked")
 				final Comparable<Object> o1cmp = (Comparable<Object>)o1;
+=======
+				@SuppressWarnings("unchecked") final Comparable<Object> o1cmp = (Comparable<Object>)o1;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return o1cmp.compareTo(o2) * (ascending ? +1 : -1);
 			}
 			else

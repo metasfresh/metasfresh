@@ -22,6 +22,10 @@ package de.metas.tourplanning.integrationtest;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
@@ -56,6 +60,10 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+<<<<<<< HEAD
+=======
+				ADReferenceService.newMocked(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										   new PPOrderIssueScheduleService(

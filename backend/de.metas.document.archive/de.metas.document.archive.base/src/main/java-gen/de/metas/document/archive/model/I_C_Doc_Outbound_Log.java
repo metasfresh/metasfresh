@@ -148,7 +148,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set C_Doc_Outbound_Log.
+=======
+	 * Set Outbound Document Log ID.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -157,7 +161,11 @@ public interface I_C_Doc_Outbound_Log
 	void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get C_Doc_Outbound_Log.
+=======
+	 * Get Outbound Document Log ID.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -216,7 +224,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+<<<<<<< HEAD
 	 * Set Derzeitige Mailadresse.
+=======
+	 * Set eMail.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -225,7 +237,11 @@ public interface I_C_Doc_Outbound_Log
 	void setCurrentEMailAddress (@Nullable String CurrentEMailAddress);
 
 	/**
+<<<<<<< HEAD
 	 * Get Derzeitige Mailadresse.
+=======
+	 * Get eMail.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -237,7 +253,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
 
 	/**
+<<<<<<< HEAD
 	 * Set Derzeitiger Mailempfänger.
+=======
+	 * Set eMail Receipient.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -246,7 +266,11 @@ public interface I_C_Doc_Outbound_Log
 	void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Derzeitiger Mailempfänger.
+=======
+	 * Get eMail Receipient.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -278,7 +302,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
+<<<<<<< HEAD
 	 * Set Zuletzt gemailt.
+=======
+	 * Set Last eMailed.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -287,7 +315,11 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastEMail (@Nullable java.sql.Timestamp DateLastEMail);
 
 	/**
+<<<<<<< HEAD
 	 * Get Zuletzt gemailt.
+=======
+	 * Get Last eMailed.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -299,7 +331,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastEMail = "DateLastEMail";
 
 	/**
+<<<<<<< HEAD
 	 * Set Zuletzt gedruckt.
+=======
+	 * Set Last printed.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -308,7 +344,11 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastPrint (@Nullable java.sql.Timestamp DateLastPrint);
 
 	/**
+<<<<<<< HEAD
 	 * Get Zuletzt gedruckt.
+=======
+	 * Get Last printed.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -320,7 +360,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastPrint = "DateLastPrint";
 
 	/**
+<<<<<<< HEAD
 	 * Set Zuletzt gespeichert.
+=======
+	 * Set Last store.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -329,7 +373,11 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastStore (@Nullable java.sql.Timestamp DateLastStore);
 
 	/**
+<<<<<<< HEAD
 	 * Get Zuletzt gespeichert.
+=======
+	 * Get Last store.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -385,7 +433,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+<<<<<<< HEAD
 	 * Set EDI Status Exportieren.
+=======
+	 * Set EDI export status.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -394,7 +446,11 @@ public interface I_C_Doc_Outbound_Log
 	void setEDI_ExportStatus (@Nullable String EDI_ExportStatus);
 
 	/**
+<<<<<<< HEAD
 	 * Get EDI Status Exportieren.
+=======
+	 * Get EDI export status.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -406,7 +462,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
+<<<<<<< HEAD
 	 * Set Anz. gemailt.
+=======
+	 * Set eMail counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -417,7 +477,11 @@ public interface I_C_Doc_Outbound_Log
 	void setEMailCount (int EMailCount);
 
 	/**
+<<<<<<< HEAD
 	 * Get Anz. gemailt.
+=======
+	 * Get eMail counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -438,7 +502,11 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	void setFileName (@Nullable java.lang.String FileName);
+=======
+	void setFileName (@Nullable String FileName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get File Name.
@@ -448,7 +516,11 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	@Nullable java.lang.String getFileName();
+=======
+	@Nullable String getFileName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
 	String COLUMNNAME_FileName = "FileName";
@@ -477,7 +549,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
 	 * Set Beleg soll per EDI übermittelt werden.
+=======
+	 * Set Document to be sent via EDI.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -488,7 +564,11 @@ public interface I_C_Doc_Outbound_Log
 	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
+<<<<<<< HEAD
 	 * Get Beleg soll per EDI übermittelt werden.
+=======
+	 * Get Document to be sent via EDI.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -523,7 +603,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 
 	/**
+<<<<<<< HEAD
 	 * Set Anz. PDF.
+=======
+	 * Set PDF counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -534,7 +618,11 @@ public interface I_C_Doc_Outbound_Log
 	void setPDFCount (int PDFCount);
 
 	/**
+<<<<<<< HEAD
 	 * Get Anz. PDF.
+=======
+	 * Get PDF counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -551,31 +639,49 @@ public interface I_C_Doc_Outbound_Log
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
+<<<<<<< HEAD
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
+=======
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void setPOReference (@Nullable String POReference);
 
 	/**
 	 * Get Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
+<<<<<<< HEAD
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
+=======
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable String getPOReference();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
+<<<<<<< HEAD
 	 * Set Anz. gedruckt.
+=======
+	 * Set Print counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -586,7 +692,11 @@ public interface I_C_Doc_Outbound_Log
 	void setPrintCount (int PrintCount);
 
 	/**
+<<<<<<< HEAD
 	 * Get Anz. gedruckt.
+=======
+	 * Get Print counter.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -623,7 +733,11 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Anz. gespeichert.
+=======
+	 * Set Stored count.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -634,7 +748,11 @@ public interface I_C_Doc_Outbound_Log
 	void setStoreCount (int StoreCount);
 
 	/**
+<<<<<<< HEAD
 	 * Get Anz. gespeichert.
+=======
+	 * Get Stored count.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false

@@ -29,6 +29,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
+<<<<<<< HEAD
+=======
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.assertj.core.api.Assertions.*;
 
 public class OrderCandidateTest
@@ -41,7 +45,11 @@ public class OrderCandidateTest
 	public void givenExistingPath_whenGetCustomField_thenReturnValue() throws IOException
 	{
 		//given
+<<<<<<< HEAD
 		final String bPartnerCustomJsonPath = "/orderCustomer/customFields/metasfreshId";
+=======
+		final String bPartnerCustomJsonPath = "/customFields/metasfreshId";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String customFieldValue = "metasfreshId";
 
@@ -49,7 +57,12 @@ public class OrderCandidateTest
 		final OrderCandidate orderCandidate = objectMapper.readValue(orderCand, OrderCandidate.class);
 
 		//when
+<<<<<<< HEAD
 		final String customField = orderCandidate.getCustomField(bPartnerCustomJsonPath);
+=======
+		final Customer customer = Customer.of(orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER), orderCandidate.getJsonOrder().getOrderCustomer());
+		final String customField = customer.getCustomField(bPartnerCustomJsonPath);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//then
 		assertThat(customField).isNotNull();
@@ -60,13 +73,22 @@ public class OrderCandidateTest
 	public void givenMissingPath_whenGetCustomField_thenReturnValue() throws IOException
 	{
 		//given
+<<<<<<< HEAD
 		final String bPartnerCustomJsonPath = "/orderCustomer/customFields/metasfreshId_missing";
+=======
+		final String bPartnerCustomJsonPath = "/customFields/metasfreshId_missing";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final InputStream orderCand = this.getClass().getResourceAsStream(ORDER_CANDIDATE_METASFRESH_ID);
 		final OrderCandidate orderCandidate = objectMapper.readValue(orderCand, OrderCandidate.class);
 
 		//when
+<<<<<<< HEAD
 		final String customField = orderCandidate.getCustomField(bPartnerCustomJsonPath);
+=======
+		final Customer customer = Customer.of(orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER), orderCandidate.getJsonOrder().getOrderCustomer());
+		final String customField = customer.getCustomField(bPartnerCustomJsonPath);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//then
 		assertThat(customField).isNull();

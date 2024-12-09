@@ -136,7 +136,11 @@ public class C_Campaign_Price
 								orgId,
 								productId,
 								bpartnerId,
+<<<<<<< HEAD
 								Quantitys.create(ONE, productId),
+=======
+								Quantitys.of(ONE, productId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 								SOTrx.SALES)
 						.setCountryId(countryId)
 						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(), timeZone));

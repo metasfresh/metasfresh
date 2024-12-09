@@ -22,6 +22,11 @@
 
 package de.metas.contracts.commission.licensefee;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -46,6 +51,10 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -53,6 +62,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -61,6 +71,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class LicenseFeeSettingsConfigFactoryTest
 {
 	private LicenseFeeSettingsConfigFactory licenseFeeSettingsConfigFactorySpy;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+@ExtendWith(SnapshotExtension.class)
+public class LicenseFeeSettingsConfigFactoryTest
+{
+	private LicenseFeeSettingsConfigFactory licenseFeeSettingsConfigFactorySpy;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -72,7 +92,10 @@ public class LicenseFeeSettingsConfigFactoryTest
 	@BeforeAll
 	static void init()
 	{
+<<<<<<< HEAD
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		AdempiereTestHelper.get().init();
 	}
 
@@ -121,7 +144,11 @@ public class LicenseFeeSettingsConfigFactoryTest
 
 		//then
 		assertThat(configs.size()).isEqualTo(1);
+<<<<<<< HEAD
 		expect(configs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "contractAndComplementaryRecordsBuilder")

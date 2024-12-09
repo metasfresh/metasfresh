@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
@@ -40,12 +41,36 @@ public interface I_C_POS
 
 	/**
 	 * Get Mandant.
+=======
+package org.compiere.model;
+
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
+
+/** Generated Interface for C_POS
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public interface I_C_POS 
+{
+
+	String Table_Name = "C_POS";
+
+//	/** AD_Table_ID=748 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getAD_Client_ID();
 
 	public org.compiere.model.I_AD_Client getAD_Client();
@@ -83,6 +108,33 @@ public interface I_C_POS
     public static final org.adempiere.model.ModelColumn<I_C_POS, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_POS, org.compiere.model.I_AD_Org>(I_C_POS.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+=======
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Auto Logout Delay.
@@ -92,7 +144,11 @@ public interface I_C_POS
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setAutoLogoutDelay (int AutoLogoutDelay);
+=======
+	void setAutoLogoutDelay (int AutoLogoutDelay);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Auto Logout Delay.
@@ -102,6 +158,7 @@ public interface I_C_POS
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getAutoLogoutDelay();
 
     /** Column definition for AutoLogoutDelay */
@@ -134,22 +191,60 @@ public interface I_C_POS
 
 	/**
 	 * Set Vorlage Geschäftspartner.
+=======
+	int getAutoLogoutDelay();
+
+	ModelColumn<I_C_POS, Object> COLUMN_AutoLogoutDelay = new ModelColumn<>(I_C_POS.class, "AutoLogoutDelay", null);
+	String COLUMNNAME_AutoLogoutDelay = "AutoLogoutDelay";
+
+	/**
+	 * Set Cash Last Balance.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCashLastBalance (BigDecimal CashLastBalance);
+
+	/**
+	 * Get Cash Last Balance.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCashLastBalance();
+
+	ModelColumn<I_C_POS, Object> COLUMN_CashLastBalance = new ModelColumn<>(I_C_POS.class, "CashLastBalance", null);
+	String COLUMNNAME_CashLastBalance = "CashLastBalance";
+
+	/**
+	 * Set Template B.Partner.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Business Partner used for creating new Business Partners on the fly
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setC_BPartnerCashTrx_ID (int C_BPartnerCashTrx_ID);
 
 	/**
 	 * Get Vorlage Geschäftspartner.
+=======
+	void setC_BPartnerCashTrx_ID (int C_BPartnerCashTrx_ID);
+
+	/**
+	 * Get Template B.Partner.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Business Partner used for creating new Business Partners on the fly
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getC_BPartnerCashTrx_ID();
 
 	public org.compiere.model.I_C_BPartner getC_BPartnerCashTrx();
@@ -164,21 +259,39 @@ public interface I_C_POS
 	/**
 	 * Set Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
+=======
+	int getC_BPartnerCashTrx_ID();
+
+	String COLUMNNAME_C_BPartnerCashTrx_ID = "C_BPartnerCashTrx_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
 	 * Get Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
+=======
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getC_BP_BankAccount_ID();
 
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
@@ -250,22 +363,60 @@ public interface I_C_POS
 
 	/**
 	 * Set POS-Terminal.
+=======
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
+	 * Set Auftrags-Belegart.
+	 * Document type used for the orders generated from this order candidate
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeOrder_ID (int C_DocTypeOrder_ID);
+
+	/**
+	 * Get Auftrags-Belegart.
+	 * Document type used for the orders generated from this order candidate
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeOrder_ID();
+
+	String COLUMNNAME_C_DocTypeOrder_ID = "C_DocTypeOrder_ID";
+
+	/**
+	 * Set POS Terminal.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Point of Sales Terminal
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setC_POS_ID (int C_POS_ID);
 
 	/**
 	 * Get POS-Terminal.
+=======
+	void setC_POS_ID (int C_POS_ID);
+
+	/**
+	 * Get POS Terminal.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Point of Sales Terminal
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getC_POS_ID();
 
     /** Column definition for C_POS_ID */
@@ -304,12 +455,43 @@ public interface I_C_POS
 
 	/**
 	 * Get Erstellt.
+=======
+	int getC_POS_ID();
+
+	ModelColumn<I_C_POS, Object> COLUMN_C_POS_ID = new ModelColumn<>(I_C_POS.class, "C_POS_ID", null);
+	String COLUMNNAME_C_POS_ID = "C_POS_ID";
+
+	/**
+	 * Set POS Cash Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_Journal_ID (int C_POS_Journal_ID);
+
+	/**
+	 * Get POS Cash Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_Journal_ID();
+
+	ModelColumn<I_C_POS, Object> COLUMN_C_POS_Journal_ID = new ModelColumn<>(I_C_POS.class, "C_POS_Journal_ID", null);
+	String COLUMNNAME_C_POS_Journal_ID = "C_POS_Journal_ID";
+
+	/**
+	 * Get Created.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -319,12 +501,22 @@ public interface I_C_POS
 
 	/**
 	 * Get Erstellt durch.
+=======
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_POS, Object> COLUMN_Created = new ModelColumn<>(I_C_POS.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -334,20 +526,61 @@ public interface I_C_POS
 
 	/**
 	 * Set Beschreibung.
+=======
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_C_POS, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_POS.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
+	/**
+	 * Set Description.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Beschreibung.
+=======
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
@@ -382,28 +615,51 @@ public interface I_C_POS
 
 	/**
 	 * Set Aktiv.
+=======
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_C_POS, Object> COLUMN_Description = new ModelColumn<>(I_C_POS.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Active.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
+=======
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public boolean isActive();
 
     /** Column definition for IsActive */
     public static final org.adempiere.model.ModelColumn<I_C_POS, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_POS, Object>(I_C_POS.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+=======
+	boolean isActive();
+
+	ModelColumn<I_C_POS, Object> COLUMN_IsActive = new ModelColumn<>(I_C_POS.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Modify Price.
@@ -413,7 +669,11 @@ public interface I_C_POS
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setIsModifyPrice (boolean IsModifyPrice);
+=======
+	void setIsModifyPrice (boolean IsModifyPrice);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Modify Price.
@@ -423,6 +683,7 @@ public interface I_C_POS
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public boolean isModifyPrice();
 
     /** Column definition for IsModifyPrice */
@@ -432,22 +693,39 @@ public interface I_C_POS
 
 	/**
 	 * Set Preisliste.
+=======
+	boolean isModifyPrice();
+
+	ModelColumn<I_C_POS, Object> COLUMN_IsModifyPrice = new ModelColumn<>(I_C_POS.class, "IsModifyPrice", null);
+	String COLUMNNAME_IsModifyPrice = "IsModifyPrice";
+
+	/**
+	 * Set Price List.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
 	 * Get Preisliste.
+=======
+	void setM_PriceList_ID (int M_PriceList_ID);
+
+	/**
+	 * Get Price List.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_PriceList_ID();
 
 	public org.compiere.model.I_M_PriceList getM_PriceList();
@@ -461,22 +739,38 @@ public interface I_C_POS
 
 	/**
 	 * Set Lager.
+=======
+	int getM_PriceList_ID();
+
+	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Warehouse.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Lager.
+=======
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getM_Warehouse_ID();
 
 	public org.compiere.model.I_M_Warehouse getM_Warehouse();
@@ -491,21 +785,37 @@ public interface I_C_POS
 	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
+=======
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Name.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 * Alphanumeric identifier of the entity
+=======
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getName();
 
     /** Column definition for Name */
@@ -573,22 +883,60 @@ public interface I_C_POS
 
 	/**
 	 * Set Drucker.
+=======
+	java.lang.String getName();
+
+	ModelColumn<I_C_POS, Object> COLUMN_Name = new ModelColumn<>(I_C_POS.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessor (@Nullable java.lang.String POSPaymentProcessor);
+
+	/**
+	 * Get Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOSPaymentProcessor();
+
+	ModelColumn<I_C_POS, Object> COLUMN_POSPaymentProcessor = new ModelColumn<>(I_C_POS.class, "POSPaymentProcessor", null);
+	String COLUMNNAME_POSPaymentProcessor = "POSPaymentProcessor";
+
+	/**
+	 * Set Printer.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Name of the Printer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public void setPrinterName (java.lang.String PrinterName);
 
 	/**
 	 * Get Drucker.
+=======
+	void setPrinterName (@Nullable java.lang.String PrinterName);
+
+	/**
+	 * Get Printer.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Name of the Printer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.lang.String getPrinterName();
 
     /** Column definition for PrinterName */
@@ -627,12 +975,43 @@ public interface I_C_POS
 
 	/**
 	 * Get Aktualisiert.
+=======
+	@Nullable java.lang.String getPrinterName();
+
+	ModelColumn<I_C_POS, Object> COLUMN_PrinterName = new ModelColumn<>(I_C_POS.class, "PrinterName", null);
+	String COLUMNNAME_PrinterName = "PrinterName";
+
+	/**
+	 * Set SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_Config_ID (int SUMUP_Config_ID);
+
+	/**
+	 * Get SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSUMUP_Config_ID();
+
+	ModelColumn<I_C_POS, Object> COLUMN_SUMUP_Config_ID = new ModelColumn<>(I_C_POS.class, "SUMUP_Config_ID", null);
+	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";
+
+	/**
+	 * Get Updated.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -642,16 +1021,31 @@ public interface I_C_POS
 
 	/**
 	 * Get Aktualisiert durch.
+=======
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_POS, Object> COLUMN_Updated = new ModelColumn<>(I_C_POS.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
     public static final org.adempiere.model.ModelColumn<I_C_POS, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_POS, org.compiere.model.I_AD_User>(I_C_POS.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+=======
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

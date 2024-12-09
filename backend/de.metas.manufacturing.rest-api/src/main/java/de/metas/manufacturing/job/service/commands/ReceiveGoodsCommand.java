@@ -243,13 +243,21 @@ public class ReceiveGoodsCommand
 		if (coProductLine != null)
 		{
 			final UomId uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
+<<<<<<< HEAD
 			return Quantitys.create(qtyToReceiveBD, uomId);
+=======
+			return Quantitys.of(qtyToReceiveBD, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
 			final I_PP_Order ppOrder = getPPOrder();
 			final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
+<<<<<<< HEAD
 			return Quantitys.create(qtyToReceiveBD, uomId);
+=======
+			return Quantitys.of(qtyToReceiveBD, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

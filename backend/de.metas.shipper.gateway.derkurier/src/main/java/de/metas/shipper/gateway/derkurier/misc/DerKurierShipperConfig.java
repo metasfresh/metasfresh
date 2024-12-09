@@ -1,16 +1,28 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import java.time.LocalTime;
 
 import javax.annotation.Nullable;
 
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.Mailbox;
+=======
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.MailboxId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.time.LocalTime;
+import java.util.Optional;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.shipper.gateway.derkurier
@@ -34,6 +46,10 @@ import lombok.Value;
  */
 
 @Value
+<<<<<<< HEAD
+=======
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class DerKurierShipperConfig
 {
 	String restApiBaseUrl;
@@ -42,7 +58,11 @@ public class DerKurierShipperConfig
 
 	ParcelNumberGenerator parcelNumberGenerator;
 
+<<<<<<< HEAD
 	Mailbox deliveryOrderMailBoxOrNull;
+=======
+	Optional<MailboxId> deliveryOrderMailBoxId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	EMailAddress deliveryOrderRecipientEmailOrNull;
 
@@ -58,7 +78,11 @@ public class DerKurierShipperConfig
 	private DerKurierShipperConfig(
 			@NonNull final String restApiBaseUrl,
 			@NonNull final String customerNumber,
+<<<<<<< HEAD
 			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
+=======
+			@Nullable final MailboxId deliveryOrderMailBoxId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final EMailAddress deliveryOrderRecipientEmailOrNull,
 			@NonNull String collectorCode,
 			@NonNull String customerCode,
@@ -69,11 +93,19 @@ public class DerKurierShipperConfig
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
 
+<<<<<<< HEAD
 		final boolean mailBoxIsSet = deliveryOrderMailBoxOrNull != null;
 		final boolean mailAddressIsSet = deliveryOrderRecipientEmailOrNull != null;
 		Check.errorIf(mailBoxIsSet != mailAddressIsSet, "If a mailbox is configured, then also a mail address needs to be set and vice versa.");
 		this.deliveryOrderRecipientEmailOrNull = deliveryOrderRecipientEmailOrNull;
 		this.deliveryOrderMailBoxOrNull = deliveryOrderMailBoxOrNull;
+=======
+		final boolean mailBoxIsSet = deliveryOrderMailBoxId != null;
+		final boolean mailAddressIsSet = deliveryOrderRecipientEmailOrNull != null;
+		Check.errorIf(mailBoxIsSet != mailAddressIsSet, "If a mailbox is configured, then also a mail address needs to be set and vice versa.");
+		this.deliveryOrderRecipientEmailOrNull = deliveryOrderRecipientEmailOrNull;
+		this.deliveryOrderMailBoxId = Optional.ofNullable(deliveryOrderMailBoxId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		Check.assume(parcelNumberAdSequenceId > 0 || parcelNumberAdSequenceId == ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING,
 				"Parameter parcelNumberAdSequenceId is > 0");

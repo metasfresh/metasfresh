@@ -100,6 +100,7 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Difference Document.
 	 * Document type for generating in dispute Shipments
 	 *
@@ -122,6 +123,8 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -145,6 +148,56 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
+
+	/**
+	 * Set Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
+
+	/**
+	 * Get Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeDifference_ID();
+
+	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *

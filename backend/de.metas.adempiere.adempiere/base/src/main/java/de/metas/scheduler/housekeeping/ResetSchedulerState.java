@@ -45,7 +45,11 @@ public class ResetSchedulerState implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx("UPDATE " + I_AD_Scheduler.Table_Name
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail("UPDATE " + I_AD_Scheduler.Table_Name
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 

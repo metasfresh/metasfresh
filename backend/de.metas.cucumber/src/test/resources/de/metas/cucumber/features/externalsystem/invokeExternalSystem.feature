@@ -15,7 +15,10 @@ Feature: external system invocation using metasfresh api
   @from:cucumber
   Scenario: The request is good and the external service Shopware6 is invoked via the correct process
     When the metasfresh REST-API endpoint path 'api/externalsystem/S6/testS6/test' receives a 'POST' request
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'S6' invocation
 
   @from:cucumber

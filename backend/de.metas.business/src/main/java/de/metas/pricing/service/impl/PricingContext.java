@@ -459,6 +459,10 @@ class PricingContext implements IEditablePricingContext
 			return null;
 		}
 
+<<<<<<< HEAD
 		return Quantitys.create(ctxQty, ctxUomId);
+=======
+		return Quantitys.of(ctxQty, ctxUomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

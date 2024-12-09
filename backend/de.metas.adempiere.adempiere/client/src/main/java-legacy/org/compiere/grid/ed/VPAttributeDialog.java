@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.awt.BorderLayout;
@@ -45,6 +46,21 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -72,9 +88,12 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
+<<<<<<< HEAD
 import org.compiere.model.I_M_Lot;
 import org.compiere.model.I_M_LotCtl;
 import org.compiere.model.I_M_SerNoCtl;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSet;
@@ -93,6 +112,7 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -112,6 +132,29 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Value;
+=======
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -160,6 +203,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 	private CButton bSelectExistingASI = new CButton(Images.getImageIcon2("PAttribute16"));
 
+<<<<<<< HEAD
 	//
 	// Lot
 	private final boolean isLotEnabled;
@@ -179,6 +223,10 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final boolean isGuaranteeDateEnabled;
 	private final VDate fieldGuaranteeDate = new VDate("GuaranteeDate", false, false, true, DisplayType.Date, msgBL.translate(Env.getCtx(), "GuaranteeDate"));
 	//
+=======
+	private CMenuItem mZoom;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final CTextField fieldDescription = new CTextField(20);
 	//
 	private final CPanel centerPanel = new CPanel();
@@ -199,9 +247,12 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		_productId = attributeContext.getProductId();
 		_callerColumnId = asiInfo.getCallerColumnId();
 
+<<<<<<< HEAD
 		this.isLotEnabled = asiInfo.isLotEnabled();
 		this.isSerNoEnabled = asiInfo.isSerNoEnabled();
 		this.isGuaranteeDateEnabled = asiInfo.isGuaranteeDateEnabled();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Initialize
@@ -287,7 +338,11 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Initialize all panel fields and editors based on {@link #asiTemplate}.
+=======
+	 * Initialize all panel fields and editors based on {@link #getASITemplate()}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private final void initAttributes()
 	{
@@ -313,6 +368,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			addAttributeLine(attribute);
 		}
 
+<<<<<<< HEAD
 		//
 		// Lot
 		if (isLotEnabled)
@@ -432,6 +488,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			centerPanel.add(fieldGuaranteeDate, null);
 		}	// GuaranteeDate
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Make sure we have at least something to edit or something to select,
 		// else there is no point in showing empty this window.
 		if (m_row == 0)
@@ -476,8 +534,11 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 * Add Attribute Line
 	 *
 	 * @param attribute attribute
+<<<<<<< HEAD
 	 * @param product product level attribute
 	 * @param readOnly value is read only
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private void addAttributeLine(final I_M_Attribute attribute)
 	{
@@ -696,6 +757,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			return;
 		}
 		// Select Lot from existing
+<<<<<<< HEAD
 		else if (event.getSource() == fieldLot)
 		{
 			final KeyNamePair pp = fieldLot.getSelectedItem();
@@ -725,6 +787,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			final String serNo = getM_AttributeSet().createSerNo();
 			fieldSerNo.setText(serNo);
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// OK
 		else if (event.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -829,6 +893,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 */
 	private final void setReadWrite(final boolean rw)
 	{
+<<<<<<< HEAD
 		// Lot
 		if (isLotEnabled)
 		{
@@ -854,6 +919,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		{
 			fieldGuaranteeDate.setReadWrite(rw);
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Attribute Editors
 		for (final CEditor editor : attributeId2editor.values())
@@ -868,11 +935,14 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private void cmd_zoom()
 	{
 		int M_Lot_ID = 0;
+<<<<<<< HEAD
 		KeyNamePair pp = fieldLot.getSelectedItem();
 		if (pp != null)
 		{
 			M_Lot_ID = pp.getKey();
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		MQuery zoomQuery = new MQuery("M_Lot");
 		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
@@ -939,6 +1009,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		final Set<String> mandatory = new LinkedHashSet<>();
 
 		//
+<<<<<<< HEAD
 		// Lot
 		if (isLotEnabled)
 		{
@@ -1003,6 +1074,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		}
 
 		//
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// New Instance
 		if (changed || asi.getM_AttributeSetInstance_ID() <= 0)
 		{

@@ -14,10 +14,17 @@ CREATE OR REPLACE FUNCTION de_metas_acct.tax_accounting_report_details_sum(IN p_
                                                                            IN p_org_id     numeric)
     RETURNS TABLE
             (
+<<<<<<< HEAD
                 vatcode          character varying(10),
                 kontono          character varying(40),
                 kontoname        character varying(60),
                 taxname          character varying(60),
+=======
+                vatcode          character varying,
+                kontono          character varying,
+                kontoname        character varying,
+                taxname          character varying,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                 taxrate          numeric,
                 taxbaseamt       numeric,
                 taxamt           numeric,
@@ -25,16 +32,23 @@ CREATE OR REPLACE FUNCTION de_metas_acct.tax_accounting_report_details_sum(IN p_
                 C_Tax_ID         numeric,
                 ad_org_id        numeric
             )
+<<<<<<< HEAD
+=======
+    LANGUAGE plpgsql
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 AS
 $$
 BEGIN
 
+<<<<<<< HEAD
     RAISE INFO '-----------------------------------------';
     RAISE INFO 'New call.......';
     RAISE INFO 'param p_vatcode %', p_vatcode;
     RAISE INFO 'param p_account_id %', p_account_id;
     RAISE INFO 'param p_c_tax_id %', p_c_tax_id;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     RETURN QUERY SELECT y.vatcode,
                         y.kontono,
                         y.kontoname,
@@ -51,15 +65,22 @@ BEGIN
                                  x.kontoname,
                                  x.taxname,
                                  x.taxrate,
+<<<<<<< HEAD
                                  (COALESCE(x.inv_baseamt, x.gl_baseamt, 0::numeric) + COALESCE(x.hdr_baseamt, 0::numeric)) AS taxbaseamt,
                                  (COALESCE(x.inv_taxamt, x.gl_taxamt) + COALESCE(x.hdr_taxamt, 0 :: numeric))              AS taxamt,
                                  x.taxamtperaccount                                                                        AS taxamtperaccount,
+=======
+                                 (COALESCE(x.inv_baseamt, x.gl_baseamt, x.sap_gl_baseamt, 0::numeric) + COALESCE(x.alloc_baseamt, 0::numeric)) AS taxbaseamt,
+                                 (COALESCE(x.inv_taxamt, x.gl_taxamt, x.sap_gl_taxamt, 0::numeric) + COALESCE(x.alloc_taxamt, 0 :: numeric))  AS taxamt,
+                                 x.taxamtperaccount                                                                          AS taxamtperaccount,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                                  x.dateacct,
                                  x.c_currency_id,
                                  x.C_Tax_ID,
                                  x.ad_org_id,
                                  x.ad_client_id
                           FROM (
+<<<<<<< HEAD
                                    SELECT ev.value       AS kontono,
                                           ev.name        AS kontoname,
                                           tax.name       AS taxname,
@@ -78,6 +99,22 @@ BEGIN
                                                    ELSE 0
                                            END)          AS taxamtperaccount,
 
+=======
+                                   SELECT fa.kontono,
+                                          fa.kontoname,
+                                          fa.taxname,
+                                          fa.taxrate,
+                                          fa.dateacct,
+                                          fa.inv_baseamt,
+                                          fa.gl_baseamt,
+                                          fa.sap_gl_baseamt,
+                                          fa.alloc_baseamt,
+                                          fa.inv_taxamt,
+                                          fa.gl_taxamt,
+                                          fa.sap_gl_taxamt,
+                                          fa.alloc_taxamt,
+                                          fa.taxamtperaccount,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                                           fa.c_currency_id,
 
                                           fa.vatcode     AS vatcode,
@@ -85,6 +122,7 @@ BEGIN
                                           fa.ad_org_id,
                                           fa.ad_client_id
 
+<<<<<<< HEAD
                                    FROM public.fact_acct fa
                                             -- gh #489: explicitly select from public.fact_acct, bacause the function de_metas_acct.Fact_Acct_EndingBalance expects it.
 
@@ -172,6 +210,9 @@ BEGIN
                                                                fa.ad_table_id = get_Table_Id('C_AllocationHdr') AND
                                                                fa.line_id = hdr.C_AllocationLine_ID
 
+=======
+                                   FROM de_metas_acct.tax_accounting_details_v fa
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                                    WHERE fa.DateAcct >= p_dateFrom
                                      AND fa.DateAcct <= p_dateTo
                                      AND fa.postingtype IN ('A', 'Y')
@@ -207,5 +248,10 @@ BEGIN
 
 END;
 $$
+<<<<<<< HEAD
     LANGUAGE plpgsql
 ;
+=======
+;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

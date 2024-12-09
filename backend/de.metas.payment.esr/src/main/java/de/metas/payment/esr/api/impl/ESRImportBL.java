@@ -18,6 +18,10 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.IPeriodBL;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -65,7 +69,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -370,7 +377,11 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
+<<<<<<< HEAD
 			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
+=======
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.PurchasePayment, importLine.getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (PeriodClosedException p)
 		{

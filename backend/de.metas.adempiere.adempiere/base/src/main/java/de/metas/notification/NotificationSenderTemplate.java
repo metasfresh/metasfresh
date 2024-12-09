@@ -2,6 +2,7 @@ package de.metas.notification;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
@@ -10,6 +11,15 @@ import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+=======
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -19,7 +29,10 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
+<<<<<<< HEAD
 import de.metas.process.AdProcessId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -36,7 +49,10 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +70,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+<<<<<<< HEAD
+=======
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Stream;
 
 /*
@@ -91,7 +111,10 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+<<<<<<< HEAD
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
 
@@ -137,7 +160,11 @@ public class NotificationSenderTemplate
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
+<<<<<<< HEAD
 		catch(Exception ex)
+=======
+		catch (Exception ex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
@@ -437,7 +464,10 @@ public class NotificationSenderTemplate
 	private void sendMail(final UserNotificationRequest request)
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
+<<<<<<< HEAD
 		final Mailbox mailbox = findMailbox(notificationsConfig);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
@@ -448,6 +478,7 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
+<<<<<<< HEAD
 		final EMail mail = mailService.createEMail(
 				mailbox,
 				notificationsConfig.getEmail(),
@@ -456,10 +487,21 @@ public class NotificationSenderTemplate
 				html);
 		request.getAttachments().forEach(mail::addAttachment);
 		mailService.send(mail);
+=======
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.to(notificationsConfig.getEmail())
+				.subject(subject)
+				.message(content)
+				.html(html)
+				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
+				.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
+<<<<<<< HEAD
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
 		return mailService.findMailBox(
 				tenantEmailConfig,
@@ -467,6 +509,17 @@ public class NotificationSenderTemplate
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
 				(EMailCustomType)null);  // customType
+=======
+		return mailService.findMailbox(mailboxQuery(notificationsConfig));
+	}
+
+	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)
+	{
+		return MailboxQuery.builder()
+				.clientId(notificationsConfig.getClientId())
+				.orgId(notificationsConfig.getOrgId())
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

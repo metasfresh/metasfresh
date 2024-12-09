@@ -47,6 +47,10 @@ public class ArchiveInfo
 	private AdProcessId processId;
 	private TableRecordReference recordRef;
 	private BPartnerId bpartnerId;
+<<<<<<< HEAD
+=======
+	private String poReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//FRESH-349: AD_PInstance is also needed
 	private PInstanceId pInstanceId;
@@ -79,6 +83,10 @@ public class ArchiveInfo
 		this.recordRef = printInfo.recordRef;
 		this.bpartnerId = printInfo.bpartnerId;
 		this.pInstanceId = printInfo.pInstanceId;
+<<<<<<< HEAD
+=======
+		this.poReference = printInfo.poReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static String normalizeName(@Nullable final String name)

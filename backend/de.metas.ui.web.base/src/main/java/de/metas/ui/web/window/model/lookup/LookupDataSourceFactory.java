@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.model.lookup;
 
 import de.metas.cache.CCache;
+<<<<<<< HEAD
 import de.metas.cache.CCache.CCacheStats;
+=======
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -13,6 +17,10 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
+<<<<<<< HEAD
+=======
+import org.springframework.stereotype.Service;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -45,6 +53,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+@Service
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public final class LookupDataSourceFactory
 {
 	public static final transient LookupDataSourceFactory instance = new LookupDataSourceFactory();

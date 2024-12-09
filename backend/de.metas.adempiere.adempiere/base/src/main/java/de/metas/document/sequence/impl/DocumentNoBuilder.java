@@ -73,7 +73,11 @@ import java.util.function.Supplier;
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
 	// services
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
+=======
+	private static final Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * To be used as filter criteria for AD_Sequence_NO when the sequence is only using StartNewYear
 	 */
@@ -91,7 +95,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	/**
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARYEAR}.
 	 */
+<<<<<<< HEAD
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
+=======
+	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARMONTH}.
 	 */
@@ -338,13 +346,21 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			else
 			{
 				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
+<<<<<<< HEAD
 				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
+=======
+				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}", customSequenceNumber);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				result = customSequenceNumber;
 			}
 		}
 		else
 		{
+<<<<<<< HEAD
 			logger.debug("getSequenceNoToUse - going to get incremental seuqnce number" + customSequenceNoProvider);
+=======
+			logger.debug("getSequenceNoToUse - going to get incremental sequence number" + customSequenceNoProvider);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			//
 			// Don't increment sequence number if it's not Auto
@@ -414,11 +430,19 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql,
 						   sqlParams.toArray(),
 						   trxName,
 						   QUERY_TIME_OUT,
 						   rs -> currentSeq.setValue(rs.getInt(1)));
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												sqlParams.toArray(),
+												trxName,
+												QUERY_TIME_OUT,
+												rs -> currentSeq.setValue(rs.getInt(1)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return currentSeq.getValue();
 	}

@@ -59,6 +59,13 @@ public class DocumentLocation
 			@Nullable final BPartnerContactId contactId,
 			@Nullable final String bpartnerAddress)
 	{
+<<<<<<< HEAD
+=======
+		if ((bpartnerLocationId != null || contactId != null) && bpartnerId == null)
+		{
+			throw new AdempiereException("If bpartnerLocationId=" + bpartnerLocationId + " OR contactId=" + contactId + " are not null, then bpartnerId may also not be null");
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (bpartnerLocationId != null && !bpartnerLocationId.getBpartnerId().equals(bpartnerId))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " shall match");
@@ -86,6 +93,21 @@ public class DocumentLocation
 				.build();
 	}
 
+<<<<<<< HEAD
+=======
+	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+	{
+		return builder()
+				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
+				.contactId(null)
+				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
+				.bpartnerAddress(null)
+				.build();
+	}
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
 		return !Objects.equals(this.locationId, locationId)

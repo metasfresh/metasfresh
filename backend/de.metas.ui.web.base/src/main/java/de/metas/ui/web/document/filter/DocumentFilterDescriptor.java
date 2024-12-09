@@ -71,7 +71,13 @@ public final class DocumentFilterDescriptor
 	@Getter
 	private final boolean frequentUsed;
 
+<<<<<<< HEAD
 	/** How to render it when the filter is inline (i.e. {@link #frequentUsed} is true) */
+=======
+	/**
+	 * How to render it when the filter is inline (i.e. {@link #frequentUsed} is true)
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Getter
 	private final DocumentFilterInlineRenderMode inlineRenderMode;
 
@@ -190,11 +196,19 @@ public final class DocumentFilterDescriptor
 			}
 
 			filter.addParameter(DocumentFilterParam.builder()
+<<<<<<< HEAD
 										.setFieldName(paramDescriptor.getFieldName())
 										.setOperator(paramDescriptor.getOperator())
 										.setValue(value)
 										.setValueTo(valueTo)
 										.build());
+=======
+					.setFieldName(paramDescriptor.getFieldName())
+					.setOperator(paramDescriptor.getOperatorOrEqualsIfNull())
+					.setValue(value)
+					.setValueTo(valueTo)
+					.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		for (final DocumentFilterParam internalParam : getInternalParameters())
@@ -205,7 +219,10 @@ public final class DocumentFilterDescriptor
 		return filter.build();
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	//
 	//
 	//
@@ -248,12 +265,20 @@ public final class DocumentFilterDescriptor
 						final Integer nextParamIndex = nextParamIndexByFieldName.get(fieldName);
 						if (nextParamIndex == null)
 						{
+<<<<<<< HEAD
 							paramBuilder.setParameterName(fieldName);
+=======
+							paramBuilder.parameterName(fieldName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							nextParamIndexByFieldName.put(fieldName, 2);
 						}
 						else
 						{
+<<<<<<< HEAD
 							paramBuilder.setParameterName(fieldName + nextParamIndex);
+=======
+							paramBuilder.parameterName(fieldName + nextParamIndex);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
 						}
 					})

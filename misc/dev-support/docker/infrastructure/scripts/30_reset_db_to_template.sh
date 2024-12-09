@@ -38,8 +38,20 @@ set -u
 
 # the winpty is needed to avoid an error when running the script in git bash on windows
 
+<<<<<<< HEAD
 winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh;"
 winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "create database metasfresh template metasfresh_template_${BRANCH_NAME};"
 
+=======
+echo "Stopping ${BRANCH_NAME}_postgrest"
+winpty docker stop ${BRANCH_NAME}_postgrest
+
+winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh;"
+winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "create database metasfresh template metasfresh_template_${BRANCH_NAME};"
+
+echo "Starting ${BRANCH_NAME}_postgrest again"
+winpty docker start ${BRANCH_NAME}_postgrest
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 echo "The local database has been recreated from the template database."
 echo "You can rerun this script to reset the local database to the template database."

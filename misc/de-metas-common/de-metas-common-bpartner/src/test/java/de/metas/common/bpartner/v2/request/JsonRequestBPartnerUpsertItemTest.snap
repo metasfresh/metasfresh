@@ -1,5 +1,6 @@
 de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
   {
+<<<<<<< HEAD
     "bpartnerIdentifier" : "ext-12345",
     "bpartnerComposite" : {
       "bpartner" : {
@@ -26,5 +27,33 @@ de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItemTest.serializeD
         "syncAdviseSet" : false
       }
     }
+=======
+    "bpartnerComposite": {
+      "bpartner": {
+        "activeSet": false,
+        "code": "code",
+        "codeSet": true,
+        "companyNameSet": false,
+        "customerSet": false,
+        "externalIdSet": false,
+        "globalIdset": false,
+        "groupSet": false,
+        "invoiceRuleSet": false,
+        "languageSet": false,
+        "name2Set": false,
+        "name3Set": false,
+        "nameSet": false,
+        "parentIdSet": false,
+        "phoneSet": false,
+        "syncAdviseSet": false,
+        "url2Set": false,
+        "url3Set": false,
+        "urlSet": false,
+        "vatIdSet": false,
+        "vendorSet": false
+      }
+    },
+    "bpartnerIdentifier": "ext-12345"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -23,7 +23,11 @@
 package de.metas.workflow.rest_api.service;
 
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+=======
+import de.metas.mobile.application.MobileApplicationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -24,7 +24,10 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -76,7 +79,10 @@ import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+<<<<<<< HEAD
 import de.metas.quantity.Quantitys;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
@@ -162,7 +168,11 @@ public class ShipmentScheduleWithHUService
 		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
 		 */
 		@Nullable
+<<<<<<< HEAD
 		Quantity quantityToDeliverOverride;
+=======
+		StockQtyAndUOMQty quantityToDeliverOverride;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		/**
 		 * Fails if no picked HUs were found.
@@ -214,7 +224,11 @@ public class ShipmentScheduleWithHUService
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean onTheFlyPickToPackingInstructions,
+<<<<<<< HEAD
 			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
+=======
+			@NonNull final QtyToDeliverMap qtyToDeliverMap,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean isFailIfNoPickedHUs)
 	{
 		if (shipmentSchedules.isEmpty())
@@ -234,7 +248,12 @@ public class ShipmentScheduleWithHUService
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
+<<<<<<< HEAD
 			final Quantity quantityToDeliverOverride = extractQuantityToDeliverOverrideOrNull(scheduleId2QtyToDeliverOverride, shipmentSchedule);
+=======
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+			final StockQtyAndUOMQty quantityToDeliverOverride = qtyToDeliverMap.getQtyToDeliver(shipmentScheduleId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			requestBuilder.quantityToDeliverOverride(quantityToDeliverOverride);
 
 			final ImmutableList<ShipmentScheduleWithHU> candidatesForSched = createCandidatesForSched(requestBuilder, shipmentSchedule);
@@ -247,6 +266,7 @@ public class ShipmentScheduleWithHUService
 		return ImmutableList.copyOf(candidates);
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	private Quantity extractQuantityToDeliverOverrideOrNull(
 			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
@@ -269,6 +289,11 @@ public class ShipmentScheduleWithHUService
 	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@Nullable final Quantity quantityToDeliverOverride,
+=======
+	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
+			@NonNull final I_M_ShipmentSchedule scheduleRecord,
+			@Nullable final StockQtyAndUOMQty quantityToDeliverOverride,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final IHUContext huContext)
@@ -276,7 +301,11 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
+<<<<<<< HEAD
 				() -> quantityToDeliverOverride,
+=======
+				() -> quantityToDeliverOverride != null ? quantityToDeliverOverride.getStockQty() : null,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
@@ -304,9 +333,28 @@ public class ShipmentScheduleWithHUService
 		{
 			final boolean hasNoPickedHUs = result.isEmpty();
 
+<<<<<<< HEAD
 			final Quantity catchQtyOverride = hasNoPickedHUs
 					? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
 					: null /* if at least one HU was picked, the catchOverride qty was added there */;
+=======
+			final Quantity catchQtyOverride;
+			if (quantityToDeliverOverride != null && quantityToDeliverOverride.isDifferentUOMQty())
+			{
+				if (!hasNoPickedHUs)
+				{
+					throw new AdempiereException("Overriding catch weight when there are already picked records is not allowed")
+							.setParameter("quantityToDeliverOverride", quantityToDeliverOverride);
+				}
+				catchQtyOverride = quantityToDeliverOverride.getUOMQtyNotNull();
+			}
+			else
+			{
+				catchQtyOverride = hasNoPickedHUs
+						? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
+						: null /* if at least one HU was picked, the catchOverride qty was added there */;
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
 			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQty.builder()

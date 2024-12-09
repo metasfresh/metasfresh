@@ -79,6 +79,11 @@ CREATE OR REPLACE FUNCTION M_DiscountSchemaLine_TransformPrices
 	, p_Target_Currency_ID numeric
 	, p_Conv_Client_ID numeric
 	, p_Conv_Org_ID numeric
+<<<<<<< HEAD
+=======
+    , p_Source_M_ProductPrice_ID numeric
+    , p_Target_PriceList_Version_ID numeric
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	, p_ApplyDiscountSchema boolean = true
 	, p_DoNotChangeZeroPrices boolean = true
 )
@@ -86,6 +91,10 @@ RETURNS M_DiscountSchemaLine_TransformResult AS
 $BODY$
 DECLARE
 	v_result M_DiscountSchemaLine_TransformResult;
+<<<<<<< HEAD
+=======
+    addCalculatedAmt numeric;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 BEGIN
 	--
 	-- Convert prices to target currency
@@ -117,6 +126,7 @@ BEGIN
         v_result.PriceStd = (CASE dsl.Std_Base WHEN 'L' THEN p_PriceList WHEN 'X' THEN p_PriceLimit ELSE p_PriceStd END);
         v_result.PriceLimit = (CASE dsl.Limit_Base WHEN 'L' THEN p_PriceList WHEN 'S' THEN p_PriceStd ELSE p_PriceLimit END);
 
+<<<<<<< HEAD
         -- add amt if needed
         IF (p_DoNotChangeZeroPrices) THEN
             v_result.PriceList = CASE WHEN v_result.PriceList <> 0 THEN v_result.PriceList + dsl.List_AddAmt ELSE 0 END;
@@ -125,6 +135,18 @@ BEGIN
         ELSE
             v_result.PriceList = v_result.PriceList + dsl.List_AddAmt;
             v_result.PriceStd = v_result.PriceStd + dsl.Std_Addamt;
+=======
+        addCalculatedAmt = execute_surcharge_calculation_SQL(dsl.m_discountschema_id, p_Target_PriceList_Version_ID, p_Source_M_ProductPrice_ID);
+
+        -- add amt if needed
+        IF (p_DoNotChangeZeroPrices) THEN
+            v_result.PriceList = CASE WHEN v_result.PriceList <> 0 THEN v_result.PriceList + dsl.List_AddAmt ELSE 0 END;
+            v_result.PriceStd = CASE WHEN v_result.PriceStd <> 0 THEN v_result.PriceStd + dsl.Std_AddAmt + addCalculatedAmt ELSE 0 END;
+            v_result.PriceLimit = CASE WHEN v_result.PriceLimit <> 0 THEN v_result.PriceLimit + dsl.Limit_AddAmt ELSE 0 END;
+        ELSE
+            v_result.PriceList = v_result.PriceList + dsl.List_AddAmt;
+            v_result.PriceStd = v_result.PriceStd + dsl.Std_Addamt + addCalculatedAmt;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             v_result.PriceLimit = v_result.PriceLimit + dsl.Limit_AddAmt;
         END IF;
 

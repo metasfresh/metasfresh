@@ -23,6 +23,7 @@ END
 $$
 ;
 
+<<<<<<< HEAD
 /*
  * #%L
  * de.metas.adempiere.adempiere.migration-sql
@@ -45,6 +46,8 @@ $$
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 -- Usage example:
 -- SELECT backup_table('C_BP_Group');
 -- => select * from backup.C_BP_Group_bkp_20220303_084927_890

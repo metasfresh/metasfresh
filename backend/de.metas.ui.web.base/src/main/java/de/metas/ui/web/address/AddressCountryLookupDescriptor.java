@@ -3,7 +3,11 @@ package de.metas.ui.web.address;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+<<<<<<< HEAD
 import de.metas.cache.CCache.CCacheStats;
+=======
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;

@@ -22,6 +22,10 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -30,11 +34,20 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportFlavor;
+<<<<<<< HEAD
+=======
+import de.metas.user.UserId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+<<<<<<< HEAD
+=======
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.ArchiveId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
@@ -53,7 +66,10 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.springframework.core.io.ByteArrayResource;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
@@ -64,6 +80,11 @@ import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
+<<<<<<< HEAD
+=======
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	@Nullable
 	public I_AD_Archive archive(final Resource data,
@@ -112,7 +133,12 @@ public class ArchiveBL implements IArchiveBL
 					.processId(archiveInfo.getProcessId())
 					.pinstanceId(archiveInfo.getPInstanceId())
 					.archiveName(archiveInfo.getName())
+<<<<<<< HEAD
 					.bpartnerId(archiveInfo.getBpartnerId());
+=======
+					.bpartnerId(archiveInfo.getBpartnerId())
+					.poReference(archiveInfo.getPoReference());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return requestBuilder.build();
@@ -143,6 +169,10 @@ public class ArchiveBL implements IArchiveBL
 		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
 
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+<<<<<<< HEAD
+=======
+		archive.setPOReference(request.getPoReference());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final byte[] byteArray = extractByteArray(request);
 		storage.setBinaryData(archive, byteArray);
@@ -272,10 +302,14 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
+<<<<<<< HEAD
 			if (request.isReport())
 			{
 				return false;
 			}
+=======
+			return !request.isReport();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return true;
 	}
@@ -360,7 +394,18 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<I_AD_Archive> getLastArchive(
+=======
+	public Optional<AdArchive> getLastArchive(
+			@NonNull final TableRecordReference reference)
+	{
+		return getLastArchiveRecord(reference).map(this::toAdArchive);
+	}
+	
+	@Override
+	public Optional<I_AD_Archive> getLastArchiveRecord(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final TableRecordReference reference)
 	{
 		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
@@ -380,8 +425,27 @@ public class ArchiveBL implements IArchiveBL
 	public Optional<Resource> getLastArchiveBinaryData(
 			@NonNull final TableRecordReference reference)
 	{
+<<<<<<< HEAD
 		return getLastArchive(reference)
 				.map(this::getBinaryData)
 				.map(ByteArrayResource::new);
+=======
+		return getLastArchive(reference).map(AdArchive::getArchiveDataAsResource);
+	}
+
+	@Override
+	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
+	{
+		archiveDAO.updatePrintedRecords(ids, userId);
+	}
+
+	private AdArchive toAdArchive(final I_AD_Archive record)
+	{
+		return AdArchive.builder()
+				.id(ArchiveId.ofRepoId(record.getAD_Archive_ID()))
+				.archiveData(getBinaryData(record))
+				.contentType(getContentType(record))
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

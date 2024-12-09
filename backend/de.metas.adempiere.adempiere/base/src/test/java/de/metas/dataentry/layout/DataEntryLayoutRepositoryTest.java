@@ -1,5 +1,6 @@
 package de.metas.dataentry.layout;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -15,6 +16,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
@@ -23,6 +28,19 @@ import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -46,17 +64,29 @@ import lombok.NonNull;
  * #L%
  */
 
+<<<<<<< HEAD
 public class DataEntryLayoutRepositoryTest
 {
 	private DataEntryLayoutRepository dataEntryLayoutRepository;
 
 	@Before
 	public void init()
+=======
+@ExtendWith(SnapshotExtension.class)
+public class DataEntryLayoutRepositoryTest
+{
+	private static DataEntryLayoutRepository dataEntryLayoutRepository;
+	private Expect expect;
+
+	@BeforeAll
+	public static void init()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		AdempiereTestHelper.get().init();
 		dataEntryLayoutRepository = new DataEntryLayoutRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeClass
 	public static void beforeAll()
 	{
@@ -69,6 +99,8 @@ public class DataEntryLayoutRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void getByWindowId()
 	{
@@ -78,7 +110,11 @@ public class DataEntryLayoutRepositoryTest
 		// invoke the method under test
 		final DataEntryLayout layout = dataEntryLayoutRepository.getByWindowId(windowId_1);
 
+<<<<<<< HEAD
 		expect(layout.getTabs()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(layout.getTabs());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private I_DataEntry_Tab createRecords()

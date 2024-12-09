@@ -6,17 +6,30 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.jetbrains.annotations.Contract;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
 public interface ISysConfigBL extends ISingletonService
 {
+<<<<<<< HEAD
 	@Nullable
 	String getValue(String name, String defaultValue);
 
 	@Nullable
 	String getValue(String name);
+=======
+	@Contract("_, !null -> !null")
+	@Nullable
+	String getValue(@NonNull String name, @Nullable String defaultValue);
+
+	@Nullable
+	String getValue(@NonNull String name);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	int getIntValue(String name, int defaultValue);
 
@@ -60,6 +73,11 @@ public interface ISysConfigBL extends ISingletonService
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
+<<<<<<< HEAD
+=======
+	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 
 	void setValue(String name, boolean value, ClientId clientId, OrgId orgId);

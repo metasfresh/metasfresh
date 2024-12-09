@@ -1,5 +1,6 @@
 package de.metas.process;
 
+<<<<<<< HEAD
 import java.util.function.Supplier;
 
 import org.adempiere.util.lang.IAutoCloseable;
@@ -11,6 +12,19 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Process;
+import org.compiere.util.Ini;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -42,7 +56,11 @@ import de.metas.util.Services;
  */
 public class ProcessPreconditionChecker
 {
+<<<<<<< HEAD
 	public static final ProcessPreconditionChecker newInstance()
+=======
+	public static ProcessPreconditionChecker newInstance()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new ProcessPreconditionChecker();
 	}
@@ -111,11 +129,19 @@ public class ProcessPreconditionChecker
 		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
+<<<<<<< HEAD
 	private static final IProcessPrecondition createProcessPreconditions(
 			final Class<? extends IProcessPrecondition> preconditionsClass,
 			final IProcessPreconditionsContext context) throws Exception
 	{
 		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
+=======
+	private static IProcessPrecondition createProcessPreconditions(
+			final Class<? extends IProcessPrecondition> preconditionsClass,
+			final IProcessPreconditionsContext context)
+	{
+		final IProcessPrecondition processPreconditions = Util.newInstance(IProcessPrecondition.class, preconditionsClass);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (processPreconditions instanceof JavaProcess)
 		{
 			((JavaProcess)processPreconditions).init(context);
@@ -211,7 +237,11 @@ public class ProcessPreconditionChecker
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
+=======
+	private Class<?> loadClass(final String classname, final boolean isServerProcess)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (classname == null)
 		{
@@ -244,7 +274,11 @@ public class ProcessPreconditionChecker
 		}
 	}
 
+<<<<<<< HEAD
 	private final Class<? extends IProcessPrecondition> toProcessPreconditionsClassOrNull(final Class<?> clazz)
+=======
+	private Class<? extends IProcessPrecondition> toProcessPreconditionsClassOrNull(final Class<?> clazz)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (clazz != null && IProcessPrecondition.class.isAssignableFrom(clazz))
 		{
@@ -257,18 +291,30 @@ public class ProcessPreconditionChecker
 
 	}
 
+<<<<<<< HEAD
 	private final void presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
+=======
+	private void presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		logger.warn("Marked checker as not applicable: {} because {}", this, errorMessage, ex);
 		_presetResolution = ProcessPreconditionsResolution.rejectWithInternalReason(errorMessage);
 	}
 
+<<<<<<< HEAD
 	private final ProcessPreconditionsResolution getPresetResolution()
+=======
+	private ProcessPreconditionsResolution getPresetResolution()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _presetResolution;
 	}
 
+<<<<<<< HEAD
 	private final boolean hasPresetResolution()
+=======
+	private boolean hasPresetResolution()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _presetResolution != null;
 	}

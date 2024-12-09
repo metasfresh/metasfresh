@@ -78,7 +78,11 @@ public class MBPartner extends X_C_BPartner
 		}
 		final String whereClause = "Value=? AND AD_Client_ID=?";
 		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
+<<<<<<< HEAD
 				new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly();
+=======
+				new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly(MBPartner.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return retValue;
 	} // get
 

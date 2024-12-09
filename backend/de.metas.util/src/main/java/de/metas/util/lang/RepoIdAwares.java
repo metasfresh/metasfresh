@@ -12,6 +12,13 @@ import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,6 +51,17 @@ import java.util.function.IntFunction;
 @UtilityClass
 public class RepoIdAwares
 {
+<<<<<<< HEAD
+=======
+	/**
+	 * If an {@link de.metas.util.lang.RepoIdAware} instance is annotated with this,
+	 * then it will be skipped by automated tests which are checking if the repo ID is valid.
+	 */
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	public @interface SkipTest {}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
 		if (ids.isEmpty())
@@ -152,6 +170,19 @@ public class RepoIdAwares
 				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T extends RepoIdAware> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return CollectionUtils.ofCommaSeparatedSet(
+				commaSeparatedStr,
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
 	{
 		if (repoIdAware == null)

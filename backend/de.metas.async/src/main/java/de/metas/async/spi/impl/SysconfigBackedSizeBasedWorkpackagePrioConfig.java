@@ -149,7 +149,11 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 
 		logger.debug(
 				"Found no priority for the given position {} (current queue size={}).\nThe {} AD_SysConfig-records which we checked are: {}.\nReturning the preset default prio: {}.",
+<<<<<<< HEAD
 				position, size, sortedMap.size(), sortedMap, defaultPrio.retrievePrioName());
+=======
+				position, size, sortedMap.size(), sortedMap, defaultPrio.getPriority());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return defaultPrio;
 	}
 

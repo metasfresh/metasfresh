@@ -55,6 +55,13 @@ public final class QueryLimit
 		{
 			return FIVE_HUNDRED;
 		}
+<<<<<<< HEAD
+=======
+		else if (limit == ONE_THOUSAND.value)
+		{
+			return ONE_THOUSAND;
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		else
 		{
 			return new QueryLimit(limit);
@@ -77,6 +84,10 @@ public final class QueryLimit
 	public static final QueryLimit TWO = new QueryLimit(2);
 	public static final QueryLimit ONE_HUNDRED = new QueryLimit(100);
 	public static final QueryLimit FIVE_HUNDRED = new QueryLimit(500);
+<<<<<<< HEAD
+=======
+	public static final QueryLimit ONE_THOUSAND = new QueryLimit(1000);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final int value;
 

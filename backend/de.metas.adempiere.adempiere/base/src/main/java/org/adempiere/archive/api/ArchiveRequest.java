@@ -83,6 +83,12 @@ public class ArchiveRequest
 	@Nullable
 	Language language;
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	String poReference;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean isDirectEnqueue;
 	boolean isDirectProcessQueueItem;
 }

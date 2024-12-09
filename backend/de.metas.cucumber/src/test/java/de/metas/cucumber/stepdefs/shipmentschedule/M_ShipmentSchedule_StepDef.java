@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2022 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,6 +49,10 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
+=======
+import de.metas.cucumber.stepdefs.StepDefDocAction;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -57,6 +65,10 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
@@ -80,9 +92,17 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+<<<<<<< HEAD
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
@@ -101,6 +121,10 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+<<<<<<< HEAD
+=======
+import java.sql.Timestamp;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +137,11 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Sh
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class M_ShipmentSchedule_StepDef
@@ -128,6 +156,11 @@ public class M_ShipmentSchedule_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+<<<<<<< HEAD
+=======
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -334,6 +367,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("validate M_ShipmentSchedule:")
 	public void validate_M_ShipmentSchedule(@NonNull final DataTable dataTable)
 	{
@@ -343,6 +377,8 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("validate JsonResponseShipmentCandidates.JsonCustomer")
 	public void validate_JsonCustomer(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
@@ -496,6 +532,29 @@ public class M_ShipmentSchedule_StepDef
 		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
+<<<<<<< HEAD
+=======
+	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				shipmentScheduleBL.closeShipmentSchedule(schedule);
+				break;
+			case reactivated:
+				shipmentScheduleBL.openShipmentSchedule(schedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ShipmentSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -613,21 +672,43 @@ public class M_ShipmentSchedule_StepDef
 			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
 		}
 
+<<<<<<< HEAD
+=======
+		final Timestamp preparationDateOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override);
+		if (preparationDateOverride != null)
+		{
+			shipmentScheduleRecord.setPreparationDate_Override(preparationDateOverride);
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(shipmentScheduleRecord);
 	}
 
 	private void validateShipmentSchedule(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
+<<<<<<< HEAD
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver);
 		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
 		final boolean isProcessed = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_Processed);
+=======
+		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyReserved);
+		final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver);
+		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
+		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand);
+		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
+		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
+<<<<<<< HEAD
 		final Supplier<Boolean> isShipmentScheduleFound = () -> queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -637,18 +718,50 @@ public class M_ShipmentSchedule_StepDef
 				.create()
 				.firstOnlyOptional(I_M_ShipmentSchedule.class)
 				.isPresent();
+=======
+		final Supplier<Boolean> isShipmentScheduleFound = () -> {
+			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+					.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+			if (qtyToDeliver != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, qtyToDeliver);
+			}
+			if (qtyToDeliverOverride != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override, qtyToDeliverOverride);
+			}
+			if (qtyOnHand != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
+			}
+			return queryBuilder
+					.create()
+					.firstOnlyOptional(I_M_ShipmentSchedule.class)
+					.isPresent();
+		};
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentScheduleFound);
 
 		InterfaceWrapperHelper.refresh(shipmentSchedule);
+<<<<<<< HEAD
 
 		if (qtyToDeliverOverride != null)
 		{
 			assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());
+=======
+		final SoftAssertions softly = new SoftAssertions();
+		if (qtyToDeliverOverride != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).as("QtyToDeliver_Override for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (qtyPicked != null)
 		{
+<<<<<<< HEAD
 			assertThat(shipmentSchedule.getQtyPickList().stripTrailingZeros()).isEqualTo(qtyPicked.stripTrailingZeros());
 		}
 
@@ -656,12 +769,157 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(shipmentSchedule.getQtyOrdered().stripTrailingZeros()).isEqualTo(qtyOrdered.stripTrailingZeros());
 		assertThat(shipmentSchedule.getQtyDelivered().stripTrailingZeros()).isEqualTo(qtyDelivered.stripTrailingZeros());
 		assertThat(shipmentSchedule.isProcessed()).isEqualTo(isProcessed);
+=======
+			softly.assertThat(shipmentSchedule.getQtyPickList().stripTrailingZeros()).as("QtyPickList for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyPicked.stripTrailingZeros());
+		}
+
+		if (qtyToDeliver != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyToDeliver().stripTrailingZeros()).as("QtyToDeliver for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliver.stripTrailingZeros());
+		}
+
+		if (qtyOrdered != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyOrdered().stripTrailingZeros()).as("QtyOrdered for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOrdered.stripTrailingZeros());
+		}
+
+		if (qtyDelivered != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyDelivered().stripTrailingZeros()).as("QtyDelivered for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyDelivered.stripTrailingZeros());
+		}
+		if (qtyReserved != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyReserved().stripTrailingZeros()).as("QtyReserved for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyReserved.stripTrailingZeros());
+		}
+
+		if (isClosed != null)
+		{
+			assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
+		}
+		if (isProcessed != null)
+		{
+			softly.assertThat(shipmentSchedule.isProcessed()).as("Processed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isProcessed);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_TU);
 		if (qtyOrderedTU != null)
 		{
+<<<<<<< HEAD
 			assertThat(shipmentSchedule.getQtyOrdered_TU()).isEqualTo(qtyOrderedTU);
 		}
+=======
+			softly.assertThat(shipmentSchedule.getQtyOrdered_TU()).as("QtyOrdered_TU for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOrderedTU);
+		}
+
+		if (qtyOnHand != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyOnHand()).as("QtyOnHand for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOnHand);
+		}
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpartnerIdentifier))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			softly.assertThat(shipmentSchedule.getC_BPartner_ID()).as("C_BPartner_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(bPartner.getC_BPartner_ID());
+		}
+
+		final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpLocationIdentifier))
+		{
+			final I_C_BPartner_Location bpLocation = bpartnerLocationTable.get(bpLocationIdentifier);
+			softly.assertThat(shipmentSchedule.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+		}
+
+		final String billBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billBPIdentifier))
+		{
+			final I_C_BPartner billBP = bpartnerTable.get(billBPIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_BPartner_ID()).as("Bill_BPartner_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billBP.getC_BPartner_ID());
+		}
+
+		final String billBPLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billBPLocationIdentifier))
+		{
+			final I_C_BPartner_Location billBPLocation = bpartnerLocationTable.get(billBPLocationIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_Location_ID()).as("Bill_Location_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billBPLocation.getC_BPartner_Location_ID());
+		}
+
+		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(productIdentifier))
+		{
+			final I_M_Product product = productTable.get(productIdentifier);
+			softly.assertThat(shipmentSchedule.getM_Product_ID()).as("M_Product_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(product.getM_Product_ID());
+		}
+
+		final String exportStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
+		if (Check.isNotBlank(exportStatus))
+		{
+			softly.assertThat(shipmentSchedule.getExportStatus()).as("ExportStatus for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(exportStatus);
+		}
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderIdentifier))
+		{
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			softly.assertThat(shipmentSchedule.getC_Order_ID()).as("C_Order_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(order.getC_Order_ID());
+		}
+
+		final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderLineIdentifier))
+		{
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+			softly.assertThat(shipmentSchedule.getC_OrderLine_ID()).as("C_OrderLine_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(orderLine.getC_OrderLine_ID());
+		}
+
+		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(userIdentifier))
+		{
+			final I_AD_User user = userTable.get(userIdentifier);
+			softly.assertThat(shipmentSchedule.getAD_User_ID()).as("AD_User_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billUserIdentifier))
+		{
+			final I_AD_User billUser = userTable.get(billUserIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_User_ID()).as("Bill_User_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billUser.getAD_User_ID());
+		}
+
+		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipperIdentifier))
+		{
+			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+			softly.assertThat(shipmentSchedule.getM_Shipper_ID()).as("M_Shipper_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(shipper.getM_Shipper_ID());
+		}
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+
+			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(shipmentSchedule.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			softly.assertThat(actualAttributesKeys).as("AttributesKeys for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expectedAttributesKeys);
+		}
+
+		final String internalName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
+		if (Check.isNotBlank(internalName))
+		{
+			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
+			softly.assertThat(shipmentSchedule.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(dataSource.getAD_InputDataSource_ID());
+		}
+
+		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule);
+		if (Check.isNotBlank(deliveryRule))
+		{
+			softly.assertThat(shipmentSchedule.getDeliveryRule()).as("DeliveryRule for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(deliveryRule);
+		}
+
+		softly.assertAll();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Value
@@ -734,6 +992,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	private void validateSchedule(@NonNull final Map<String, String> row)
 	{
 		final String scheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -820,6 +1079,8 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void validateJsonCustomer(
 			@NonNull final JsonCustomer jsonCustomer,
 			@NonNull final Map<String, String> row)

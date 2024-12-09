@@ -10,20 +10,33 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Properties;
 
+=======
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -36,6 +49,7 @@ import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.DB;
 
+<<<<<<< HEAD
 import de.metas.util.Services;
 
 public class SequenceDAO implements ISequenceDAO
@@ -44,6 +58,21 @@ public class SequenceDAO implements ISequenceDAO
 	public I_AD_Sequence retrieveTableSequenceOrNull(Properties ctx, String tableName, String trxName)
 	{
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
+=======
+import javax.annotation.Nullable;
+import java.util.Properties;
+
+public class SequenceDAO implements ISequenceDAO
+{
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Nullable
+	@Override
+	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @NonNull final String tableName, @Nullable final String trxName)
+	{
+		final IQueryBuilder<I_AD_Sequence> queryBuilder = queryBL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.createQueryBuilder(I_AD_Sequence.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_Sequence> filters = queryBuilder.getCompositeFilter();
@@ -51,6 +80,7 @@ public class SequenceDAO implements ISequenceDAO
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, true);
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, IClientDAO.SYSTEM_CLIENT_ID);
 
+<<<<<<< HEAD
 		final I_AD_Sequence sequence = queryBuilder.create()
 				.firstOnly(I_AD_Sequence.class);
 
@@ -59,6 +89,15 @@ public class SequenceDAO implements ISequenceDAO
 
 	@Override
 	public I_AD_Sequence retrieveTableSequenceOrNull(Properties ctx, String tableName)
+=======
+		return queryBuilder.create()
+				.firstOnly(I_AD_Sequence.class);
+	}
+
+	@Nullable
+	@Override
+	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @NonNull final String tableName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		return retrieveTableSequenceOrNull(ctx, tableName, trxName);
@@ -90,4 +129,20 @@ public class SequenceDAO implements ISequenceDAO
 			DB.getDatabase().renameSequence(dbSequenceNameOld, dbSequenceNameNew);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	@NonNull
+	public I_AD_Sequence retrieveSequenceByName(@NonNull final String sequenceName)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_Sequence.class)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, sequenceName)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_AD_Sequence.COLUMNNAME_AD_Client_ID)
+				.create()
+				.firstNotNull(I_AD_Sequence.class);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

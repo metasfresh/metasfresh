@@ -97,7 +97,11 @@ public class CommissionPointsService
 						OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
 						commissionProductId,
 						bPartnerId,
+<<<<<<< HEAD
 						Quantitys.create(ONE, commissionProductId),
+=======
+						Quantitys.of(ONE, commissionProductId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(requestedDate);

@@ -25,6 +25,10 @@ package de.metas.contracts.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -32,7 +36,11 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
@@ -63,6 +71,11 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -104,7 +117,10 @@ import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -187,7 +203,10 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
+<<<<<<< HEAD
 	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -231,17 +250,29 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 
+<<<<<<< HEAD
 					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+=======
+					final ITranslatableString competed = ADReferenceService.get()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
 					final ITranslatableString uomName = uomDAO.getName(UomId.ofRepoId(invoicingEntry.getC_UOM_ID()));
 					return msgBL.getMsg(ctx,
+<<<<<<< HEAD
 										FlatrateBL.MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P,
 										new Object[] {
 												invoicingEntry.getC_Period().getName(),
 												uomName,
 												competed.translate(Env.getAD_Language()) });
+=======
+							FlatrateBL.MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P,
+							new Object[] {
+									invoicingEntry.getC_Period().getName(),
+									uomName,
+									competed.translate(Env.getAD_Language()) });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 
@@ -272,9 +303,15 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 					return msgBL.getMsg(ctx,
+<<<<<<< HEAD
 										FlatrateBL.MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P,
 										new Object[] {
 												sb.toString() });
+=======
+							FlatrateBL.MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P,
+							new Object[] {
+									sb.toString() });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 
 				//
@@ -298,6 +335,7 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 					return msgBL.getMsg(ctx,
+<<<<<<< HEAD
 										FlatrateBL.MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P,
 										new Object[] {
 												sb.toString() });
@@ -305,6 +343,15 @@ public class FlatrateBL implements IFlatrateBL
 			}
 			Check.assume(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()),
 						 dataEntry + "has type=" + X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
+=======
+							FlatrateBL.MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P,
+							new Object[] {
+									sb.toString() });
+				}
+			}
+			Check.assume(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()),
+					dataEntry + "has type=" + X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			qtyToInvoice = dataEntry.getQty_Reported();
 		}
 
@@ -341,7 +388,11 @@ public class FlatrateBL implements IFlatrateBL
 
 					// C_Flatrate_DataEntry_ID and QtyCleared have already been set by InvoiceCandidateValidator
 					Check.assume(alloc.getC_Flatrate_DataEntry_ID() == dataEntry.getC_Flatrate_DataEntry_ID(),
+<<<<<<< HEAD
 								 alloc + " sould have C_Flatrate_DataEntry_ID=" + dataEntry.getC_Flatrate_DataEntry_ID() + " but has " + alloc.getC_Flatrate_DataEntry_ID());
+=======
+							alloc + " sould have C_Flatrate_DataEntry_ID=" + dataEntry.getC_Flatrate_DataEntry_ID() + " but has " + alloc.getC_Flatrate_DataEntry_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 					// update the allocation record
 					alloc.setC_Invoice_Candidate_ID(newCand.getC_Invoice_Candidate_ID());
@@ -359,9 +410,15 @@ public class FlatrateBL implements IFlatrateBL
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
 		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
+<<<<<<< HEAD
 							 || X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
 					 fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
 							 + " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
+=======
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
+				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
+						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
@@ -399,7 +456,11 @@ public class FlatrateBL implements IFlatrateBL
 
 			final int productId = fc.getM_Product_Flatrate_ID();
 			Check.assume(productId > 0,
+<<<<<<< HEAD
 						 fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
+=======
+					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual, trxName);
 			result.add(newIc);
@@ -552,7 +613,11 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			final ProductId productId = ProductId.ofRepoIdOrNull(dataEntry.getM_Product_DataEntry_ID());
 			Check.assume(productId != null,
+<<<<<<< HEAD
 						 dataEntry + " has no M_Product_DataEntry, despite " + fc + "has Type_Conditions=" + fc.getType_Conditions());
+=======
+					dataEntry + " has no M_Product_DataEntry, despite " + fc + "has Type_Conditions=" + fc.getType_Conditions());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			productIdForIc = productId.getRepoId();
 
@@ -566,7 +631,11 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions()),
+<<<<<<< HEAD
 						 fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
+=======
+					fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 			{
@@ -575,11 +644,19 @@ public class FlatrateBL implements IFlatrateBL
 			else
 			{
 				Check.assume(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased.equals(dataEntry.getType()),
+<<<<<<< HEAD
 							 "dataEntry has type " + X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
 				productIdForIc = fc.getM_Product_Correction_ID();
 			}
 			Check.assume(productIdForIc > 0,
 						 fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
+=======
+						"dataEntry has type " + X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
+				productIdForIc = fc.getM_Product_Correction_ID();
+			}
+			Check.assume(productIdForIc > 0,
+					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			priceActual = dataEntry.getFlatrateAmt();
 		}
@@ -758,7 +835,11 @@ public class FlatrateBL implements IFlatrateBL
 						else
 						{
 							final String msg = msgBL.getMsg(ctx, "FlatrateBL_InvoicingEntry_Not_Invoiced",
+<<<<<<< HEAD
 															new Object[] { periodOfTerm.getName(), uom.getName() });
+=======
+									new Object[] { periodOfTerm.getName(), uom.getName() });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							errors.add(msg);
 							result = null;
 						}
@@ -766,7 +847,11 @@ public class FlatrateBL implements IFlatrateBL
 					else
 					{
 						final String msg = msgBL.getMsg(ctx, "PrepareClosing_InvoicingEntry_Not_CO",
+<<<<<<< HEAD
 														new Object[] { uom.getName(), periodOfTerm.getName() });
+=======
+								new Object[] { uom.getName(), periodOfTerm.getName() });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						errors.add(msg);
 						result = null;
 					}
@@ -847,10 +932,17 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P,
+<<<<<<< HEAD
 										new Object[] {
 												counter,
 												flatrateTerm.getStartDate(),
 												flatrateTerm.getEndDate() });
+=======
+				new Object[] {
+						counter,
+						flatrateTerm.getStartDate(),
+						flatrateTerm.getEndDate() });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
@@ -896,11 +988,19 @@ public class FlatrateBL implements IFlatrateBL
 		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
+<<<<<<< HEAD
 										new Object[] {
 												counter,
 												flatrateTerm.getStartDate(),
 												flatrateTerm.getEndDate(),
 												columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+=======
+				new Object[] {
+						counter,
+						flatrateTerm.getStartDate(),
+						flatrateTerm.getEndDate(),
+						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
@@ -931,7 +1031,11 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			Check.assume(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased.equals(dataEntry.getType()),
+<<<<<<< HEAD
 						 dataEntry + " has Type=" + X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
+=======
+					dataEntry + " has Type=" + X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			actualQtyOfUnits = dataEntry.getQty_Reported().subtract(dataEntry.getQty_Planned());
 			correctionWithoutActualQty = !conditions.isCorrectionAmtAtClosing();
@@ -1049,9 +1153,15 @@ public class FlatrateBL implements IFlatrateBL
 					else
 					{
 						Check.assume(X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding.equals(conditions.getType_Clearing()),
+<<<<<<< HEAD
 									 conditions + " has either Type_Clearing '" + X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding + "' or '"
 											 + X_C_Flatrate_Conditions.TYPE_CLEARING_Complete
 											 + "'");
+=======
+								conditions + " has either Type_Clearing '" + X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding + "' or '"
+										+ X_C_Flatrate_Conditions.TYPE_CLEARING_Complete
+										+ "'");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						effectiveDiffPercent = diffPercent.subtract(percentSubtrahent);
 					}
 
@@ -1059,7 +1169,11 @@ public class FlatrateBL implements IFlatrateBL
 					// (X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis.equals(conditions.getClearingAmtBaseOn()))
 					// {
 					Check.assume(X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount.equals(conditions.getClearingAmtBaseOn()),
+<<<<<<< HEAD
 								 conditions + " has ClearingAmtBaseOn='" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount + "'");
+=======
+							conditions + " has ClearingAmtBaseOn='" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount + "'");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 					amtCorrection = flatrateAmt
 							.multiply(effectiveDiffPercent.divide(Env.ONEHUNDRED, scale * 2, RoundingMode.HALF_UP))
@@ -1114,7 +1228,11 @@ public class FlatrateBL implements IFlatrateBL
 
 			final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 			currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
+<<<<<<< HEAD
 				save(currentTerm);
+=======
+			save(currentTerm);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 			{
 				// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
@@ -1186,8 +1304,13 @@ public class FlatrateBL implements IFlatrateBL
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
 			Check.errorUnless(currentTerm.getType_Conditions().equals(nextTerm.getType_Conditions()),
+<<<<<<< HEAD
 							  "currentTerm has Type_Conditions={} while nextTerm has Type_Conditions={}; currentTerm={}",
 							  currentTerm.getType_Conditions(), nextTerm.getType_Conditions(), currentTerm);
+=======
+					"currentTerm has Type_Conditions={} while nextTerm has Type_Conditions={}; currentTerm={}",
+					currentTerm.getType_Conditions(), nextTerm.getType_Conditions(), currentTerm);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
 			save(currentTerm);
@@ -1265,7 +1388,11 @@ public class FlatrateBL implements IFlatrateBL
 		final Timestamp nextTermStartDate = context.getNextTermStartDate();
 
 		Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
+<<<<<<< HEAD
 					  "{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
+=======
+				"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
@@ -1292,7 +1419,11 @@ public class FlatrateBL implements IFlatrateBL
 		ContractDocumentLocationAdapterFactory
 				.billLocationAdapter(nextTerm)
 				.setFrom(ContractLocationHelper.extractBillToLocationId(currentTerm),
+<<<<<<< HEAD
 						 billContactId);
+=======
+						billContactId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_User_ID());
 
@@ -1426,7 +1557,11 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				// make sure that durationUnit==month and duration==(n times 12); note that we have a model interceptor which enforces this.
 				Check.errorUnless(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE.equals(transition.getTermDurationUnit()),
+<<<<<<< HEAD
 								  "The term duration unit is not suitable for a term that ends with calendar year");
+=======
+						"The term duration unit is not suitable for a term that ends with calendar year");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				Check.errorUnless(transition.getTermDuration() % 12 == 0, "Term duration not suitable for a term that ends with calendar year");
 
 				termDuration = transition.getTermDuration() / 12;
@@ -1526,6 +1661,7 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_C_DocType getDocTypeFor(final I_C_Flatrate_Term term)
 	{
+<<<<<<< HEAD
 		final String subType;
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
@@ -1543,12 +1679,35 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			Check.assume(false, term + " has unexpected Type_Conditions=" + term.getType_Conditions());
 			subType = null;
+=======
+		final DocSubType subType;
+		final TypeConditions typeConditions = TypeConditions.ofCode(term.getType_Conditions());
+		switch (typeConditions)
+		{
+			case SUBSCRIPTION:
+				subType = DocSubType.Subscription;
+				break;
+			case HOLDING_FEE:
+				subType = DocSubType.HoldingFee;
+				break;
+			case FLAT_FEE:
+				subType = DocSubType.FlatFee;
+				break;
+			default:
+				Check.assume(false, term + " has unexpected Type_Conditions=" + term.getType_Conditions());
+				subType = DocSubType.NONE;
+				break;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
+<<<<<<< HEAD
 				.docBaseType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract)
+=======
+				.docBaseType(DocBaseType.CustomerContract)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.docSubType(subType)
 				.build();
 
@@ -1639,8 +1798,13 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBillToLocation(ctx, bPartner.getC_BPartner_ID(),
+<<<<<<< HEAD
 																							 true,            // alsoTryBPartnerRelation
 																							 trxName);
+=======
+				true,            // alsoTryBPartnerRelation
+				trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (billPartnerLocation == null)
 		{
@@ -1659,6 +1823,7 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			if (!flatrateDAO.retrieveTerms(ctx,
+<<<<<<< HEAD
 										   OrgId.ofRepoId(bPartner.getAD_Org_ID()),
 										   bPartner.getC_BPartner_ID(),
 										   null,
@@ -1666,6 +1831,15 @@ public class FlatrateBL implements IFlatrateBL
 										   productAndCategoryId.getProductId().getRepoId(),
 										   -1,
 										   trxName).isEmpty())
+=======
+					OrgId.ofRepoId(bPartner.getAD_Org_ID()),
+					bPartner.getC_BPartner_ID(),
+					null,
+					productAndCategoryId.getProductCategoryId().getRepoId(),
+					productAndCategoryId.getProductId().getRepoId(),
+					-1,
+					trxName).isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
@@ -1686,8 +1860,13 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setEndDate(startDate); // will be updated later
 
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+<<<<<<< HEAD
 																										  billPartnerLocation.getC_BPartner_Location_ID(),
 																										  billPartnerLocation.getC_Location_ID());
+=======
+				billPartnerLocation.getC_BPartner_Location_ID(),
+				billPartnerLocation.getC_Location_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
 				.setFrom(billToLocationId);
 
@@ -1702,8 +1881,13 @@ public class FlatrateBL implements IFlatrateBL
 		if (shipToLocationRecord != null)
 		{
 			final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+<<<<<<< HEAD
 																											  shipToLocationRecord.getC_BPartner_Location_ID(),
 																											  shipToLocationRecord.getC_Location_ID());
+=======
+					shipToLocationRecord.getC_BPartner_Location_ID(),
+					shipToLocationRecord.getC_Location_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
 					.setFrom(shipToLocationId);
@@ -1832,7 +2016,11 @@ public class FlatrateBL implements IFlatrateBL
 			// Only consider terms with the same org.
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
+<<<<<<< HEAD
 			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+=======
+			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				continue;
 			}
@@ -2102,17 +2290,32 @@ public class FlatrateBL implements IFlatrateBL
 			invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
 		}
 
+<<<<<<< HEAD
+=======
+		// we can't have this as a field,
+		// because metasfresh might try to instantiate FlatrateBL before the spring context is ready
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE);
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, newFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, newFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE);
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	}
 

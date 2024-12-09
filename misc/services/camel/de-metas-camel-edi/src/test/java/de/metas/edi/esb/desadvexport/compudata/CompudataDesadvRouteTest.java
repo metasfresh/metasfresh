@@ -46,7 +46,12 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class CompudataDesadvRouteTest extends CamelTestSupport
 {

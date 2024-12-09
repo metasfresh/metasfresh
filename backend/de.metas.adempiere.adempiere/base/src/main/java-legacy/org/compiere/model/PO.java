@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -23,6 +24,15 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
+=======
+import de.metas.ad_reference.ADRefList;
+import de.metas.audit.apirequest.request.log.StateType;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheSourceModelFactory;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -40,32 +50,49 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
+<<<<<<< HEAD
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+=======
+import de.metas.util.StringUtils;
+import de.metas.workflow.execution.DocWorkflowManager;
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
+=======
+import org.adempiere.ad.session.ChangeLogRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+<<<<<<< HEAD
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.adempiere.service.ISysConfigBL;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.copy.POValuesCopyStrategies;
@@ -73,7 +100,10 @@ import org.compiere.model.copy.POValuesCopyStrategy;
 import org.compiere.model.copy.ValueToCopyResolveContext;
 import org.compiere.model.copy.ValueToCopyResolved;
 import org.compiere.util.DB;
+<<<<<<< HEAD
 import org.compiere.util.DB.OnFail;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -83,7 +113,10 @@ import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
+<<<<<<< HEAD
 import org.compiere.util.ValueNamePair;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -284,6 +317,10 @@ public abstract class PO
 
 	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
+<<<<<<< HEAD
+=======
+	private final POServicesFacade services = new POServicesFacade();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/** Context */
 	private Properties p_ctx;
 	/** Model Info */
@@ -604,6 +641,7 @@ public abstract class PO
 		this.p_ctx = ctx;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * @return logger that is still used in some legacy classes
 	 */
@@ -613,6 +651,8 @@ public abstract class PO
 		return log;
 	}	// getLogger
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**************************************************************************
 	 * Get Value
 	 *
@@ -696,6 +736,7 @@ public abstract class PO
 		return get_Value(index);
 	}   // get_Value
 
+<<<<<<< HEAD
 	/**
 	 * Get Encrypted Value
 	 *
@@ -707,6 +748,8 @@ public abstract class PO
 		return get_Value(columnName);
 	}   // get_ValueE
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
 	{
@@ -755,7 +798,11 @@ public abstract class PO
 	 * @param AD_Column_ID column
 	 * @return value or null
 	 */
+<<<<<<< HEAD
 	public final Object get_ValueOfColumn(final int AD_Column_ID)
+=======
+	public final Object get_ValueOfColumn(@NonNull final AdColumnId AD_Column_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
@@ -906,6 +953,7 @@ public abstract class PO
 		return is_ValueChanged(index);
 	}   // is_ValueChanged
 
+<<<<<<< HEAD
 	/**
 	 * Return new - old.
 	 * - New Value if Old Value is null
@@ -980,6 +1028,8 @@ public abstract class PO
 		return get_ValueDifference(index);
 	}   // get_ValueDifference
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**************************************************************************
 	 * Set Value
 	 *
@@ -1076,14 +1126,22 @@ public abstract class PO
 			else if (oldValue != null)
 			{
 				// task 09266: be strict but allow an admin to declare exceptions from the stric rule via AD_SysConfig
+<<<<<<< HEAD
 				final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				// Value was changed and oldValue was already set
 				// That's an error because user shall not be allowed to change the value of this column
 				final String sysConfigName = "org.compiere.PO." + get_TableName() + "_" + ColumnName + ".ThrowExIfNotUpdateable";
+<<<<<<< HEAD
 				final boolean throwException = developerModeBL.isEnabled()
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
+=======
+				final boolean throwException = services.isDeveloperMode()
+						|| services.getSysConfigBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
 						+ "Note to developer: to bypass this checking you can:\n"
@@ -1191,6 +1249,7 @@ public abstract class PO
 				}
 			}
 			// Validate reference list [1762461]
+<<<<<<< HEAD
 			if (p_info.getColumn(index).DisplayType == DisplayType.List &&
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					valueToUse instanceof String)
@@ -1205,6 +1264,16 @@ public abstract class PO
 					}
 					throw new IllegalArgumentException(ColumnName + " Invalid value - "
 							+ valueToUse + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
+=======
+			if (p_info.getColumn(index).getDisplayType() == DisplayType.List &&
+					p_info.getColumn(index).AD_Reference_Value_ID != null &&
+					valueToUse instanceof String)
+			{
+				final ADRefList adRefList = services.getRefListById(p_info.getColumn(index).AD_Reference_Value_ID);
+				if (!adRefList.containsValue((String)valueToUse))
+				{
+					throw new AdempiereException(get_TableName() + "." + ColumnName + " Invalid value - " + valueToUse + " - " + adRefList);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 			if (log.isTraceEnabled())
@@ -1452,6 +1521,7 @@ public abstract class PO
 	}   // getColumnName
 
 	/**
+<<<<<<< HEAD
 	 * Is Column Mandatory
 	 *
 	 * @param index index
@@ -1499,6 +1569,8 @@ public abstract class PO
 	}   // getColumnLookup
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Column Index
 	 *
 	 * @param columnName column name
@@ -1510,6 +1582,7 @@ public abstract class PO
 	}   // getColumnIndex
 
 	/**
+<<<<<<< HEAD
 	 * Get Display Value of value
 	 *
 	 * @param columnName columnName
@@ -1546,6 +1619,8 @@ public abstract class PO
 	}	// get_DisplayValue
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Copy old values of From to new values of To.
 	 * Does not copy Keys
 	 *
@@ -1690,7 +1765,17 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
+<<<<<<< HEAD
 			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
+=======
+
+			if (!services.isPerfMonActive())
+			{
+				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
+			}
+			return services.performanceMonitoringServiceLoad(
+					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		finally
 		{
@@ -1787,8 +1872,11 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		loadComplete(success);
@@ -1926,8 +2014,11 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return success;
 	}
@@ -2301,6 +2392,7 @@ public abstract class PO
 	}	// setKeyInfo
 
 	/**************************************************************************
+<<<<<<< HEAD
 	 * Are all mandatory Fields filled (i.e. can we save)?.
 	 * Stops at first null mandatory field
 	 *
@@ -2328,6 +2420,8 @@ public abstract class PO
 	}   // isMandatoryOK
 
 	/**************************************************************************
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set AD_Client
 	 *
 	 * @param AD_Client_ID client
@@ -2574,7 +2668,11 @@ public abstract class PO
 
 		//
 		// Don't create change logs if they are not activated in ChangeLog system/BL
+<<<<<<< HEAD
 		if (!Services.get(ISessionBL.class).isChangeLogEnabled())
+=======
+		if (!services.isChangeLogEnabled())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
@@ -2598,7 +2696,11 @@ public abstract class PO
 		if (isInsertChangeLogEvent)
 		{
 			// note that i never needed this value to be Y, so i'm now setting the default to N
+<<<<<<< HEAD
 			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
+=======
+			final String insertChangeLogType = services.getInsertChangeLogType(adClientId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed
@@ -2700,7 +2802,11 @@ public abstract class PO
 					.setAD_PInstance_ID(adPInstanceId) // FRESH-314
 					.setTrxName(m_trxName)
 					.setAD_Table_ID(adTableId)
+<<<<<<< HEAD
 					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID())
+=======
+					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID().getRepoId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.setRecord_ID(recordId)
 					.setAD_Client_ID(adClientId)
 					.setAD_Org_ID(adOrgId)
@@ -2721,7 +2827,11 @@ public abstract class PO
 		// Save change log records
 		if (changeLogRecords != null)
 		{
+<<<<<<< HEAD
 			Services.get(ISessionDAO.class).saveChangeLogs(changeLogRecords);
+=======
+			services.saveChangeLogs(changeLogRecords);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -2737,7 +2847,11 @@ public abstract class PO
 			return;
 		}
 
+<<<<<<< HEAD
 		Services.get(IMigrationLogger.class).logMigration(session, this, p_info, actionType);
+=======
+		services.logMigration(session, this, p_info, actionType);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/*
@@ -2788,6 +2902,21 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
+<<<<<<< HEAD
+=======
+		if (!services.isPerfMonActive())
+		{
+			saveEx0();
+		}
+		else
+		{
+			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+		}
+	}
+
+	private final void saveEx0() throws AdempiereException
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// Check and prepare the saving
 		// (this shall happen before running the part which is handled in transaction)
@@ -2900,6 +3029,25 @@ public abstract class PO
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
 		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
+<<<<<<< HEAD
+=======
+		//
+		// Create cache invalidation request
+		if (p_info.isSingleKeyColumnName())
+		{
+			try
+			{
+				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.BEFORE_NEW : ModelCacheInvalidationTiming.BEFORE_CHANGE;
+				cacheInvalidationService.invalidateForModel(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on before new/change failed for {}. Ignored.", this, ex);
+			}
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Save
 		if (newRecord)
 		{
@@ -2931,6 +3079,7 @@ public abstract class PO
 		// Translations
 		if (success)
 		{
+<<<<<<< HEAD
 			if (newRecord)
 			{
 				insertTranslations();
@@ -2939,6 +3088,9 @@ public abstract class PO
 			{
 				updateTranslations();
 			}
+=======
+			updateTranslations(newRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (!isAssignedID)
@@ -2976,6 +3128,18 @@ public abstract class PO
 					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
 
+<<<<<<< HEAD
+=======
+		//
+		// Create cache invalidation request
+		// (we have to do it here, before we reset all fields)
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+				: null;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final int columnsCount = p_info.getColumnCount();
 
 		// OK
@@ -3027,6 +3191,7 @@ public abstract class PO
 
 		//
 		// Reset model cache
+<<<<<<< HEAD
 		if (p_info.isSingleKeyColumnName())
 		{
 			try
@@ -3035,6 +3200,13 @@ public abstract class PO
 				cacheInvalidationService.invalidateForModel(
 						POCacheSourceModel.of(this),
 						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+=======
+		if (cacheInvalidateRequest != null)
+		{
+			try
+			{
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, cacheInvalidationTiming);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			catch (final Exception ex)
 			{
@@ -3042,10 +3214,16 @@ public abstract class PO
 			}
 		}
 
+<<<<<<< HEAD
 		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
 
 		if (get_ID() > 0)
 		{
+=======
+		if (get_ID() > 0)
+		{
+			final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
 		}
 
@@ -3203,9 +3381,15 @@ public abstract class PO
 				continue;
 			}
 			// Update Document No
+<<<<<<< HEAD
 			if (columnName.equals("DocumentNo"))
 			{
 				final String documentNo = (String)value;
+=======
+			if (columnName.equals("DocumentNo") && p_info.isUseDocSequence(i))
+			{
+				final String documentNo = (String)Null.unbox(value);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -3215,7 +3399,11 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
+<<<<<<< HEAD
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+=======
+					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
@@ -3240,7 +3428,14 @@ public abstract class PO
 				}
 				else
 				{
+<<<<<<< HEAD
 					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+=======
+					if (is_ValueChanged(i))
+					{
+						log.warn("DocumentNo updated: {} -> {}", m_oldValues[i], value);
+					}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 
@@ -3325,9 +3520,12 @@ public abstract class PO
 				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
+<<<<<<< HEAD
 			/**
 			 * @todo status locking goes here
 			 */
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			//
 			// Execute UPDATE SQL
@@ -3335,11 +3533,19 @@ public abstract class PO
 			final int no;
 			if (isUseTimeoutForUpdate())
 			{
+<<<<<<< HEAD
 				no = DB.executeUpdateEx(sql.toString(), m_trxName, QUERY_TIME_OUT);
 			}
 			else
 			{
 				no = DB.executeUpdateEx(sql.toString(), m_trxName);
+=======
+				no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), m_trxName, QUERY_TIME_OUT);
+			}
+			else
+			{
+				no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), m_trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			boolean ok = no == 1;
 
@@ -3499,7 +3705,11 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
+<<<<<<< HEAD
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+=======
+					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
@@ -3522,7 +3732,11 @@ public abstract class PO
 					}
 					set_ValueNoCheck(columnName, value);
 
+<<<<<<< HEAD
 					Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
+=======
+					services.fireDocumentNoChange(this, value); // task 09776
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -3734,12 +3948,20 @@ public abstract class PO
 
 		//
 		// Execute actual database INSERT
+<<<<<<< HEAD
 		final int no = DB.executeUpdate(sqlInsert.toString(),
 				(Object[])null,  // params,
 				OnFail.ThrowException,  // onFail
 				m_trxName,
 				0,  // timeOut,
 				loadAfterInsertProcessor);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
+															   (Object[])null,  // params,
+															   m_trxName,
+															   0,  // timeOut,
+															   loadAfterInsertProcessor);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		boolean ok = no == 1;
 
 		//
@@ -4064,6 +4286,17 @@ public abstract class PO
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
 		//
+<<<<<<< HEAD
+=======
+		// Create cache invalidation request
+		// We have to do it here, before we actually delete in case we have to compute what rows are "disappearing" from a view because this record was deleted.
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
+				: null;
+
+		//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
 				.append(p_info.getTableName())
@@ -4072,11 +4305,19 @@ public abstract class PO
 		final int no;
 		if (isUseTimeoutForUpdate())
 		{
+<<<<<<< HEAD
 			no = DB.executeUpdateEx(sql.toString(), trxName, QUERY_TIME_OUT);
 		}
 		else
 		{
 			no = DB.executeUpdateEx(sql.toString(), trxName);
+=======
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName, QUERY_TIME_OUT);
+		}
+		else
+		{
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		if (no != 1)
 		{
@@ -4087,6 +4328,7 @@ public abstract class PO
 		m_idOld = get_ID();
 
 		//
+<<<<<<< HEAD
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
@@ -4096,6 +4338,8 @@ public abstract class PO
 						: null;
 
 		//
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
 		logMigration(X_AD_MigrationStep.ACTION_Delete);
 
@@ -4132,7 +4376,11 @@ public abstract class PO
 		{
 			try
 			{
+<<<<<<< HEAD
 				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+=======
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.AFTER_DELETE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			catch (final Exception ex)
 			{
@@ -4198,6 +4446,7 @@ public abstract class PO
 		}
 
 		// Make sure it's single ID key which is integer and which is set
+<<<<<<< HEAD
 		if (m_IDs.length > 1 || m_IDs.length == 0
 				|| I_ZERO.equals(m_IDs[0])
 				|| !(m_IDs[0] instanceof Integer))
@@ -4262,22 +4511,72 @@ public abstract class PO
 	 * @return false if error (true if no translation or success)
 	 */
 	private boolean deleteTranslations()
+=======
+		return isSingleIntegerPrimaryKeySet();
+	}
+
+	private boolean isSingleIntegerPrimaryKeySet()
+		{
+		return m_IDs.length == 1
+				&& !I_ZERO.equals(m_IDs[0])
+				&& m_IDs[0] instanceof Integer;
+		}
+
+	private void updateTranslations(final boolean newRecord)
+		{
+		final POTrlInfo trlInfo = p_info.getTrlInfo();
+
+		//
+		// Case: we deal with a base table which supports translations
+		if (trlInfo.isTranslated())
+	{
+			final boolean updated = newRecord
+					? POTrlRepository.instance.onBaseRecordCreated(trlInfo, get_ID())
+					: POTrlRepository.instance.onBaseRecordChanged(this);
+
+			// reset cached translations
+			if (updated)
+		{
+				m_translations = null;
+			}
+		}
+		//
+		// Case: we are dealing with a translation table
+		else if (POTrlRepository.isTrlTableName(p_info.getTableName()))
+		{
+			POTrlRepository.instance.onTrlRecordChanged(this);
+		}
+		}
+
+	private void deleteTranslations()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final POTrlInfo trlInfo = p_info.getTrlInfo();
 		if(!trlInfo.isTranslated())
 		{
+<<<<<<< HEAD
 			return true;
 		}
 
 		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
+=======
+			return;
+		}
+
+		final boolean ok = POTrlRepository.instance.deleteTranslations(trlInfo, get_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
+<<<<<<< HEAD
 
 		//
 		return ok;
 	}	// deleteTranslations
+=======
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Insert Accounting Records
@@ -4341,10 +4640,78 @@ public abstract class PO
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
 
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
+		return no > 0;
+	}	// insert_Accounting
+
+
+
+	public final boolean update_Accounting(
+			@NonNull final String acctTable,
+			@NonNull final String acctBaseTable,
+			@Nullable final String whereClause)
+	{
+		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
+		if(acctInfo == null)
+		{
+			log.warn("No accounting info found for {}. Skipping", acctTable);
+			return false;
+		}
+
+		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
+
+		// Create SQL Statement - UPDATE
+		final StringBuilder sb = new StringBuilder("UPDATE ")
+				.append(acctTable)
+				.append(" SET ")
+				.append("( Updated, UpdatedBy ");
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			sb.append("\n, ").append(acctColumnName);
+		}
+		// .. SELECT
+		sb.append("\n) = (SELECT ")
+				.append(" now(),")
+				.append(getUpdatedBy());
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
+		{
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			{
+				sb.append("\n, p.").append(acctColumnName);
+			}
+			else
+			{
+				sb.append("\n, NULL /* missing ").append(acctBaseTable).append(".").append(acctColumnName).append(" */");
+			}
+		}
+		// .. FROM
+		sb.append("\n FROM ").append(acctBaseTable)
+				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
+
+		if (whereClause != null && whereClause.length() > 0)
+		{
+			sb.append(" AND ").append(whereClause);
+		}
+
+		sb.append("\n AND EXISTS (SELECT 1 FROM ").append(acctTable)
+				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
+				.append(get_TableName()).append("_ID=").append(get_ID()).append("))");
+
+		sb.append("\n WHERE ")
+				.append(get_TableName()).append("_ID=").append(get_ID());
+		//
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
+		return no > 0;
+	}	// update_Accounting
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Delete Accounting records.
 	 * NOP - done by database constraints
@@ -4400,10 +4767,17 @@ public abstract class PO
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
 			{
+<<<<<<< HEAD
 				success = DB.executeUpdateEx(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
 			}
 			else {
 				success = DB.executeUpdate(sql, null) == 1;	// outside trx
+=======
+				success = DB.executeUpdateAndThrowExceptionOnFail(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
+			}
+			else {
+				success = DB.executeUpdateAndSaveErrorOnFail(sql, null) == 1;	// outside trx
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			if (success)
 			{
@@ -4446,11 +4820,19 @@ public abstract class PO
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
 			{
+<<<<<<< HEAD
 				success = DB.executeUpdateEx(sql, trxName, QUERY_TIME_OUT) == 1;
 			}
 			else
 			{
 				success = DB.executeUpdate(sql, trxName) == 1;
+=======
+				success = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName, QUERY_TIME_OUT) == 1;
+			}
+			else
+			{
+				success = DB.executeUpdateAndSaveErrorOnFail(sql, trxName) == 1;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			if (success)
 			{
@@ -5235,7 +5617,11 @@ public abstract class PO
 			return null;
 		}
 
+<<<<<<< HEAD
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
+=======
+		final MFSession session = services.sessionBL().getCurrentSession(getCtx());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (session == null)
 		{
 			log.debug("No Session found");
@@ -5301,7 +5687,11 @@ public abstract class PO
 	 */
 	protected final ITrxManager get_TrxManager()
 	{
+<<<<<<< HEAD
 		return Services.get(ITrxManager.class);
+=======
+		return services.trxManager();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -5389,6 +5779,10 @@ public abstract class PO
 		return m_loadCount;
 	}
 
+<<<<<<< HEAD
+=======
+	// metas: end
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isCopying() {return isDynAttributeTrue(DYNATTR_IsCopyWithDetailsInProgress);}
 
 	public void setCopying(final boolean copying) {setDynAttribute(DYNATTR_IsCopyWithDetailsInProgress, copying ? Boolean.TRUE : null);}

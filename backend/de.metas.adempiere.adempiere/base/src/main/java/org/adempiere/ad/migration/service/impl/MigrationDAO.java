@@ -112,7 +112,11 @@ public class MigrationDAO implements IMigrationDAO
 
 		final String updateSql = "UPDATE AD_MigrationStep SET AD_Migration_ID = ?, SeqNo = SeqNo + ? WHERE AD_Migration_ID = ? ";
 		final Object[] params = new Object[] { to.getAD_Migration_ID(), lastSeq, from.getAD_Migration_ID() };
+<<<<<<< HEAD
 		DB.executeUpdateEx(updateSql, params, trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(updateSql, params, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

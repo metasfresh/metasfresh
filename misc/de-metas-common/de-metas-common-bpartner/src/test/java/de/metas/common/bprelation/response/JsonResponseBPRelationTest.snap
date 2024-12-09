@@ -1,5 +1,6 @@
 de.metas.common.bprelation.response.JsonResponseBPRelationTest.serializeDeserializeTest=[
   {
+<<<<<<< HEAD
     "responseItems" : [
       {
         "bpartnerId" : 123456,
@@ -17,6 +18,25 @@ de.metas.common.bprelation.response.JsonResponseBPRelationTest.serializeDeserial
         "fetchedFrom" : true,
         "remitTo" : true,
         "active" : true
+=======
+    "responseItems": [
+      {
+        "active": true,
+        "billTo": true,
+        "bpartnerId": 123456,
+        "description": "relDesc",
+        "externalId": "ext123",
+        "fetchedFrom": true,
+        "handoverLocation": true,
+        "locationId": 234567,
+        "name": "relName",
+        "payFrom": true,
+        "remitTo": true,
+        "role": "MainProducer",
+        "shipTo": true,
+        "targetBPLocationId": 456789,
+        "targetBPartnerId": 345678
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       }
     ]
   }

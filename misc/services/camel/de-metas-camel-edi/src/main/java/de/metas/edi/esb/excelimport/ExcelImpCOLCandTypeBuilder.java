@@ -33,6 +33,10 @@ import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -105,7 +109,10 @@ public class ExcelImpCOLCandTypeBuilder
 
 	public ExcelImpCOLCandTypeBuilder setFromRow(final Excel_OLCand_Row row)
 	{
+<<<<<<< HEAD
 		olcand.setLine(toBigIntegerOrNull(row.getLineNo()));
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		olcand.setPOReference(row.getPOReference());
 
 		//
@@ -185,6 +192,17 @@ public class ExcelImpCOLCandTypeBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ExcelImpCOLCandTypeBuilder setLineNo(@NonNull final Integer lineNo)
+	{
+		olcand.setLine(BigInteger.valueOf(lineNo));
+
+		return this;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static EDIImpCCurrencyLookupISOCodeType currencyLookup(final String currencyISOCode)
 	{
 		if (currencyISOCode == null)

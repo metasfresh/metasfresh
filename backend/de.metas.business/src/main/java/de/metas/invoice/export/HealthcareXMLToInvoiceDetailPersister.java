@@ -25,8 +25,13 @@ package de.metas.invoice.export;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoice.detail.InvoiceLineWithDetails;
 import de.metas.invoice.detail.InvoiceWithDetails;
@@ -156,7 +161,11 @@ public class HealthcareXMLToInvoiceDetailPersister
 
 			final InvoiceLineWithDetails.InvoiceLineWithDetailsBuilder line = InvoiceLineWithDetails
 					.builder()
+<<<<<<< HEAD
 					.id(InvoiceLineId.ofRepoId(invoiceId, lineRecord.getC_InvoiceLine_ID()));
+=======
+					.id(InvoiceAndLineId.ofRepoId(invoiceId, lineRecord.getC_InvoiceLine_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			createItemIfNotBlank(serviceForRecordId.getName(), LABEL_SERVICE_NAME).ifPresent(line::detailItem);
 			extractLocalDate(serviceForRecordId.getDateBegin(), LABEL_SERVICE_DATE).ifPresent(line::detailItem);

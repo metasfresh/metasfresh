@@ -113,7 +113,11 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the async batch it's not set, it will be inherited.
 	 */
+<<<<<<< HEAD
 	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
+=======
+	IWorkPackageBuilder setC_Async_Batch(@Nullable I_C_Async_Batch asyncBatch);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Sets workpackage user in charge.

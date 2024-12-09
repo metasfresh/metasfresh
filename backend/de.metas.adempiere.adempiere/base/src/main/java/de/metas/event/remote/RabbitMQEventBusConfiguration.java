@@ -11,7 +11,10 @@ import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
+<<<<<<< HEAD
 import org.springframework.amqp.core.FanoutExchange;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
@@ -51,8 +54,11 @@ import java.util.Optional;
 @EnableRabbit // needed for @RabbitListener to be considered
 public class RabbitMQEventBusConfiguration
 {
+<<<<<<< HEAD
 	private static final String FANOUT_SUFFIX = "-fanout";
 	private static final String DIRECT_SUFFIX = "-direct";
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final String APPLICATION_NAME_SPEL = "${spring.application.name:spring.application.name-not-set}";
 	@Value(APPLICATION_NAME_SPEL)
 	private String appName;
@@ -79,7 +85,11 @@ public class RabbitMQEventBusConfiguration
 
 	/**
 	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
+<<<<<<< HEAD
 	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
+=======
+	 * Thx to <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq">spring-boot-features-rabbitmq</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * <p>
 	 * (although right now it doesn't need to work..)
 	 */
@@ -113,6 +123,7 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange fanoutEventsExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
@@ -134,6 +145,18 @@ public class RabbitMQEventBusConfiguration
 		public Binding directEventsBinding()
 		{
 			return BindingBuilder.bind(eventsQueue()).to(directEventsExchange()).with(getQueueName());
+=======
+		public DirectExchange eventsExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding eventsBinding()
+		{
+			return BindingBuilder.bind(eventsQueue())
+					.to(eventsExchange()).with(EXCHANGE_NAME_PREFIX);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -149,9 +172,15 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
+<<<<<<< HEAD
 		public String getFanoutExchangeName()
 		{
 			return fanoutEventsExchange().getName();
+=======
+		public String getExchangeName()
+		{
+			return eventsExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -174,6 +203,7 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange fanoutCacheInvalidationExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
@@ -195,6 +225,18 @@ public class RabbitMQEventBusConfiguration
 		public Binding directCacheInvalidationBinding()
 		{
 			return BindingBuilder.bind(cacheInvalidationQueue()).to(directCacheInvalidationExchange()).with(getQueueName());
+=======
+		public DirectExchange cacheInvalidationExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding cacheInvalidationBinding()
+		{
+			return BindingBuilder.bind(cacheInvalidationQueue())
+					.to(cacheInvalidationExchange()).with(EXCHANGE_NAME_PREFIX);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -210,9 +252,15 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
+<<<<<<< HEAD
 		public String getFanoutExchangeName()
 		{
 			return fanoutCacheInvalidationExchange().getName();
+=======
+		public String getExchangeName()
+		{
+			return cacheInvalidationExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -235,6 +283,7 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange fanoutAccountingExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
@@ -256,6 +305,18 @@ public class RabbitMQEventBusConfiguration
 		public Binding directAccountingBinding()
 		{
 			return BindingBuilder.bind(accountingQueue()).to(directAccountingExchange()).with(getQueueName());
+=======
+		public DirectExchange accountingExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding accountingBinding()
+		{
+			return BindingBuilder.bind(accountingQueue())
+					.to(accountingExchange()).with(EXCHANGE_NAME_PREFIX);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -271,9 +332,15 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
+<<<<<<< HEAD
 		public String getFanoutExchangeName()
 		{
 			return fanoutAccountingExchange().getName();
+=======
+		public String getExchangeName()
+		{
+			return accountingExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -296,6 +363,7 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange fanoutSchedulerExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
@@ -317,6 +385,18 @@ public class RabbitMQEventBusConfiguration
 		public Binding directSchedulerBinding()
 		{
 			return BindingBuilder.bind(schedulerQueue()).to(directSchedulerExchange()).with(getQueueName());
+=======
+		public DirectExchange schedulerExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding schedulerBinding()
+		{
+			return BindingBuilder.bind(schedulerQueue())
+					.to(schedulerExchange()).with(EXCHANGE_NAME_PREFIX);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -332,9 +412,65 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
+<<<<<<< HEAD
 		public String getFanoutExchangeName()
 		{
 			return fanoutSchedulerExchange().getName();
+=======
+		public String getExchangeName()
+		{
+			return schedulerExchange().getName();
+		}
+	}
+
+	@Configuration
+	public static class AsyncBatchQueueConfiguration implements IEventBusQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshAsyncBatchQueue.name}";
+		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
+		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-async-batch-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue asyncBatchQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public DirectExchange asyncBatchExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding asyncBatchBinding()
+		{
+			return BindingBuilder.bind(asyncBatchQueue())
+					.to(asyncBatchExchange()).with(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Override
+		public String getQueueName()
+		{
+			return asyncBatchQueue().getName();
+		}
+
+		@Override
+		public Optional<String> getTopicName()
+		{
+			return Optional.of(EVENTBUS_TOPIC.getName());
+		}
+
+		@Override
+		public String getExchangeName()
+		{
+			return asyncBatchExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -342,7 +478,11 @@ public class RabbitMQEventBusConfiguration
 	public static class MaterialEventsQueueConfiguration implements IEventBusQueueConfiguration
 	{
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshMaterialEventsQueue.name}";
+<<<<<<< HEAD
 		private static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
+=======
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private static final String QUEUE_BEAN_NAME = "metasfreshMaterialEventsQueue";
 		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-material-events";
 
@@ -357,6 +497,7 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange fanoutMaterialEventsExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
@@ -378,6 +519,18 @@ public class RabbitMQEventBusConfiguration
 		public Binding directMaterialEventsBinding()
 		{
 			return BindingBuilder.bind(materialEventsQueue()).to(directMaterialEventsExchange()).with(getQueueName());
+=======
+		public DirectExchange materialEventsExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding materialEventsBinding()
+		{
+			return BindingBuilder.bind(materialEventsQueue())
+					.to(materialEventsExchange()).with(EXCHANGE_NAME_PREFIX);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -393,30 +546,50 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Override
+<<<<<<< HEAD
 		public String getFanoutExchangeName()
 		{
 			return fanoutMaterialEventsExchange().getName();
+=======
+		public String getExchangeName()
+		{
+			return materialEventsExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
 	@Configuration
+<<<<<<< HEAD
 	public static class AsyncBatchQueueConfiguration
 	{
 		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
 		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
 		private static final String EXCHANGE_NAME = "metasfresh-async-batch-events";
+=======
+	public static class EffortControlQueueConfiguration implements IEventBusQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.serviceprovider.eventbus.EffortControlEventRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshEffortControlQueue.name}";
+		private static final String QUEUE_BEAN_NAME = "metasfreshEffortControlQueue";
+		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-effort-control-events";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		@Value(APPLICATION_NAME_SPEL)
 		private String appName;
 
 		@Bean(QUEUE_BEAN_NAME)
+<<<<<<< HEAD
 		public AnonymousQueue asyncBatchQueue()
+=======
+		public AnonymousQueue effortControlQueue()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
 		@Bean
+<<<<<<< HEAD
 		public FanoutExchange asyncBatchExchange()
 		{
 			return new FanoutExchange(EXCHANGE_NAME);
@@ -426,6 +599,36 @@ public class RabbitMQEventBusConfiguration
 		public Binding asyncBatchBinding()
 		{
 			return BindingBuilder.bind(asyncBatchQueue()).to(asyncBatchExchange());
+=======
+		public DirectExchange effortControlExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Bean
+		public Binding effortControlBinding()
+		{
+			return BindingBuilder.bind(effortControlQueue())
+					.to(effortControlExchange()).with(EXCHANGE_NAME_PREFIX);
+		}
+
+		@Override
+		public String getQueueName()
+		{
+			return effortControlQueue().getName();
+		}
+
+		@Override
+		public Optional<String> getTopicName()
+		{
+			return Optional.of(EVENTBUS_TOPIC.getName());
+		}
+
+		@Override
+		public String getExchangeName()
+		{
+			return effortControlExchange().getName();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 }

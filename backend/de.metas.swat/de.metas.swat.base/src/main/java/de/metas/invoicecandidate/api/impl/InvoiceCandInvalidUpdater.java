@@ -365,7 +365,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
+<<<<<<< HEAD
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
+=======
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(icRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = icRecord.getC_OrderLine();
@@ -416,7 +420,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 			{
 				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+<<<<<<< HEAD
 				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineById(inOutLineId);
+=======
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdOutOfTrx(inOutLineId, org.compiere.model.I_M_InOutLine.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 			}
@@ -439,7 +447,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			Loggables.withLogger(logger, Level.DEBUG)
 					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+<<<<<<< HEAD
 												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+=======
+												 iciol.getC_InvoiceCandidate_InOutLine_ID(), ic.getC_Invoice_Candidate_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
@@ -532,7 +544,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
+=======
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		assertNotExecuted();
 		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);

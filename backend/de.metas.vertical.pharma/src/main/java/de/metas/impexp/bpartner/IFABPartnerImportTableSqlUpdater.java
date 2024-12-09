@@ -57,7 +57,11 @@ public class IFABPartnerImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void dbUpdateCountries(@NonNull final ImportRecordsSelection selection)
@@ -70,6 +74,10 @@ public class IFABPartnerImportTableSqlUpdater
 				.append("WHERE C_Country_ID IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

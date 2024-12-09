@@ -4,6 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
@@ -15,6 +19,11 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+<<<<<<< HEAD
+=======
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -40,7 +49,11 @@ import java.util.Set;
  * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
+<<<<<<< HEAD
  * it under the terms of the GNU General Public License as
+=======
+ * it under the terms of the GNU General Public License asr
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
  *
@@ -76,6 +89,10 @@ import java.util.Set;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+<<<<<<< HEAD
+=======
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final OrderFactory orderFactory;
 
@@ -90,14 +107,25 @@ import java.util.Set;
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
+<<<<<<< HEAD
 		this.orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orderAggregationKey.getOrgId())
+=======
+		final OrgId orgId = orderAggregationKey.getOrgId();
+		this.orderFactory = OrderFactory.newPurchaseOrder()
+				.orgId(orgId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised())
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
+<<<<<<< HEAD
 				.externalHeaderId(orderAggregationKey.getExternalId());
+=======
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.dateOrdered(SystemTime.asLocalDate(orgDAO.getTimeZone(orgId)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (docType != null)
 		{
@@ -179,7 +207,11 @@ import java.util.Set;
 		{
 			final ZonedDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
 
+<<<<<<< HEAD
 			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised())))
+=======
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised(), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())))))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				deviatingDatePromised = true;
 			}

@@ -39,6 +39,10 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+<<<<<<< HEAD
+=======
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -47,6 +51,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -61,6 +69,14 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+<<<<<<< HEAD
+=======
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.UomId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -81,6 +97,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_M_Product;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -122,6 +142,10 @@ public class M_InOut_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
+<<<<<<< HEAD
+=======
+	private final C_DocType_StepDefData docTypeTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -132,6 +156,10 @@ public class M_InOut_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+<<<<<<< HEAD
+=======
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final String ignoredInoutType, @NonNull final DataTable table)
@@ -214,7 +242,11 @@ public class M_InOut_StepDef
 
 	@And("^'generate shipments' process is invoked with QuantityType=(.*), IsCompleteShipments=(true|false) and IsShipToday=(true|false)")
 	public void invokeGenerateShipmentsProcess(
+<<<<<<< HEAD
 			@NonNull final String quantityType, 
+=======
+			@NonNull final String quantityType,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean isCompleteShipments,
 			final boolean isShipToday,
 			@NonNull final DataTable table)
@@ -229,7 +261,11 @@ public class M_InOut_StepDef
 			final boolean isShipToday,
 			@NonNull final List<Map<String, String>> dataTable)
 	{
+<<<<<<< HEAD
 		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.builder();
+=======
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> qtysToDeliverOverride = ImmutableMap.builder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ImmutableList.Builder<ShipmentScheduleId> schedIdsToEnqueue = ImmutableList.builder();
 		for (final Map<String, String> tableRow : dataTable)
 		{
@@ -238,21 +274,41 @@ public class M_InOut_StepDef
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 			schedIdsToEnqueue.add(shipmentScheduleId);
 
+<<<<<<< HEAD
 			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
 			if (qtyToDeliverOverride != null)
 			{
 				qtysToDeliverOverride.put(shipmentScheduleId, qtyToDeliverOverride);
+=======
+			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override);
+			if (qtyToDeliverOverride != null)
+			{
+				final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+				final I_M_Product productRecord = productDAO.getById(productId);
+				qtysToDeliverOverride.put(shipmentScheduleId, StockQtyAndUOMQty.builder()
+						.productId(productId)
+						.stockQty(Quantitys.of(qtyToDeliverOverride, UomId.ofRepoId(productRecord.getC_UOM_ID())))
+						.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
 		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue.build());
+<<<<<<< HEAD
 		
 		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(pinstanceDAO.createSelectionId())
 				.queryFilters(queryFilter)
 				.qtysToDeliverOverride(qtysToDeliverOverride.build())
+=======
+
+		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(pinstanceDAO.createSelectionId())
+				.queryFilters(queryFilter)
+				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
 				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
 				.isShipmentDateToday(StringUtils.toBoolean(isShipToday));
@@ -263,7 +319,11 @@ public class M_InOut_StepDef
 
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -578,6 +638,106 @@ public class M_InOut_StepDef
 		shipmentTable.put(shipmentIdentifier, shipmentRecord);
 	}
 
+<<<<<<< HEAD
+=======
+
+
+	@And("^after not more than (.*)s, Customer Return is found:$")
+	public void customerReturnIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			findCustomerReturn(timeoutSec, row);
+		}
+	}
+
+	private void findCustomerReturn(
+			final int timeoutSec,
+			@NonNull final Map<String, String> row) throws InterruptedException
+	{
+		final I_M_InOut customerReturnRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isCustomerReturnFound(row));
+
+		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		shipmentTable.put(customerReturnIdentifier, customerReturnRecord);
+	}
+
+	@And("^the (shipment|material receipt) identified by (.*) is (completed) and an exception with error-code (.*) is thrown")
+	public void complete_inOut_expect_exception(
+			@NonNull final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String action,
+			@NonNull final String errorCode)
+	{
+		try
+		{
+			shipment_action(model_UNUSED, shipmentIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_M_InOut> isCustomerReturnFound(@NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		assertThat(orderRecord).isNotNull();
+		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		assertThat(docTypeRecord).isNotNull();
+
+		final Optional<I_M_InOut> customerReturnRecord = queryBL
+				.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeRecord.getC_DocType_ID())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.firstOnlyOptional(I_M_InOut.class);
+
+		return customerReturnRecord.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(getCurrentCustomerReturnContext(row)));
+	}
+
+	@NonNull
+	private String getCurrentCustomerReturnContext(@NonNull final Map<String, String> row)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		assertThat(orderRecord).isNotNull();
+		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		assertThat(docTypeRecord).isNotNull();
+
+		message.append("Looking for customer return instance with:").append("\n")
+				.append(I_M_InOut.COLUMNNAME_C_Order_ID).append(" : ").append(orderRecord.getC_Order_ID()).append("\n")
+				.append(I_M_InOut.COLUMNNAME_C_DocType_ID).append(" : ").append(docTypeRecord.getC_DocType_ID()).append("\n");
+
+		message.append("See all M_InOut records for C_Order_ID = ").append(orderRecord.getC_Order_ID()).append(" and C_DocType_ID = ")
+				.append(docTypeRecord.getC_DocType_ID()).append(":\n");
+
+		queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeRecord.getC_DocType_ID())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.stream()
+				.forEach(inOut -> message
+						.append("-->").append(I_M_InOut.COLUMNNAME_C_BPartner_ID).append(" : ").append(inOut.getC_BPartner_ID()).append(" ; ")
+						.append("-->").append(I_M_InOut.COLUMNNAME_C_Invoice_ID).append(" : ").append(inOut.getC_Invoice_ID()).append(" ; ")
+						.append("-->").append(I_M_InOut.COLUMNNAME_M_Warehouse_ID).append(" : ").append(inOut.getM_Warehouse_ID()).append(" ; "));
+
+		return message.toString();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
 	public void shipment_action_expecting_error(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{

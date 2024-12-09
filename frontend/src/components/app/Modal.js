@@ -219,6 +219,10 @@ class Modal extends Component {
       parentSelection,
       isAdvanced,
       viewId,
+<<<<<<< HEAD
+=======
+      viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       modalViewDocumentIds,
       activeTabId,
       childViewId,
@@ -289,6 +293,10 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
+<<<<<<< HEAD
+=======
+            viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             documentType,
             ids: viewId
               ? modalViewDocumentIds
@@ -682,6 +690,10 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
+<<<<<<< HEAD
+=======
+                  disabled={indicator === 'error'}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                 >
                   {counterpart.translate('modal.actions.start')}
 
@@ -930,6 +942,10 @@ const mapStateToProps = (state, props) => {
     indicator: state.windowHandler.indicator,
     parentViewId,
     parentId,
+<<<<<<< HEAD
+=======
+    viewOrderBy: parentView?.orderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     printingOptions: state.windowHandler.printingOptions,
   };
 };

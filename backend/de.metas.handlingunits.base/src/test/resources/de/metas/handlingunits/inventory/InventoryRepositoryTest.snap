@@ -1,5 +1,6 @@
 de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
   {
+<<<<<<< HEAD
     "id" : 1000000,
     "orgId" : 1000000,
     "docBaseAndSubType" : {
@@ -80,5 +81,48 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         ]
       }
     ]
+=======
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
+    },
+    "docStatus": "DR",
+    "documentNo": "documentNo",
+    "id": 1000000,
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "asiId": 1000000,
+        "counted": true,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000000,
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "id": 1000000,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": "10 Ea",
+            "qtyCount": "1 Ea"
+          },
+          {
+            "huId": 200,
+            "id": 1000001,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": "20 Ea",
+            "qtyCount": "2 Ea"
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 1000000,
+        "productId": 40,
+        "qtyBookFixed": "30 Ea",
+        "qtyCountFixed": "3 Ea",
+        "storageAttributesKey": "10§&§11§&§12"
+      }
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00",
+    "orgId": 1000000
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -28,16 +28,29 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+<<<<<<< HEAD
+=======
+import io.cucumber.java.en.And;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.assertj.core.api.Assertions;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_AD_Org;
 
 import java.util.List;
 import java.util.Map;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class AD_Org_StepDef
 {
@@ -66,7 +79,11 @@ public class AD_Org_StepDef
 																	 .firstOnly(I_AD_Org.class),
 															 InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Org.class));
 
+<<<<<<< HEAD
 			assertThat(orgRecord).isNotNull();
+=======
+			Assertions.assertThat(orgRecord).isNotNull();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			orgRecord.setName(name);
 			orgRecord.setValue(value);
@@ -77,4 +94,27 @@ public class AD_Org_StepDef
 			orgTable.putOrReplace(orgIdentifier, orgRecord);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@And("load AD_Org:")
+	public void load_AD_Org(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orgCode = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_Value);
+
+			final I_AD_Org orgRecord = queryBL.createQueryBuilder(I_AD_Org.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgCode)
+					.create()
+					.firstOnlyOrNull(I_AD_Org.class);
+
+			assertThat(orgRecord).as("AD_Org for identifier=%S", orgCode).isNotNull();
+
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+			orgTable.putOrReplace(orgIdentifier, orgRecord);
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

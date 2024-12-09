@@ -128,7 +128,11 @@ FROM C_Invoice i
          JOIN C_Country orgc ON orgl.c_country_id = orgc.c_country_id
          LEFT JOIN C_BPartner orgbp ON o.AD_Org_ID = orgbp.AD_OrgBP_ID
          LEFT JOIN C_BP_Bankaccount orgbpb
+<<<<<<< HEAD
                    ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y'
+=======
+                   ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.IsActive='Y'
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     --- refno
          LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
                     FROM C_ReferenceNo_Doc rnd

@@ -191,6 +191,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+<<<<<<< HEAD
+=======
+		icRecord.setC_Tax_ID(orderLine.getC_Tax_ID());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),

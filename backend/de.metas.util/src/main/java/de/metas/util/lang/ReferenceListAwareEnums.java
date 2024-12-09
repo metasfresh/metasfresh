@@ -186,7 +186,31 @@ public class ReferenceListAwareEnums
 					throw Check.mkEx("Field " + field.getName() + " is expected to be static");
 				}
 
+<<<<<<< HEAD
 				final int adReferenceId = field.getInt(null);
+=======
+				final Class<?> fieldType = field.getType();
+				final int adReferenceId;
+				if (int.class.equals(fieldType) || Integer.class.equals(fieldType))
+				{
+					adReferenceId = field.getInt(null);
+				}
+				// NOTE: because ReferenceId is not available here, we have to use RepoIdAware
+				else if (RepoIdAware.class.isAssignableFrom(fieldType))
+				{
+					final RepoIdAware id = (RepoIdAware)field.get(null);
+					if (id == null)
+					{
+						throw Check.mkEx("Field " + field.getName() + " is expected to be set");
+					}
+					adReferenceId = id.getRepoId();
+				}
+				else
+				{
+					throw Check.mkEx("Field " + field.getName() + " has unsupported type: " + fieldType);
+				}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (adReferenceId <= 0)
 				{
 					throw Check.mkEx("Field " + field.getName() + "is expected to have a positive value");
@@ -304,7 +328,11 @@ public class ReferenceListAwareEnums
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
+<<<<<<< HEAD
 			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+=======
+			return Check.isNotBlank(code) ? ofCode(code) : null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		public Optional<T> optionalOfNullableCode(@Nullable final String code)

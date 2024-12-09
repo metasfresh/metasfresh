@@ -1,6 +1,10 @@
 package de.metas.util.web;
 
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
+=======
+import org.compiere.Adempiere;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -44,7 +48,11 @@ public class MetasfreshRestAPIConstants
 	/**
 	 * going to be renamed to {@code v2} soon, after some initial breaking changes were made
 	 */
+<<<<<<< HEAD
 	public static final String ENDPOINT_API_V2 = "/api/v2";
+=======
+	public static final String ENDPOINT_API_V2 = Adempiere.ENDPOINT_API_V2;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public static final String WEBSOCKET_ENDPOINT_V2 = "/v2";
 }

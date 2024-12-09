@@ -1,5 +1,6 @@
 package de.metas.handlingunits.impl;
 
+<<<<<<< HEAD
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -7,6 +8,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -20,11 +24,23 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
+=======
+	private static final Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	// Options
@@ -97,16 +113,26 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 		if (X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
 		{
+<<<<<<< HEAD
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
+=======
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 		//
 		// Display "Destroyed" if HU was destroyed
 		else if (showIfDestroyed && handlingUnitsBL.isDestroyed(getM_HU()))
 		{
+<<<<<<< HEAD
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
+=======
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 
@@ -114,7 +140,11 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return displayName;
 	}
 
+<<<<<<< HEAD
 	private final Properties getCtx()
+=======
+	private Properties getCtx()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_hu != null)
 		{

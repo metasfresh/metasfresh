@@ -7,10 +7,18 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+<<<<<<< HEAD
+=======
+import de.metas.event.IEventBusFactory;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventObserver;
@@ -44,6 +52,10 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+<<<<<<< HEAD
+=======
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -266,6 +278,11 @@ public class MRPTestHelper
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
 		PlainDocumentBL.isDocumentTableResponse = false;
 
+<<<<<<< HEAD
+=======
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
 		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), null);
@@ -610,7 +627,11 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
+<<<<<<< HEAD
 		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
+=======
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

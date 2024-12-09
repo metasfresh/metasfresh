@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 
@@ -28,15 +29,27 @@ import de.metas.email.EMailSentStatus;
  *
  *  @author Jorg Janke
  *  @version $Id: MAssetDelivery.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+=======
+/**
+ * Asset Delivery Model
+ *
+ * @author Jorg Janke
+ * @version $Id: MAssetDelivery.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class MAssetDelivery extends X_A_Asset_Delivery
 {
 	/**
+<<<<<<< HEAD
 	 * 
+=======
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private static final long serialVersionUID = -1731010685101745675L;
 
 	/**
+<<<<<<< HEAD
 	 * 	Constructor
 	 * 	@param ctx context
 	 * 	@param A_Asset_Delivery_ID id or 0
@@ -106,4 +119,50 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 	}	//	toString
 
 }	//	MAssetDelivery
+=======
+	 * Constructor
+	 *
+	 * @param ctx                 context
+	 * @param A_Asset_Delivery_ID id or 0
+	 * @param trxName             trx
+	 */
+	@SuppressWarnings("unused")
+	public MAssetDelivery(Properties ctx, int A_Asset_Delivery_ID, String trxName)
+	{
+		super(ctx, A_Asset_Delivery_ID, trxName);
+		if (A_Asset_Delivery_ID == 0)
+		{
+			setMovementDate(new Timestamp(System.currentTimeMillis()));
+		}
+	}    //	MAssetDelivery
+
+	/**
+	 * Load Constructor
+	 *
+	 * @param ctx     context
+	 * @param rs      result set record
+	 * @param trxName transaction
+	 */
+	public MAssetDelivery(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}    //	MAssetDelivery
+
+	/**
+	 * String representation
+	 *
+	 * @return info
+	 */
+	@Override
+	public String toString()
+	{
+		return "MAssetDelivery["
+				+ get_ID()
+				+ ",A_Asset_ID=" + getA_Asset_ID()
+				+ ",MovementDate=" + getMovementDate()
+				+ "]";
+	}    //	toString
+
+}    //	MAssetDelivery
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 

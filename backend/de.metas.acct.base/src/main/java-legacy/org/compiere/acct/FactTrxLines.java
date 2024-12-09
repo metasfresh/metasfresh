@@ -38,7 +38,11 @@ import java.util.function.Consumer;
 @Value
 public class FactTrxLines
 {
+<<<<<<< HEAD
 	public static enum FactTrxLinesType
+=======
+	public enum FactTrxLinesType
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		/** one debit line, one or more credit lines */
 		Debit,

@@ -11,6 +11,10 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.MimeType;
+<<<<<<< HEAD
+=======
+import org.jetbrains.annotations.NotNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
@@ -90,6 +94,18 @@ public class ReportResultData
 				.build();
 	}
 
+<<<<<<< HEAD
+=======
+	public static ReportResultData ofFile(final @NotNull File file, @NotNull final String reportFilename)
+	{
+		return ReportResultData.builder()
+				.reportData(new FileSystemResource(file))
+				.reportFilename(reportFilename)
+				.reportContentType(MimeType.getMimeType(reportFilename))
+				.build();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonIgnore
 	public boolean isEmpty()
 	{

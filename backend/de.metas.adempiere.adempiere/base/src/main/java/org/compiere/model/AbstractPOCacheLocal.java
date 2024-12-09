@@ -22,10 +22,17 @@ package org.compiere.model;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Properties;
 
+=======
+import com.google.common.base.MoreObjects;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -33,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
@@ -40,6 +48,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Caches a particular {@link PO} (e.g. an {@code I_C_BPartner} instance) with respect to its parent PO (e.g. {@code I_C_Order}), parent column name (e.g. {@code C_Bill_Partner_ID}) and table name (e.g. {@code C_BPartner}).
@@ -226,7 +240,11 @@ public abstract class AbstractPOCacheLocal
 			// FIXME: this is a special case because the system will consider we want a new record. Fix this workaround
 			return new Query(ctx, tableName, loadWhereClause, trxName)
 					.setParameters(id)
+<<<<<<< HEAD
 					.firstOnly();
+=======
+					.firstOnly(PO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{

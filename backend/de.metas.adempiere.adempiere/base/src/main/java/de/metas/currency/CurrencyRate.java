@@ -31,7 +31,11 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public class CurrencyRate
@@ -43,7 +47,11 @@ public class CurrencyRate
 	CurrencyPrecision toCurrencyPrecision;
 
 	BigDecimal conversionRate;
+<<<<<<< HEAD
 	LocalDate conversionDate;
+=======
+	Instant conversionDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	CurrencyConversionTypeId conversionTypeId;
 
 	@Builder
@@ -54,7 +62,11 @@ public class CurrencyRate
 			@NonNull final CurrencyPrecision toCurrencyPrecision,
 			@NonNull final CurrencyPrecision fromCurrencyPrecision,
 			@NonNull final CurrencyConversionTypeId conversionTypeId,
+<<<<<<< HEAD
 			@NonNull final LocalDate conversionDate)
+=======
+			@NonNull final Instant conversionDate)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.conversionRate = conversionRate;
 		this.fromCurrencyId = fromCurrencyId;

@@ -338,7 +338,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static MADBoilerPlate getByName(final Properties ctx, final String name, final String trxName)
 	{
+<<<<<<< HEAD
 		return getByNameQuery(ctx, name, trxName).firstOnly();
+=======
+		return getByNameQuery(ctx, name, trxName).firstOnly(MADBoilerPlate.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)
@@ -718,10 +722,17 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public void rebuildReferences()
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx("DELETE FROM " + I_AD_BoilerPlate_Ref.Table_Name
 						+ " WHERE " + I_AD_BoilerPlate_Ref.COLUMNNAME_AD_BoilerPlate_ID + "=?",
 				new Object[] { getAD_BoilerPlate_ID() },
 				get_TrxName());
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + I_AD_BoilerPlate_Ref.Table_Name
+						+ " WHERE " + I_AD_BoilerPlate_Ref.COLUMNNAME_AD_BoilerPlate_ID + "=?",
+												new Object[] { getAD_BoilerPlate_ID() },
+												get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final String refName : parseNeededReferences())
 		{
 			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
@@ -945,9 +956,15 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_SeqNo
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_MsgText
 				+ ") VALUES (?,?,?,?,?)";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql,
 				new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
 				trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
+												trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@ToString

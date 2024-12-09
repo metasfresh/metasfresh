@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,16 +24,30 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *  Reference List Value
@@ -58,28 +73,49 @@ public class MRefList extends X_AD_Ref_List
 	 * @param Value value
 	 * @return List or ""
 	 *
+<<<<<<< HEAD
 	 * @deprecated Please use {@link IADReferenceDAO#retrieveListNameTrl(Properties, int, String)}
 	 */
 	@Deprecated
 	public static String getListName (Properties ctx, int AD_Reference_ID, String Value)
 	{
 		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(ctx, AD_Reference_ID, Value);
+=======
+	 * @deprecated Please use {@link ADReferenceService#retrieveListNameTrl(Properties, int, String)}
+	 */
+	@Deprecated
+	public static String getListName (final Properties ctx, final int AD_Reference_ID, final String Value)
+	{
+		return ADReferenceService.get().retrieveListNameTrl(ctx, AD_Reference_ID, Value);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}	//	getListName
 
 	/**
 	 * Get Reference List Value Description (cached)
 	 * @param ListName reference
 	 */
+<<<<<<< HEAD
 	public static String getListDescription (Properties ctx, String ListName, String Value)
 	{
 		String AD_Language = Env.getAD_Language(ctx);
 		String key = AD_Language + "_" + ListName + "_" + Value;
+=======
+	public static String getListDescription (final Properties ctx, final String ListName, final String Value)
+	{
+		final String AD_Language = Env.getAD_Language(ctx);
+		final String key = AD_Language + "_" + ListName + "_" + Value;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		String retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
 
+<<<<<<< HEAD
 		boolean isBaseLanguage = Env.isBaseLanguage(AD_Language, "AD_Ref_List");
 		String sql = isBaseLanguage ?
+=======
+		final boolean isBaseLanguage = Env.isBaseLanguage(AD_Language, "AD_Ref_List");
+		final String sql = isBaseLanguage ?
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			"SELECT a.Description FROM AD_Ref_List a, AD_Reference b"
 			+ " WHERE b.Name=? AND a.Value=?"
 			+ " AND a.AD_Reference_ID = b.AD_Reference_ID"
@@ -104,7 +140,11 @@ public class MRefList extends X_AD_Ref_List
 			pstmt.close ();
 			pstmt = null;
 		}
+<<<<<<< HEAD
 		catch (SQLException ex)
+=======
+		catch (final SQLException ex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			s_log.error(sql + " -- " + key, ex);
 		}
@@ -132,11 +172,19 @@ public class MRefList extends X_AD_Ref_List
 	 * @param optional if true add "",""
 	 * @return List or null
 	 */
+<<<<<<< HEAD
 	public static ValueNamePair[] getList (Properties ctx, int AD_Reference_ID, boolean optional)
 	{
 		String ad_language = Env.getAD_Language(ctx);
 		boolean isBaseLanguage = Env.isBaseLanguage(ad_language, "AD_Ref_List");
 		String sql = isBaseLanguage ?
+=======
+	public static ValueNamePair[] getList (final Properties ctx, final int AD_Reference_ID, final boolean optional)
+	{
+		final String ad_language = Env.getAD_Language(ctx);
+		final boolean isBaseLanguage = Env.isBaseLanguage(ad_language, "AD_Ref_List");
+		final String sql = isBaseLanguage ?
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			"SELECT Value, Name, Description FROM AD_Ref_List WHERE AD_Reference_ID=? AND IsActive='Y' ORDER BY Name"
 			:
 			"SELECT r.Value, t.Name, t.Description FROM AD_Ref_List_Trl t"
@@ -179,16 +227,26 @@ public class MRefList extends X_AD_Ref_List
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
+<<<<<<< HEAD
 		ValueNamePair[] retValue = new ValueNamePair[list.size()];
+=======
+		final ValueNamePair[] retValue = new ValueNamePair[list.size()];
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		list.toArray(retValue);
 		return retValue;
 	}	//	getList
 
 
 	/**	Logger							*/
+<<<<<<< HEAD
 	private static Logger		s_log = LogManager.getLogger(MRefList.class);
 	/** Value Cache						*/
 	private static CCache<String,String> s_cache = new CCache<String,String>(Table_Name, 20);
+=======
+	private static final Logger	s_log = LogManager.getLogger(MRefList.class);
+	/** Value Cache						*/
+	private static final CCache<String,String> s_cache = new CCache<String,String>(Table_Name, 20);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 
 	/**************************************************************************
@@ -197,7 +255,11 @@ public class MRefList extends X_AD_Ref_List
 	 *	@param AD_Ref_List_ID id
 	 *	@param trxName transaction
 	 */
+<<<<<<< HEAD
 	public MRefList (Properties ctx, int AD_Ref_List_ID, String trxName)
+=======
+	public MRefList (final Properties ctx, final int AD_Ref_List_ID, final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		super (ctx, AD_Ref_List_ID, trxName);
 		if (AD_Ref_List_ID == 0)
@@ -216,7 +278,11 @@ public class MRefList extends X_AD_Ref_List
 	 *	@param rs result
 	 *	@param trxName transaction
 	 */
+<<<<<<< HEAD
 	public MRefList (Properties ctx, ResultSet rs, String trxName)
+=======
+	public MRefList (final Properties ctx, final ResultSet rs, final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		super(ctx, rs, trxName);
 	}	//	MRef_List
@@ -232,7 +298,11 @@ public class MRefList extends X_AD_Ref_List
 	}	//	toString
 
 	@Override
+<<<<<<< HEAD
 	protected boolean beforeSave(boolean newRecord)
+=======
+	protected boolean beforeSave(final boolean newRecord)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// metas: 02827: begin
 		if (Check.isEmpty(getValueName(), true))

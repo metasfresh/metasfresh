@@ -1,18 +1,29 @@
 package de.metas.ui.web.pickingV2.packageable;
 
+<<<<<<< HEAD
 import java.util.Collection;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
+<<<<<<< HEAD
+=======
+import java.util.Collection;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api

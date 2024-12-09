@@ -1,6 +1,10 @@
 package de.metas.monitoring.adapter;
 
 import java.util.concurrent.Callable;
+<<<<<<< HEAD
+=======
+import java.util.concurrent.TimeUnit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -28,8 +32,15 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 {
 	public static final NoopPerformanceMonitoringService INSTANCE = new NoopPerformanceMonitoringService();
 
+<<<<<<< HEAD
 	@Override
 	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
+=======
+	private NoopPerformanceMonitoringService() {}
+
+	@Override
+	public <V> V monitor(Callable<V> callable, Metadata request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		try
 		{
@@ -42,6 +53,7 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 	}
 
 	@Override
+<<<<<<< HEAD
 	public <V> V monitorTransaction(Callable<V> callable, TransactionMetadata request)
 	{
 		try
@@ -54,4 +66,9 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 		}
 	}
 
+=======
+	public void recordElapsedTime(final long duration, final TimeUnit unit, final Metadata metadata)
+	{
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

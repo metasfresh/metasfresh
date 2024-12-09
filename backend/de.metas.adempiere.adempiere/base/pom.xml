@@ -193,10 +193,17 @@
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
         </dependency>
+<<<<<<< HEAD
         <!-- itext is required by org.adempiere.pdf.Document.java-->
         <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>itext</artifactId>
+=======
+        <!-- itextpdf is required by org.adempiere.pdf.Document.java-->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
@@ -251,6 +258,24 @@
             <version>0.9.0</version>
         </dependency>
 
+<<<<<<< HEAD
+=======
+        <!-- https://mvnrepository.com/artifact/com.microsoft.graph/microsoft-graph -->
+        <dependency>
+            <groupId>com.microsoft.graph</groupId>
+            <artifactId>microsoft-graph</artifactId>
+            <version>5.42.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.azure/azure-identity -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>1.7.2</version>
+            <scope>compile</scope>
+        </dependency>
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -277,6 +302,15 @@
             <scope>provided</scope>
         </dependency>
 
+<<<<<<< HEAD
+=======
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     </dependencies>
 
     <build>

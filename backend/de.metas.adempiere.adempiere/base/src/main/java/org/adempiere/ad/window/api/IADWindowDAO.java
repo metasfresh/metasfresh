@@ -1,16 +1,26 @@
 package org.adempiere.ad.window.api;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.ISingletonService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+<<<<<<< HEAD
 import org.adempiere.ad.window.api.impl.ADWindowDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -21,11 +31,17 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IADWindowDAO extends ISingletonService
 {
@@ -109,4 +125,9 @@ public interface IADWindowDAO extends ISingletonService
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
 
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
+<<<<<<< HEAD
+=======
+
+	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

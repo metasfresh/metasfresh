@@ -29,7 +29,10 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+<<<<<<< HEAD
 import de.metas.email.EMail;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -309,6 +312,7 @@ public class MAsset extends X_A_Asset
 		return DB.getSQLValue(get_TrxName(),
 			sql, getA_Asset_ID());
 	}	//	getDeliveries
+<<<<<<< HEAD
 	
 	/**************************************************************************
 	 * 	Get Product Version No
@@ -318,6 +322,8 @@ public class MAsset extends X_A_Asset
 	{
 		return getProduct().getVersionNo();
 	}	//	getProductVersionNo
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * 	Get Product R_MailText_ID
@@ -690,6 +696,7 @@ public class MAsset extends X_A_Asset
 		return true;
 
 	}	//	afterSave
+<<<<<<< HEAD
 	
 	/*************************************************************************
 	 * 	Confirm Asset EMail Delivery
@@ -704,4 +711,6 @@ public class MAsset extends X_A_Asset
 		MAssetDelivery ad = new MAssetDelivery (this, email, AD_User_ID);
 		return ad;
 	}	//	confirmDelivery
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }	//	MAsset

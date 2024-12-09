@@ -1,5 +1,6 @@
 package de.metas.dlm.model.interceptor;
 
+<<<<<<< HEAD
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.service.ILookupDAO;
@@ -10,6 +11,17 @@ import org.compiere.util.DisplayType;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.util.Services;
 
+=======
+import de.metas.ad_reference.TableRefTable;
+import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.util.DisplayType;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-dlm
@@ -56,18 +68,32 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+<<<<<<< HEAD
 		final TableRefInfo tableRefInfo;
 		if (lookupDAO.isTableReference(ad_Reference_ID))
 		{
 			tableRefInfo = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
+=======
+		final TableRefTable tableRefTable;
+		if (lookupDAO.isTableReference(ad_Reference_ID))
+		{
+			tableRefTable = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
 			final String columnName = ref.getDLM_Referencing_Column().getColumnName();
+<<<<<<< HEAD
 			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(columnName);
 		}
 
 		if (tableRefInfo == null)
+=======
+			tableRefTable = lookupDAO.retrieveTableDirectRefInfo(columnName);
+		}
+
+		if (tableRefTable == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			// what we do further up is not very sophisticated. e.g. for "CreatedBy", we currently don't find the table name.
 			// therefore, don't set the table to null since we don't know that there is no table for the given column
@@ -76,6 +102,10 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+<<<<<<< HEAD
 		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefInfo.getTableName()));
+=======
+		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefTable.getTableName()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

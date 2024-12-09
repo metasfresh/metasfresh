@@ -101,6 +101,11 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	boolean testAllocation(I_C_Payment payment);
 
+<<<<<<< HEAD
+=======
+	void scheduleUpdateIsAllocated(@NonNull PaymentId paymentId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void testAllocation(PaymentId paymentId);
 
 	boolean isCashTrx(final I_C_Payment payment);
@@ -130,6 +135,11 @@ public interface IPaymentBL extends ISingletonService
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 
+<<<<<<< HEAD
+=======
+	void markReconciled(@NonNull PaymentReconcileRequest request);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void markReconciled(@NonNull Collection<PaymentReconcileRequest> requests);
 
 	void markReconciled(
@@ -140,6 +150,11 @@ public interface IPaymentBL extends ISingletonService
 			@NonNull I_C_Payment payment,
 			@NonNull PaymentReconcileReference reconcileRef);
 
+<<<<<<< HEAD
+=======
+	void markNotReconciled(@NonNull PaymentId paymentId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
 	@NonNull
@@ -150,4 +165,9 @@ public interface IPaymentBL extends ISingletonService
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
+<<<<<<< HEAD
+=======
+
+	void reversePaymentById(@NonNull PaymentId paymentId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

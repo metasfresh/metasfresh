@@ -1,11 +1,17 @@
 package de.metas.ui.web.document.filter.provider;
 
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+<<<<<<< HEAD
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+=======
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -32,9 +38,13 @@ import java.util.Collection;
 public interface DocumentFilterDescriptorsProviderFactory
 {
 	@Nullable
+<<<<<<< HEAD
 	DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull CreateFiltersProviderContext context,
 			@NonNull Collection<DocumentFieldDescriptor> fields);
+=======
+	DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull CreateFiltersProviderContext context);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	default boolean isActive()
 	{

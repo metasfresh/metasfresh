@@ -135,7 +135,11 @@ public class WebRestApiApplication
 
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
+<<<<<<< HEAD
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+=======
+		Services.get(IMigrationLogger.class).addTablesToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return Env.getSingleAdempiereInstance(applicationContext);
 	}

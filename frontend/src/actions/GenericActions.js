@@ -100,6 +100,10 @@ export function actionsRequest({
   selectedIds,
   selectedTabId,
   selectedRowIds,
+<<<<<<< HEAD
+=======
+  viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   childViewId,
   childViewSelectedIds,
 }) {
@@ -117,6 +121,10 @@ export function actionsRequest({
     return post(
       `${config.API_URL}/documentView/${windowId}/${viewId}/actions`,
       {
+<<<<<<< HEAD
+=======
+        viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         selectedIds,
         childViewId,
         childViewSelectedIds,

@@ -22,15 +22,24 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
+<<<<<<< HEAD
 
+=======
+import lombok.EqualsAndHashCode;
+
+import javax.annotation.concurrent.Immutable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import javax.annotation.concurrent.Immutable;
 
 import lombok.EqualsAndHashCode;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Constant {@link IQueryFilter} implementation (with {@link ISqlQueryFilter} support).
  *
@@ -81,6 +90,14 @@ public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		return Collections.emptyList();
 	}
 
+<<<<<<< HEAD
+=======
+	public List<Object> getSqlParams()
+	{
+		return Collections.emptyList();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public boolean accept(T model)
 	{

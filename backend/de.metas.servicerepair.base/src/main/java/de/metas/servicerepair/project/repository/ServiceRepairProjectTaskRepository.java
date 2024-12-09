@@ -159,9 +159,15 @@ class ServiceRepairProjectTaskRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.warrantyCase(WarrantyCase.ofBoolean(record.isWarrantyCase()))
+<<<<<<< HEAD
 				.qtyRequired(Quantitys.create(record.getQtyRequired(), uomId))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
+=======
+				.qtyRequired(Quantitys.of(record.getQtyRequired(), uomId))
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), uomId))
+				.qtyConsumed(Quantitys.of(record.getQtyConsumed(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.customerReturnLineId(InOutAndLineId.ofRepoIdOrNull(record.getCustomerReturn_InOut_ID(), record.getCustomerReturn_InOutLine_ID()))
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))

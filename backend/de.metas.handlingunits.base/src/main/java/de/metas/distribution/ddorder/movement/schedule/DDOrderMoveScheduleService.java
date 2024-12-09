@@ -1,6 +1,11 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -18,7 +23,10 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,25 +39,44 @@ public class DDOrderMoveScheduleService
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final HUReservationService huReservationService;
 	private final PPOrderSourceHUService ppOrderSourceHUService;
 
 	public DDOrderMoveScheduleService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
+<<<<<<< HEAD
+=======
+			@NonNull final ADReferenceService adReferenceService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PPOrderSourceHUService ppOrderSourceHUService)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
+<<<<<<< HEAD
+=======
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 	}
 
+<<<<<<< HEAD
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+=======
+	public ADRefList getQtyRejectedReasons()
+	{
+		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)

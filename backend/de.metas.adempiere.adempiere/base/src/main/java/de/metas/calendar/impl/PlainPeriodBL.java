@@ -23,13 +23,22 @@ package de.metas.calendar.impl;
  */
 
 
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.Timestamp;
 import java.util.Properties;
 
 public class PlainPeriodBL extends PeriodBL
 {
 	@Override
+<<<<<<< HEAD
 	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
+=======
+	public boolean isOpen(Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// consider all period opens because we don't have plain support
 		return true;

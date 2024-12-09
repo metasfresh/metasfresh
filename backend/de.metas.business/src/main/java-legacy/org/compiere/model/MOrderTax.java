@@ -258,7 +258,11 @@ public class MOrderTax extends X_C_OrderTax
 				//
 				if (!documentLevel)
 				{
+<<<<<<< HEAD
 					taxAmt = taxAmt.add(taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision()));
+=======
+					taxAmt = taxAmt.add(taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 
 				//
@@ -292,7 +296,11 @@ public class MOrderTax extends X_C_OrderTax
 		// Calculate Tax
 		if (documentLevel)
 		{
+<<<<<<< HEAD
 			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+=======
+			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		setTaxAmt(taxAmt);
 

@@ -1,18 +1,28 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
+=======
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.common.util.Check;
+import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.CostAmount;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
+<<<<<<< HEAD
 import de.metas.costing.CostSegment;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -20,6 +30,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+<<<<<<< HEAD
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.service.IMatchInvDAO;
@@ -54,6 +65,29 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+=======
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.money.Money;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.costs.OrderCostService;
+import de.metas.order.costs.inout.InOutCost;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -80,6 +114,7 @@ import java.util.Optional;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
+<<<<<<< HEAD
 	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
@@ -87,6 +122,21 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
 		super(utils);
+=======
+	private final MatchInvoiceService matchInvoiceService;
+	private final OrderCostService orderCostService;
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
+	public AveragePOCostingMethodHandler(
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final OrderCostService orderCostService)
+	{
+		super(utils);
+		this.matchInvoiceService = matchInvoiceService;
+		this.orderCostService = orderCostService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -102,6 +152,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
@@ -117,12 +168,93 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
+=======
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	{
+		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
+	}
+
+	private CostAmount getReceiptAmount(
+			@NonNull final MatchInv matchInv,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CostElement costElement,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
+
+		final MatchInvType type = matchInv.getType();
+		if (type.isMaterial())
+		{
+			Check.assume(costElement.isMaterial(), "Cost Element shall be material: {}", costElement);
+
+			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
+					.map(orderLineBL::getOrderLineById)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+
+			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+		}
+		else if (type.isCost())
+		{
+			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
+			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
+
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+
+			return utils.convertToAcctSchemaCurrency(
+					CostAmount.ofMoney(receiptAmount),
+					() -> currencyConversionContext,
+					acctSchemaId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final InOutLineId receipLineId = request.getDocumentRef().getId(InOutLineId.class);
+		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
+		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
+		final CostAmount amtConv;
+		if (orderLine != null)
+		{
+			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
+			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
+			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
+		}
+		else
+		{
+			final CostAmount currentCostPrice = currentCost.getCostPrice().toCostAmount();
+			final CostAmount amt = currentCostPrice.multiply(request.getQty());
+			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
+			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
@@ -141,6 +273,21 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
+=======
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				CostDetailPreviousAmounts.of(currentCost));
+
+		utils.saveCurrentCost(currentCost);
+
+		return result;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -170,7 +317,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
+<<<<<<< HEAD
 			final CostAmount requestAmt = request.getAmt();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -196,6 +346,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			else
 			{
+<<<<<<< HEAD
+=======
+				final CostAmount requestAmt = request.getAmt();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (requestAmt.isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
@@ -316,6 +470,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
+<<<<<<< HEAD
 									   .costSegment(outboundSegmentAndElement.toCostSegment())
 									   .amount(costElement, outboundResult.getAmt())
 									   .build())
@@ -323,6 +478,15 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 									  .costSegment(inboundSegmentAndElement.toCostSegment())
 									  .amount(costElement, inboundResult.getAmt())
 									  .build())
+=======
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
+				.inboundCosts(AggregatedCostAmount.builder()
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -344,6 +508,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
+<<<<<<< HEAD
 	private Optional<ProductPrice> getPOCostPriceForMatchInv(final int matchInvId)
 	{
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
@@ -537,5 +702,30 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.qty(qty)
 				.previousAmounts(previousAmounts)
 				.build();
+=======
+	@NonNull
+	private CostAmount getCostAmountInAcctCurrency(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final Quantity qty,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyConversionContext currencyConversionContext)
+	{
+		final CostAmount amt = getCostAmountInSourceCurrency(orderLine, qty);
+
+		return utils.convertToAcctSchemaCurrency(
+				amt,
+				() -> currencyConversionContext,
+				acctSchemaId);
+	}
+
+	@NonNull
+	private CostAmount getCostAmountInSourceCurrency(@NonNull final I_C_OrderLine orderLine, @NonNull final Quantity qty)
+	{
+		final ProductPrice costPriceConv = utils.convertToUOM(
+				orderLineBL.getCostPrice(orderLine),
+				qty.getUomId());
+
+		return CostAmount.ofProductPrice(costPriceConv).multiply(qty);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

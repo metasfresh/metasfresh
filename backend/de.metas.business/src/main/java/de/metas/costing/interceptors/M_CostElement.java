@@ -1,7 +1,18 @@
 package de.metas.costing.interceptors;
 
+<<<<<<< HEAD
 import java.util.stream.Collectors;
 
+=======
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostElementType;
+import de.metas.costing.CostingMethod;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -12,6 +23,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElementType;
@@ -20,6 +32,9 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -31,12 +46,20 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,6 +80,7 @@ class M_CostElement
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_CostElement costElement)
 	{
+<<<<<<< HEAD
 		// Maintain Calculated
 		/*
 		 * if (COSTELEMENTTYPE_Material.equals(getCostElementType()))
@@ -77,6 +101,8 @@ class M_CostElement
 		 * }
 		 */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		costElement.setAD_Org_ID(OrgId.ANY.getRepoId());
 	}
 
@@ -105,10 +131,17 @@ class M_CostElement
 		// FIXME: this shall go in some DAO/Repository
 		final String productCategoriesUsingCostingMethod = queryBL
 				.createQueryBuilder(I_M_Product_Category_Acct.class)
+<<<<<<< HEAD
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costingMethod.getCode())
 				.andCollect(I_M_Product_Category_Acct.COLUMN_M_Product_Category_ID)
 				.orderBy(I_M_Product_Category.COLUMN_Name)
+=======
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costingMethod.getCode())
+				.andCollect(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, I_M_Product_Category.class)
+				.orderBy(I_M_Product_Category.COLUMNNAME_Name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.create()
 				.setLimit(50)
 				.listDistinct(I_M_Product_Category.COLUMNNAME_Name, String.class)
@@ -118,6 +151,11 @@ class M_CostElement
 		{
 			throw new AdempiereException("@CannotDeleteUsed@ @M_Product_Category_ID@ (" + productCategoriesUsingCostingMethod + ")");
 		}
+<<<<<<< HEAD
 	}	// beforeDelete
+=======
+
+	}    // beforeDelete
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 }

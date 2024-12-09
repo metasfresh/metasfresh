@@ -206,7 +206,11 @@ public class C_Order_CreatePOFromSOs
 				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.attributes(attributeSet)
+<<<<<<< HEAD
 				.qty(Quantitys.create(ol.getQtyEntered(), UomId.ofRepoId(ol.getC_UOM_ID())))
+=======
+				.qty(Quantitys.of(ol.getQtyEntered(), UomId.ofRepoId(ol.getC_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(ol.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(BPartnerId.ofRepoId(ol.getC_BPartner_ID()))
 				.soTrx(SOTrx.SALES)

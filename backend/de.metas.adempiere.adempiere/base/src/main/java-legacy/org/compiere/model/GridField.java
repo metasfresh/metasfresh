@@ -17,6 +17,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
@@ -35,6 +36,19 @@ import javax.annotation.Nullable;
 import javax.swing.SwingUtilities;
 
 import de.metas.common.util.time.SystemTime;
+=======
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -59,6 +73,7 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
@@ -69,6 +84,23 @@ import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.beans.PropertyChangeListener;
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.function.Supplier;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Grid Field Model.
@@ -456,7 +488,10 @@ public class GridField
 
 	public boolean isEditable(final Properties rowCtx, final GridTabLayoutMode tabLayoutMode)
 	{
+<<<<<<< HEAD
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final boolean checkContext = rowCtx != null;
 
 		//
@@ -470,7 +505,11 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
+<<<<<<< HEAD
 				|| (columnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+=======
+				|| (IColumnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return true;
 		}
@@ -1749,6 +1788,10 @@ public class GridField
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTemplateTabId(templateTabId)
 				.setTabReadOnly(false)
+<<<<<<< HEAD
+=======
+				.setTabIncludeFiltersStrategy(TabIncludeFiltersStrategy.Auto)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.load();
 
 		//

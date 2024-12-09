@@ -281,6 +281,7 @@ export function leftTrim(str) {
   return str.replace(/^\s+/, '');
 }
 
+<<<<<<< HEAD
 /**
  * @method formatSortingQuery
  * @summary format's the ordering parameters prefixing them with asc/desc sign
@@ -295,6 +296,8 @@ export function formatSortingQuery(orderBy) {
   return orderBy;
 }
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 export const isBlank = (str) => {
   return !str || str.length === 0 || str.trim().length === 0;
 };

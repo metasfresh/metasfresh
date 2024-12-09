@@ -31,8 +31,13 @@ public class DocBaseAndSubTypeTest
 	@Test
 	public void ofDocBaseTypeAndSubType()
 	{
+<<<<<<< HEAD
 		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"))
 				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"));
+=======
+		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE))
+				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test

@@ -30,6 +30,10 @@ import lombok.NonNull;
 import java.util.Arrays;
 
 //dev-note to be kept in sync with AD_Reference_ID=541611
+<<<<<<< HEAD
+=======
+@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public enum JsonTargetFieldType
 {
 	TextArea("textArea"),
@@ -40,7 +44,10 @@ public enum JsonTargetFieldType
 	UnitChar("unitChar"),
 	Graphic("graphic");
 
+<<<<<<< HEAD
 	@Getter
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final String code;
 
 	JsonTargetFieldType(@NonNull final String code)

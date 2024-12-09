@@ -26,10 +26,18 @@ import de.metas.contracts.callorder.detail.model.CallOrderDetail;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailData;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailId;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
+<<<<<<< HEAD
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -50,6 +58,10 @@ import java.util.Optional;
 public class CallOrderDetailService
 {
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+<<<<<<< HEAD
+=======
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final CallOrderDetailRepo detailRepo;
 
@@ -124,7 +136,11 @@ public class CallOrderDetailService
 	{
 		final CallOrderDetailQuery query = CallOrderDetailQuery.builder()
 				.summaryId(summaryId)
+<<<<<<< HEAD
 				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+=======
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final Optional<CallOrderDetailId> existingDetailId = detailRepo.getDetailByQuery(query)
@@ -157,7 +173,11 @@ public class CallOrderDetailService
 				.builder()
 				.summaryId(callOrderSummaryId)
 				.invoiceId(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()))
+<<<<<<< HEAD
 				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+=======
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyInvoiced(qtyInvoiced)
 				.build();
 	}
@@ -166,7 +186,11 @@ public class CallOrderDetailService
 	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_C_OrderLine ol)
 	{
 		final UomId uomId = UomId.ofRepoId(ol.getC_UOM_ID());
+<<<<<<< HEAD
 		final Quantity qtyEntered = Quantitys.create(ol.getQtyEntered(), uomId);
+=======
+		final Quantity qtyEntered = Quantitys.of(ol.getQtyEntered(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return CallOrderDetailData
 				.builder()
@@ -178,17 +202,26 @@ public class CallOrderDetailService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
 	{
 		final UomId uomId = UomId.ofRepoId(shipmentLine.getC_UOM_ID());
 		final Quantity qtyDelivered = Quantitys.create(shipmentLine.getMovementQty(), uomId);
 
+=======
+	private CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return CallOrderDetailData
 				.builder()
 				.summaryId(summaryId)
 				.shipmentId(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()))
 				.shipmentLineId(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()))
+<<<<<<< HEAD
 				.qtyDelivered(qtyDelivered)
+=======
+				.qtyDelivered(inoutBL.getQtyEntered(shipmentLine))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 }

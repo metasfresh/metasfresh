@@ -24,8 +24,13 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+<<<<<<< HEAD
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+=======
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -62,12 +67,18 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
+<<<<<<< HEAD
 		from(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 				.routeId(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+=======
+		from(direct(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID))
+				.routeId(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.streamCaching()
 				.log("Route invoked! request: ${body}")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
+<<<<<<< HEAD
 					if (!(request instanceof JsonOLCandClearRequest))
 					{
 						throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID + " requires the body to be instanceof JsonOLCandClearRequest. "
@@ -78,6 +89,18 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.olcands.v2.api.uri}}/clearToProcess")
+=======
+					if (!(request instanceof JsonOLCandProcessRequest))
+					{
+						throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID + " requires the body to be instanceof JsonOLCandProcessRequest. "
+																+ "However, it is " + (request == null ? "null" : request.getClass().getName()));
+					}
+				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOLCandProcessRequest.class))
+				.removeHeaders("CamelHttp*")
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.toD("{{metasfresh.olcands.v2.api.uri}}/process")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

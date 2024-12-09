@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 import React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { trl } from '../../../utils/translations';
 import { useEffect, useState } from 'react';
+=======
+import React, { useEffect, useState } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { trl } from '../../../utils/translations';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Spinner from '../../../components/Spinner';
 import { getClosedLUs, getHUInfoForIds, setPickTarget } from '../../../api/picking';

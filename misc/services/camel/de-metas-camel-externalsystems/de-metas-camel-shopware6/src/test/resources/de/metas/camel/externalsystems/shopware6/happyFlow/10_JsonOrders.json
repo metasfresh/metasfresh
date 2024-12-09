@@ -12,9 +12,19 @@
         "lastName": "lastName",
         "customerNumber": "customerNumber",
         "email": "orderCustomerEmail@example.com",
+<<<<<<< HEAD
         "customFields": {
           "externalReference": "customerId",
           "customUserId": "userId1"
+=======
+        "vatIds": [
+          "vatId12"
+        ],
+        "customFields": {
+          "externalReference": "customerId",
+          "customUserId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           }
         },
       "currencyId": "currencyId",
@@ -38,9 +48,15 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
+<<<<<<< HEAD
           "externalReference": "customerId"
         }
 
+=======
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -63,7 +79,12 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
+<<<<<<< HEAD
           "externalReference": "customerId"
+=======
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
@@ -87,7 +108,12 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
+<<<<<<< HEAD
           "externalReference": "customerId"
+=======
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",

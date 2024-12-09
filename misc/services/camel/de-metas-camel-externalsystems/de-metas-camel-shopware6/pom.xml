@@ -191,6 +191,7 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
+<<<<<<< HEAD
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -199,6 +200,8 @@
                 </configuration>
             </plugin>
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>

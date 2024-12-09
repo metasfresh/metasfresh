@@ -408,4 +408,23 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0)
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

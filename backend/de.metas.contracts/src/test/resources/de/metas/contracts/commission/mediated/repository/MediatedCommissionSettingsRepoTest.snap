@@ -1,5 +1,6 @@
 de.metas.contracts.commission.mediated.repository.MediatedCommissionSettingsRepoTest.givenValidId_whenGetById_thenReturnSettings=[
   {
+<<<<<<< HEAD
     "commissionSettingsId" : 100001,
     "orgId" : 1,
     "commissionProductId" : 1001,
@@ -19,5 +20,26 @@ de.metas.contracts.commission.mediated.repository.MediatedCommissionSettingsRepo
         "seqNo" : 3
       }
     ]
+=======
+    "commissionProductId": 1001,
+    "commissionSettingsId": 100001,
+    "lines": [
+      {
+        "mediatedCommissionSettingsLineId": 100002,
+        "orgId": 1,
+        "percentOfBasedPoints": 10,
+        "productCategoryId": 100,
+        "seqNo": 3
+      },
+      {
+        "mediatedCommissionSettingsLineId": 100003,
+        "orgId": 1,
+        "percentOfBasedPoints": 10,
+        "seqNo": 3
+      }
+    ],
+    "orgId": 1,
+    "pointsPrecision": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

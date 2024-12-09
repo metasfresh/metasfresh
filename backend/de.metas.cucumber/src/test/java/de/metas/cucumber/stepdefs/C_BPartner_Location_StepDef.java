@@ -44,6 +44,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+<<<<<<< HEAD
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class C_BPartner_Location_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
@@ -132,7 +138,11 @@ public class C_BPartner_Location_StepDef
 		{
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
+<<<<<<< HEAD
 			InterfaceWrapperHelper.saveRecord(locationRecord);
+=======
+			saveRecord(locationRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
@@ -161,7 +171,17 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
+<<<<<<< HEAD
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+=======
+		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		{
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+		}
+
+		saveRecord(bPartnerLocationRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);

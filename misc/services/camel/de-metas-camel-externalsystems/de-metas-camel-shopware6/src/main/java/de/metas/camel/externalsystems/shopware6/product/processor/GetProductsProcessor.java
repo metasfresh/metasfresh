@@ -23,15 +23,20 @@
 package de.metas.camel.externalsystems.shopware6.product.processor;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+<<<<<<< HEAD
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
+=======
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
+<<<<<<< HEAD
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -45,6 +50,16 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+=======
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildUpdatedAfterFilterQueryRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class GetProductsProcessor implements Processor
 {
@@ -55,7 +70,11 @@ public class GetProductsProcessor implements Processor
 
 		final ShopwareClient shopwareClient = context.getShopwareClient();
 
+<<<<<<< HEAD
 		final MultiQueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
+=======
+		final MultiQueryRequest getProductsRequest = buildUpdatedAfterFilterQueryRequest(context.getNextImportStartingTimestamp().toString());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Optional<JsonProducts> jsonProductsOptional = shopwareClient.getProducts(getProductsRequest);
 
@@ -69,6 +88,7 @@ public class GetProductsProcessor implements Processor
 
 		exchange.getIn().setBody(products);
 	}
+<<<<<<< HEAD
 
 	@NonNull
 	private MultiQueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
@@ -92,4 +112,6 @@ public class GetProductsProcessor implements Processor
 								.build())
 				.build();
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

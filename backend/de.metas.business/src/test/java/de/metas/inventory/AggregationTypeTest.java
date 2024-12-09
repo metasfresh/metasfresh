@@ -1,5 +1,6 @@
 package de.metas.inventory;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;
@@ -7,6 +8,14 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 import de.metas.document.DocBaseAndSubType;
+=======
+import de.metas.document.DocBaseAndSubType;
+import org.junit.jupiter.api.Test;
+
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -44,6 +53,10 @@ public class AggregationTypeTest
 		final DocBaseAndSubType docBaseAndSubType = type.getDocBaseAndSubType();
 		assertThat(AggregationType.getByDocTypeOrNull(docBaseAndSubType)).isSameAs(type);
 
+<<<<<<< HEAD
 		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType());
+=======
+		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType().getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

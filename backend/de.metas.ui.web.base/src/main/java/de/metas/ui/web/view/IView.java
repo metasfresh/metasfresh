@@ -15,11 +15,18 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.QueryLimit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
@@ -103,6 +110,10 @@ public interface IView
 
 	long size();
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;
@@ -161,7 +172,11 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
+<<<<<<< HEAD
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+=======
+	LookupValuesPage getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
 
@@ -215,6 +230,19 @@ public interface IView
 		return retrieveModelsByIds(rowIds, modelClass).stream();
 	}
 
+<<<<<<< HEAD
+=======
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.

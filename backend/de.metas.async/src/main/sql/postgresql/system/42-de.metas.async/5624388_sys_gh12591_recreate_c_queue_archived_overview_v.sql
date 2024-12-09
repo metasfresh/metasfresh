@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 DROP VIEW dlm.c_queue_archived_overview_v;
+=======
+DROP VIEW IF EXISTS dlm.c_queue_archived_overview_v;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 CREATE OR REPLACE VIEW dlm.c_queue_archived_overview_v AS
 SELECT

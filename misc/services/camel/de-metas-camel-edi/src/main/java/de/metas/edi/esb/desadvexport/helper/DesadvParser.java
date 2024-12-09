@@ -88,4 +88,8 @@ public class DesadvParser
 				.map(EDIExpDesadvLineWithNoPackType::getEDIDesadvLineID)
 				.collect(ImmutableMap.toImmutableMap(desadvLine -> desadvLine.getEDIDesadvLineID().intValue(), Function.identity()));
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

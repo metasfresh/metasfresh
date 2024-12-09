@@ -10,18 +10,27 @@ package de.metas.security.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +42,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.Role;
@@ -44,12 +55,30 @@ import de.metas.security.permissions.GenericPermissions;
 import de.metas.security.permissions.OrgPermissions;
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermissions;
+<<<<<<< HEAD
+=======
+import de.metas.security.permissions.TableOrgPermissions;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import lombok.NonNull;
+=======
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 class UserRolePermissionsBuilder
 {
@@ -73,6 +102,10 @@ class UserRolePermissionsBuilder
 				.setWorkflowPermissions(permissions.getWorkflowPermissions())
 				.setFormPermissions(permissions.getFormPermissions())
 				.setMiscPermissions(permissions.getMiscPermissions())
+<<<<<<< HEAD
+=======
+				.setMobileApplicationAccesses(permissions.getMobileApplicationPermissions())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.setConstraints(permissions.getConstraints());
 	}
@@ -104,6 +137,10 @@ class UserRolePermissionsBuilder
 	private ElementPermissions taskAccesses;
 	private ElementPermissions workflowAccesses;
 	private ElementPermissions formAccesses;
+<<<<<<< HEAD
+=======
+	@Getter private ElementPermissions mobileApplicationAccesses;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private GenericPermissions miscPermissions;
 	private Constraints constraints;
@@ -124,14 +161,21 @@ class UserRolePermissionsBuilder
 	{
 		final RoleId adRoleId = getRoleId();
 		final UserId adUserId = getUserId();
+<<<<<<< HEAD
 		final ClientId adClientId = getClientId();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (orgAccesses == null)
 		{
 			final Role role = getRole();
 			orgAccesses = userRolePermissionsRepo.retrieveOrgPermissions(role, adUserId);
 		}
+<<<<<<< HEAD
 		if(tableOrgAccesses == null)
+=======
+		if (tableOrgAccesses == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			tableOrgAccesses = userRolePermissionsRepo.retrieveTableOrgPermissions(adRoleId);
 		}
@@ -163,6 +207,13 @@ class UserRolePermissionsBuilder
 		{
 			formAccesses = userRolePermissionsRepo.getFormPermissions(adRoleId);
 		}
+<<<<<<< HEAD
+=======
+		if (mobileApplicationAccesses == null)
+		{
+			mobileApplicationAccesses = userRolePermissionsRepo.getMobileApplicationPermissions(adRoleId);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (miscPermissions == null)
 		{
@@ -192,6 +243,10 @@ class UserRolePermissionsBuilder
 			final ElementPermissions.Builder taskAccessesBuilder = taskAccesses.asNewBuilder();
 			final ElementPermissions.Builder workflowAccessesBuilder = workflowAccesses.asNewBuilder();
 			final ElementPermissions.Builder formAccessesBuilder = formAccesses.asNewBuilder();
+<<<<<<< HEAD
+=======
+			final ElementPermissions.Builder mobileApplicationAccessesBuilder = mobileApplicationAccesses.asNewBuilder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			UserRolePermissionsInclude lastIncludedPermissionsRef = null;
 			for (final UserRolePermissionsInclude includedPermissionsRef : userRolePermissionsToInclude)
@@ -201,7 +256,11 @@ class UserRolePermissionsBuilder
 				CollisionPolicy collisionPolicy = CollisionPolicy.Merge;
 				//
 				// If roles have same SeqNo, then, the second role will override permissions from first role
+<<<<<<< HEAD
 				if (lastIncludedPermissionsRef != null && includedPermissionsRef.getSeqNo() >= 0
+=======
+				if (lastIncludedPermissionsRef != null 
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						&& includedPermissionsRef.getSeqNo() >= 0
 						&& lastIncludedPermissionsRef.getSeqNo() == includedPermissionsRef.getSeqNo())
 				{
@@ -216,6 +275,10 @@ class UserRolePermissionsBuilder
 				taskAccessesBuilder.addPermissions(includedPermissions.getTaskPermissions(), collisionPolicy);
 				workflowAccessesBuilder.addPermissions(includedPermissions.getWorkflowPermissions(), collisionPolicy);
 				formAccessesBuilder.addPermissions(includedPermissions.getFormPermissions(), collisionPolicy);
+<<<<<<< HEAD
+=======
+				mobileApplicationAccessesBuilder.addPermissions(includedPermissions.getMobileApplicationAccesses(), collisionPolicy);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				// add it to the list of included permissions.
 				userRolePermissionsIncludedBuilder.add(includedPermissionsRef);
@@ -231,6 +294,10 @@ class UserRolePermissionsBuilder
 			taskAccesses = taskAccessesBuilder.build();
 			workflowAccesses = workflowAccessesBuilder.build();
 			formAccesses = formAccessesBuilder.build();
+<<<<<<< HEAD
+=======
+			mobileApplicationAccesses = mobileApplicationAccessesBuilder.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		userRolePermissionsIncluded = userRolePermissionsIncludedBuilder.build();
@@ -458,6 +525,15 @@ class UserRolePermissionsBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
+=======
+	public UserRolePermissionsBuilder setMobileApplicationAccesses(final ElementPermissions mobileApplicationAccesses)
+	{
+		this.mobileApplicationAccesses = mobileApplicationAccesses;
+		return this;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	UserRolePermissionsBuilder setMiscPermissions(final GenericPermissions permissions)
 	{
 		Check.assumeNull(miscPermissions, "permissions not already configured");
@@ -484,6 +560,10 @@ class UserRolePermissionsBuilder
 		return constraints;
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("UnusedReturnValue")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public UserRolePermissionsBuilder includeUserRolePermissions(final UserRolePermissions userRolePermissions, final int seqNo)
 	{
 		userRolePermissionsToInclude.add(UserRolePermissionsInclude.of(userRolePermissions, seqNo));

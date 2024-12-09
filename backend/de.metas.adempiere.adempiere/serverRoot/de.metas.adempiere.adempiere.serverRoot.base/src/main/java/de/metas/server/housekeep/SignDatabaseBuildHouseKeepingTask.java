@@ -58,7 +58,11 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		try
 		{
 			final String sql = "UPDATE AD_System SET LastBuildInfo = ?";
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, new Object[] { lastBuildInfo }, ITrx.TRXNAME_None);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { lastBuildInfo }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			CacheMgt.get().reset("AD_System");
 
 			logger.info("Set AD_System.LastBuildInfo={}", lastBuildInfo);

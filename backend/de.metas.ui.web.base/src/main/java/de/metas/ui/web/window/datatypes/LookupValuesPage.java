@@ -22,14 +22,23 @@
 
 package de.metas.ui.web.window.datatypes;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableListMultimap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.Null;
+=======
+import lombok.With;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Function;
@@ -48,6 +57,10 @@ public class LookupValuesPage
 
 	@NonNull
 	@Builder.Default
+<<<<<<< HEAD
+=======
+	@With
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	OptionalInt totalRows = OptionalInt.empty();
 
 	int firstRow;
@@ -57,6 +70,10 @@ public class LookupValuesPage
 
 	@NonNull
 	@Builder.Default
+<<<<<<< HEAD
+=======
+	@With
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	OptionalBoolean hasMoreResults = OptionalBoolean.UNKNOWN;
 
 	public static LookupValuesPage ofValuesAndHasMoreFlag(@NonNull final List<LookupValue> values, boolean hasMoreRecords)

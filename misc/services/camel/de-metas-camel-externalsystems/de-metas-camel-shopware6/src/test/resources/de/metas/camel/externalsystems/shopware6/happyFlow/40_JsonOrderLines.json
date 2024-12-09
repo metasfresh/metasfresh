@@ -4,7 +4,11 @@
       "id": "externalLineId",
       "productId": "productId",
       "quantity": 1,
+<<<<<<< HEAD
       "parentId": "parentId",
+=======
+      "parentId": "externalLineId2",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "unitPrice": 14.8,
       "description": "lineDescription",
       "position": 1,

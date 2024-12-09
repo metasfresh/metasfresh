@@ -1,6 +1,9 @@
 package de.metas.ui.web.document.geo_location;
 
+<<<<<<< HEAD
 import java.util.Objects;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -39,6 +42,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -122,7 +129,11 @@ public class ViewGeoLocationsRestController
 
 	private ImmutableSet<String> getViewFieldNames(final IView view)
 	{
+<<<<<<< HEAD
 		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId());
+=======
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId(), userSession.getUserRolePermissionsKey());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ImmutableSet<String> fieldNames = viewLayout.getElements()
 				.stream()
 				.flatMap(element -> element.getFields().stream())

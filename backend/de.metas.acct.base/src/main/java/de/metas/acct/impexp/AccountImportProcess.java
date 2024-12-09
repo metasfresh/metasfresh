@@ -120,7 +120,11 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 											  @NonNull final I_I_ElementValue importRecord,
 											  final boolean isInsertOnly)
 	{
+<<<<<<< HEAD
 		chartOfAccountsImportHelper.importChartOfAccounts(importRecord);
+=======
+		final ChartOfAccountsId chartOfAccountsId = chartOfAccountsImportHelper.importChartOfAccounts(importRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ElementValueId existingElementValueId = ElementValueId.ofRepoIdOrNull(importRecord.getC_ElementValue_ID());
 		if (existingElementValueId != null && isInsertOnly)
@@ -128,8 +132,11 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 			return ImportRecordResult.Nothing;
 		}
 
+<<<<<<< HEAD
 		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(importRecord.getC_Element_ID());
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ElementValue elementValue = elementValueService.createOrUpdate(
 				ElementValueCreateOrUpdateRequest.builder()
 						.existingElementValueId(existingElementValueId)

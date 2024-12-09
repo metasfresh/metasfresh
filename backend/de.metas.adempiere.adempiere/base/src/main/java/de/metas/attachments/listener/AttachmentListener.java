@@ -24,7 +24,10 @@ package de.metas.attachments.listener;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 
@@ -35,4 +38,12 @@ import org.compiere.model.I_AD_Table_AttachmentListener;
 public interface AttachmentListener
 {
 	ListenerWorkStatus afterRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
+<<<<<<< HEAD
+=======
+
+	default ListenerWorkStatus beforeRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
+	{
+		return ListenerWorkStatus.NOT_APPLIED;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

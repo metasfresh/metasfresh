@@ -10,6 +10,10 @@ import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
@@ -33,7 +37,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.List;
 
@@ -71,7 +78,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final IParams parameters = getParameters();
 
 		// Create candidates
+<<<<<<< HEAD
 		final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride = extractScheduleId2QtyToDeliverOverride(parameters);
+=======
+		final QtyToDeliverMap scheduleId2QtyToDeliverOverride = QtyToDeliverMap.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
@@ -136,6 +147,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return result.build();
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	private ImmutableMap<ShipmentScheduleId, BigDecimal> extractScheduleId2QtyToDeliverOverride(@NonNull final IParams parameters)
 	{
@@ -155,6 +167,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return result.build();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
@@ -172,7 +186,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * <p>
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
+<<<<<<< HEAD
 	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride)
+=======
+	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final QtyToDeliverMap scheduleId2QtyToDeliverOverride)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -206,7 +224,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private ImmutableList<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
 		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = this._shipmentSchedules;
+<<<<<<< HEAD
 		if(shipmentSchedules == null)
+=======
+		if (shipmentSchedules == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			shipmentSchedules = this._shipmentSchedules = retrieveShipmentSchedules();
 		}

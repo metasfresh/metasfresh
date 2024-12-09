@@ -37,7 +37,10 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
+<<<<<<< HEAD
 import org.compiere.util.TimeUtil;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -119,7 +122,11 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
+<<<<<<< HEAD
 						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+=======
+						ah.getDateTrx().toInstant(), // ConvDate
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()),
 						OrgId.ofRepoId(line.getAD_Org_ID()));

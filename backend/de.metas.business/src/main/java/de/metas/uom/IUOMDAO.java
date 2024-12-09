@@ -80,5 +80,14 @@ public interface IUOMDAO extends ISingletonService
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Returns a I_C_UOM only if there is just 1 active record matching the input uomSymbol.
+	 */
+	@NonNull
+	Optional<I_C_UOM> getBySymbol(@NonNull String uomSymbol);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	ITranslatableString getUOMSymbolById(@NonNull UomId uomId);
 }

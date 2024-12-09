@@ -25,8 +25,12 @@ import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+<<<<<<< HEAD
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
+=======
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -57,20 +61,30 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ISysConfigBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+<<<<<<< HEAD
 import org.compiere.util.KeyNamePair;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.sql.Timestamp;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,16 +107,32 @@ import java.util.Properties;
  *         <li>FR [ 1670025 ] ModelValidator.afterLoadPreferences will be useful
  *         <li>BF [ 1679692 ] fireDocValidate doesn't treat exceptions as errors
  *         <li>FR [ 1724662 ] Support Email should contain model validators info
+<<<<<<< HEAD
  *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
+=======
+ *         <li>FR [ 2788276 ] Data Import Validator <a href="https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335">https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332
  *         <li>BF [ 2819617 ] NPE if script validator rule returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
  *         </ul>
  * @author Tobias Schoeneberg, t.schoeneberg@metas.de
+<<<<<<< HEAD
  *         <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
+=======
+ *         <li>FR [ADEMPIERE-28] ModelValidatorException <a href="https://adempiere.atlassian.net/browse/ADEMPIERE-28">https://adempiere.atlassian.net/browse/ADEMPIERE-28</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class ModelValidationEngine implements IModelValidationEngine
 {
 
+<<<<<<< HEAD
+=======
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.modelInterceptor.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static PerformanceMonitoringService _performanceMonitoringService;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Get Singleton
 	 */
@@ -139,13 +169,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Sets the list of EntityTypes for which the model interceptors shall be loaded.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * You can provide a custom list of entity types, or you can use a predefined one:
 	 * <ul>
 	 * <li>{@link #INITENTITYTYPE_Minimal} - only the core entity types. It is used when we need to start adempiere from other tools and we don't want to start the servers, processors and stuff.
 	 * </ul>
+<<<<<<< HEAD
 	 *
 	 * @param initEntityTypes
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public synchronized static void setInitEntityTypes(final List<String> initEntityTypes)
 	{
@@ -258,7 +295,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 			//
 			// Register from Spring context
 			stopwatch.reset().start();
+<<<<<<< HEAD
 			currentClassName = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			for (final Object springInterceptor : springInterceptors)
 			{
 				currentClassName = springInterceptor.getClass().getName();
@@ -306,18 +346,30 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return interceptorsByName.values();
 	}
 
+<<<<<<< HEAD
 	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final Throwable error)
+=======
+	private void addModelInterceptorInitError(final String modelInterceptorClassName, final Throwable error)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ModelInterceptorInitException initException = new ModelInterceptorInitException(modelInterceptorClassName, error);
 		_modelInterceptorInitErrors.add(initException);
 	}
 
+<<<<<<< HEAD
 	private final boolean hasInitErrors()
+=======
+	private boolean hasInitErrors()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return !_modelInterceptorInitErrors.isEmpty();
 	}
 
+<<<<<<< HEAD
 	private final String getInitErrorsAsString()
+=======
+	private String getInitErrorsAsString()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final StringBuilder msg = new StringBuilder();
 		for (final ModelInterceptorInitException initError : _modelInterceptorInitErrors)
@@ -331,7 +383,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return msg.toString();
 	}
 
+<<<<<<< HEAD
 	private final void logModelInterceptorInitErrors()
+=======
+	private void logModelInterceptorInitErrors()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_modelInterceptorInitErrors.isEmpty())
 		{
@@ -350,7 +406,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
+<<<<<<< HEAD
 	private final boolean isFailOnMissingModelInteceptors()
+=======
+	private boolean isFailOnMissingModelInteceptors()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
 		if (failOnMissingModelInteceptorsOverride != null)
@@ -362,7 +422,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return system.isFailOnMissingModelValidator();
 	}
 
+<<<<<<< HEAD
 	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+=======
+	public static void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
@@ -407,6 +471,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Loads module activator class for given name.
+<<<<<<< HEAD
 	 *
 	 * If the class was not found this method will return null and the exception will be silently swallowed.
 	 *
@@ -414,13 +479,26 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @return module activator class or null if class was not found.
 	 */
 	private static final Class<?> getModuleActivatorClassOrNull(final String classname)
+=======
+	 * <p>
+	 * If the class was not found this method will return null and the exception will be silently swallowed.
+	 *
+	 * @return module activator class or null if class was not found.
+	 */
+	@Nullable
+	private static Class<?> getModuleActivatorClassOrNull(final String classname)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		try
 		{
 			final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			return classLoader.loadClass(classname);
 		}
+<<<<<<< HEAD
 		catch (ClassNotFoundException e)
+=======
+		catch (final ClassNotFoundException e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			// silently ignore it
 		}
@@ -434,6 +512,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	// private VetoableChangeSupport m_changeSupport = new VetoableChangeSupport(this);
 
 	/** Validators */
+<<<<<<< HEAD
 	private ArrayList<ModelValidator> m_validators = new ArrayList<>();
 	/** Model Change Listeners */
 	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
@@ -443,11 +522,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private Hashtable<String, ArrayList<IImportInterceptor>> m_impValidateListeners = new Hashtable<>();
 
 	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
+=======
+	private final ArrayList<ModelValidator> m_validators = new ArrayList<>();
+	/** Model Change Listeners */
+	private final Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
+	/** Document Validation Listeners */
+	private final Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
+	/** Data Import Validation Listeners */
+	private final Hashtable<String, ArrayList<IImportInterceptor>> m_impValidateListeners = new Hashtable<>();
+
+	private final ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Contains model validators for subsequent processing. The boolean value tells if the subsequent processing takes place directly when fireModelChange() is invoked with this type (
 	 * <code>true</code>) or later on (<code>false</code>).
 	 */
+<<<<<<< HEAD
 	private Map<ModelValidator, Boolean> m_modelChangeSubsequent = Collections.synchronizedMap(new HashMap<ModelValidator, Boolean>());
 
 	/**
@@ -457,6 +548,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param client
 	 */
 	private void initialize(final ModelValidator validator, final I_AD_Client client)
+=======
+	private final Map<ModelValidator, Boolean> m_modelChangeSubsequent = Collections.synchronizedMap(new HashMap<ModelValidator, Boolean>());
+
+	/**
+	 * Initialize and add validator
+	 */
+	private void initialize(final ModelValidator validator, @Nullable final I_AD_Client client)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (client == null)
 		{
@@ -477,6 +576,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param AD_User_ID user
 	 * @return error message or empty/null
 	 */
+<<<<<<< HEAD
 	public String loginComplete(int AD_Client_ID, int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		for (ModelValidator validator : m_validators)
@@ -485,6 +585,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
 				if (error != null && error.length() > 0)
+=======
+	@Nullable
+	public String loginComplete(final int AD_Client_ID, final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	{
+		for (final ModelValidator validator : m_validators)
+		{
+			if (appliesFor(validator, AD_Client_ID))
+			{
+				final String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
+				if (Check.isNotBlank(error))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					return error;
 				}
@@ -513,8 +624,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 				catch (final Exception e)
 				{
 					logger.warn("Failed executing login script for {}", loginRule, e);
+<<<<<<< HEAD
 					final String error = AdempiereException.extractMessage(e);
 					return error;
+=======
+					return AdempiereException.extractMessage(e);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -546,21 +661,36 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private List<IUserLoginListener> getUserLoginListener(final int adClientId)
 	{
 		final List<IUserLoginListener> listeners = new ArrayList<>();
+<<<<<<< HEAD
 		for (ModelValidator m_validator : m_validators)
 		{
 			final ModelValidator validator = m_validator;
 
 			if (!(validator instanceof IUserLoginListener))
+=======
+		for (final ModelValidator m_validator : m_validators)
+		{
+
+			if (!(m_validator instanceof IUserLoginListener))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				continue;
 			}
 
+<<<<<<< HEAD
 			if (!appliesFor(validator, adClientId))
+=======
+			if (!appliesFor(m_validator, adClientId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				continue;
 			}
 
+<<<<<<< HEAD
 			final IUserLoginListener loginListener = (IUserLoginListener)validator;
+=======
+			final IUserLoginListener loginListener = (IUserLoginListener)m_validator;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			listeners.add(loginListener);
 		}
 		return listeners;
@@ -576,7 +706,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				listener.beforeLogout(session);
 			}
+<<<<<<< HEAD
 			catch (Exception e)
+=======
+			catch (final Exception e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -593,7 +727,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				listener.afterLogout(session);
 			}
+<<<<<<< HEAD
 			catch (Exception e)
+=======
+			catch (final Exception e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -606,7 +744,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param tableName table name
 	 * @param listener listener
 	 */
+<<<<<<< HEAD
 	public void addModelChange(String tableName, ModelValidator listener)
+=======
+	public void addModelChange(@Nullable final String tableName, @Nullable final ModelValidator listener)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (tableName == null || listener == null)
 		{
@@ -617,7 +759,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			registerGlobal(listener);
 		}
+<<<<<<< HEAD
 		String propertyName = getPropertyName(tableName, listener);
+=======
+		final String propertyName = getPropertyName(tableName, listener);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
 		{
@@ -640,7 +786,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}	// addModelValidator
 
 	@Override
+<<<<<<< HEAD
 	public void addModelChange(String tableName, IModelInterceptor interceptor)
+=======
+	public void addModelChange(@Nullable String tableName, @Nullable final IModelInterceptor interceptor)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (interceptor == null)
 		{
@@ -666,21 +816,34 @@ public class ModelValidationEngine implements IModelValidationEngine
 			return;
 		}
 
+<<<<<<< HEAD
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
+=======
+		final String propertyName = getPropertyName(tableName, listener);
+		final ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (list == null)
 		{
 			return;
 		}
 		list.remove(listener);
+<<<<<<< HEAD
 		if (list.size() == 0)
+=======
+		if (list.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_modelChangeListeners.remove(propertyName);
 		}
 	}	// removeModelValidator
 
 	@Override
+<<<<<<< HEAD
 	public void removeModelChange(String tableName, IModelInterceptor interceptor)
+=======
+	public void removeModelChange(@Nullable final String tableName, @Nullable final IModelInterceptor interceptor)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (interceptor == null)
 		{
@@ -693,6 +856,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
 	{
+<<<<<<< HEAD
 		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		final String tableName = po.get_TableName();
 		final String changeTypeStr = changeType.toString();
@@ -708,11 +872,39 @@ public class ModelValidationEngine implements IModelValidationEngine
 						.label("tableName", tableName)
 						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
 						.build());
+=======
+
+		if(!isPerformanceMonitorActive())
+		{
+			fireModelChange0(po, changeType);
+		}
+		else
+		{
+			final String tableName = po.get_TableName();
+			final String changeTypeStr = changeType.toString();
+
+			performanceMonitoringService().monitor(
+					() -> fireModelChange0(po, changeType),
+					Metadata
+							.builder()
+							.className("ModelValidationEngine")
+							.type(Type.MODEL_INTERCEPTOR)
+							.functionName("fireModelChange")
+							.label("changeType", changeTypeStr)
+							.label("tableName", tableName)
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
+							.build());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void fireModelChange0(@Nullable final PO po, @NonNull final ModelChangeType changeType)
 	{
+<<<<<<< HEAD
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
+=======
+		try (final MDCCloseable ignored = MDC.putCloseable("changeType", changeType.toString()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (po == null || m_modelChangeListeners.isEmpty())
 			{
@@ -783,7 +975,28 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}	// fireModelChange
 
+<<<<<<< HEAD
 	private final void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
+=======
+	private boolean isPerformanceMonitorActive()
+	{
+		return sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
+
+	private void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final boolean runInTrx = changeTypeOrDocTiming != ModelChangeType.BEFORE_SAVE_TRX;
 
@@ -813,12 +1026,21 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	}
 
+<<<<<<< HEAD
 	private final void fireModelChange0(
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
 			@Nullable List<ModelValidator> interceptorsSystem,
 			@Nullable List<ModelValidator> interceptorsClient,
 			@Nullable List<I_AD_Table_ScriptValidator> scriptValidators)
+=======
+	private void fireModelChange0(
+			@NonNull final PO po,
+			@NonNull final ModelChangeType changeType,
+			@Nullable final List<ModelValidator> interceptorsSystem,
+			@Nullable final List<ModelValidator> interceptorsClient,
+			@Nullable final List<I_AD_Table_ScriptValidator> scriptValidators)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (interceptorsSystem != null)
 		{
@@ -844,7 +1066,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
+<<<<<<< HEAD
 	private final void fireModelChangeForScriptValidators(
+=======
+	private void fireModelChangeForScriptValidators(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final PO po,
 			final String ruleEventType,
 			final TimingType changeTypeOrDocTiming,
@@ -890,7 +1116,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 							.setThrowExceptionIfResultNotEmpty()
 							.execute(rule.getScript());
 				}
+<<<<<<< HEAD
 				catch (Exception e)
+=======
+				catch (final Exception e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					throw AdempiereException.wrapIfNeeded(e);
 				}
@@ -901,16 +1131,25 @@ public class ModelValidationEngine implements IModelValidationEngine
 	/**
 	 * Makes sure given <code>model</code> is valid before firing listeners.<br>
 	 * Logs (but doesn't throw!) an exception if the given model has no trxName.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Background: if trxName is null when firing the events that is usually some development/framework error.<br>
 	 * We rely on this trxName when creating <b>further</b> objects, so if trxName is <code>null</code> then we can't cleanly roll back and will end in some inconsistency fxxx-up in case something
 	 * fails.
 	 * <p>
 	 * Note: In future we might throw the exception instead of just logging it.
+<<<<<<< HEAD
 	 *
 	 * @param model
 	 */
 	private final void assertModelValidBeforeFiringEvent(@NonNull final PO model, @NonNull final TimingType timingType)
+=======
+	 */
+	private void assertModelValidBeforeFiringEvent(@NonNull final PO model, @NonNull final TimingType timingType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// Validate PO's transaction
@@ -930,7 +1169,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
+<<<<<<< HEAD
 	private final void invokeModelChangeMethods(
+=======
+	private void invokeModelChangeMethods(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
 			@NonNull final List<ModelValidator> validators)
@@ -946,7 +1189,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 			@NonNull final ModelChangeType changeType,
 			@NonNull final ModelValidator validator)
 	{
+<<<<<<< HEAD
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator.toString()))
+=======
+		try (final MDCCloseable ignored = MDC.putCloseable("interceptor", validator.toString()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (!appliesFor(validator, po.getAD_Client_ID()))
 			{
@@ -954,6 +1201,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				return;
 			}
 
+<<<<<<< HEAD
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 				try
 		{
@@ -983,6 +1231,34 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param listener listener
 	 */
 	public void addDocValidate(String tableName, ModelValidator listener)
+=======
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			try
+			{
+
+				// the default cause
+				final String error = validator.modelChange(po, changeType.toInt());
+				if (Check.isNotBlank(error))
+				{
+					throw new AdempiereException(error);
+				}
+
+				logger.debug("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
+			}
+			catch (final Exception ex)
+			{
+				logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+		}
+
+	}
+
+	/**************************************************************************
+	 * Add Document Validation Listener
+	 */
+	public void addDocValidate(@Nullable final String tableName, @Nullable final ModelValidator listener)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (tableName == null || listener == null)
 		{
@@ -993,7 +1269,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			registerGlobal(listener);
 		}
+<<<<<<< HEAD
 		String propertyName = getPropertyName(tableName, listener);
+=======
+		final String propertyName = getPropertyName(tableName, listener);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
 		{
@@ -1008,7 +1288,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}	// addDocValidate
 
 	@Override
+<<<<<<< HEAD
 	public void addDocValidate(String tableName, IModelInterceptor interceptor)
+=======
+	public void addDocValidate(@Nullable final String tableName, @Nullable final IModelInterceptor interceptor)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (interceptor == null)
 		{
@@ -1021,24 +1305,38 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Remove Document Validation Listener
+<<<<<<< HEAD
 	 *
 	 * @param tableName table name
 	 * @param listener listener
 	 */
 	public void removeDocValidate(String tableName, ModelValidator listener)
+=======
+	 */
+	public void removeDocValidate(@Nullable final String tableName, @Nullable final ModelValidator listener)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (tableName == null || listener == null)
 		{
 			return;
 		}
+<<<<<<< HEAD
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
+=======
+		final String propertyName = getPropertyName(tableName, listener);
+		final ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (list == null)
 		{
 			return;
 		}
 		list.remove(listener);
+<<<<<<< HEAD
 		if (list.size() == 0)
+=======
+		if (list.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_docValidateListeners.remove(propertyName);
 		}
@@ -1052,12 +1350,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @return always returns <code>null</code>; we keep this string return type only for legacy purposes (when the error message was returned)
 	 * @throws AdempiereException in case of failure
 	 */
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String fireDocValidate(final Object model, final int docTimingInt)
 	{
 		final DocTimingType docTiming = DocTimingType.valueOf(docTimingInt);
 		return fireDocValidate(model, docTiming);
 	}
 
+<<<<<<< HEAD
 	public String fireDocValidate(@NonNull final Object model, @NonNull final DocTimingType docTiming)
 	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
@@ -1082,6 +1385,39 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
+=======
+	@Nullable
+	public String fireDocValidate(@NonNull final Object model, @NonNull final DocTimingType docTiming)
+	{
+		try (final MDCCloseable ignored = MDC.putCloseable("docTiming", docTiming.toString()))
+		{
+			if(!isPerformanceMonitorActive())
+			{
+				return fireDocValidate0(model, docTiming);
+			}
+			else
+			{
+				final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+				final int recordId = InterfaceWrapperHelper.getId(model);
+				final String docTimingStr = docTiming.toString();
+
+				return performanceMonitoringService().monitor(
+						() -> fireDocValidate0(model, docTiming),
+						Metadata
+								.builder()
+								.className("ModelValidationEngine")
+								.type(Type.MODEL_INTERCEPTOR)
+								.functionName("fireDocValidate")
+								.label("docTiming", docTimingStr)
+								.label("tableName", tableName)
+								.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
+								.build());
+			}
+		}
+	}
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private String fireDocValidate0(final Object model, final DocTimingType docTiming)
 	{
 		if (model == null)
@@ -1152,11 +1488,19 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return null;
 	}
 
+<<<<<<< HEAD
 	private void fireDocValidate0(final PO po,
 			final DocTimingType docTiming,
 			final List<ModelValidator> interceptorsSystem,
 			final List<ModelValidator> interceptorsClient,
 			final List<I_AD_Table_ScriptValidator> scriptValidators)
+=======
+	private void fireDocValidate0(@NonNull final PO po,
+			@NonNull final DocTimingType docTiming,
+			@Nullable final List<ModelValidator> interceptorsSystem,
+			@Nullable final List<ModelValidator> interceptorsClient,
+			@Nullable final List<I_AD_Table_ScriptValidator> scriptValidators)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (interceptorsSystem != null)
 		{
@@ -1182,9 +1526,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private void fireDocValidate(
+<<<<<<< HEAD
 			final PO po,
 			final DocTimingType docTiming,
 			final List<ModelValidator> interceptors)
+=======
+			@NonNull final PO po,
+			@NonNull final DocTimingType docTiming,
+			@NonNull final List<ModelValidator> interceptors)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		for (final ModelValidator interceptor : interceptors)
 		{
@@ -1222,9 +1572,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
 	{
 		String propertyName = getPropertyName(importTableName);
+=======
+	public void addImportInterceptor(final  String importTableName, final IImportInterceptor listener)
+	{
+		final String propertyName = getPropertyName(importTableName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list == null)
 		{
@@ -1246,18 +1602,36 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param targetModel target model (e.g. MBPartner, MBPartnerLocation, MUser)
 	 * @param timing see ImportValidator.TIMING_* constants
 	 */
+<<<<<<< HEAD
 	public <ImportRecordType> void fireImportValidate(IImportProcess<ImportRecordType> process, ImportRecordType importModel, Object targetModel, int timing)
 	{
 		if (m_impValidateListeners.size() == 0)
+=======
+	public <ImportRecordType> void fireImportValidate(
+			final IImportProcess<ImportRecordType> process,
+			final ImportRecordType importModel,
+			final Object targetModel,
+			final int timing)
+	{
+		if (m_impValidateListeners.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
 
+<<<<<<< HEAD
 		String propertyName = getPropertyName(process.getImportTableName());
 		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list != null)
 		{
 			for (IImportInterceptor intercepto : list)
+=======
+		final String propertyName = getPropertyName(process.getImportTableName());
+		final ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
+		if (list != null)
+		{
+			for (final IImportInterceptor intercepto : list)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				intercepto.onImport(process, importModel, targetModel, timing);
 			}
@@ -1272,12 +1646,19 @@ public class ModelValidationEngine implements IModelValidationEngine
 	@Override
 	public String toString()
 	{
+<<<<<<< HEAD
 		StringBuffer sb = new StringBuffer("ModelValidationEngine[");
 		sb.append("Validators=#").append(m_validators.size())
 				.append(", ModelChange=#").append(m_modelChangeListeners.size())
 				.append(", DocValidate=#").append(m_docValidateListeners.size())
 				.append("]");
 		return sb.toString();
+=======
+		return "ModelValidationEngine[" + "Validators=#" + m_validators.size()
+				+ ", ModelChange=#" + m_modelChangeListeners.size()
+				+ ", DocValidate=#" + m_docValidateListeners.size()
+				+ "]";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}	// toString
 
 	/**
@@ -1297,7 +1678,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		sb.append("=== ModelValidationEngine ===").append(Env.NL);
 		sb.append("Validators #").append(m_validators.size()).append(Env.NL);
+<<<<<<< HEAD
 		for (ModelValidator mv : m_validators)
+=======
+		for (final ModelValidator mv : m_validators)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			sb.append(mv.toString()).append(Env.NL);
 		}
@@ -1307,9 +1692,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 		Iterator<String> it = m_modelChangeListeners.keySet().iterator();
 		while (it.hasNext())
 		{
+<<<<<<< HEAD
 			String key = it.next();
 			ArrayList<ModelValidator> list = m_modelChangeListeners.get(key);
 			for (ModelValidator mv : list)
+=======
+			final String key = it.next();
+			final ArrayList<ModelValidator> list = m_modelChangeListeners.get(key);
+			for (final ModelValidator mv : list)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				sb.append(key).append(": ").append(mv.toString()).append(Env.NL);
 			}
@@ -1320,9 +1711,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 		it = m_docValidateListeners.keySet().iterator();
 		while (it.hasNext())
 		{
+<<<<<<< HEAD
 			String key = it.next();
 			ArrayList<ModelValidator> list = m_docValidateListeners.get(key);
 			for (ModelValidator mv : list)
+=======
+			final String key = it.next();
+			final ArrayList<ModelValidator> list = m_docValidateListeners.get(key);
+			for (final ModelValidator mv : list)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				sb.append(key).append(": ").append(mv.toString()).append(Env.NL);
 			}
@@ -1336,6 +1733,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * After Load Preferences into Context for selected client.
 	 *
 	 * @param ctx context
+<<<<<<< HEAD
 	 * @author Teo Sarca - FR [ 1670025 ] - https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335
 	 */
 	public void afterLoadPreferences(Properties ctx)
@@ -1344,6 +1742,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 		for (int i = 0; i < m_validators.size(); i++)
 		{
 			ModelValidator validator = m_validators.get(i);
+=======
+	 * @author Teo Sarca - FR [ 1670025 ] - <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335">https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335</a>
+	 */
+	public void afterLoadPreferences(@NonNull final Properties ctx)
+	{
+		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		for (final ModelValidator validator : m_validators)
+		{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (AD_Client_ID == validator.getAD_Client_ID()
 					|| m_globalValidators.contains(validator))
 			{
@@ -1352,7 +1759,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 				{
 					m = validator.getClass().getMethod("afterLoadPreferences", new Class[] { Properties.class });
 				}
+<<<<<<< HEAD
 				catch (NoSuchMethodException e)
+=======
+				catch (final NoSuchMethodException e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					// ignore
 				}
@@ -1363,9 +1774,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 						m.invoke(validator, ctx);
 					}
 				}
+<<<<<<< HEAD
 				catch (Exception e)
 				{
 					logger.warn("" + validator + ": " + e.getLocalizedMessage());
+=======
+				catch (final Exception e)
+				{
+					logger.warn("{}: {}", validator, e.getLocalizedMessage());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -1376,10 +1793,16 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public void beforeSaveProperties()
 	{
+<<<<<<< HEAD
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 		for (int i = 0; i < m_validators.size(); i++)
 		{
 			ModelValidator validator = m_validators.get(i);
+=======
+		final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
+		for (final ModelValidator validator : m_validators)
+		{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (AD_Client_ID == validator.getAD_Client_ID()
 					|| m_globalValidators.contains(validator))
 			{
@@ -1388,7 +1811,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 				{
 					m = validator.getClass().getMethod("beforeSaveProperties");
 				}
+<<<<<<< HEAD
 				catch (NoSuchMethodException e)
+=======
+				catch (final NoSuchMethodException e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					// ignore
 				}
@@ -1399,15 +1826,25 @@ public class ModelValidationEngine implements IModelValidationEngine
 						m.invoke(validator);
 					}
 				}
+<<<<<<< HEAD
 				catch (Exception e)
 				{
 					logger.warn("" + validator + ": " + e.getLocalizedMessage());
+=======
+				catch (final Exception e)
+				{
+					logger.warn("{}: {}", validator, e.getLocalizedMessage());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
 	}
 
+<<<<<<< HEAD
 	private final void registerGlobal(ModelValidator validator)
+=======
+	private void registerGlobal(final ModelValidator validator)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (!m_globalValidators.contains(validator))
 		{
@@ -1421,17 +1858,29 @@ public class ModelValidationEngine implements IModelValidationEngine
 				|| m_globalValidators.contains(validator);
 	}
 
+<<<<<<< HEAD
 	private final String getPropertyName(String tableName)
+=======
+	private String getPropertyName(final String tableName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return tableName + "*";
 	}
 
+<<<<<<< HEAD
 	private final String getPropertyName(String tableName, int AD_Client_ID)
+=======
+	private String getPropertyName(final String tableName, final int AD_Client_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return tableName + AD_Client_ID;
 	}
 
+<<<<<<< HEAD
 	private final String getPropertyName(String tableName, ModelValidator listener)
+=======
+	private String getPropertyName(final String tableName, final ModelValidator listener)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (m_globalValidators.contains(listener))
 		{

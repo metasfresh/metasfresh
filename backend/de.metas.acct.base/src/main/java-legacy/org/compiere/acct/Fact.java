@@ -18,6 +18,11 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
+=======
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -25,6 +30,13 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.elementvalue.ElementValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -32,11 +44,16 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
@@ -44,7 +61,13 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.function.Consumer;
+=======
+import java.util.ListIterator;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Accounting Fact
@@ -56,22 +79,40 @@ import java.util.function.Consumer;
  */
 public final class Fact
 {
+<<<<<<< HEAD
 	// services
 	static final Logger log = LogManager.getLogger(Fact.class);
+=======
+
+	// services
+	static final Logger log = LogManager.getLogger(Fact.class);
+	@NonNull final AcctDocRequiredServicesFacade services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	final Doc<?> m_doc;
 	private final AcctSchema acctSchema;
 	private final PostingType postingType;
+<<<<<<< HEAD
 	private boolean m_converted = false;
 	private ArrayList<FactLine> m_lines = new ArrayList<>();
 
 	@Nullable private FactTrxStrategy _factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+=======
+	private ArrayList<FactLine> m_lines = new ArrayList<>();
+	@Nullable private FactTrxStrategy _factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private CurrencyConversionContext currencyConversionContext = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public Fact(
 			@NonNull final Doc<?> document,
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType)
 	{
+<<<<<<< HEAD
+=======
+		this.services = document.services;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.m_doc = document;
 		this.acctSchema = acctSchema;
 		this.postingType = postingType;
@@ -94,6 +135,7 @@ public final class Fact
 		return _factTrxLinesStrategy;
 	}
 
+<<<<<<< HEAD
 	public void dispose()
 	{
 		m_lines.clear();
@@ -105,6 +147,25 @@ public final class Fact
 			final MAccount account,
 			final CurrencyId currencyId,
 			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)
+=======
+	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
+	{
+		this.currencyConversionContext = currencyConversionContext;
+		return this;
+	}
+
+	@Nullable
+	CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return currencyConversionContext;
+	}
+
+	public FactLine createLine(final DocLine<?> docLine,
+							   final Account account,
+							   @NonNull final CurrencyId currencyId,
+							   @Nullable final BigDecimal debitAmt,
+							   @Nullable final BigDecimal creditAmt)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -113,6 +174,7 @@ public final class Fact
 				.buildAndAdd();
 	}
 
+<<<<<<< HEAD
 	public FactLine createLine(final DocLine<?> docLine,
 							   final MAccount account,
 							   final int C_Currency_ID,
@@ -122,12 +184,15 @@ public final class Fact
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public FactLineBuilder createLine()
 	{
 		return new FactLineBuilder(this);
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Create and convert Fact Line. Used to create a DR and/or CR entry.
 	 *
 	 * @param docLine    the document line or null
@@ -163,6 +228,8 @@ public final class Fact
 	}
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Add Fact Line
 	 *
 	 * @param line fact line
@@ -191,7 +258,12 @@ public final class Fact
 	 * @param Amt        if negative Cr else Dr
 	 * @return FactLine
 	 */
+<<<<<<< HEAD
 	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
+=======
+	@Deprecated
+	public FactLine createLine(DocLine<?> docLine, Account account, CurrencyId currencyId, BigDecimal Amt)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -201,6 +273,7 @@ public final class Fact
 				.buildAndAdd();
 	}   // createLine
 
+<<<<<<< HEAD
 	/**
 	 * Is converted
 	 *
@@ -211,6 +284,8 @@ public final class Fact
 		return m_converted;
 	}    // isConverted
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public AcctSchema getAcctSchema()
 	{
 		return acctSchema;
@@ -238,9 +313,13 @@ public final class Fact
 	public boolean isSingleCurrency()
 	{
 		final ImmutableList<CurrencyId> distinctCurrencyIds = CollectionUtils.extractDistinctElements(m_lines, FactLine::getCurrencyId);
+<<<<<<< HEAD
 
 		final boolean lessThanTwoCurrencies = distinctCurrencyIds.size() < 2;
 		return lessThanTwoCurrencies;
+=======
+		return distinctCurrencyIds.size() < 2;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -290,6 +369,7 @@ public final class Fact
 		}
 
 		final Money diff = getSourceBalance().toMoney();
+<<<<<<< HEAD
 
 		// new line
 		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
@@ -314,6 +394,15 @@ public final class Fact
 		line.convert();
 		//
 		add(line);
+=======
+		if (!diff.isZero())
+		{
+			createLine()
+					.setAccount(acctSchemaGL.getSuspenseBalancingAcct())
+					.setAmtSourceDrOrCr(diff.negate()) // Negative balance => DR, Positive balance => CR
+					.buildAndAdd();
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}   // balancingSource
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -412,22 +501,35 @@ public final class Fact
 				if (!orgBalance.isBalanced())
 				{
 					// Create Balancing Entry
+<<<<<<< HEAD
 					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 					line.setDocumentInfo(m_doc, null);
 					line.setPostingType(getPostingType());
 					// Amount & Account
+=======
+					final FactLineBuilder line = createLine()
+							.orgId(orgId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					final AcctSchema acctSchema = getAcctSchema();
 					final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 					if (orgBalance.signum() < 0)
 					{
 						if (orgBalance.isReversal())
 						{
+<<<<<<< HEAD
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+=======
+							line.setAccount(acctSchemaGL.getDueToAcct(elementType));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							line.setAmtSource((Money)null, orgBalance.getPostBalance());
 						}
 						else
 						{
+<<<<<<< HEAD
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
+=======
+							line.setAccount(acctSchemaGL.getDueFromAcct(elementType));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							line.setAmtSource(orgBalance.getPostBalance(), null);
 						}
 					}
@@ -435,11 +537,16 @@ public final class Fact
 					{
 						if (orgBalance.isReversal())
 						{
+<<<<<<< HEAD
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
+=======
+							line.setAccount(acctSchemaGL.getDueFromAcct(elementType));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							line.setAmtSource(orgBalance.getPostBalance(), null);
 						}
 						else
 						{
+<<<<<<< HEAD
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
 							line.setAmtSource((Money)null, orgBalance.getPostBalance());
 						}
@@ -449,6 +556,14 @@ public final class Fact
 					//
 					add(line);
 					log.debug("({}) - {}", elementType, line);
+=======
+							line.setAccount(acctSchemaGL.getDueToAcct(elementType));
+							line.setAmtSource((Money)null, orgBalance.getPostBalance());
+						}
+					}
+					//
+					add(line.buildAndAddNotNull());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 			}
 		}
@@ -528,6 +643,7 @@ public final class Fact
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (acctSchemaGL.isCurrencyBalancing())
 		{
+<<<<<<< HEAD
 			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 			line.setDocumentInfo(m_doc, null);
 			line.setPostingType(getPostingType());
@@ -544,6 +660,20 @@ public final class Fact
 			line.setAmtAcct(diff);
 
 			add(line);
+=======
+			line = createLine()
+					.setAccount(acctSchemaGL.getCurrencyBalancingAcct())
+					.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO)
+					.alsoAddZeroLine()
+					.buildAndAddNotNull();
+			// Accounted
+			Balance diff = getAcctBalance().computeDiffToBalance();
+
+			diff = diff.negateAndInvertIf(BSline != null && BSline.isDrSourceBalance() == diff.isDebit());
+
+			line.setAmtAcct(diff);
+			//add(line);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		// Adjust biggest (Balance Sheet) line amount
@@ -563,6 +693,10 @@ public final class Fact
 			else
 			{
 				final Money diff = getAcctBalance().toMoney();        // DR-CR
+<<<<<<< HEAD
+=======
+				log.debug("Adjusting Amt={}; Line={}", diff, line);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				line.currencyCorrect(diff);
 			}
 		}   // correct biggest amount
@@ -573,6 +707,7 @@ public final class Fact
 	{
 		for (final FactLine line : m_lines)
 		{
+<<<<<<< HEAD
 			final MAccount account = line.getAccount();
 			if (account == null)
 			{
@@ -593,6 +728,17 @@ public final class Fact
 				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev + ": " + line);
 			}
 
+=======
+			final ElementValue ev = services.getElementValueById(line.getAccountId());
+			if (ev.isSummary())
+			{
+				return BooleanWithReason.falseBecause("Cannot post to Summary Account " + ev.toShortString() + ": " + line);
+			}
+			if (!ev.isActive())
+			{
+				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev.toShortString() + ": " + line);
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return BooleanWithReason.TRUE;
@@ -623,6 +769,7 @@ public final class Fact
 				+ "]";
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Get Lines
 	 *
@@ -634,6 +781,66 @@ public final class Fact
 		m_lines.toArray(temp);
 		return temp;
 	}    // getLines
+=======
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty();
+	}
+
+	public ImmutableList<FactLine> getLines()
+	{
+		return ImmutableList.copyOf(m_lines);
+	}
+
+	public void mapEachLine(final UnaryOperator<FactLine> mapper)
+	{
+		final ListIterator<FactLine> it = m_lines.listIterator();
+		while (it.hasNext())
+		{
+			FactLine line = it.next();
+
+			final FactLine changedLine = mapper.apply(line);
+			if (changedLine == null)
+			{
+				it.remove();
+			}
+			else
+			{
+				it.set(changedLine);
+			}
+		}
+	}
+
+	@NonNull
+	public FactLine getSingleLineByAccountId(final AccountId accountId)
+	{
+		final MAccount account = services.getAccountById(accountId);
+
+		FactLine lineFound = null;
+		for (FactLine line : m_lines)
+		{
+			if (ElementValueId.equals(line.getAccountId(), account.getElementValueId()))
+			{
+				if (lineFound == null)
+				{
+					lineFound = line;
+				}
+				else
+				{
+					throw new AdempiereException("More than one fact line found for AccountId: " + accountId.getRepoId() + ": " + lineFound + ", " + line);
+				}
+			}
+
+		}
+
+		if (lineFound == null)
+		{
+			throw new AdempiereException("No fact line found for AccountId: " + accountId.getRepoId() + " in " + m_lines);
+		}
+
+		return lineFound;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public void save()
 	{
@@ -650,10 +857,14 @@ public final class Fact
 		}
 	}
 
+<<<<<<< HEAD
 	private void saveNew(FactLine line)
 	{
 		InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited);
 	}
+=======
+	private void saveNew(FactLine line) {services.saveNew(line);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private void saveNew(final FactTrxLines factTrxLines)
 	{
@@ -665,7 +876,11 @@ public final class Fact
 			saveNew(drLine);
 
 			factTrxLines.forEachCreditLine(crLine -> {
+<<<<<<< HEAD
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
+=======
+				crLine.setCounterpart_Fact_Acct_ID(drLine.getIdNotNull());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				saveNew(crLine);
 			});
 
@@ -678,7 +893,11 @@ public final class Fact
 			saveNew(crLine);
 
 			factTrxLines.forEachDebitLine(drLine -> {
+<<<<<<< HEAD
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
+=======
+				drLine.setCounterpart_Fact_Acct_ID(crLine.getIdOrNull());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				saveNew(drLine);
 			});
 		}

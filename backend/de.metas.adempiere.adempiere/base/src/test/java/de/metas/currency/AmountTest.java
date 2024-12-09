@@ -1,16 +1,33 @@
 package de.metas.currency;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
+=======
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -149,4 +166,27 @@ public class AmountTest
 			assertThat(money).isEqualTo(Money.of("1.23456789", CurrencyId.ofRepoId(555)));
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@ParameterizedTest
+	@ValueSource(strings = { "123.45 EUR", "-54.321 CHF", "0 RON", "0.00005 HUF" })
+	void testSerializeDeserialize(final String expectedJson) throws JsonProcessingException
+	{
+		System.out.println("expected json: " + expectedJson);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final Amount expectedAmount = Amount.fromJson(expectedJson);
+		System.out.println("expected amount: " + expectedAmount);
+
+		final String actualJson = jsonObjectMapper.writeValueAsString(expectedAmount);
+		System.out.println("actual json: " + actualJson);
+		assertThat(actualJson).isEqualTo("\"" + expectedJson + "\"");
+
+		final Amount actualAmount = jsonObjectMapper.readValue(actualJson, Amount.class);
+		System.out.println("actual amount: " + actualAmount);
+		assertThat(actualAmount).usingRecursiveComparison().isEqualTo(expectedAmount);
+		assertThat(actualAmount).isEqualTo(expectedAmount);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

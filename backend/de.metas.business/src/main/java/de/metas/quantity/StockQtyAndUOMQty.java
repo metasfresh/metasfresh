@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.product.ProductId;
 import de.metas.uom.UOMPrecision;
+<<<<<<< HEAD
+=======
+import de.metas.uom.UomId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,6 +26,7 @@ import static de.metas.util.Check.assumeNotNull;
 @ToString(doNotUseGetters = true)
 public class StockQtyAndUOMQty
 {
+<<<<<<< HEAD
 	ProductId productId;
 
 	Quantity stockQty;
@@ -30,6 +35,16 @@ public class StockQtyAndUOMQty
 	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}.
 	 */
 	Quantity uomQty;
+=======
+	@NonNull ProductId productId;
+
+	@NonNull Quantity stockQty;
+
+	/**
+	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #stockQty}.
+	 */
+	@Nullable Quantity uomQty;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -56,6 +71,15 @@ public class StockQtyAndUOMQty
 	}
 
 	@JsonIgnore
+<<<<<<< HEAD
+=======
+	public boolean isDifferentUOMQty()
+	{
+		return uomQty != null && !uomQty.equals(stockQty);
+	}
+
+	@JsonIgnore
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Quantity getUOMQtyNotNull()
 	{
 		return assumeNotNull(uomQty, "uomQty may not be null; this={}", this);
@@ -110,6 +134,7 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty negate()
 	{
+<<<<<<< HEAD
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty
 				.builder()
 				.productId(productId)
@@ -121,10 +146,35 @@ public class StockQtyAndUOMQty
 		}
 
 		return result.build();
+=======
+		if (isZero())
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.stockQty(stockQty.negate())
+				.uomQty(uomQty != null ? uomQty.negate() : null)
+				.build();
+	}
+
+	@JsonIgnore
+	public boolean isZero()
+	{
+		return stockQty.isZero() && (uomQty == null || uomQty.isZero());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public StockQtyAndUOMQty toZero()
 	{
+<<<<<<< HEAD
+=======
+		if (isZero())
+		{
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return toBuilder()
 				.stockQty(stockQty.toZero())
 				.uomQty(uomQty != null ? uomQty.toZero() : null)
@@ -139,10 +189,17 @@ public class StockQtyAndUOMQty
 				.productId(productId)
 				.stockQty(stockQty.subtract(other.getStockQty()));
 
+<<<<<<< HEAD
 		if (getUOMQtyOpt().isPresent())
 		{
 			Check.assume(other.getUOMQtyOpt().isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
 			result.uomQty(uomQty.subtract(other.uomQty));
+=======
+		if (uomQty != null)
+		{
+			@NonNull final Quantity other_uomQty = assumeNotNull(other.uomQty, "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
+			result.uomQty(uomQty.subtract(other_uomQty));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return result.build();
@@ -150,6 +207,7 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty multiply(@NonNull final BigDecimal factor)
 	{
+<<<<<<< HEAD
 		final StockQtyAndUOMQtyBuilder result = this
 				.toBuilder()
 				.stockQty(stockQty.multiply(factor));
@@ -158,6 +216,17 @@ public class StockQtyAndUOMQty
 			result.uomQty(uomQty.multiply(factor));
 		}
 		return result.build();
+=======
+		if (factor.compareTo(BigDecimal.ONE) == 0)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.stockQty(stockQty.multiply(factor))
+				.uomQty(uomQty != null ? uomQty.multiply(factor) : null)
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public StockQtyAndUOMQty setScale(
@@ -212,7 +281,11 @@ public class StockQtyAndUOMQty
 					{
 						return BigDecimal.ZERO;
 					}
+<<<<<<< HEAD
 					
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomQuantity.getUOM().getStdPrecision());
 
 					return uomQuantity.toBigDecimal().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode())
@@ -236,4 +309,33 @@ public class StockQtyAndUOMQty
 				? stockQtyAndUOMQty.toZero()
 				: stockQtyAndUOMQty;
 	}
+<<<<<<< HEAD
+=======
+
+	public Quantity getQtyInUOM(@NonNull final UomId uomId, @NonNull final QuantityUOMConverter converter)
+	{
+		if (uomQty != null)
+		{
+			if (UomId.equals(uomQty.getUomId(), uomId))
+			{
+				return uomQty;
+			}
+			else if (UomId.equals(uomQty.getSourceUomId(), uomId))
+			{
+				return uomQty.switchToSource();
+			}
+		}
+
+		if (UomId.equals(stockQty.getUomId(), uomId))
+		{
+			return stockQty;
+		}
+		else if (UomId.equals(stockQty.getSourceUomId(), uomId))
+		{
+			return stockQty.switchToSource();
+		}
+
+		return converter.convertQuantityTo(stockQty, productId, uomId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -39,6 +39,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 // TODO: merge it with modern de.metas.resource.ResourceRepository (so far not available in this branch)
 public class ResourceDAO implements IResourceDAO
 {
+<<<<<<< HEAD
+=======
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public ResourceType getResourceTypeById(@NonNull final ResourceTypeId resourceTypeId)
 	{
@@ -146,7 +151,11 @@ public class ResourceDAO implements IResourceDAO
 			+ "#" + I_S_Resource.COLUMNNAME_IsManufacturingResource)
 	public List<I_S_Resource> retrievePlants(final @CacheCtx Properties ctx)
 	{
+<<<<<<< HEAD
 		final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class)
+=======
+		final IQueryBuilder<I_S_Resource> queryBuilder = queryBL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.createQueryBuilder(I_S_Resource.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getCompositeFilter();
@@ -229,7 +238,11 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
+<<<<<<< HEAD
 		final Set<ResourceId> resourceIds = Services.get(IQueryBL.class)
+=======
+		final Set<ResourceId> resourceIds = queryBL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.createQueryBuilder(I_S_Resource.class) // in trx!
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
@@ -279,4 +292,18 @@ public class ResourceDAO implements IResourceDAO
 				.listIds(ResourceId::ofRepoId);
 	}
 
+<<<<<<< HEAD
+=======
+
+	@Override
+	public ImmutableSet<ResourceId> getActivePlantIds()
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

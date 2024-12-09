@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
@@ -45,6 +46,27 @@ public class JsonQuery
 {
 	@NonNull
 	@JsonProperty("field")
+=======
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+
+@Value
+@JsonDeserialize(builder = JsonQuery.JsonQueryBuilder.class)
+@JsonPropertyOrder({ "field", "type", "parameters", "value", "operator", "queries" })
+public class JsonQuery
+{
+	@Nullable
+	@JsonProperty("field")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	String field;
 
 	@NonNull
@@ -64,6 +86,7 @@ public class JsonQuery
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String value;
 
+<<<<<<< HEAD
 	@AllArgsConstructor
 	@Getter
 	public enum QueryType
@@ -73,5 +96,32 @@ public class JsonQuery
 
 		@JsonValue
 		private final String value;
+=======
+	@Nullable
+	@JsonProperty("operator")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	OperatorType operatorType;
+
+	@Nullable
+	@JsonProperty("queries")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	List<JsonQuery> jsonQueryList;
+
+	@Builder
+	public JsonQuery(
+			@JsonProperty("field") @Nullable final String field,
+			@JsonProperty("type") @NonNull final QueryType queryType,
+			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,
+			@JsonProperty("value") @Nullable final String value,
+			@JsonProperty("operator") @Nullable final OperatorType operatorType,
+			@JsonProperty("queries") @Nullable @Singular final List<JsonQuery> jsonQueries)
+	{
+		this.field = field;
+		this.queryType = queryType;
+		this.parameters = parameters;
+		this.value = value;
+		this.operatorType = operatorType;
+		this.jsonQueryList = jsonQueries;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

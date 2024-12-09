@@ -13,6 +13,10 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
@@ -81,6 +85,10 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	IView view;
 	ViewProfileId viewProfileId;
+<<<<<<< HEAD
+=======
+	@Nullable DocumentQueryOrderByList viewOrderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	String tableName;
 	AdWindowId adWindowId;
 
@@ -96,6 +104,10 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private ViewAsPreconditionsContext(
 			@NonNull final IView view,
 			@Nullable final ViewProfileId viewProfileId,
+<<<<<<< HEAD
+=======
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
 			final ViewRowIdsSelection childViewRowIdsSelection,
@@ -103,6 +115,10 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		this.view = view;
 		this.viewProfileId = viewProfileId;
+<<<<<<< HEAD
+=======
+		this.viewOrderBys = viewOrderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.adWindowId = view.getViewId().getWindowId().toAdWindowIdOrNull();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;

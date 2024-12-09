@@ -134,6 +134,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
 	{
+<<<<<<< HEAD
 		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
 		{
 			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
@@ -142,6 +143,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 				olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
 			}
 		}
+=======
+		// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
+		olCandCapacityProvider.computeQtyItemCapacity(olCand)
+				.filter(capacity -> !capacity.isInfinite())
+				.map(capacity -> capacity.toBigDecimal())
+				.ifPresent(olCand::setQtyItemCapacityInternal);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void validateLocation(@NonNull final I_C_OLCand olCand)

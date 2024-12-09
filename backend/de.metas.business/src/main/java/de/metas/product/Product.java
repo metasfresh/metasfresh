@@ -96,4 +96,8 @@ public class Product
 
 	@Nullable
 	CommodityNumberId commodityNumberId;
+<<<<<<< HEAD
+=======
+	@Nullable String procurementStatus;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

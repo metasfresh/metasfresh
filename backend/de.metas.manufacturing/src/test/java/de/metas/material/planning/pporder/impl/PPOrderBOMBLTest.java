@@ -14,6 +14,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -24,7 +28,11 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.mockito.Mockito.mock;
 
 /**
@@ -51,6 +59,10 @@ public class PPOrderBOMBLTest
 		helper = new MRPTestHelper();
 
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
+<<<<<<< HEAD
+=======
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);

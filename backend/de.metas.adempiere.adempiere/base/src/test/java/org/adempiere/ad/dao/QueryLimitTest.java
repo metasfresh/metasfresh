@@ -56,6 +56,10 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(2)).isSameAs(QueryLimit.TWO);
 		assertThat(QueryLimit.ofInt(100)).isSameAs(QueryLimit.ONE_HUNDRED);
 		assertThat(QueryLimit.ofInt(500)).isSameAs(QueryLimit.FIVE_HUNDRED);
+<<<<<<< HEAD
+=======
+		assertThat(QueryLimit.ofInt(1000)).isSameAs(QueryLimit.ONE_THOUSAND);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		assertThat(QueryLimit.ofInt(5).toInt()).isEqualTo(5);
 	}

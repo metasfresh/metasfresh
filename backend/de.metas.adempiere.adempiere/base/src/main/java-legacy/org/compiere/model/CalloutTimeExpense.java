@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,11 +30,27 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Time & Expense Report Callout
@@ -217,7 +234,11 @@ public class CalloutTimeExpense extends CalloutEngine
 		BigDecimal ExpenseAmt = (BigDecimal)mTab.getValue("ExpenseAmt");
 		CurrencyId C_Currency_From_ID = CurrencyId.ofRepoId((Integer)mTab.getValue("C_Currency_ID"));
 		CurrencyId C_Currency_To_ID = CurrencyId.ofRepoId(Env.getContextAsInt(ctx, "$C_Currency_ID"));
+<<<<<<< HEAD
 		LocalDate DateExpense = TimeUtil.asLocalDate(Env.getContextAsDate(ctx, WindowNo, "DateExpense"));
+=======
+		Instant DateExpense = Env.getContextAsDate(ctx, WindowNo, "DateExpense").toInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		log.debug("Amt=" + ExpenseAmt + ", C_Currency_ID=" + C_Currency_From_ID);
 		// Converted Amount = Unit price

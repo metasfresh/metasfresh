@@ -47,7 +47,11 @@ public class IMPProcessorBL implements IIMPProcessorBL
 {
 	private static final Logger log = LogManager.getLogger(IMPProcessorBL.class);
 
+<<<<<<< HEAD
 	private Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
+=======
+	private final Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final String XMLATTACHMENT_NAME = "message.xml";
 
@@ -277,6 +281,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return para;
 	}
 
+<<<<<<< HEAD
 	@Override
 	public I_IMP_ProcessorParameter createParameter(final org.compiere.model.I_IMP_Processor impProcessor, final String key, final String value)
 	{
@@ -286,6 +291,8 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return createParameter(impProcessor, key, name, desc, help, value);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	@Override
 	public AdempiereProcessor asAdempiereProcessor(final org.compiere.model.I_IMP_Processor impProcessor)
@@ -298,6 +305,10 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return new IMPProcessorAdempiereProcessorAdapter(impProcessor);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public org.compiere.model.I_IMP_Processor getIMP_Processor(final AdempiereProcessor adempiereProcessor)
 	{
@@ -328,6 +339,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setImportHelperClass(final Class<? extends IImportHelper> importHelperClass)
 	{
 		Check.assumeNotNull(importHelperClass, "importHelperClass not null");
@@ -335,6 +347,8 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getAD_Reference_ID(final I_AD_Column column, final I_EXP_FormatLine formatLine)
 	{
 		Check.assumeNotNull(column, "Param 'column' is not null");

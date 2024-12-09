@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 de.metas.dataentry.rest_api.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
   {
     "status" : 404,
@@ -111,12 +112,19 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badWindowGivesEmpty
   {
     "status" : 404,
     "error" : "No dataentry for windowId '55555'."
+=======
+de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
+  {
+    "error": "No dataentry for windowId '123' and recordId '5'.",
+    "status": 404
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
   {
+<<<<<<< HEAD
     "result" : {
       "tabs" : [
         {
@@ -184,6 +192,79 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotCha
                           "type" : "LONG_TEXT",
                           "mandatory" : true,
                           "value" : "someText"
+=======
+    "result": {
+      "tabs": [
+        {
+          "caption": "tabRecord1_tabName",
+          "description": "tabRecord1_description",
+          "id": 100003,
+          "subtabs": [
+            {
+              "caption": "subTabRecord1_2_tabName",
+              "description": "subTabRecord1_2_description - seqNo10",
+              "id": 100009,
+              "sections": [
+                {
+                  "caption": "sectionRecord1_2_1_sectionName",
+                  "description": "sectionRecord1_2_1_description - seqNo20",
+                  "id": 100010,
+                  "initially_closed": true,
+                  "lines": [
+                    {
+                      "fields": [
+                        {
+                          "caption": "fieldRecord1_2_1_1_1_name",
+                          "description": "fieldRecord1_2_1_1_1_description - seqNo10",
+                          "id": 100012,
+                          "list_values": [ ],
+                          "mandatory": false,
+                          "type": "DATE"
+                        },
+                        {
+                          "caption": "fieldRecord1_2_1_1_2_name",
+                          "description": "fieldRecord1_2_1_1_2_description",
+                          "id": 100013,
+                          "list_values": [
+                            {
+                              "description": "listValueRecord1_2_1_1_2_2_description - seqNo10",
+                              "id": 100015,
+                              "name": "listValueRecord1_2_1_1_2_2_name"
+                            },
+                            {
+                              "description": "listValueRecord1_2_1_1_2_1_description - seqNo20",
+                              "id": 100014,
+                              "name": "listValueRecord1_2_1_1_2_1_name"
+                            }
+                          ],
+                          "mandatory": false,
+                          "type": "LIST"
+                        },
+                        {
+                          "caption": "fieldRecord1_2_1_1_3_name",
+                          "description": "fieldRecord1_2_1_1_3_description",
+                          "id": 100016,
+                          "list_values": [ ],
+                          "mandatory": false,
+                          "type": "YESNO"
+                        },
+                        {
+                          "caption": "fieldRecord1_2_1_1_4_name",
+                          "description": "fieldRecord1_2_1_1_4_description",
+                          "id": 100017,
+                          "list_values": [ ],
+                          "mandatory": true,
+                          "type": "TEXT"
+                        },
+                        {
+                          "caption": "fieldRecord1_2_1_1_5_name",
+                          "description": "fieldRecord1_2_1_1_5_description",
+                          "id": 100018,
+                          "list_values": [ ],
+                          "mandatory": true,
+                          "type": "LONG_TEXT",
+                          "value": "someText"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                         }
                       ]
                     }
@@ -195,6 +276,7 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotCha
         }
       ]
     },
+<<<<<<< HEAD
     "status" : 200
   }
 ]
@@ -847,5 +929,8 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotCha
       ]
     },
     "status" : 200
+=======
+    "status": 200
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

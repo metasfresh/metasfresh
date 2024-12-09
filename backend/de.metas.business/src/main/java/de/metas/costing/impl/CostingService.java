@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -13,10 +14,28 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+=======
+import com.google.common.collect.Range;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostPrice;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
+<<<<<<< HEAD
+=======
+import de.metas.costing.CostElementType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
@@ -24,6 +43,12 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+<<<<<<< HEAD
+=======
+import de.metas.costing.CostsRevaluationRequest;
+import de.metas.costing.CostsRevaluationResult;
+import de.metas.costing.CurrentCost;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
@@ -33,6 +58,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
@@ -43,6 +69,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+=======
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,14 +82,23 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+=======
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+<<<<<<< HEAD
 import java.util.stream.Collectors;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Stream;
 
 /*
@@ -89,7 +130,10 @@ public class CostingService implements ICostingService
 
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+<<<<<<< HEAD
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final CostingMethodHandlerUtils utils;
 	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
@@ -128,7 +172,23 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
+<<<<<<< HEAD
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+=======
+	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
+	{
+		return costElementsRepo.getById(costElementId);
+	}
+
+	@Override
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
+	{
+		return createCostDetailOrEmpty(request).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ImmutableList<CostDetailCreateResult> costElementResults = Stream.of(request)
 				.flatMap(this::explodeAcctSchemas)
@@ -139,6 +199,7 @@ public class CostingService implements ICostingService
 
 		if (costElementResults.isEmpty())
 		{
+<<<<<<< HEAD
 			throw new AdempiereException("No costs created for " + request);
 		}
 
@@ -166,6 +227,14 @@ public class CostingService implements ICostingService
 				.costSegment(costSegment)
 				.amounts(amountsByCostElement)
 				.build();
+=======
+			return ExplainedOptional.emptyBecause("No costs created for " + request);
+		}
+		else
+		{
+			return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costElementResults));
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
@@ -173,10 +242,17 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
+<<<<<<< HEAD
 				.map(handler -> {
 					try
 					{
 						return handler.createOrUpdateCost(request);
+=======
+				.flatMap(handler -> {
+					try
+					{
+						return handler.createOrUpdateCost(request).stream();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					}
 					catch (final Exception ex)
 					{
@@ -184,13 +260,18 @@ public class CostingService implements ICostingService
 								.setParameter("request", request)
 								.appendParametersToMessage();
 					}
+<<<<<<< HEAD
 				})
 				.filter(Optional::isPresent)
 				.map(Optional::get);
+=======
+				});
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
 	{
+<<<<<<< HEAD
 		if (request.getAmt().isZero())
 		{
 			return request;
@@ -217,6 +298,9 @@ public class CostingService implements ICostingService
 				acctCurrencyId);
 
 		return request.withAmount(CostAmount.of(amtConversionResult.getAmount(), acctCurrencyId));
+=======
+		return request.withAmount(utils.convertToAcctSchemaCurrency(request.getAmt(), request));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -262,12 +346,19 @@ public class CostingService implements ICostingService
 				.costElementId(costDetail.getCostElementId())
 				.build();
 
+<<<<<<< HEAD
 		final CostAmount amt = costDetail.getAmt();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Quantity qty = costDetail.getQty();
 
 		return CostDetailVoidRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
+<<<<<<< HEAD
 				.amt(amt)
+=======
+				.amt(costDetail.getAmt())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qty(qty)
 				.build();
 	}
@@ -308,13 +399,33 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
+<<<<<<< HEAD
 		return request.isAllCostElements()
 				? getAllCostElements(request.getClientId())
 				: ImmutableList.of(request.getCostElement());
+=======
+		if (request.isExplicitCostElement())
+		{
+			return ImmutableList.of(request.getCostElement());
+		}
+		else if (request.getDocumentRef().isMatchInv())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
+		else if (request.isOutbound())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
+		}
+		else // inbound
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private List<CostElement> extractCostElements(final MoveCostsRequest request)
 	{
+<<<<<<< HEAD
 		return request.isAllCostElements()
 				? getAllCostElements(request.getClientId())
 				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
@@ -327,6 +438,14 @@ public class CostingService implements ICostingService
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod)
+=======
+		return request.isExplicitCostElement()
+				? ImmutableList.of(Objects.requireNonNull(request.getCostElement()))
+				: costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
+	}
+
+	private Set<CostingMethodHandler> getCostingMethodHandlers(@NonNull final CostingMethod costingMethod)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Set<CostingMethodHandler> costingMethodHandlers = this.costingMethodHandlers.get(costingMethod);
 		if (costingMethodHandlers.isEmpty())
@@ -337,12 +456,21 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
+<<<<<<< HEAD
 	private Set<CostingMethodHandler> getCostingMethodHandlers(
 			final CostingMethod costingMethod,
 			final CostingDocumentRef documentRef)
 	{
 		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
 		final Set<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
+=======
+	private ImmutableSet<CostingMethodHandler> getCostingMethodHandlers(
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final CostingDocumentRef documentRef)
+	{
+		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		final ImmutableSet<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.stream()
 				.filter(handler -> isHandledBy(handler, documentRef))
 				.collect(ImmutableSet.toImmutableSet());
@@ -353,6 +481,7 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
+<<<<<<< HEAD
 	private boolean isHandledBy(
 			final CostingMethodHandler handler,
 			final CostingDocumentRef documentRef)
@@ -379,6 +508,53 @@ public class CostingService implements ICostingService
 
 	@Override
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
+=======
+	private CostingMethodHandler getSingleCostingMethodHandler(
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final CostingDocumentRef documentRef)
+	{
+		CostingMethodHandler eligibleHandler = null;
+		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		for (final CostingMethodHandler handler : allCostingMethodHandlers)
+		{
+			if (isHandledBy(handler, documentRef))
+			{
+				if (eligibleHandler == null)
+				{
+					eligibleHandler = handler;
+				}
+				else
+				{
+					throw new AdempiereException("More than one eligible handlers found for " + costingMethod + " and " + documentRef + ": " + eligibleHandler + ", " + handler);
+				}
+			}
+		}
+
+		if (eligibleHandler == null)
+		{
+			throw new AdempiereException("No eligible handler found for " + costingMethod + " and " + documentRef);
+		}
+
+		return eligibleHandler;
+	}
+
+	private static boolean isHandledBy(
+			@NonNull final CostingMethodHandler handler,
+			@NonNull final CostingDocumentRef documentRef)
+	{
+		final Set<String> handledTableNames = handler.getHandledTableNames();
+		return handledTableNames.contains(documentRef.getTableName());
+	}
+
+	@Override
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
+	{
+		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
@@ -390,7 +566,11 @@ public class CostingService implements ICostingService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
+<<<<<<< HEAD
 						costDetail -> costDetail.getCostElementId(),
+=======
+						CostDetail::getCostElementId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						costDetail -> costDetail));
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();
@@ -413,6 +593,7 @@ public class CostingService implements ICostingService
 
 		if (costDetailCreateResults.isEmpty())
 		{
+<<<<<<< HEAD
 			throw new AdempiereException("No costs created for " + reversalRequest);
 		}
 
@@ -420,6 +601,15 @@ public class CostingService implements ICostingService
 	}
 
 	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(
+=======
+			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
+		}
+
+		return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costDetailCreateResults));
+	}
+
+	private List<CostDetailCreateResult> createReversalCostDetails(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
@@ -434,9 +624,13 @@ public class CostingService implements ICostingService
 		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
+<<<<<<< HEAD
 				.map(handler -> handler.createOrUpdateCost(request))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
+=======
+				.flatMap(handler -> handler.createOrUpdateCost(request).stream())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -454,8 +648,14 @@ public class CostingService implements ICostingService
 				.documentRef(reversalRequest.getReversalDocumentRef())
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
 				.costElement(costElement)
+<<<<<<< HEAD
 				.qty(costDetail.getQty().negate())
 				.amt(costDetail.getAmt().negate())
+=======
+				.amtType(costDetail.getAmtType())
+				.amt(costDetail.getAmt().negate())
+				.qty(costDetail.getQty().negate())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				// .currencyConversionTypeId(currencyConversionTypeId) // N/A
 				.date(reversalRequest.getDate())
 				.description(reversalRequest.getDescription())
@@ -503,4 +703,69 @@ public class CostingService implements ICostingService
 
 		return result;
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request)
+	{
+		final CostSegmentAndElement costSegmentAndElement = request.getCostSegmentAndElement();
+		final Instant evaluationStartDate = request.getEvaluationStartDate();
+		final CostAmount newCostPrice = request.getNewCostPrice();
+
+		//
+		// Fetch cost details for our cost segment, starting from evaluation start date
+		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
+						CostDetailQuery.builderFrom(costSegmentAndElement)
+								.dateAcctRage(Range.atLeast(evaluationStartDate))
+								.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
+								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+								.build())
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// Restore current costs at the time before evaluation date
+		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
+		if (!costDetails.isEmpty())
+		{
+			final CostDetail firstCostDetail = costDetails.get(0);
+			currentCost.setFrom(firstCostDetail.getPreviousAmounts());
+		}
+		//
+		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = CostsRevaluationResult.CurrentCostBeforeEvaluation.builder()
+				.qty(currentCost.getCurrentQty())
+				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
+				.costPriceNew(newCostPrice)
+				.build();
+		currentCost.setOwnCostPrice(newCostPrice);
+		result.currentCostBeforeEvaluation(currentCostBeforeEvaluation);
+
+		//
+		// Iterate all cost details, calculate adjustments and update the current costs
+		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
+		for (final CostDetail costDetail : costDetails)
+		{
+			// Cost details which were not changing the costs (so are there only for recording)
+			// are not relevant for cost adjustment.
+			if (!costDetail.isChangingCosts())
+			{
+				continue;
+			}
+
+			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
+			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+			result.costDetailAdjustment(costDetailAdjustment);
+		}
+
+		//
+		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
+				.qty(currentCost.getCurrentQty())
+				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+				.build());
+
+		//
+		return result.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

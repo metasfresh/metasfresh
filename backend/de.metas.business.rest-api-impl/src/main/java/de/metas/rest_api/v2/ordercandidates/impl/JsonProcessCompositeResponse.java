@@ -2,7 +2,11 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,7 +29,11 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+<<<<<<< HEAD
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
+=======
+import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import lombok.Builder;
@@ -37,7 +45,11 @@ import java.util.List;
 @JsonDeserialize(builder = JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder.class)
 public class JsonProcessCompositeResponse
 {
+<<<<<<< HEAD
 	JsonOLCandProcessResponse olCandProcessResponse;
+=======
+	JsonGenerateOrdersResponse orderResponse;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonCreateShipmentResponse shipmentResponse;
@@ -47,11 +59,19 @@ public class JsonProcessCompositeResponse
 
 	@Builder
 	JsonProcessCompositeResponse(
+<<<<<<< HEAD
 			@JsonProperty("olCandProcessResponse") final JsonOLCandProcessResponse olCandProcessResponse,
 			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
 			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)
 	{
 		this.olCandProcessResponse = olCandProcessResponse;
+=======
+			@JsonProperty("orderResponse") final JsonGenerateOrdersResponse orderResponse,
+			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
+			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)
+	{
+		this.orderResponse = orderResponse;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.shipmentResponse = shipmentResponse;
 		this.invoiceInfoResponse = invoiceInfoResponse;
 	}

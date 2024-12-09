@@ -37,6 +37,10 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -47,12 +51,27 @@ import java.util.function.IntFunction;
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
  *
+<<<<<<< HEAD
  * @author tsa
  *
  * @param <T> model type
  */
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
+=======
+ * @param <T> model type
+ * @author tsa
+ */
+public abstract class AbstractTypedQuery<T> implements IQuery<T>
+{
+	@Nullable
+	@Override
+	public T firstOnly() throws DBException
+	{
+		return firstOnly(getModelClass());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public final <ET extends T> ET firstOnly(final Class<ET> clazz) throws DBException
 	{
@@ -69,6 +88,16 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 
 	@NonNull
 	@Override
+<<<<<<< HEAD
+=======
+	public final T firstOnlyNotNull()
+	{
+		return firstOnlyNotNull(getModelClass());
+	}
+
+	@NonNull
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final <ET extends T> ET firstOnlyNotNull(final Class<ET> clazz) throws DBException
 	{
 		final boolean throwExIfMoreThenOneFound = true;
@@ -97,7 +126,10 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
@@ -148,7 +180,11 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
+<<<<<<< HEAD
 	 * @param distinct true if the value rows shall be district
+=======
+	 * @param distinct    true if the value rows shall be district
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
 	 */
@@ -162,9 +198,22 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	@Override
+<<<<<<< HEAD
 	public <ET extends T> Map<Integer, ET> mapToId(final Class<ET> modelClass)
 	{
 		return map(modelClass, Model2IdFunction.<ET> getInstance());
+=======
+	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
+	{
+		final List<T> list = list();
+		return Maps.uniqueIndex(list, keyFunction::apply);
+	}
+
+	@Override
+	public <ET extends T> Map<Integer, ET> mapToId(final Class<ET> modelClass)
+	{
+		return map(modelClass, Model2IdFunction.<ET>getInstance());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -199,7 +248,13 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return new QueryInsertExecutor<>(toModelClass, this);
 	}
 
+<<<<<<< HEAD
 	/** Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}. */
+=======
+	/**
+	 * Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}.
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected boolean isReadOnlyRecords()
 	{
 		return Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));

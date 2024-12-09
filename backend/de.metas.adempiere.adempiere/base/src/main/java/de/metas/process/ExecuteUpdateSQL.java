@@ -1,5 +1,9 @@
 package de.metas.process;
 
+<<<<<<< HEAD
+=======
+import java.sql.SQLWarning;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +17,11 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.Stopwatch;
+<<<<<<< HEAD
+=======
+import org.compiere.util.SQLUpdateResult;
+import org.compiere.util.SQLValueStringResult;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class ExecuteUpdateSQL extends JavaProcess
@@ -27,6 +36,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String msg;
+<<<<<<< HEAD
 		addLog("Executing: " + sqlParsed);
 		if (!sqlParsed.trim().toUpperCase().startsWith("SELECT"))
 		{
@@ -34,10 +44,22 @@ public class ExecuteUpdateSQL extends JavaProcess
 			stopwatch.stop();
 
 			msg = "Result: " + no + "; Runtime: " + stopwatch;
+=======
+		final List<String> warningMessages;
+		addLog("Executing: " + sqlParsed);
+		if (!sqlParsed.trim().toUpperCase().startsWith("SELECT"))
+		{
+			final SQLUpdateResult sqlUpdateResult = DB.executeUpdateWithWarningEx(sqlParsed, ITrx.TRXNAME_ThreadInherited);
+			stopwatch.stop();
+
+			msg = "Result: " + sqlUpdateResult.getReturnedValue() + "; Runtime: " + stopwatch;
+			warningMessages = sqlUpdateResult.getWarningMessages();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
 			// assuming that it is a select
+<<<<<<< HEAD
 			DB.getSQLValueStringEx(get_TrxName(), sqlParsed);
 			stopwatch.stop();
 
@@ -45,6 +67,24 @@ public class ExecuteUpdateSQL extends JavaProcess
 		}
 
 		addLog(msg);
+=======
+			final SQLValueStringResult sqlValueStringResult = DB.getSQLValueStringWithWarningEx(get_TrxName(), sqlParsed);
+			stopwatch.stop();
+
+			msg = "Runtime: " + stopwatch;
+			warningMessages = sqlValueStringResult.getWarningMessages();
+		}
+
+		final boolean isLogWarning = getProcessInfo().isLogWarning();
+		if (isLogWarning)
+		{
+			addLog(warningMessages, msg);
+		}
+		else
+		{
+			addLog(msg);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return "@Success@: " + msg;
 	}
 

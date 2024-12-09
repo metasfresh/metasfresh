@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.fail;
@@ -12,14 +13,32 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
+<<<<<<< HEAD
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+=======
+import de.metas.email.mailboxes.MailboxType;
+import de.metas.email.mailboxes.SMTPConfig;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_SysConfig;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -75,9 +94,17 @@ public class DerKurierDeliveryOrderEmailerManualTest
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.email(EMailAddress.ofString("we@derKurier.test"))
+<<<<<<< HEAD
 				.smtpHost("localhost")
 				.smtpPort(25)
 				.password("test")
+=======
+				.type(MailboxType.SMTP)
+				.smtpConfig(SMTPConfig.builder()
+						.smtpHost("localhost")
+						.smtpPort(25)
+						.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
@@ -86,20 +113,30 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
+<<<<<<< HEAD
 		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
+=======
+		final MailService mailService = MailService.newInstanceForUnitTesting();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(
 				derKurierShipperConfigRepository,
 				attachmentEntryService,
 				mailService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(
+<<<<<<< HEAD
 				mailbox, 
 				EMailAddress.ofString("orderProcessing@derKurier.test"), 
+=======
+				mailbox,
+				EMailAddress.ofString("orderProcessing@derKurier.test"),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				firstEntry);
 
 		// now check in your mail server if the mail is OK..
 	}
 
+<<<<<<< HEAD
 	private final byte[] generateBytes()
 	{
 		try
@@ -111,5 +148,10 @@ public class DerKurierDeliveryOrderEmailerManualTest
 			fail("Unable to generate byte for our attachment", e);
 			return null;
 		}
+=======
+	private byte[] generateBytes()
+	{
+		return "Test-Attachment-Text-As-Bytes".getBytes(StandardCharsets.UTF_8);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

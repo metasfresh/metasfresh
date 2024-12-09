@@ -117,7 +117,11 @@ public class InventoryTestHelper
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
+<<<<<<< HEAD
 		docType.setDocSubType(docBaseAndSubType.getDocSubType());
+=======
+		docType.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(docType);
 		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}

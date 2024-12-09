@@ -144,11 +144,18 @@ public class MaterialCockpitFilters
 	private IQueryBuilder<I_MD_Cockpit> augmentQueryBuilderWithOrderBy(@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
 	{
 		return queryBuilder
+<<<<<<< HEAD
 				.orderBy()
 				.addColumn(I_MD_Cockpit.COLUMN_DateGeneral)
 				.addColumn(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
 				.addColumn(I_MD_Cockpit.COLUMN_AttributesKey)
 				.endOrderBy();
+=======
+				.orderByDescending(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate)
+				.orderBy(I_MD_Cockpit.COLUMNNAME_DateGeneral)
+				.orderBy(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
+				.orderBy(I_MD_Cockpit.COLUMNNAME_AttributesKey);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public LocalDate getFilterByDate(@NonNull final DocumentFilterList filters)

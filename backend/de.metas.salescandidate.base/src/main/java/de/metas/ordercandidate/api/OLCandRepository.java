@@ -12,6 +12,11 @@ import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
+<<<<<<< HEAD
+=======
+import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
@@ -19,6 +24,10 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
+<<<<<<< HEAD
+=======
+import de.metas.user.UserId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -37,6 +46,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -68,6 +81,7 @@ public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+<<<<<<< HEAD
 
 	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
 	{
@@ -76,6 +90,9 @@ public class OLCandRepository
 				.olCandProcessorId(processor.getId())
 				.build();
 	}
+=======
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -84,10 +101,24 @@ public class OLCandRepository
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+<<<<<<< HEAD
 		return trxManager.callInThreadInheritedTrx(() -> requests.stream()
 				.map(this::createAndSaveOLCandRecord)
 				.map(olCandFactory::toOLCand)
 				.collect(ImmutableList.toImmutableList()));
+=======
+		return trxManager.callInThreadInheritedTrx(
+				() -> {
+					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
+					for(final OLCandCreateRequest request: requests)
+					{ // using for-loop because if one request fails, it's very hard to debug
+						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
+						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
+						result.add(olCand);
+					}
+					return result.build();
+				});
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
@@ -117,7 +148,11 @@ public class OLCandRepository
 		// if email and phone are blank, they might be set from the location a few lines down the road.
 		olCandPO.setEMail(request.getEmail());
 		olCandPO.setPhone(request.getPhone());
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// set the "normal" (buyer) bpartner's data
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
@@ -190,8 +225,13 @@ public class OLCandRepository
 		olCandPO.setDateCandidate(CoalesceUtil.coalesceNotNull(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
+<<<<<<< HEAD
 															  .atTime(LocalTime.MAX)
 															  .atZone(timeZone)));
+=======
+				.atTime(LocalTime.MAX)
+				.atZone(timeZone)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
@@ -223,6 +263,14 @@ public class OLCandRepository
 			olCandPO.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		}
 
+<<<<<<< HEAD
+=======
+		if (request.getManualQtyInPriceUOM() != null)
+		{
+			olCandPO.setManualQtyInPriceUOM(request.getManualQtyInPriceUOM());
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (request.getDiscount() != null)
 		{
 			olCandPO.setIsManualDiscount(true);
@@ -239,7 +287,11 @@ public class OLCandRepository
 			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
 		}
 
+<<<<<<< HEAD
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
+=======
+		olCandPO.setAD_User_EnteredBy_ID(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
 
@@ -260,6 +312,15 @@ public class OLCandRepository
 			olCandPO.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 		}
 
+<<<<<<< HEAD
+=======
+		final InvoiceRule invoiceRule = request.getInvoiceRule();
+		if (invoiceRule != null)
+		{
+			olCandPO.setInvoiceRule(invoiceRule.getCode());
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final PaymentRule paymentRule = request.getPaymentRule();
 		if (paymentRule != null)
 		{
@@ -311,6 +372,14 @@ public class OLCandRepository
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
+<<<<<<< HEAD
+=======
+		if (request.getQtyShippedCatchWeight() != null)
+		{
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight(request.getQtyShippedCatchWeight().toBigDecimal());
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight_UOM_ID(request.getQtyShippedCatchWeight().getUomId().getRepoId());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
@@ -362,4 +431,14 @@ public class OLCandRepository
 
 		return queryBuilder;
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	public Set<OrderId> getOrderIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

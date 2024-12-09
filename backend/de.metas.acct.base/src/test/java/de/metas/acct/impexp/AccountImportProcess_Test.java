@@ -2,8 +2,14 @@ package de.metas.acct.impexp;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ChartOfAccountsId;
+<<<<<<< HEAD
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.model.validator.C_ElementValue;
+=======
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.interceptor.C_ElementValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;
@@ -75,7 +81,11 @@ public class AccountImportProcess_Test
 		this.elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 		this.testHelper = new AccountImportTestHelper(chartOfAccountsService, elementValueService, elementValueRepository, treeNodeService, treeNodeRepository);
 
+<<<<<<< HEAD
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), treeNodeService)
+=======
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), Services.get(IAccountDAO.class), treeNodeService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			@Override
 			protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)
@@ -96,6 +106,11 @@ public class AccountImportProcess_Test
 	@Test
 	public void simpleTreeStructure()
 	{
+<<<<<<< HEAD
+=======
+		AccountImportTestHelper.createAcctSchemaInfos();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final AccountImportTestHelper.ImportRecordBuilder importRecordTemplate = AccountImportTestHelper.importRecord()
 				.chartOfAccountsName("Import Account")
 				.accountType("A")

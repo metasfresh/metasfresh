@@ -23,7 +23,11 @@
 package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,7 +37,11 @@ import lombok.Value;
 @Builder
 public class InvoiceLineWithDetails
 {
+<<<<<<< HEAD
 	@NonNull InvoiceLineId id;
+=======
+	@NonNull InvoiceAndLineId id;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Singular
 	ImmutableList<InvoiceDetailItem> detailItems;

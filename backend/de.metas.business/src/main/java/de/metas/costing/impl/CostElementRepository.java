@@ -4,17 +4,29 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+<<<<<<< HEAD
+=======
+import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -22,6 +34,10 @@ import org.compiere.model.I_M_CostElement;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD
+=======
+import java.util.Arrays;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -54,13 +70,22 @@ import java.util.stream.Stream;
 public class CostElementRepository implements ICostElementRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements>builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
 			.build();
 
+<<<<<<< HEAD
+=======
+	public CostElementRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private IndexedCostElements getIndexedCostElements()
 	{
 		return cache.getOrLoad(0, this::retrieveIndexedCostElements);
@@ -74,7 +99,11 @@ public class CostElementRepository implements ICostElementRepository
 				.orderBy(I_M_CostElement.COLUMN_M_CostElement_ID)
 				.create()
 				.stream(I_M_CostElement.class)
+<<<<<<< HEAD
 				.map(CostElementRepository::toCostElement)
+=======
+				.map(CostElementRepository::fromRecord)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 		return new IndexedCostElements(costElements);
 	}
@@ -93,16 +122,27 @@ public class CostElementRepository implements ICostElementRepository
 				.orElseThrow(() -> new AdempiereException("No active cost element found for " + costElementId));
 	}
 
+<<<<<<< HEAD
 	@Override
 	public @NonNull CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		final List<CostElement> costElements = getIndexedCostElements()
 				.streamForClientId(clientId)
+=======
+	public @NonNull CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	{
+		final List<CostElement> costElements = getIndexedCostElements()
+				.streamByClientId(clientId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
 				.collect(ImmutableList.toImmutableList());
 		if (costElements.isEmpty())
 		{
+<<<<<<< HEAD
 			return createNewDefaultCostingElement(clientId, costingMethod);
+=======
+			return createDefaultMaterialCostingElement(clientId, costingMethod);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (costElements.size() == 1)
 		{
@@ -114,16 +154,24 @@ public class CostElementRepository implements ICostElementRepository
 		}
 	}
 
+<<<<<<< HEAD
 	private CostElement createNewDefaultCostingElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
 		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
 		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
+=======
+	private CostElement createDefaultMaterialCostingElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	{
+		String name = adReferenceService.retrieveListNameTranslatableString(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode())
+				.translate(Language.getBaseAD_Language());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (Check.isBlank(name))
 		{
 			name = costingMethod.name();
 		}
+<<<<<<< HEAD
 		newCostElementPO.setName(name);
 		newCostElementPO.setCostElementType(CostElementType.Material.getCode());
 		newCostElementPO.setCostingMethod(costingMethod.getCode());
@@ -144,10 +192,37 @@ public class CostElementRepository implements ICostElementRepository
 				.costElementType(CostElementType.ofCode(costElement.getCostElementType()))
 				.allowUserChangingCurrentCosts(!costElement.isCalculated())
 				.clientId(ClientId.ofRepoId(costElement.getAD_Client_ID()))
+=======
+
+		final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		InterfaceWrapperHelper.setValue(record, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(name);
+		record.setCostElementType(CostElementType.Material.getCode());
+		record.setCostingMethod(costingMethod.getCode());
+		record.setIsCalculated(false);
+		InterfaceWrapperHelper.save(record);
+		// assume cache will be automatically reset after save/trx commit
+
+		//
+		return fromRecord(record);
+	}
+
+	private static CostElement fromRecord(@NonNull final I_M_CostElement record)
+	{
+		return CostElement.builder()
+				.id(CostElementId.ofRepoId(record.getM_CostElement_ID()))
+				.name(record.getName())
+				.costingMethod(CostingMethod.ofCode(record.getCostingMethod()))
+				.costElementType(CostElementType.ofCode(record.getCostElementType()))
+				.allowUserChangingCurrentCosts(!record.isCalculated())
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
 	@Override
+<<<<<<< HEAD
 	public List<CostElement> getCostElementsWithCostingMethods(final ClientId clientId)
 	{
 		return getIndexedCostElements()
@@ -162,6 +237,20 @@ public class CostElementRepository implements ICostElementRepository
 		return getIndexedCostElements()
 				.streamForClientId(clientId)
 				.filter(CostElement::isMaterial)
+=======
+	public List<CostElement> getByTypes(@NonNull final ClientId clientId, @NonNull final CostElementType... types)
+	{
+		if (types.length == 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final List<CostElementType> typesList = Arrays.asList(types);
+
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(costElement -> typesList.contains(costElement.getCostElementType()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -173,6 +262,47 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public List<CostElement> getByClientId(@NonNull final ClientId clientId)
+	{
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<CostElementId> getIdsByClientId(@NonNull final ClientId clientId)
+	{
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<CostElementId> getIdsByCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+
+		return getIndexedCostElements()
+				.streamByClientIdAndCostingMethod(clientId, costingMethod)
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Set<CostElementId> getActiveCostElementIds()
 	{
 		return getIndexedCostElements()
@@ -181,6 +311,7 @@ public class CostElementRepository implements ICostElementRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
 	@Override
 	public Set<CostElementId> getIdsByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
@@ -199,11 +330,17 @@ public class CostElementRepository implements ICostElementRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
 		return getIndexedCostElements()
+<<<<<<< HEAD
 				.streamForClientId(clientId)
+=======
+				.streamByClientId(clientId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filter(ce -> ce.getCostingMethod() == costingMethod);
 	}
 
@@ -221,11 +358,23 @@ public class CostElementRepository implements ICostElementRepository
 			return Optional.ofNullable(costElementsById.get(id));
 		}
 
+<<<<<<< HEAD
 		public Stream<CostElement> streamForClientId(@NonNull final ClientId clientId)
+=======
+		public Stream<CostElement> streamByClientId(@NonNull final ClientId clientId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return stream().filter(ce -> ClientId.equals(ce.getClientId(), clientId));
 		}
 
+<<<<<<< HEAD
+=======
+		public Stream<CostElement> streamByClientIdAndCostingMethod(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
+		{
+			return streamByClientId(clientId).filter(ce -> costingMethod.equals(ce.getCostingMethod()));
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public Stream<CostElement> stream()
 		{
 			return costElementsById.values().stream();

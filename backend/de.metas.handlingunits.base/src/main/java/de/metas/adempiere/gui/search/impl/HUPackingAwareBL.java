@@ -22,6 +22,7 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
@@ -32,6 +33,9 @@ import org.compiere.model.I_C_UOM;
 
 import com.google.common.annotations.VisibleForTesting;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -47,6 +51,14 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.compiere.apps.search.IInfoSimple;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -68,16 +80,35 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setQtyCUFromQtyTU(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
 		final Quantity qty = calculateQty(record, qtyPacks);
 		if (qty == null)
+=======
+	public void setQtyCUFromQtyTU(@NonNull final IHUPackingAware record, final int qtyTUs)
+	{
+		final Capacity capacity = calculateCapacity(record);
+		if (capacity == null)
+		{
+			return;
+		}
+		if (capacity.isInfiniteCapacity())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
 
+<<<<<<< HEAD
 		record.setQty(qty.toBigDecimal());
 		record.setC_UOM_ID(qty.getUomId().getRepoId());
+=======
+		record.setQtyCUsPerTU(capacity.toBigDecimal());
+
+		final Quantity qtyCUs = capacity.computeQtyCUs(qtyTUs);
+		record.setQty(qtyCUs.toBigDecimal());
+		record.setC_UOM_ID(qtyCUs.getUomId().getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -106,6 +137,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 	}
 
+<<<<<<< HEAD
 	private Quantity calculateQty(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
 		if (qtyPacks < 0)
@@ -115,6 +147,11 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 					.setParameter("huPackingAware", record);
 		}
 
+=======
+	@Nullable
+	private Quantity calculateQty(@NonNull final IHUPackingAware record, final int qtyTUs)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Capacity capacity = calculateCapacity(record);
 		if (capacity == null)
 		{
@@ -124,9 +161,13 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			return null;
 		}
+<<<<<<< HEAD
 
 		final Capacity capacityMult = capacity.multiply(qtyPacks);
 		return capacityMult.toQuantity();
+=======
+		return capacity.computeQtyCUs(qtyTUs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -197,8 +238,12 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
+<<<<<<< HEAD
 		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, productId, uom);
 		return capacityDef;
+=======
+		return capacityBL.getCapacity(huPiItemProduct, productId, uom);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -243,4 +288,8 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 				? uomDAO.getById(uomId)
 				: null;
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

@@ -308,7 +308,11 @@ public class MProduct extends X_M_Product
 					+ "WHERE IsActive='Y'"
 					// + " AND GuaranteeDate > now()"
 					+ "  AND M_Product_ID=" + getM_Product_ID());
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Asset Description updated #" + no);
 		}
 
@@ -327,6 +331,17 @@ public class MProduct extends X_M_Product
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
+<<<<<<< HEAD
+=======
+
+		// Product category changed, then update the accounts
+		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+		{
+			update_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
+					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		
 		return true;
 	}	// afterSave

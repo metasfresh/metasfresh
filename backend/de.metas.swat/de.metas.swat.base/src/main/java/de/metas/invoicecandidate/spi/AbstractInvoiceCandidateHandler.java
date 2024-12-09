@@ -79,7 +79,11 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore, we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
 
+<<<<<<< HEAD
 		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID()));
+=======
+		final Quantity qtyToInvoiceInUOM = Quantitys.of(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
 
 		ic.setNetAmtToInvoice(netAmtToInvoice.toBigDecimal());

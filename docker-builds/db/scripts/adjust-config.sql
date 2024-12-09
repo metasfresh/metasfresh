@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 
 update ad_sysconfig set value='http://metasfresh-app:8282/adempiereJasper/ReportServlet' where name='de.metas.adempiere.report.jasper.JRServerServlet';
 update ad_sysconfig set value='http://metasfresh-app:8282/adempiereJasper/BarcodeServlet' where name='de.metas.adempiere.report.barcode.BarcodeServlet';
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 update ad_sysconfig set value='' where name='webui.frontend.url';
 
 insert into ad_user(

@@ -18,7 +18,13 @@ import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.time.ZoneId;
+=======
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 
 /*
@@ -69,6 +75,7 @@ public class AbstractPurchaseOfferEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractPurchaseOfferEvent event)
 	{
+<<<<<<< HEAD
 		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
@@ -88,5 +95,40 @@ public class AbstractPurchaseOfferEventHandler
 				.identifier(identifier)
 				.offeredQty(purchaseOfferedEvent.getQtyDelta())
 				.build();
+=======
+		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event, false);
+		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
+
+		final UpdateMainDataRequest dataUpdateRequestForNextDayQty = createDataUpdateRequestForEvent(event, true);
+		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequestForNextDayQty);
+	}
+
+	private UpdateMainDataRequest createDataUpdateRequestForEvent(
+			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent,
+			final boolean forNextDayQty)
+	{
+		final OrgId orgId = purchaseOfferedEvent.getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final Instant date = TimeUtil.getDay(purchaseOfferedEvent.getDate(), timeZone);
+		final Instant dateToUse = forNextDayQty ? date.minus(1, ChronoUnit.DAYS) : date;
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
+				.productDescriptor(purchaseOfferedEvent.getProductDescriptor())
+				.date(dateToUse)
+				.build();
+
+		final UpdateMainDataRequest.UpdateMainDataRequestBuilder request = UpdateMainDataRequest.builder()
+				.identifier(identifier);
+
+		if (forNextDayQty)
+		{
+			request.offeredQtyNextDay(purchaseOfferedEvent.getQtyDelta());
+		}
+        else
+		{
+			request.offeredQty(purchaseOfferedEvent.getQtyDelta());
+		}
+		return request.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

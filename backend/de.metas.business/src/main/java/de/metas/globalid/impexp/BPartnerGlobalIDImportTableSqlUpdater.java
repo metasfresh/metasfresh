@@ -67,7 +67,11 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Found BPartner={}", no);
 	}
 
@@ -81,7 +85,11 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append("WHERE " + I_I_BPartner_GlobalID.COLUMNNAME_C_BPartner_ID + " IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Value is mandatory={}", no);
 	}
 }

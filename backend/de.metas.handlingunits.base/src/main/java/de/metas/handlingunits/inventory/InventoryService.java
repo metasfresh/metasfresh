@@ -1,6 +1,11 @@
 package de.metas.handlingunits.inventory;
 
 import de.metas.document.DocBaseAndSubType;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -293,8 +298,13 @@ public class InventoryService
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+<<<<<<< HEAD
 				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
 				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+=======
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
+				.docSubType(DocSubType.VirtualInventory)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

@@ -122,7 +122,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
+<<<<<<< HEAD
 		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+=======
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}
@@ -144,7 +148,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
+<<<<<<< HEAD
 		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+=======
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
@@ -361,21 +369,33 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (priceUomId != null && uomId != null)
 		{
 
+<<<<<<< HEAD
 			final Quantity qtyToConvert = Quantitys.create(qtyEntered, uomId);
+=======
+			final Quantity qtyToConvert = Quantitys.of(qtyEntered, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Quantity result = uomConversionBL.convertQuantityTo(qtyToConvert, UOMConversionContext.of(productId), priceUomId);
 			logger.debug("invoice line has both Price_UOM_ID={} and C_UOM_ID={}; return result={}", priceUomId.getRepoId(), uomId.getRepoId(), result);
 			return result;
 		}
 		else if (uomId != null)
 		{
+<<<<<<< HEAD
 			final Quantity result = Quantitys.create(qtyEntered, uomId);
+=======
+			final Quantity result = Quantitys.of(qtyEntered, uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.debug("invoice line has Price_UOM_ID=null and C_UOM_ID={}; return result ={}", uomId.getRepoId(), result);
 			return result;
 		}
 		else if (productId != null)
 		{
 			final UomId stockUomId = productBL.getStockUOMId(productId);
+<<<<<<< HEAD
 			final Quantity result = Quantitys.create(ilRecord.getQtyInvoiced(), stockUomId);
+=======
+			final Quantity result = Quantitys.of(ilRecord.getQtyInvoiced(), stockUomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.debug("invoice line has Price_UOM_ID=null, C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
 			return result;
 		}
@@ -544,11 +564,19 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@NonNull
 	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
+<<<<<<< HEAD
 		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
 		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
 
 		return Quantitys.create(
+=======
+		final Quantity qtyEntered = Quantitys.of(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+
+		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
+
+		return Quantitys.of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				qtyEntered,
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);
@@ -557,7 +585,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	@NonNull
 	@Override
+<<<<<<< HEAD
 	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+=======
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 

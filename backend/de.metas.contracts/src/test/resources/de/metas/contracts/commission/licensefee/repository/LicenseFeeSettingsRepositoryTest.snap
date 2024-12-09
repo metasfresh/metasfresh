@@ -1,5 +1,6 @@
 de.metas.contracts.commission.licensefee.repository.LicenseFeeSettingsRepositoryTest.givenValidId_whenGetById_thenReturnSettings=[
   {
+<<<<<<< HEAD
     "orgId" : 1,
     "licenseFeeSettingsId" : 100001,
     "commissionProductId" : 1001,
@@ -14,5 +15,21 @@ de.metas.contracts.commission.licensefee.repository.LicenseFeeSettingsRepository
         "active" : true
       }
     ]
+=======
+    "commissionProductId": 1001,
+    "licenseFeeSettingsId": 100001,
+    "lines": [
+      {
+        "active": true,
+        "bpGroupIdMatch": 1000000,
+        "licenseFeeSettingsId": 100001,
+        "licenseFeeSettingsLineId": 100002,
+        "percentOfBasedPoints": 10,
+        "seqNo": 10
+      }
+    ],
+    "orgId": 1,
+    "pointsPrecision": 2
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

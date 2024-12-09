@@ -117,7 +117,11 @@ Feature: Handling unit data export audit
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And transform CU to new TUs
+<<<<<<< HEAD
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+=======
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | createdCU           | 10    | huAuditProductTU                   | createdTU                 | newCreatedCU              |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:

@@ -48,11 +48,16 @@ class ExportHelperTest
 	@Test
 	void encodeDate()
 	{
+<<<<<<< HEAD
 		// given
 		final I_EXP_FormatLine formatLine = setupFormatLine();
 
 		// when
 		final String result = ExportHelper.encodeDate(de.metas.common.util.time.SystemTime.asTimestamp(), formatLine, DisplayType.DateTime);
+=======
+		// when
+		final String result = ExportHelper.encodeDate(de.metas.common.util.time.SystemTime.asTimestamp(), DisplayType.DateTime);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// then
 		assertThat(result).isEqualTo("2020-08-11T08:21:35+02:00");

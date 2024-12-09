@@ -217,7 +217,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
+<<<<<<< HEAD
 		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
+=======
+		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.of(orderLine.getQtyReserved(), productId), orderLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 
@@ -278,7 +282,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
 		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
+<<<<<<< HEAD
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
+=======
+		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType().getNullableCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 

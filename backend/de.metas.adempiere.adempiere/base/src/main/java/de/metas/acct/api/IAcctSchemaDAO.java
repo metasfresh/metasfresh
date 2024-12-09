@@ -39,6 +39,11 @@ public interface IAcctSchemaDAO extends ISingletonService
 
 	AcctSchema getById(final AcctSchemaId acctSchemaId);
 
+<<<<<<< HEAD
+=======
+	AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Retrieves the accounting schema for the given context's <code>AD_Client_ID</code> and <code>AD_Org_ID</code>.<br>
 	 * It returns the C_AcctSchema with the given AD_Client_ID and AD_OrgOnly_ID. Inactive records are ignored. If no C_AcctSchema record with the given AD_OrgOnly_ID exists, then it falls back and
@@ -83,4 +88,11 @@ public interface IAcctSchemaDAO extends ISingletonService
 	I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(AcctSchemaId acctSchemaId);
 
 	void changeAcctSchemaAutomaticPeriodId(AcctSchemaId acctSchemaId, int periodId);
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	AcctSchema getByClientAndName(@NonNull ClientId clientId, @NonNull String name);
+	void saveAcctSchemaElement(@NonNull AcctSchemaElement acctSchemaElement);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

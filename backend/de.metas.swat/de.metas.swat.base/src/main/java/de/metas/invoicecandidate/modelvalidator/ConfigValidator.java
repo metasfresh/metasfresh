@@ -95,7 +95,11 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains
 		// are inserts into the table, if an embedded async processor is running somewhere in the background
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+<<<<<<< HEAD
 		migrationLogger.addTableToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
+=======
+		migrationLogger.addTablesToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
@@ -109,7 +113,11 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_ILCandHandler.instance);
 		engine.addModelValidator(new C_Invoice_Candidate_Agg());
 		engine.addModelValidator(new C_Invoice_Line_Alloc());
+<<<<<<< HEAD
 		engine.addModelValidator(new C_InvoiceSchedule());
+=======
+		// engine.addModelValidator(new C_InvoiceSchedule()); is now a spring component
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// engine.addModelValidator(new C_Invoice()); is now a spring component
 		engine.addModelValidator(new AD_Note());
 		engine.addModelValidator(new C_OrderLine());

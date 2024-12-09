@@ -30,6 +30,10 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -166,7 +170,11 @@ public abstract class ReportStarter extends JavaProcess
 		final String reportContentType = outputType.getContentType();
 
 		final String reportFilename;
+<<<<<<< HEAD
 		if (Check.isNotBlank(result.getFilename()))
+=======
+		if (Check.isNotBlank(result.getFilename()) && !isDocument(processInfo)) // in case of documents we use DocumentInfo as filename
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			reportFilename = result.getFilename();
 			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
@@ -174,7 +182,11 @@ public abstract class ReportStarter extends JavaProcess
 		else
 		{
 			reportFilename = extractReportFilename(processInfo, outputType);
+<<<<<<< HEAD
 			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
+=======
+			logger.debug("executeReport's result has a blank filename or the record is a document; -> use extracted filename={} for the exported file", reportFilename);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
@@ -185,7 +197,11 @@ public abstract class ReportStarter extends JavaProcess
 		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
+<<<<<<< HEAD
 				() -> pi.getTitle(),
+=======
+				pi::getTitle,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				() -> "report_" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0));
 
 		final String fileExtension = outputType.getFileExtension();
@@ -195,7 +211,25 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
+=======
+	private static String extractReportBasename_IfDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.map(IDocument::getDocumentInfo)
+				.orElse(null);
+	}
+	
+	private static boolean isDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.isPresent();
+	}
+	
+	@Nullable
+	private static IDocument getDocument(@NonNull final ProcessInfo pi)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final TableRecordReference recordRef = pi.getRecordRefOrNull();
 		if (recordRef == null)
@@ -206,6 +240,7 @@ public abstract class ReportStarter extends JavaProcess
 		final Object record = recordRef.getModel();
 
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+<<<<<<< HEAD
 		final IDocument document = documentBL.getDocumentOrNull(record);
 		if (document == null)
 		{
@@ -213,6 +248,9 @@ public abstract class ReportStarter extends JavaProcess
 		}
 
 		return document.getDocumentInfo();
+=======
+		return documentBL.getDocumentOrNull(record);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)

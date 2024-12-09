@@ -1,5 +1,6 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +16,10 @@ import org.compiere.model.X_AD_UI_ElementField;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayout;
@@ -52,6 +57,19 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.model.X_AD_UI_ElementField;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -78,7 +96,11 @@ import lombok.Value;
 @Value
 public class DataEntryTabLoader
 {
+<<<<<<< HEAD
 	private final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+=======
+	DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	AdWindowId adWindowId;
 	WindowId windowId;
@@ -200,7 +222,11 @@ public class DataEntryTabLoader
 		final ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> //
 		elementGroups = createLayoutElemementTab(dataEntrySection);
 
+<<<<<<< HEAD
 		column.addElementTabs(elementGroups);
+=======
+		column.addElementGroups(elementGroups);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return layoutSection;
 	}

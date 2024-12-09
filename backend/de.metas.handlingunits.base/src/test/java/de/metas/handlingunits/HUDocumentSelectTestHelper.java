@@ -1,5 +1,6 @@
 package de.metas.handlingunits;
 
+<<<<<<< HEAD
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 /*
@@ -50,6 +51,8 @@ import org.eevolution.model.I_M_Warehouse_Routing;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_C_Order;
@@ -65,12 +68,41 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_AD_Table_Process;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Attribute;
+import org.eevolution.model.I_M_Warehouse_Routing;
+import org.eevolution.model.X_M_Warehouse_Routing;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * This helper class declares master data and objects that are useful for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class HUDocumentSelectTestHelper extends HUTestHelper
 {
@@ -97,11 +129,14 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	public static final String NAME_PurchaseOrder8 = "PO 8";
 	public static final String NAME_PurchaseOrder9 = "PO 9";
 
+<<<<<<< HEAD
 	public static final String NAME_Product1 = "Product 1";
 	public static final String NAME_Product2 = "Product 2";
 
 	private I_C_POS_Profile posProfile;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_M_Warehouse warehouse1;
 	public I_M_Warehouse warehouse2;
 	public I_M_Warehouse warehouse3;
@@ -134,8 +169,12 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	private I_M_HU_PI_Item_Product huDefIFCO_pip_Tomato;
 
 	/**
+<<<<<<< HEAD
 	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}. Therefore can can call
 	 * {@link HUTestHelper#createHUs(IHUContext, I_M_HU_PI, I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} with this PIP and both {@link HUTestHelper#pTomato} and {@link HUTestHelper#pSalad}.
+=======
+	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public I_M_HU_PI huDefIFCO2;
 	public I_M_HU_PI_Item_Product huDefIFCO2_pip_Tomato;
@@ -169,10 +208,13 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 		WeightAttributeValueCalloutTest.setupWeightsToNoPI(this);
 
+<<<<<<< HEAD
 		posProfile = InterfaceWrapperHelper.newInstance(I_C_POS_Profile.class, contextProvider);
 		posProfile.setAD_Role_ID(adRole.getAD_Role_ID());
 		InterfaceWrapperHelper.save(posProfile);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// Document Types
 		{
@@ -390,6 +432,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return order;
 	}
 
+<<<<<<< HEAD
 	public I_PP_Order createManufacturingOrder(final String docNo, final I_M_Warehouse warehouse)
 	{
 		final I_PP_Order order = InterfaceWrapperHelper.create(ctx, I_PP_Order.class, ITrx.TRXNAME_None);
@@ -401,6 +444,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	}
 
 	public I_M_ReceiptSchedule createReceiptSchedule(
+=======
+	public void createReceiptSchedule(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final I_M_Warehouse warehouse,
 			@Nullable final I_M_Warehouse warehouseDest,
 			@NonNull final I_C_Order order,
@@ -428,7 +474,10 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setQualityNote("Quality des");
 		rSched.setM_HU_PI_Item_Product(pip);
 		InterfaceWrapperHelper.save(rSched);
+<<<<<<< HEAD
 		return rSched;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private I_M_AttributeSetInstance createASI()
@@ -448,7 +497,11 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return asi;
 	}
 
+<<<<<<< HEAD
 	public I_M_Warehouse_Routing createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
+=======
+	public void createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_M_Warehouse_Routing warehouseRouting = InterfaceWrapperHelper.newInstance(I_M_Warehouse_Routing.class, contextProvider);
 		warehouseRouting.setDocBaseType(docBaseType);
@@ -456,6 +509,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		warehouseRouting.setIsActive(true);
 		InterfaceWrapperHelper.save(warehouseRouting);
 
+<<<<<<< HEAD
 		// ... also create the POS Profile Warehouse
 		createPOSProfileWarehouse(warehouse);
 
@@ -469,6 +523,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		posProfileWarehouse.setM_Warehouse(warehouse);
 		InterfaceWrapperHelper.save(posProfileWarehouse);
 		return posProfileWarehouse;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createHU_Report_Process(final String name)

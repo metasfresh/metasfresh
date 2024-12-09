@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package de.metas.process.ui;
 
 import java.sql.PreparedStatement;
@@ -9,6 +10,40 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+=======
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.process.ui;
+
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessDefaultParametersUpdater;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -20,6 +55,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.ProcessClassInfo;
@@ -27,6 +63,16 @@ import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class ProcessParameterPanelModel
 {
@@ -35,11 +81,16 @@ public class ProcessParameterPanelModel
 	public static final String FIELDSEPARATOR_TEXT = " - ";
 
 	@FunctionalInterface
+<<<<<<< HEAD
 	public static interface IDisplayValueProvider
+=======
+	public interface IDisplayValueProvider
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		String getDisplayValue(GridField gridField);
 	}
 
+<<<<<<< HEAD
 	private final Properties ctx;
 	private final int windowNo;
 	private final int tabNo;
@@ -48,6 +99,16 @@ public class ProcessParameterPanelModel
 	private final List<GridField> gridFields = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
+=======
+	@Getter private final Properties ctx;
+	@Getter private final int windowNo;
+	@Getter private final int tabNo;
+	private final int processId;
+	private final ProcessClassInfo processClassInfo;
+	private final List<GridField> gridFields = new ArrayList<>();
+	private final List<GridField> gridFieldsTo = new ArrayList<>();
+	private final List<GridField> gridFieldsAll = new ArrayList<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ProcessDefaultParametersUpdater defaultParametersUpdater;
 
@@ -81,6 +142,7 @@ public class ProcessParameterPanelModel
 		createFields();
 	}
 
+<<<<<<< HEAD
 	public Properties getCtx()
 	{
 		return ctx;
@@ -96,6 +158,8 @@ public class ProcessParameterPanelModel
 		return tabNo;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getAD_Process_ID()
 	{
 		return processId;
@@ -165,8 +229,11 @@ public class ProcessParameterPanelModel
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -185,6 +252,7 @@ public class ProcessParameterPanelModel
 		return gridFieldsTo.get(index);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Get field index by columnName
 	 *
@@ -203,6 +271,8 @@ public class ProcessParameterPanelModel
 		return -1;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setDefaultValues()
 	{
 		final int size = getFieldCount();
@@ -237,7 +307,11 @@ public class ProcessParameterPanelModel
 	 *
 	 * @param rs result set
 	 */
+<<<<<<< HEAD
 	private void createField(final ResultSet rs)
+=======
+	private void createField(final ResultSet rs) throws SQLException
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// Parameter field
 		final GridFieldVO gridFieldVO = GridFieldVO.createParameter(ctx, windowNo, tabNo, rs);
@@ -280,12 +354,17 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Notify the model that an editor value was changed.
+<<<<<<< HEAD
 	 *
 	 * NOTE: this is used to do View to Model binding
 	 *
 	 * @param columnName
 	 * @param valueNew
 	 * @param displayValueNew
+=======
+	 * NOTE: this is used to do View to Model binding
+	 *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param changedField optional {@link GridField} that changed
 	 */
 	public void notifyValueChanged(final String columnName, final Object valueNew, final GridField changedField)
@@ -333,7 +412,11 @@ public class ProcessParameterPanelModel
 	}
 
 	/** A list of column names which are notifying in progress */
+<<<<<<< HEAD
 	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<String>();
+=======
+	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/* package */void setFieldValue(final GridField gridField, final Object valueNew)
 	{
@@ -342,9 +425,12 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Validate given <code>gridField</code> when <code>changedColumnName</code> was changed.
+<<<<<<< HEAD
 	 *
 	 * @param gridField
 	 * @param changedColumnName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private void validateField(final GridField gridField, final String changedColumnName)
 	{
@@ -375,7 +461,11 @@ public class ProcessParameterPanelModel
 
 	private void validate()
 	{
+<<<<<<< HEAD
 		final Set<String> missingMandatoryFields = new HashSet<String>();
+=======
+		final Set<String> missingMandatoryFields = new HashSet<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final int fieldCount = getFieldCount();
 		for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)

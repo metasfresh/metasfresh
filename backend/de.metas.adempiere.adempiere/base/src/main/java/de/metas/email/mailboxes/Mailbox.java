@@ -1,5 +1,6 @@
 package de.metas.email.mailboxes;
 
+<<<<<<< HEAD
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,25 @@ import lombok.ToString;
 import lombok.Value;
 import org.slf4j.Logger;
 
+=======
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.email.EMailAddress;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.swat.base
@@ -47,14 +67,21 @@ import org.slf4j.Logger;
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+<<<<<<< HEAD
 @ToString(exclude = "password")
 public final class Mailbox
 {
 	private final static transient Logger logger = LogManager.getLogger(Mailbox.class);
+=======
+public class Mailbox
+{
+	private final static Logger logger = LogManager.getLogger(Mailbox.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final int DEFAULT_SMTP_PORT = 25;
 	private static final int DEFAULT_SMTPS_PORT = 587;
 
+<<<<<<< HEAD
 	@JsonProperty("smtpHost")
 	private final String smtpHost;
 	@JsonProperty("smtpPort")
@@ -147,10 +174,99 @@ public final class Mailbox
 		}
 
 		return toBuilder().sendEmailsFromServer(sendEmailsFromServer).build();
+=======
+	@NonNull MailboxType type;
+	@NonNull EMailAddress email;
+	@Nullable String userToColumnName;
+	@Nullable SMTPConfig smtpConfig;
+	@Nullable MicrosoftGraphConfig microsoftGraphConfig;
+
+	@Jacksonized
+	@Builder(toBuilder = true)
+	private Mailbox(
+			@NonNull final MailboxType type,
+			@NonNull final EMailAddress email,
+			@Nullable final String userToColumnName,
+			@Nullable final SMTPConfig smtpConfig,
+			@Nullable final MicrosoftGraphConfig microsoftGraphConfig)
+	{
+		this.type = type;
+		this.email = email;
+		this.userToColumnName = StringUtils.trimBlankToNull(userToColumnName);
+
+		switch (type)
+		{
+			case SMTP:
+			{
+				this.smtpConfig = Check.assumeNotNull(smtpConfig, "smtpConfig cannot be null");
+				this.microsoftGraphConfig = null;
+				break;
+			}
+			case MICROSOFT_GRAPH:
+			{
+				this.smtpConfig = null;
+				this.microsoftGraphConfig = Check.assumeNotNull(microsoftGraphConfig, "microsoftGraphConfig cannot be null");
+				break;
+			}
+			default:
+			{
+				throw new AdempiereException("Unknown type: " + type);
+			}
+		}
+	}
+
+	public ExplainedOptional<Mailbox> mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
+	{
+		if (userEmailConfig == null)
+		{
+			logger.debug("userEmailConfig can't be used because it has no user config");
+			return ExplainedOptional.of(this);
+		}
+
+		final EMailAddress userEmail = userEmailConfig.getEmail();
+		if (userEmail == null)
+		{
+			logger.debug("userEmailConfig can't be used because it has no Mail-Address: {}", userEmailConfig);
+			return ExplainedOptional.emptyBecause("userEmailConfig can't be used because it has no Mail-Address: " + userEmailConfig);
+		}
+
+		switch (type)
+		{
+			case SMTP:
+			{
+				final SMTPConfig smtpConfig = getSmtpConfigNotNull();
+
+				if (smtpConfig.isSmtpAuthorization()
+						&& (Check.isBlank(userEmailConfig.getUsername()) || Check.isBlank(userEmailConfig.getPassword())))
+				{
+					return ExplainedOptional.emptyBecause("userEmailConfig can't be used because it has no SMTP-UserName or SMTP-Password: " + userEmailConfig);
+				}
+
+				return ExplainedOptional.of(
+						toBuilder()
+								.email(userEmail)
+								.smtpConfig(smtpConfig.mergeFrom(userEmailConfig))
+								.build()
+				);
+			}
+			case MICROSOFT_GRAPH:
+			{
+				final MicrosoftGraphConfig microsoftGraphConfig = getMicrosoftGraphConfigNotNull();
+				return ExplainedOptional.of(
+						toBuilder()
+								.microsoftGraphConfig(microsoftGraphConfig.withDefaultReplyTo(userEmail))
+								.build()
+				);
+			}
+			default:
+				throw new AdempiereException("Unknown type: " + type);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public Mailbox withUserToColumnName(final String userToColumnName)
 	{
+<<<<<<< HEAD
 		if (Objects.equals(this.userToColumnName, userToColumnName))
 		{
 			return this;
@@ -158,4 +274,20 @@ public final class Mailbox
 
 		return toBuilder().userToColumnName(userToColumnName).build();
 	}
+=======
+		final String userToColumnNameNorm = StringUtils.trimBlankToNull(userToColumnName);
+		if (Objects.equals(this.userToColumnName, userToColumnNameNorm))
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder().userToColumnName(userToColumnName).build();
+		}
+	}
+
+	public SMTPConfig getSmtpConfigNotNull() {return Check.assumeNotNull(smtpConfig, "smtpConfig cannot be null");}
+
+	public MicrosoftGraphConfig getMicrosoftGraphConfigNotNull() {return Check.assumeNotNull(microsoftGraphConfig, "microsoftGraphConfig cannot be null");}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

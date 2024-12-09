@@ -114,4 +114,24 @@ public class ExportPPOrderHelper
 			return (context.isPluFileExportAuditEnabled());
 		};
 	}
+<<<<<<< HEAD
+=======
+
+	public static Integer getPPOrderMetasfreshId(@NonNull final Map<String, String> parameters)
+	{
+		final String ppOrderStr = parameters.get(ExternalSystemConstants.PARAM_PP_ORDER_ID);
+		if (Check.isBlank(ppOrderStr))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PP_ORDER_ID);
+		}
+		try
+		{
+			return Integer.parseInt(ppOrderStr);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new RuntimeException("Unable to parse PP_Order_ID from string=" + ppOrderStr);
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

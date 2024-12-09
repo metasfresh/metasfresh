@@ -10,10 +10,18 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+<<<<<<< HEAD
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
+=======
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.document.DocBaseAndSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -221,7 +229,11 @@ public class CreateInvoiceCandidatesService
 		{
 
 			final StockQtyAndUOMQty qtyOrdered = StockQtyAndUOMQtys.createConvert(
+<<<<<<< HEAD
 					Quantitys.create(item.getQtyOrdered(), uomId),
+=======
+					Quantitys.of(item.getQtyOrdered(), uomId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					productId,
 					uomId);
 			candidate.qtyOrdered(qtyOrdered);
@@ -234,7 +246,11 @@ public class CreateInvoiceCandidatesService
 		// qtyDelivered
 		final BigDecimal qtyDeliveredEff = coalesce(item.getQtyDelivered(), ZERO);
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.createConvert(
+<<<<<<< HEAD
 				Quantitys.create(qtyDeliveredEff, uomId),
+=======
+				Quantitys.of(qtyDeliveredEff, uomId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				productId,
 				uomId);
 		candidate.qtyDelivered(qtyDelivered);
@@ -375,7 +391,13 @@ public class CreateInvoiceCandidatesService
 			return;
 		}
 
+<<<<<<< HEAD
 		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
+=======
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
+
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void syncBPartnerToCandidate(

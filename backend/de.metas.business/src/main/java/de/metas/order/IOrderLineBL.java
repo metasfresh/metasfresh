@@ -54,6 +54,11 @@ public interface IOrderLineBL extends ISingletonService
 
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
 
+<<<<<<< HEAD
+=======
+	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);

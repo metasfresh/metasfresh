@@ -64,11 +64,19 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_DocType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -90,7 +98,11 @@ import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -98,7 +110,11 @@ public class PaymentsViewAllocateCommandTest
 	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
 	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = true;
 
+<<<<<<< HEAD
 	private final OrgId orgId = OrgId.ofRepoId(1);
+=======
+	private final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final LocalDate dateInvoiced = LocalDate.parse("2020-04-01");
 	private final LocalDate paymentDateTrx = LocalDate.parse("2020-04-25");
 
@@ -107,6 +123,10 @@ public class PaymentsViewAllocateCommandTest
 	private IInvoiceDAO invoicesDAO;
 	private IAllocationDAO allocationDAO;
 
+<<<<<<< HEAD
+=======
+	private OrgId orgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private CurrencyId euroCurrencyId;
 	private BPartnerId bpartnerId;
 
@@ -128,6 +148,10 @@ public class PaymentsViewAllocateCommandTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		bpartnerId = createBPartnerId();
+<<<<<<< HEAD
+=======
+		orgId = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		SpringContextHolder.registerJUnitBean(moneyService);
 	}
@@ -209,9 +233,22 @@ public class PaymentsViewAllocateCommandTest
 
 		final InvoiceId invoiceId;
 		{
+<<<<<<< HEAD
 			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
+=======
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
+			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
+
+			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
+			invoiceRecord.setC_DocType_ID(docType.getC_DocType_ID());
+			invoiceRecord.setIsSOTrx(docType.isSOTrx());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 			saveRecord(invoiceRecord);
@@ -250,6 +287,35 @@ public class PaymentsViewAllocateCommandTest
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
 	}
 
+<<<<<<< HEAD
+=======
+	private DocTypeId serviceInvoiceDocTypeId;
+	private ProductId serviceFeeProductId;
+
+	@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
+	private void createConfig(
+			@NonNull final String feePercentageOfGrandTotal,
+			@NonNull final BPartnerId customerId,
+			@NonNull final ZonedDateTime validFrom,
+			@NonNull final BPartnerId serviceCompanyBPartnerId)
+	{
+		final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
+		configRecord.setIsActive(true);
+		configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
+		configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
+		configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(configRecord);
+
+		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+		assignmentRecord.setIsActive(true);
+		assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
+		assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+		assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+		saveRecord(assignmentRecord);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nested
 	public class toPayableDocument
 	{
@@ -324,8 +390,11 @@ public class PaymentsViewAllocateCommandTest
 		@Nested
 		public class WithServiceFee
 		{
+<<<<<<< HEAD
 			private DocTypeId serviceInvoiceDocTypeId;
 			private ProductId serviceFeeProductId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			private BPartnerId feeCompanyId1;
 
 			@BeforeEach
@@ -343,6 +412,7 @@ public class PaymentsViewAllocateCommandTest
 						.build();
 			}
 
+<<<<<<< HEAD
 			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
 			private void createConfig(
 					@NonNull final String feePercentageOfGrandTotal,
@@ -366,6 +436,8 @@ public class PaymentsViewAllocateCommandTest
 				saveRecord(assignmentRecord);
 			}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@ParameterizedTest
 			@ValueSource(strings = { "2020-01-01", "2020-02-11", "2020-08-01" })
 			public void salesInvoiceAndInboundPayment(final String paymentDateStr)
@@ -385,6 +457,10 @@ public class PaymentsViewAllocateCommandTest
 
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
+<<<<<<< HEAD
+=======
+						.ignoringFields("reference.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.isEqualTo(PayableDocument.builder()
 										   .invoiceId(invoiceRow.getInvoiceId())
 										   .bpartnerId(bpartnerId)
@@ -433,7 +509,11 @@ public class PaymentsViewAllocateCommandTest
 				// Check output
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
+<<<<<<< HEAD
 						.ignoringFields("reference.modelRef.timestamp")
+=======
+						.ignoringFields("reference.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.isEqualTo(PayableDocument.builder()
 										   .invoiceId(invoiceRow.getInvoiceId())
 										   .bpartnerId(bpartnerId)
@@ -513,7 +593,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -549,7 +633,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -589,7 +677,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -631,7 +723,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -647,7 +743,11 @@ public class PaymentsViewAllocateCommandTest
 									   .build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -685,7 +785,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
 									   .orgId(orgId)
@@ -701,7 +805,11 @@ public class PaymentsViewAllocateCommandTest
 									   .build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InvoiceToPayment)
 									   .orgId(orgId)
@@ -738,7 +846,11 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
+<<<<<<< HEAD
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+=======
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.isEqualTo(AllocationLineCandidate.builder()
 									   .type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 									   .orgId(orgId)

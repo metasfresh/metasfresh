@@ -29,7 +29,10 @@ import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
 import lombok.With;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
@@ -38,7 +41,11 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
+<<<<<<< HEAD
 @Builder
+=======
+@Builder(toBuilder = true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class DocumentReportResult
 {
 	@NonNull
@@ -57,7 +64,10 @@ public class DocumentReportResult
 	PInstanceId reportPInstanceId;
 
 	@Nullable
+<<<<<<< HEAD
 	@With
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	BPartnerId bpartnerId;
 
 	@Nullable
@@ -74,6 +84,12 @@ public class DocumentReportResult
 	Integer asyncBatchId;
 
 	@Nullable
+<<<<<<< HEAD
+=======
+	String poReference;
+	
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getFilename()
 	{
 		return reportResultData != null ? reportResultData.getReportFilename() : null;

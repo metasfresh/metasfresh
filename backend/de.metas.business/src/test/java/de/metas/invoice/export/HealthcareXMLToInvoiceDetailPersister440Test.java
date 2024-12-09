@@ -25,8 +25,13 @@ package de.metas.invoice.export;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.TestInvoice;
 import de.metas.business.TestInvoiceLine;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -46,7 +51,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class HealthcareXMLToInvoiceDetailPersister440Test
 {
@@ -164,6 +174,10 @@ public class HealthcareXMLToInvoiceDetailPersister440Test
 
 	private int invoiceLineId(final int idx)
 	{
+<<<<<<< HEAD
 		return InvoiceLineId.toRepoId(testInvoice.getTestInvoiceLines().get(idx).getInvoiceLineId());
+=======
+		return InvoiceAndLineId.toRepoId(testInvoice.getTestInvoiceLines().get(idx).getInvoiceLineId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

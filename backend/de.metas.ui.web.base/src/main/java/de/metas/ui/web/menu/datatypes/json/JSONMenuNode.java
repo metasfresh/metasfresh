@@ -1,5 +1,6 @@
 package de.metas.ui.web.menu.datatypes.json;
 
+<<<<<<< HEAD
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -7,15 +8,29 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.MutableInt;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
+=======
+import de.metas.ui.web.menu.MenuNode;
+import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -42,7 +57,11 @@ import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
 @SuppressWarnings("serial")
 public final class JSONMenuNode implements Serializable
 {
+<<<<<<< HEAD
 	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+	public static JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -97,22 +116,44 @@ public final class JSONMenuNode implements Serializable
 	}
 
 	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+<<<<<<< HEAD
 			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+												  final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (maxLeafNodes.getValue() <= 0)
 		{
 			return null;
 		}
 
+<<<<<<< HEAD
+=======
+		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+
+		// Avoid empty groups, makes no sense and looks ugly to show them to user.
+		if (jsonNode.isEmptyGroup())
+		{
+			return null;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (node.isEffectiveLeafNode())
 		{
 			maxLeafNodes.decrementAndGet();
 		}
 
+<<<<<<< HEAD
 		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
 	}
 
 	public static final Builder builder(final MenuNode node)
+=======
+		return jsonNode;
+	}
+
+	public static Builder builder(final MenuNode node)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new Builder(node);
 	}
@@ -149,7 +190,11 @@ public final class JSONMenuNode implements Serializable
 	private final boolean favorite;
 
 	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+<<<<<<< HEAD
 			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+						 final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		super();
 		nodeId = node.getId();
@@ -169,9 +214,15 @@ public final class JSONMenuNode implements Serializable
 		{
 			children = node.getChildren()
 					.stream()
+<<<<<<< HEAD
 					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
 					.filter(jsonNode -> jsonNode != null)
+=======
+					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
+					.filter(Objects::nonNull)
+					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
@@ -275,6 +326,14 @@ public final class JSONMenuNode implements Serializable
 		return matched;
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isEmptyGroup()
+	{
+		return JSONMenuNodeType.group.equals(type) && isLeaf();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final class Builder
 	{
 		private final MenuNode node;

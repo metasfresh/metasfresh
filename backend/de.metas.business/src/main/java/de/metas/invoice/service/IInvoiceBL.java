@@ -3,6 +3,10 @@ package de.metas.invoice.service;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+<<<<<<< HEAD
+=======
+import de.metas.currency.CurrencyConversionContext;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -10,14 +14,26 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+<<<<<<< HEAD
+=======
+import de.metas.quantity.Quantity;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -32,10 +48,18 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+<<<<<<< HEAD
+=======
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -109,6 +133,11 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isCreditMemo(String docBaseType);
 
+<<<<<<< HEAD
+=======
+    boolean isReversal(InvoiceId invoiceId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -126,6 +155,15 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
+<<<<<<< HEAD
+=======
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Create a credit memo for the given invoice.
 	 * <p>
@@ -160,6 +198,13 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	I_C_InvoiceLine createLine(I_C_Invoice invoice);
 
+<<<<<<< HEAD
+=======
+	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
+
+	void testAllocated(@NonNull InvoiceId invoiceId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Test Allocation (and set paid flag)
 	 *
@@ -372,4 +417,17 @@ public interface IInvoiceBL extends ISingletonService
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
+<<<<<<< HEAD
+=======
+
+	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+	
+	@Nullable
+	String getPOReference(@NonNull InvoiceId invoiceId);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

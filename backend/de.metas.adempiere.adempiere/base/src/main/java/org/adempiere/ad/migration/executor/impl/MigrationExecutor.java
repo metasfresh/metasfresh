@@ -295,7 +295,11 @@ class MigrationExecutor implements IMigrationExecutor
 	private void disableConstraints(final String trxName)
 	{
 		final String sql = "SET CONSTRAINTS ALL DEFERRED";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		logger.info("Constraints deferred");
 	}
@@ -303,7 +307,11 @@ class MigrationExecutor implements IMigrationExecutor
 	private void enableConstraints(final String trxName)
 	{
 		final String sql = "SET CONSTRAINTS ALL IMMEDIATE";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		logger.info("Constraints immediate");
 	}

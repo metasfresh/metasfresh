@@ -22,16 +22,27 @@ package de.metas.calendar;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+=======
+import de.metas.document.DocBaseType;
+import de.metas.util.ISingletonService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.PeriodClosedException;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 
+<<<<<<< HEAD
 import de.metas.util.ISingletonService;
+=======
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IPeriodBL extends ISingletonService
 {
@@ -43,9 +54,15 @@ public interface IPeriodBL extends ISingletonService
 	 * @param AD_Org_ID
 	 * @throws PeriodClosedException if the given period is closed
 	 */
+<<<<<<< HEAD
 	void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException;
 
 	boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID);
+=======
+	void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID) throws PeriodClosedException;
+
+	boolean isOpen(Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Suggests which shall be the PeriodStatus for given period action

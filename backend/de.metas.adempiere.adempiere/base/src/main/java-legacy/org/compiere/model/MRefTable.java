@@ -16,11 +16,19 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.util.Properties;
 
 import de.metas.cache.CCache;
 
+=======
+import de.metas.cache.CCache;
+
+import java.sql.ResultSet;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class MRefTable extends X_AD_Ref_Table
 {
@@ -73,7 +81,11 @@ public class MRefTable extends X_AD_Ref_Table
 
 		retValue = new Query(ctx, Table_Name, COLUMNNAME_AD_Reference_ID + "=?", null)
 				.setParameters(AD_Reference_ID)
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(MRefTable.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (retValue != null)
 		{

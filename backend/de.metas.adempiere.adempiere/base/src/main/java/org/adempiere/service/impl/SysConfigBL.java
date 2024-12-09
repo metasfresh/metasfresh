@@ -35,14 +35,22 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
+<<<<<<< HEAD
 	public String getValue(final String name, @Nullable final String defaultValue)
+=======
+	public String getValue(final @NonNull String name, @Nullable final String defaultValue)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(defaultValue);
 	}
 
 	@Nullable
 	@Override
+<<<<<<< HEAD
 	public String getValue(final String name)
+=======
+	public String getValue(final @NonNull String name)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(null);
 	}
@@ -144,6 +152,17 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public boolean getBooleanValue(final String name, final boolean defaultValue, final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
+				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setValue(
 			@NonNull final String name,
 			final int value,

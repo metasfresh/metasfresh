@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved.            *
@@ -30,6 +31,20 @@ import org.compiere.util.Env;
  *				@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *
  */
+=======
+package org.adempiere.exceptions;
+
+import de.metas.ad_reference.ReferenceId;
+import de.metas.document.DocBaseType;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import org.compiere.model.X_C_DocType;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class PeriodClosedException extends AdempiereException
 {
 	/**
@@ -40,10 +55,33 @@ public class PeriodClosedException extends AdempiereException
 	/**
 	 * 
 	 */
+<<<<<<< HEAD
 	public PeriodClosedException(Timestamp dateAcct, String docBaseType)
 	{
 		super("@PeriodClosed@ @Date@="+dateAcct+", @DocBaseType@="
 				+MRefList.getListName(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType)
 		);
+=======
+	public PeriodClosedException(final Timestamp dateAcct, final DocBaseType docBaseType)
+	{
+		super(buildMsg(dateAcct, docBaseType));
+	}
+
+	private static ITranslatableString buildMsg(@Nullable final Timestamp dateAcct, @Nullable final DocBaseType docBaseType)
+	{
+		final ITranslatableString dateAcctTrl = dateAcct != null
+				? TranslatableStrings.dateAndTime(dateAcct)
+				: TranslatableStrings.anyLanguage("?");
+
+		final ITranslatableString docBaseTypeTrl = docBaseType != null
+				? TranslatableStrings.adRefList(ReferenceId.ofRepoId(X_C_DocType.DOCBASETYPE_AD_Reference_ID), docBaseType.getCode())
+				: TranslatableStrings.anyLanguage("?");
+
+		return TranslatableStrings.builder()
+				.appendADMessage(AdMessageKey.of("PeriodClosed"))
+				.append(" ").appendADElement("DateAcct").append(": ").append(dateAcctTrl)
+				.append(", ").appendADElement("DocBaseType").append(": ").append(docBaseTypeTrl)
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

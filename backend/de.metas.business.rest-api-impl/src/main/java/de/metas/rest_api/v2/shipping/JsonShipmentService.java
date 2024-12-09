@@ -44,6 +44,10 @@ import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
 import de.metas.common.shipping.v2.shipment.ShipmentScheduleIdentifier;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.ShippingInfoCache;
@@ -75,8 +79,14 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
+<<<<<<< HEAD
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductId;
+=======
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
@@ -197,22 +207,37 @@ public class JsonShipmentService
 			}
 
 			final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
+<<<<<<< HEAD
 			
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
 			shipmentService.generateShipments(generateShipmentRequest);
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
 
 			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
+<<<<<<< HEAD
 							currentBatchId, createdInoutIds);
+=======
+					currentBatchId, createdInoutIds);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
 			{
 				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
+<<<<<<< HEAD
 				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds());
 
 				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",
 								currentBatchId, createdInoutIds);
+=======
+				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest);
+
+				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",
+						currentBatchId, createdInoutIds);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				invoiceInfoResponseCollector.addAll(createInvoiceInfos);
 			}
 
@@ -237,7 +262,11 @@ public class JsonShipmentService
 
 	private void updateShipmentSchedules(@NonNull final JsonCreateShipmentRequest request)
 	{
+<<<<<<< HEAD
 		final ShippingInfoCache cache = initShippingInfoCache();
+=======
+		final ShippingInfoCache cache = newShippingInfoCache();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		cache.warmUpForShipmentScheduleIds(extractShipmentScheduleIds(request));
 		cache.warmUpForShipperInternalNames(extractShippersInternalName(request));
@@ -247,11 +276,19 @@ public class JsonShipmentService
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(shipmentScheduleIds);
 
 		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
+=======
+	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(@NonNull final GenerateShipmentsRequest generateShipmentsRequest)
+	{
+		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(generateShipmentsRequest.getScheduleIds());
+
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, generateShipmentsRequest.getAsyncBatchId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return invoiceIds.stream()
 				.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
@@ -324,11 +361,15 @@ public class JsonShipmentService
 
 		if (Check.isNotBlank(createShipmentInfo.getProductSearchKey()))
 		{
+<<<<<<< HEAD
 			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey())
 					.orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()))
 					.includeAnyOrg(true) // include articles with org=*
 					.build();
 			final ProductId incomingProductId = productDAO.retrieveProductIdBy(query);
+=======
+			final ProductId incomingProductId = cache.getProductId(createShipmentInfo.getProductSearchKey(), OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
 			{
@@ -450,10 +491,20 @@ public class JsonShipmentService
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
+<<<<<<< HEAD
 		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
 		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
 
+=======
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
+
+		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
+
+		final ShippingInfoCache cache = newShippingInfoCache();
+		cache.warmUpForShipmentScheduleIds(createShipmentInfoList, CreateShipmentInfoCandidate::getShipmentScheduleId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final CreateShipmentInfoCandidate createShipmentCandidate : createShipmentInfoList)
 		{
 			final ShipmentScheduleId shipmentScheduleId = createShipmentCandidate.getShipmentScheduleId();
@@ -473,7 +524,12 @@ public class JsonShipmentService
 			final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
 			if (qtyToDeliverInStockingUOM != null)
 			{
+<<<<<<< HEAD
 				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliverInStockingUOM);
+=======
+				final StockQtyAndUOMQty qtyToDeliver = StockQtyAndUOMQtys.ofQtyInStockUOM(qtyToDeliverInStockingUOM, cache.getProductId(shipmentScheduleId));
+				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliver);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -481,7 +537,11 @@ public class JsonShipmentService
 				.asyncBatchId(asyncBatchId)
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
+<<<<<<< HEAD
 				.scheduleToQuantityToDeliverOverride(scheduleToQuantityToDeliver.build())
+=======
+				.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.ofMap(scheduleToQuantityToDeliver.build()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.isCompleteShipment(true)
 				.build();
@@ -496,8 +556,13 @@ public class JsonShipmentService
 		else
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+<<<<<<< HEAD
 															.bpartnerValue(bPartnerValue)
 															.build());
+=======
+					.bpartnerValue(bPartnerValue)
+					.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -594,7 +659,11 @@ public class JsonShipmentService
 	private ShipmentScheduleId getShipmentScheduleIdByExternalHeaderAndLineId(@NonNull final ShipmentScheduleIdentifier identifier)
 	{
 		Check.assume(identifier.identifiedByHeaderAndLineId(),
+<<<<<<< HEAD
 					 "getShipmentScheduleIdByExternalHeaderAndLineId should be called for ShipmentScheduleIdentifier with externalHeaderId and externalLineId");
+=======
+				"getShipmentScheduleIdByExternalHeaderAndLineId should be called for ShipmentScheduleIdentifier with externalHeaderId and externalLineId");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final OLCandQuery query = OLCandQuery.builder()
 				.externalHeaderId(identifier.getExternalHeaderId())
@@ -611,7 +680,11 @@ public class JsonShipmentService
 		if (olCandIds.size() != 1)
 		{
 			throw new AdempiereException("Number of olCands found for external header id and line id: "
+<<<<<<< HEAD
 												 + identifier + " != 1. Found: " + olCandIds.size());
+=======
+					+ identifier + " != 1. Found: " + olCandIds.size());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final OLCandId olCandId = CollectionUtils.singleElement(olCandIds);
@@ -639,9 +712,15 @@ public class JsonShipmentService
 	{
 		return JsonCreateShipmentResponse.builder()
 				.createdShipmentIds(shipmentIds.stream()
+<<<<<<< HEAD
 											.map(InOutId::getRepoId)
 											.map(JsonMetasfreshId::of)
 											.collect(ImmutableList.toImmutableList()))
+=======
+						.map(InOutId::getRepoId)
+						.map(JsonMetasfreshId::of)
+						.collect(ImmutableList.toImmutableList()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -659,10 +738,17 @@ public class JsonShipmentService
 		return asyncBatchId2ScheduleIds.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Map.Entry::getKey,
+<<<<<<< HEAD
 										  entry -> entry.getValue()
 												  .stream()
 												  .map(candidateInfoById::get)
 												  .collect(ImmutableList.toImmutableList())));
+=======
+						entry -> entry.getValue()
+								.stream()
+								.map(candidateInfoById::get)
+								.collect(ImmutableList.toImmutableList())));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -676,12 +762,20 @@ public class JsonShipmentService
 				.build();
 	}
 
+<<<<<<< HEAD
 	private ShippingInfoCache initShippingInfoCache()
+=======
+	private ShippingInfoCache newShippingInfoCache()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return ShippingInfoCache.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
 				.scheduleEffectiveBL(scheduleEffectiveBL)
 				.shipperDAO(shipperDAO)
+<<<<<<< HEAD
+=======
+				.productDAO(productDAO)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

@@ -24,4 +24,10 @@ public interface IBPBankAccountDAO extends de.metas.bpartner.service.IBPBankAcco
 
 	Optional<BankAccount> getDefaultBankAccount(BPartnerId bPartnerId);
 
+<<<<<<< HEAD
+=======
+	Optional<BankAccountId> getBankAccountId(@NonNull BankId bankId, @NonNull String accountNo);
+
+	@NonNull Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull String iban);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

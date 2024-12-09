@@ -24,6 +24,10 @@ package de.metas.common.util;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
+=======
+import org.jetbrains.annotations.Contract;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -39,12 +43,20 @@ public class CoalesceUtil
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null, _ -> param2")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2)
 	{
 		return value1 == null ? value2 : value1;
 	}
 
+<<<<<<< HEAD
+=======
+	@Contract("null, _ -> param2")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
@@ -86,12 +98,20 @@ public class CoalesceUtil
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
+<<<<<<< HEAD
+=======
+	@Contract("null, null, _ -> param3")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
 
+<<<<<<< HEAD
+=======
+	@Contract("null, null, _ -> param3")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
@@ -106,11 +126,19 @@ public class CoalesceUtil
 	/**
 	 * @return first not null value from list
 	 */
+<<<<<<< HEAD
+=======
+	@Contract("null -> null")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@SafeVarargs
 	@Nullable
 	public <T> T coalesce(@Nullable final T... values)
 	{
+<<<<<<< HEAD
 		if (values == null || values.length == 0)
+=======
+		if (values == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
@@ -126,7 +154,11 @@ public class CoalesceUtil
 
 	@SafeVarargs
 	@NonNull
+<<<<<<< HEAD
 	public <T> T coalesceNotNull(@Nullable final T... values)
+=======
+	public <T> T coalesceNotNull(@NonNull final T... values)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final T result = coalesce(values);
 		if (result == null)
@@ -168,7 +200,11 @@ public class CoalesceUtil
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
+<<<<<<< HEAD
 		if (values == null || values.length == 0)
+=======
+		if (values == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
@@ -193,7 +229,11 @@ public class CoalesceUtil
 	 */
 	public int firstGreaterThanZero(final int... values)
 	{
+<<<<<<< HEAD
 		if (values == null || values.length == 0)
+=======
+		if (values == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return 0;
 		}
@@ -210,7 +250,11 @@ public class CoalesceUtil
 	@SafeVarargs
 	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
+<<<<<<< HEAD
 		if (suppliers == null || suppliers.length == 0)
+=======
+		if (suppliers == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return 0;
 		}
@@ -237,14 +281,22 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
+<<<<<<< HEAD
 		if(values == null || values.length == 0)
+=======
+		if(values == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
 
 		for (final String value : values)
 		{
+<<<<<<< HEAD
 			if (value != null && EmptyUtil.isNotBlank(value))
+=======
+			if (EmptyUtil.isNotBlank(value))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return value.trim();
 			}
@@ -257,7 +309,11 @@ public class CoalesceUtil
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
+<<<<<<< HEAD
 		if(valueSuppliers == null || valueSuppliers.length == 0)
+=======
+		if(valueSuppliers == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
@@ -270,7 +326,11 @@ public class CoalesceUtil
 			}
 
 			final String value = valueSupplier.get();
+<<<<<<< HEAD
 			if (value != null && EmptyUtil.isNotBlank(value))
+=======
+			if (EmptyUtil.isNotBlank(value))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return value.trim();
 			}
@@ -279,7 +339,21 @@ public class CoalesceUtil
 		return null;
 	}
 
+<<<<<<< HEAD
 
+=======
+	public boolean isAllNotNulls(final Object... values)
+	{
+		for (final Object value : values)
+		{
+			if (value == null)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
@@ -303,7 +377,11 @@ public class CoalesceUtil
 	@NonNull
 	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
 	{
+<<<<<<< HEAD
 		if (values == null || values.length == 0)
+=======
+		if (values == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return BigDecimal.ZERO;
 		}

@@ -89,7 +89,11 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			docTypeFilterSO.addFilter(NotQueryFilter.of(new InArrayQueryFilter<>(I_C_DocType.COLUMNNAME_DocSubType,
 																				 X_C_DocType.DOCSUBTYPE_Proposal,
 																				 X_C_DocType.DOCSUBTYPE_Quotation,
+<<<<<<< HEAD
 																				 X_C_DocType.DOCSUBTYPE_POSOrder,
+=======
+																				 //X_C_DocType.DOCSUBTYPE_POSOrder,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 																				 X_C_DocType.DOCSUBTYPE_FrameAgrement,
 																				 X_C_DocType.DOCSUBTYPE_CostEstimate)));
 			docTypeFilter.addFilter(docTypeFilterSO);

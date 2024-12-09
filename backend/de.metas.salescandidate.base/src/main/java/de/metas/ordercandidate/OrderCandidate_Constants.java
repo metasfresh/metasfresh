@@ -39,4 +39,10 @@ public final class OrderCandidate_Constants
 	 */
 	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST.de.metas.ordercandidate";
 
+<<<<<<< HEAD
+=======
+
+	public static final String HEADER_AGGREGATION_KEY_DELIMITER = "#";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

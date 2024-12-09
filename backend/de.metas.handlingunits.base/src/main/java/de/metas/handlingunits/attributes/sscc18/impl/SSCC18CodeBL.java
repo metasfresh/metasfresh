@@ -23,6 +23,10 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
@@ -31,11 +35,20 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.Setter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.ToString;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @ToString
 @Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
@@ -49,7 +62,22 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+<<<<<<< HEAD
 	private final NextSerialNumberProvider nextSerialNumberProvider;
+=======
+	@NonNull
+	private final NextSerialNumberProvider nextSerialNumberProvider;
+
+	/** 
+	 * When unit testing, you can use this member to control the next serial number.
+	 * We need to allow setting this into the existing instance, because if might be references as an instance-member in other services.
+	 */
+	@Nullable
+	@VisibleForTesting
+	@Setter
+	private NextSerialNumberProvider overrideNextSerialNumberProvider;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/** for debugging */
 	private final boolean hasCustomNextSerialNumberProvider;
 
@@ -61,10 +89,15 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			final String sscc18SerialNumberStr = Services.get(IDocumentNoBuilderFactory.class)
 					.forTableName(SSCC18_SERIALNUMBER_SEQUENCENAME, ClientId.METASFRESH.getRepoId(), orgId.getRepoId())
 					.build();
+<<<<<<< HEAD
+=======
+			Check.assumeNotNull(sscc18SerialNumberStr, "Count not retrieve next value from sequence {}" + SSCC18_SERIALNUMBER_SEQUENCENAME);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Integer.parseInt(sscc18SerialNumberStr);
 		};
 	}
 
+<<<<<<< HEAD
 	/** When unit testing, you can use this constructor to register an instances to services where you provide the next serial number. */
 	@VisibleForTesting
 	public SSCC18CodeBL(@NonNull final NextSerialNumberProvider nextSerialNumberProvider)
@@ -73,6 +106,8 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		this.nextSerialNumberProvider = nextSerialNumberProvider;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private int getExtensionDigit(@NonNull final OrgId orgId)
 	{
 
@@ -80,7 +115,11 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 									   ClientId.METASFRESH.getRepoId(),
 									   orgId.getRepoId());
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private String getManufacturerCode(@NonNull final OrgId orgId)
 	{
 
@@ -147,7 +186,15 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	@Override
 	public SSCC18 generate(@NonNull final OrgId orgId)
 	{
+<<<<<<< HEAD
 		return generate(orgId, nextSerialNumberProvider.provideNextSerialNumber(orgId));
+=======
+		final NextSerialNumberProvider provider = CoalesceUtil.coalesceNotNull(
+				overrideNextSerialNumberProvider, 
+				nextSerialNumberProvider);
+
+		return generate(orgId, provider.provideNextSerialNumber(orgId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

@@ -6,7 +6,11 @@ services:
     image: ${mfregistry:-metasfresh}/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
+<<<<<<< HEAD
     environment:      
+=======
+    environment:
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       # run the database on the initial data
       # so we can later commit it again to create postcucumber images without doubling the image size
       - PGDATA=/var/lib/postgresql/initdata
@@ -35,6 +39,14 @@ services:
 
   cucumber:
     image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
+<<<<<<< HEAD
+=======
+    environment:
+      - TEST_SMTP_HOST=$TEST_SMTP_HOST
+      - TEST_SMTP_FROM=$TEST_SMTP_FROM
+      - TEST_SMTP_USER=$TEST_SMTP_USER
+      - TEST_SMTP_PASSWORD=$TEST_SMTP_PASSWORD
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     depends_on:
       db:
         condition: service_healthy
@@ -50,7 +62,11 @@ services:
 
   bouncer:
     image: busybox
+<<<<<<< HEAD
     command: "/bin/sh -c 'sleep 110m && echo \"Who of you folks wound the clock? It is really time to stop!\" && echo \"timeout: aborting cucumber run after 110 minutes\"'"
+=======
+    command: "/bin/sh -c 'sleep 180m && echo \"Who of you folks wound the clock? It is really time to stop!\" && echo \"timeout: aborting cucumber run after 110 minutes\"'"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 volumes: {}
 configs: {}

@@ -75,7 +75,11 @@ public class InvoiceService
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
+<<<<<<< HEAD
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+=======
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull

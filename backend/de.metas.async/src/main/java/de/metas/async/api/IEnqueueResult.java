@@ -25,5 +25,10 @@ package de.metas.async.api;
 @FunctionalInterface
 public interface IEnqueueResult
 {
+<<<<<<< HEAD
+=======
+	IEnqueueResult ONE_WORKPACKAGE_ENQUEUED = () -> 1;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	int getWorkpackageEnqueuedCount();
 }

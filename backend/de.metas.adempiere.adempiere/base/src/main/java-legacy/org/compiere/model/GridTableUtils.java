@@ -1,5 +1,18 @@
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.SecureEngine;
+import org.slf4j.Logger;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -7,6 +20,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+<<<<<<< HEAD
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -19,6 +33,8 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.experimental.UtilityClass;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -75,7 +91,11 @@ final class GridTableUtils
 								&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct")
 										|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))
 						|| columnName.endsWith("atedBy")
+<<<<<<< HEAD
 						|| Services.get(IColumnBL.class).isRecordIdColumnName(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
+=======
+						|| IColumnBL.isRecordIdColumnName(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				)
 				{
 					rowData[j] = new Integer(rs.getInt(j + 1));	// Integer

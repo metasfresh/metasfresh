@@ -26,6 +26,10 @@ import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Check;
+<<<<<<< HEAD
+=======
+import lombok.AccessLevel;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -97,7 +101,11 @@ public class SqlDocumentQueryBuilder
 
 	@Getter
 	private boolean noSorting = false;
+<<<<<<< HEAD
 	@Getter
+=======
+	@Getter(AccessLevel.PRIVATE)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private DocumentQueryOrderByList orderBys = DocumentQueryOrderByList.EMPTY;
 
 	private int firstRow;
@@ -512,7 +520,11 @@ public class SqlDocumentQueryBuilder
 		return sqlWhereClauseBuilder.build();
 	}
 
+<<<<<<< HEAD
 	private DocumentQueryOrderByList getOrderBysEffective()
+=======
+	public DocumentQueryOrderByList getOrderBysEffective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (noSorting)
 		{

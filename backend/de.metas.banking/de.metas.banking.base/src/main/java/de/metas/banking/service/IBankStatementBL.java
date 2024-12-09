@@ -25,8 +25,15 @@ package de.metas.banking.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.invoice.InvoiceId;
+=======
+import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -34,11 +41,22 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Set;
 
 public interface IBankStatementBL extends ISingletonService
 {
+<<<<<<< HEAD
+=======
+	AdMessageKey MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed = AdMessageKey.of("bankstatement.BankStatement_MustBe_Draft_InProgress_Or_Completed");
+	AdMessageKey MSG_LineIsAlreadyReconciled = AdMessageKey.of("bankstatement.LineIsAlreadyReconciled");
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	I_C_BankStatement getById(BankStatementId bankStatementId);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId bankStatementLineId);
@@ -62,18 +80,39 @@ public interface IBankStatementBL extends ISingletonService
 
 	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
+<<<<<<< HEAD
 	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+=======
+	void assertBankStatementIsDraftOrInProcessOrCompleted(I_C_BankStatement bankStatement);
+
+	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+
+	void reconcileAsBankTransfer(@NonNull ReconcileAsBankTransferRequest request);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	int computeNextLineNo(@NonNull BankStatementId bankStatementId);
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
+<<<<<<< HEAD
+=======
+	BankStatementLineReferenceList getLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bsl, @NonNull InvoiceId invoiceId);
 
 	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
 
+<<<<<<< HEAD
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_BankStatementLine bankStatementLine);
 
 	PaymentCurrencyContext getPaymentCurrencyContext(@NonNull I_C_BankStatementLine bankStatementLine);
+=======
+	PaymentCurrencyContext getPaymentCurrencyContext(@NonNull I_C_BankStatementLine bankStatementLine);
+
+	void changeCurrencyRate(BankStatementLineId bankStatementLineId, BigDecimal currencyRate);
+
+	CurrencyId getBaseCurrencyId(I_C_BankStatementLine line);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

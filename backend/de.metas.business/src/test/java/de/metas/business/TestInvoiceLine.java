@@ -1,7 +1,12 @@
 package de.metas.business;
 
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -49,7 +54,11 @@ public class TestInvoiceLine
 
 	private I_C_InvoiceLine invoiceLineRecord;
 
+<<<<<<< HEAD
 	private InvoiceLineId invoiceLineId;
+=======
+	private InvoiceAndLineId invoiceLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private String externalIds;
 
@@ -63,7 +72,11 @@ public class TestInvoiceLine
 		invoiceLineRecord.setQtyInvoiced(BigDecimal.TEN);
 		saveRecord(invoiceLineRecord);
 
+<<<<<<< HEAD
 		invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());
+=======
+		invoiceLineId = InvoiceAndLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public I_C_InvoiceLine getInvoiceLineRecord()
@@ -71,7 +84,11 @@ public class TestInvoiceLine
 		return assumeNotNull(invoiceLineRecord, "invoiceLine first needs to be created with createInvoiceLineRecord");
 	}
 
+<<<<<<< HEAD
 	public InvoiceLineId getInvoiceLineId()
+=======
+	public InvoiceAndLineId getInvoiceLineId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return assumeNotNull(invoiceLineId, "invoiceLine first needs to be created with createInvoiceLineRecord");
 	}

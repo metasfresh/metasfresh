@@ -1,11 +1,16 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+=======
+import de.metas.handlingunits.HuId;
+import de.metas.inout.ShipmentScheduleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.AccessLevel;
@@ -14,6 +19,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

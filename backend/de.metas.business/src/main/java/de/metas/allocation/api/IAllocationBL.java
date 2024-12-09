@@ -1,7 +1,13 @@
 package de.metas.allocation.api;
 
 import de.metas.adempiere.model.I_C_Invoice;
+<<<<<<< HEAD
 import de.metas.money.Money;
+=======
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
+import de.metas.payment.PaymentId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,6 +17,10 @@ import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IAllocationBL extends ISingletonService
 {
@@ -33,8 +43,13 @@ public interface IAllocationBL extends ISingletonService
 	 * This method creates an allocation between the given invoice and incoming payment that belong to the same C_BPartner, have the {@link I_C_Payment#isAutoAllocateAvailableAmt()} flag set and is
 	 * not yet fully allocated.
 	 *
+<<<<<<< HEAD
 	 * @param invoice the invoice to allocate against.
 	 * @param payment to allocate
+=======
+	 * @param invoice                          the invoice to allocate against.
+	 * @param payment                          to allocate
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param ignoreIsAutoAllocateAvailableAmt if <code>false</code> then we only create the allocation if the payment has {@link I_C_Payment#COLUMN_IsAutoAllocateAvailableAmt} <code>='Y'</code>.
 	 * @return the created an completed allocation or <code>null</code>, if the invoice is already fully paid, or is a PO-invoice, or is a credit memo or payment and invoice are not matching
 	 * @implSpec task 07783
@@ -48,6 +63,13 @@ public interface IAllocationBL extends ISingletonService
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);
 
+<<<<<<< HEAD
+=======
+	Optional<InvoiceId> getInvoiceId(PaymentAllocationLineId lineId);
+
+	Optional<PaymentId> getPaymentId(PaymentAllocationLineId lineId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Value
 	@Builder
 	class InvoiceDiscountAndWriteOffRequest

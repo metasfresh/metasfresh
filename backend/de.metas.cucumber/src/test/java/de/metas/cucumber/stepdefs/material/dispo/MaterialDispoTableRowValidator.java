@@ -18,6 +18,10 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
+<<<<<<< HEAD
+=======
+import de.metas.material.dispo.commons.candidate.CandidateId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.AttributesKey;
@@ -39,6 +43,10 @@ import org.opentest4j.MultipleFailuresError;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.stream.Collectors;
 
 @Builder
@@ -59,7 +67,14 @@ class MaterialDispoTableRowValidator
 
 	private SoftAssertions softly; // lazy
 
+<<<<<<< HEAD
 	public ProviderResult<MaterialDispoDataItem> findValidItem(@NonNull final List<MaterialDispoDataItem> items, @NonNull final MaterialDispoTableRow row)
+=======
+	public ProviderResult<MaterialDispoDataItem> findValidItem(
+			@NonNull final List<MaterialDispoDataItem> items,
+			@NonNull final MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ArrayList<String> resultNotFoundLogs = new ArrayList<>();
 		if (items.isEmpty())
@@ -70,12 +85,25 @@ class MaterialDispoTableRowValidator
 		{
 			for (final MaterialDispoDataItem item : items)
 			{
+<<<<<<< HEAD
+=======
+				if (candidateIdsToExclude != null && candidateIdsToExclude.containsKey(item.getCandidateId()))
+				{
+					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was previously matched for identifier `" + candidateIdsToExclude.get(item.getCandidateId()) + "`");
+					continue;
+				}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				// Exclude this item if it's already associated to a different identifier.
 				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierById(item.getCandidateId(), row.getIdentifier()).orElse(null);
 				if (otherIdentifierOfCandidate != null)
 				{
+<<<<<<< HEAD
 					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was already loaded for " + otherIdentifierOfCandidate);
+=======
+					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was already loaded for identifier `" + otherIdentifierOfCandidate + "`");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					continue;
 				}
 

@@ -22,6 +22,7 @@ package de.metas.payment.esr;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -29,10 +30,21 @@ import java.util.Properties;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Constant values for ESR.
@@ -111,7 +123,11 @@ public final class ESRConstants
 	 * String is required to compute the check digit. Check out the ESR specification for details. A german specification (current version 01.07) can be found here:<br>
 	 * http://www.tkb.ch/fk/produkte_dienste/zv/zv_klassisch/besr_handbuch.htm
 	 *
+<<<<<<< HEAD
 	 * @see #calculateCheckDigit(String, int, int)
+=======
+	 * @see de.metas.payment.esr.api.impl.ESRCheckDigitBuilder#calculateESRCheckDigit(String) 
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public static int[] CHECK_String =
 		{ 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };

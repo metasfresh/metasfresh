@@ -5,13 +5,23 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+<<<<<<< HEAD
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+=======
+import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
+<<<<<<< HEAD
 import de.metas.costing.CostSegment;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -21,7 +31,10 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
+<<<<<<< HEAD
 import de.metas.order.OrderLineId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -44,7 +57,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
+<<<<<<< HEAD
 import java.util.Optional;
+=======
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 /*
@@ -82,6 +99,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
+<<<<<<< HEAD
+=======
+	private final StandardCostingMethodHandler standardCostingMethodHandler;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
@@ -89,11 +111,20 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public ManufacturingStandardCostingMethodHandler(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailService costDetailsService,
+<<<<<<< HEAD
 			@NonNull final CostingMethodHandlerUtils utils)
+=======
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsService = costDetailsService;
 		this.utils = utils;
+<<<<<<< HEAD
+=======
+		this.standardCostingMethodHandler = standardCostingMethodHandler;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -109,12 +140,23 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
 		if (existingCostDetail != null)
 		{
 			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+=======
+	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -122,43 +164,69 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		}
 	}
 
+<<<<<<< HEAD
 	private Optional<CostDetailCreateResult> createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+=======
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
+	{
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
 		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
+<<<<<<< HEAD
 			return Optional.of(createIssueOrReceipt(request));
+=======
+			return CostDetailCreateResultsList.ofNullable(createIssueOrReceipt(request));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
+<<<<<<< HEAD
 				return Optional.empty();
+=======
+				return null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
+<<<<<<< HEAD
 			return Optional.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+=======
+			return CostDetailCreateResultsList.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else if (costCollectorType.isUsageVariance())
 		{
 			if (cc.getPP_Order_BOMLine_ID() > 0)
 			{
+<<<<<<< HEAD
 				return Optional.of(createUsageVariance(request));
+=======
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				if (actualResourceId.isNoResource())
 				{
+<<<<<<< HEAD
 					return Optional.empty();
+=======
+					return null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				}
 
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -166,7 +234,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
+<<<<<<< HEAD
 				return Optional.of(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
+=======
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 		else
@@ -181,6 +253,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		throw new UnsupportedOperationException();
 	}
 
+<<<<<<< HEAD
 	@Override
 	public Optional<CostAmount> calculateSeedCosts(
 			final CostSegment costSegment,
@@ -189,6 +262,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		return Optional.empty();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
@@ -204,6 +279,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+<<<<<<< HEAD
+=======
+				.amtType(CostAmountType.MAIN)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(true)
@@ -237,6 +316,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+<<<<<<< HEAD
+=======
+				.amtType(CostAmountType.MAIN)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -259,6 +342,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+<<<<<<< HEAD
+=======
+				.amtType(CostAmountType.MAIN)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -503,4 +590,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

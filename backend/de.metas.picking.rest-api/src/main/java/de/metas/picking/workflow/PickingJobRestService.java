@@ -23,6 +23,10 @@
 package de.metas.picking.workflow;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -48,7 +52,10 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -156,11 +163,18 @@ public class PickingJobRestService
 				.execute();
 	}
 
+<<<<<<< HEAD
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}
 
+=======
+	public ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
 	{
 		return pickingJobService.getLUAvailableTargets(pickingJob);

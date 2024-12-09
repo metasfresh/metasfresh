@@ -70,7 +70,11 @@ public class ImportDelete extends JavaProcess
 		
 		//	Delete
 		String sql = "DELETE FROM " + tableName + " WHERE AD_Client_ID=" + getAD_Client_ID();
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		String msg = Msg.translate(getCtx(), tableName + "_ID") + " #" + no;
 		return msg;
 	}	//	ImportDelete

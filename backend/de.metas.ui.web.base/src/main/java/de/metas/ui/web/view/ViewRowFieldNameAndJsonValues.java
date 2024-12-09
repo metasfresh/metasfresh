@@ -1,10 +1,15 @@
 package de.metas.ui.web.view;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -17,6 +22,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -72,6 +82,33 @@ public final class ViewRowFieldNameAndJsonValues
 		return map.keySet();
 	}
 
+<<<<<<< HEAD
+=======
+	public Comparable<?> getAsComparable(
+			@NonNull final String fieldName,
+			@NonNull final JSONOptions jsonOpts)
+	{
+		final Object valueObj = map.get(fieldName);
+
+		if (JSONNullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		else if (valueObj instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)valueObj).translate(jsonOpts.getAdLanguage());
+		}
+		else if (valueObj instanceof Comparable)
+		{
+			return (Comparable<?>)valueObj;
+		}
+		else
+		{
+			return valueObj.toString();
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Object getAsJsonObject(
 			@NonNull final String fieldName,
 			@NonNull final JSONOptions jsonOpts)

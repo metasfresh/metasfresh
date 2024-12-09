@@ -105,7 +105,11 @@ public class AD_User_AuthToken_StepDef
 	{
 		final I_AD_User user = userTable.get(userIdentifier);
 
+<<<<<<< HEAD
 		DB.executeUpdateEx("DELETE FROM AD_User_AuthToken where AD_User_ID=" + user.getAD_User_ID(), ITrx.TRXNAME_None);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_User_AuthToken where AD_User_ID=" + user.getAD_User_ID(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("^after not more than (.*)s, validate AD_User_AuthToken record$")

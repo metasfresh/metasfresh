@@ -1,5 +1,6 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -17,17 +18,23 @@ import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
+<<<<<<< HEAD
 import de.metas.costing.CostSegment;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -37,6 +44,11 @@ import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.springframework.stereotype.Component;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -75,7 +87,11 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -109,6 +125,10 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
@@ -121,6 +141,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -230,6 +251,15 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		throw new UnsupportedOperationException();
+=======
+	public void voidCosts(final CostDetailVoidRequest request)
+	{
+		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
+
+		utils.saveCurrentCost(currentCosts);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

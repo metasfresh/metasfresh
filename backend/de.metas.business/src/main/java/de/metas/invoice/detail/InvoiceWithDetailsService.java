@@ -22,8 +22,13 @@
 
 package de.metas.invoice.detail;
 
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,7 +62,11 @@ public class InvoiceWithDetailsService
 			{
 				reversedDetail.setC_InvoiceLine_ID(invoiceDAO
 						.retrieveReversalLine(invoiceDAO
+<<<<<<< HEAD
 										.retrieveLineById(InvoiceLineId.ofRepoId(detail.getC_Invoice_ID(),
+=======
+										.retrieveLineById(InvoiceAndLineId.ofRepoId(detail.getC_Invoice_ID(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 												detail.getC_InvoiceLine_ID())),
 								reversalInvoiceId.getRepoId()).getC_InvoiceLine_ID());
 			}

@@ -22,22 +22,36 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
+<<<<<<< HEAD
 import de.metas.util.JSONObjectMapper;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -45,6 +59,7 @@ import org.mockito.MockitoAnnotations;
 import java.io.InputStream;
 import java.util.List;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -52,6 +67,15 @@ import static org.assertj.core.api.Assertions.*;
 
 public class XmlToOLCandsServiceTest
 {
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+class XmlToOLCandsServiceTest
+{
+	private Expect expect;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Mock
 	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint; // needed by mockito
 
@@ -64,7 +88,11 @@ public class XmlToOLCandsServiceTest
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
 
+<<<<<<< HEAD
 	@Before
+=======
+	@BeforeEach
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void before()
 	{
 		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
@@ -72,6 +100,7 @@ public class XmlToOLCandsServiceTest
 		MockitoAnnotations.initMocks(this);
 	}
 
+<<<<<<< HEAD
 	@BeforeClass
 	public static void beforeAll()
 	{
@@ -84,6 +113,8 @@ public class XmlToOLCandsServiceTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void createJsonOLCandCreateBulkRequest_KV()
 	{
@@ -91,7 +122,11 @@ public class XmlToOLCandsServiceTest
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 
 		final JsonOLCandCreateBulkRequest result = performTest_KV(xmlInvoice);
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -102,7 +137,11 @@ public class XmlToOLCandsServiceTest
 		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001"); // the XML invoice'S ID might have a prepended "KV_" which we return
 
 		final JsonOLCandCreateBulkRequest result = performTest_KV(xmlInvoice);
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private JsonOLCandCreateBulkRequest performTest_KV(@NonNull final RequestType xmlInvoice)

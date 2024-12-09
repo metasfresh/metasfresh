@@ -17,7 +17,10 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderBOMLineId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -31,6 +34,10 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
+<<<<<<< HEAD
+=======
+import org.eevolution.api.PPOrderBOMLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 

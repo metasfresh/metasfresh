@@ -59,6 +59,11 @@ public class HUPricingTestHelper extends PricingTestHelper
 		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
 
 		return ImmutableList.of(
+<<<<<<< HEAD
+=======
+				HUPricing.class.getName(),
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName(),
 				ContractDiscount.class.getName());

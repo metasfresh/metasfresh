@@ -252,7 +252,11 @@ public class PPOrderCandidateService
 			@NonNull final I_PP_OrderLine_Candidate orderLineCandidate,
 			@NonNull final I_PP_Product_BOMLine bomLine)
 	{
+<<<<<<< HEAD
 		final Quantity finishedGoodQty = Quantitys.create(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
+=======
+		final Quantity finishedGoodQty = Quantitys.of(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
 				.finishedGoodQty(finishedGoodQty)

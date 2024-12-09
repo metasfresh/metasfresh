@@ -4,9 +4,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+<<<<<<< HEAD
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
+=======
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -16,6 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+<<<<<<< HEAD
+=======
+import java.util.function.Function;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static java.math.BigDecimal.ZERO;
 
@@ -132,7 +142,12 @@ public class SupplyCandidateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
+<<<<<<< HEAD
 		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
+=======
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
@@ -140,9 +155,15 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		final CandidateSaveResult applyDeltaRequest = CandidateSaveResult.builder()
 				.candidate(candidate
+<<<<<<< HEAD
 						.withQuantity(ZERO)
 						.withDate(timeOfDeletedStock.getDate())
 						.withSeqNo(timeOfDeletedStock.getSeqNo()))
+=======
+								   .withQuantity(ZERO)
+								   .withDate(timeOfDeletedStock.getDate())
+								   .withSeqNo(timeOfDeletedStock.getSeqNo()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);

@@ -22,6 +22,7 @@ package de.metas.currency;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -31,10 +32,23 @@ import org.adempiere.service.ClientId;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+=======
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * The result of a currency conversion.
@@ -61,11 +75,23 @@ public class CurrencyConversionResult
 	private BigDecimal conversionRateOrNull;
 
 	@NonNull
+<<<<<<< HEAD
 	private LocalDate conversionDate;
+=======
+	private Instant conversionDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private CurrencyConversionTypeId conversionTypeId;
 	@NonNull
 	private ClientId clientId;
 	@NonNull
 	private OrgId orgId;
+<<<<<<< HEAD
+=======
+
+	public Money getAmountAsMoney()
+	{
+		return Money.of(amount, currencyId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

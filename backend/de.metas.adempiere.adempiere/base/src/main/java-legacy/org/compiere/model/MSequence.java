@@ -25,6 +25,10 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere.RunMode;
@@ -603,7 +607,11 @@ public class MSequence extends X_AD_Sequence
 		}
 	}
 
+<<<<<<< HEAD
 	private static boolean isExceptionCentralized(String tableName)
+=======
+	private static boolean isExceptionCentralized(String tableName, final ClientId clientId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		String[] exceptionTables = new String[] {
 				"AD_ACCESSLOG",
@@ -654,7 +662,11 @@ public class MSequence extends X_AD_Sequence
 		}
 
 		// If MigrationLogger is ignoring it, for sure we don't need a Centralized ID
+<<<<<<< HEAD
 		if (Services.get(IMigrationLogger.class).getTablesToIgnoreUC().contains(tableName.toUpperCase()))
+=======
+		if (!Services.get(IMigrationLogger.class).isLogTableName(tableName, clientId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return true;
 		}
@@ -707,7 +719,11 @@ public class MSequence extends X_AD_Sequence
 		}
 
 		// Check if is an exception
+<<<<<<< HEAD
 		if (TableName != null && isExceptionCentralized(TableName))
+=======
+		if (TableName != null && isExceptionCentralized(TableName, ClientId.ofRepoId(AD_Client_ID)))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;
@@ -743,7 +759,11 @@ public class MSequence extends X_AD_Sequence
 			return false;
 		}
 		// Check if is an exception
+<<<<<<< HEAD
 		if (TableName != null && isExceptionCentralized(TableName))
+=======
+		if (TableName != null && isExceptionCentralized(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;

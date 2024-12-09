@@ -16,19 +16,32 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MRequisition;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocContext;
+=======
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Post Order Documents.
@@ -45,7 +58,11 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 {
 	public Doc_Requisition(final AcctDocContext ctx)
 	{
+<<<<<<< HEAD
 		super(ctx, DOCTYPE_PurchaseRequisition);
+=======
+		super(ctx, DocBaseType.PurchaseRequisition);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}	// Doc_Requisition
 
 	@Override

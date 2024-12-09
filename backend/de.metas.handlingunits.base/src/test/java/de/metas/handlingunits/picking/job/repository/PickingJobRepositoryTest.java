@@ -1,5 +1,10 @@
 package de.metas.handlingunits.picking.job.repository;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
@@ -21,7 +26,10 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+<<<<<<< HEAD
 import de.metas.test.SnapshotFunctionFactory;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
@@ -29,16 +37,26 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
+<<<<<<< HEAD
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.time.Instant;
 import java.util.UUID;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
+=======
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class PickingJobRepositoryTest
 {
 	// Services
@@ -50,8 +68,12 @@ class PickingJobRepositoryTest
 	private final OrderId salesOrderId = OrderId.ofRepoId(2);
 	private I_C_UOM uomEach;
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+=======
+	@SuppressWarnings("unused") private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -139,7 +161,11 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
+<<<<<<< HEAD
 		expect(jobCreated).toMatchSnapshot();
+=======
+		expect.toMatchSnapshot(jobCreated);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)

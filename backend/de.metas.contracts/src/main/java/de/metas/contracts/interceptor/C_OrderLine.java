@@ -145,8 +145,16 @@ public class C_OrderLine
 		}
 		else
 		{
+<<<<<<< HEAD
 			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
 			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+=======
+			if(!orderLine.isManualQtyInPriceUOM())
+			{
+				final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
+				orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 }

@@ -3,27 +3,52 @@ package de.metas.i18n.po;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
+=======
+import de.metas.cache.CacheMgt;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.IModelTranslation;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.Language;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.impl.ModelTranslation;
 import de.metas.i18n.impl.NullModelTranslation;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+=======
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+<<<<<<< HEAD
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.PO;
+=======
+import org.compiere.model.I_AD_Language;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -61,13 +86,20 @@ import java.util.Optional;
  */
 public class POTrlRepository
 {
+<<<<<<< HEAD
 	public static final transient POTrlRepository instance = new POTrlRepository();
+=======
+	public static final POTrlRepository instance = new POTrlRepository();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final Logger logger = LogManager.getLogger(POTrlRepository.class);
 	private IClientDAO clientsRepo; // lazy
 
 	private static final String TRL_TABLE_SUFFIX = "_Trl";
+<<<<<<< HEAD
 	private static final String DYNATTR_TrlUpdateMode_UpdateIdenticalTrls = PO.class.getName() + ".TrlUpdateMode.UpdateIdenticalTrls";
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final String COLUMNNAME_AD_Language = "AD_Language";
 
 	private POTrlRepository()
@@ -89,6 +121,7 @@ public class POTrlRepository
 		return tableName + TRL_TABLE_SUFFIX;
 	}
 
+<<<<<<< HEAD
 	public final POTrlInfo createPOTrlInfo(final String tableName, @Nullable final String keyColumnName, final List<String> translatedColumnNames)
 	{
 		if (keyColumnName == null || Check.isEmpty(keyColumnName))
@@ -96,13 +129,38 @@ public class POTrlRepository
 			return POTrlInfo.NOT_TRANSLATED;
 		}
 
+=======
+	@Nullable
+	private static String toBaseTableNameOrNull(@NonNull final String tableName)
+	{
+		final int idx = tableName.lastIndexOf(TRL_TABLE_SUFFIX);
+		if (idx <= 0)
+		{
+			return null;
+		}
+
+		return tableName.substring(0, idx);
+	}
+
+	public static boolean isTrlTableName(@NonNull final String tableName)
+	{
+		return tableName.endsWith(TRL_TABLE_SUFFIX);
+	}
+
+	public final POTrlInfo createPOTrlInfo(final String tableName, final String keyColumnName, final List<String> translatedColumnNames)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (translatedColumnNames.isEmpty())
 		{
 			return POTrlInfo.NOT_TRANSLATED;
 		}
 
 		return POTrlInfo.builder()
+<<<<<<< HEAD
 				.translated(!translatedColumnNames.isEmpty())
+=======
+				.translated(true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.tableName(tableName)
 				.keyColumnName(keyColumnName)
 				.translatedColumnNames(ImmutableList.copyOf(translatedColumnNames))
@@ -114,6 +172,7 @@ public class POTrlRepository
 	/**
 	 * Insert (missing) translation records
 	 *
+<<<<<<< HEAD
 	 * @return false if error (true if no translation or success)
 	 */
 	public final boolean insertTranslations(@NonNull final POTrlInfo trlInfo, final int recordId)
@@ -121,6 +180,15 @@ public class POTrlRepository
 		if (!trlInfo.isTranslated())
 		{
 			return true;
+=======
+	 * @return true if something was updated
+	 */
+	public final boolean onBaseRecordCreated(@NonNull final POTrlInfo trlInfo, final int recordId)
+	{
+		if (!trlInfo.isTranslated())
+		{
+			return false;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -133,11 +201,16 @@ public class POTrlRepository
 		}
 		if (iColumns.length() == 0)
 		{
+<<<<<<< HEAD
 			return true;
+=======
+			return false;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
+<<<<<<< HEAD
 		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append("_Trl (AD_Language,").append(keyColumn).append(", ").append(iColumns)
 				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) ")
 				.append("SELECT l.").append(I_AD_Language.COLUMNNAME_AD_Language).append(", t.").append(keyColumn).append(", ").append(sColumns)
@@ -161,6 +234,27 @@ public class POTrlRepository
 				+ " AND tt.")
 				.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+
+		final String sql = "INSERT INTO " + tableName + "_Trl (AD_Language," + keyColumn + ", " + iColumns
+				+ " IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) "
+				+ "SELECT l." + I_AD_Language.COLUMNNAME_AD_Language + ", t." + keyColumn + ", " + sColumns
+				+ " 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' "
+				+ "FROM AD_Language l, " + tableName + " t "
+				+ "WHERE l."
+				+ I_AD_Language.COLUMNNAME_IsActive
+				+ "='Y'"
+				+ "AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y'"
+				+ " OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y'"
+				+ ")"
+				+ " AND t."
+				+ keyColumn + "=" + recordId
+				+ " AND NOT EXISTS (SELECT 1 FROM " + tableName + "_Trl tt WHERE tt.AD_Language=l."
+				+ I_AD_Language.COLUMNNAME_AD_Language
+				+ " AND tt."
+				+ keyColumn + "=t." + keyColumn + ")";
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;
 	}
@@ -168,6 +262,7 @@ public class POTrlRepository
 	/**
 	 * Update PO's translations if any.
 	 *
+<<<<<<< HEAD
 	 * @return <ul>
 	 * <li>true if no translation or success
 	 * <li>false if error
@@ -189,11 +284,57 @@ public class POTrlRepository
 		if (!trlColumnChanged)
 		{
 			return true; // OK
+=======
+	 * @return true if something was updated
+	 */
+	public boolean onBaseRecordChanged(@NonNull final PO baseRecord)
+	{
+		final POTrlInfo trlInfo = baseRecord.getPOInfo().getTrlInfo();
+		if (!trlInfo.isTranslated())
+		{
+			return false;
+		}
+
+		final StringBuilder sqlSet = new StringBuilder();
+		for (final String columnName : trlInfo.getTranslatedColumnNames())
+		{
+			if (!InterfaceWrapperHelper.isValueChanged(baseRecord, columnName))
+			{
+				continue;
+			}
+
+			final String sqlValue = convertValueToSql(baseRecord.get_Value(columnName));
+			if (sqlSet.length() > 0)
+			{
+				sqlSet.append(",");
+			}
+			sqlSet.append(columnName).append("=").append(sqlValue);
+		}
+		if (sqlSet.length() == 0)
+		{
+			return false;
+		}
+
+		final String tableName = trlInfo.getTableName();
+		final String keyColumnName = trlInfo.getKeyColumnName();
+		final int keyColumnValue = baseRecord.get_ID();
+		final ClientId clientId = ClientId.ofRepoId(baseRecord.getAD_Client_ID());
+		final String sqlWhereClause;
+		if (isMasterdataTable(clientId, tableName))
+		{
+			sqlWhereClause = "(IsTranslated='N' OR AD_Language=" + DB.TO_STRING(Language.getBaseAD_Language()) + ")";
+		}
+		else
+		{
+			// Application dictionary tables
+			sqlWhereClause = "AD_Language=" + DB.TO_STRING(Language.getBaseAD_Language());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
 		// Build the SQL to update all "TableName_Trl" records
 		// NOTE: don't use parameterized SQLs because we need to log this command to migration scripts
+<<<<<<< HEAD
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 
@@ -261,6 +402,84 @@ public class POTrlRepository
 
 		//
 		return updatedCount >= 0;
+=======
+		final String sql = "UPDATE " + toTrlTableName(tableName) + " trl SET " + sqlSet
+				+ " WHERE " + keyColumnName + "=" + keyColumnValue + " AND " + sqlWhereClause;
+
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} translation records for {}", updatedCount, baseRecord);
+
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(toTrlTableName(tableName), keyColumnValue);
+
+		return updatedCount > 0;
+	}
+
+	public void onTrlRecordChanged(@NonNull final PO trlRecord)
+	{
+		final String trlTableName = trlRecord.get_TableName();
+		final String baseTableName = toBaseTableNameOrNull(trlTableName);
+		if (baseTableName == null)
+		{
+			return;
+		}
+
+		final POTrlInfo trlInfo = POInfo.getPOInfoNotNull(baseTableName).getTrlInfo();
+
+		final String recordAdLanguage = trlRecord.get_ValueAsString(COLUMNNAME_AD_Language);
+		if (!Language.isBaseLanguage(recordAdLanguage))
+		{
+			return;
+		}
+
+		final StringBuilder sqlSet = new StringBuilder();
+		for (final String columnName : trlInfo.getTranslatedColumnNames())
+		{
+			if (!InterfaceWrapperHelper.isValueChanged(trlRecord, columnName))
+			{
+				continue;
+			}
+
+			final String sqlValue = convertValueToSql(trlRecord.get_Value(columnName));
+			if (sqlSet.length() > 0)
+			{
+				sqlSet.append(", ");
+			}
+			sqlSet.append(columnName).append("=").append(sqlValue);
+		}
+
+		if (sqlSet.length() == 0)
+		{
+			return;
+		}
+
+		final boolean isUpdatedColumnPresent = Optional.ofNullable(POInfo.getPOInfo(baseTableName))
+				.map(poInfo -> poInfo.getColumnIndex("Updated") > -1)
+				.orElse(false);
+
+		if (isUpdatedColumnPresent)
+		{
+			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), false));
+		}
+
+		final String keyColumnName = trlInfo.getKeyColumnName();
+		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
+
+		final String sql = "UPDATE " + baseTableName + " SET " + sqlSet + " WHERE " + keyColumnName + "=" + convertValueToSql(keyColumnValue);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} base records for {}", updatedCount, trlRecord);
+
+		//
+		final CacheMgt cacheMgt = CacheMgt.get();
+		if (keyColumnValue instanceof Integer)
+		{
+			cacheMgt.reset(baseTableName, (int)keyColumnValue);
+		}
+		else
+		{
+			cacheMgt.reset(baseTableName);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static String convertValueToSql(@Nullable final Object value)
@@ -281,6 +500,17 @@ public class POTrlRepository
 		{
 			return DB.TO_DATE((Timestamp)value);
 		}
+<<<<<<< HEAD
+=======
+		else if (value instanceof Integer)
+		{
+			return value.toString();
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return value.toString();
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		else
 		{
 			return DB.TO_STRING(value.toString());
@@ -295,6 +525,7 @@ public class POTrlRepository
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 
+<<<<<<< HEAD
 		final StringBuilder sqlSet = new StringBuilder();
 		sqlSet.append(columnName).append("=").append(DB.TO_STRING(value));
 		sqlSet.append(", IsTranslated='Y'");
@@ -305,12 +536,28 @@ public class POTrlRepository
 
 		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}/{}/{}", updatedCount, trlInfo, recordId, adLanguage);
+=======
+		final String sqlSet = columnName + "=" + DB.TO_STRING(value) + ", IsTranslated='Y'";
+
+		final String sql = "UPDATE " + toTrlTableName(tableName) + " SET " + sqlSet
+				+ " WHERE " + keyColumn + "=" + recordId
+				+ " AND AD_Language=" + DB.TO_STRING(adLanguage);
+
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} translation records for {}/{}/{}", updatedCount, trlInfo, recordId, adLanguage);
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(toTrlTableName(tableName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * @return true if all translations shall be updated from base record
 	 */
+<<<<<<< HEAD
 	private boolean isAutoUpdateTrl(final ClientId adClientId, final String tableName)
+=======
+	private boolean isMasterdataTable(final ClientId adClientId, final String tableName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (tableName == null)
 		{
@@ -340,8 +587,14 @@ public class POTrlRepository
 
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
+<<<<<<< HEAD
 		final StringBuilder sql = new StringBuilder("DELETE FROM  ").append(tableName).append("_Trl WHERE ").append(keyColumn).append("=").append(recordId);
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM  " + toTrlTableName(tableName) + " WHERE " + keyColumn + "=" + recordId,
+				ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Deleted {} translation records for {}/{}", no, trlInfo, recordId);
 		return no >= 0;
 	}
@@ -388,7 +641,12 @@ public class POTrlRepository
 
 	public ImmutableMap<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
 	{
+<<<<<<< HEAD
 		final String sql = trlInfo.getSqlSelectTrlById().get();
+=======
+		final String sql = trlInfo.getSqlSelectTrlById()
+				.orElseThrow(() -> new AdempiereException("No SqlSelectTrlById defined for " + trlInfo));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -460,6 +718,7 @@ public class POTrlRepository
 
 		return Optional.of(sql.toString());
 	}
+<<<<<<< HEAD
 
 	/**
 	 * if enabled, flags all translations as IsTranslated='N',
@@ -470,4 +729,6 @@ public class POTrlRepository
 		InterfaceWrapperHelper.setDynAttribute(model, DYNATTR_TrlUpdateMode_UpdateIdenticalTrls, enabled);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

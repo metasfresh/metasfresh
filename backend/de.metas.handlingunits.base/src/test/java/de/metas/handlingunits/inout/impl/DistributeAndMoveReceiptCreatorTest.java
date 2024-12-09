@@ -1,6 +1,10 @@
 package de.metas.handlingunits.inout.impl;
 
 import de.metas.acct.api.IProductAcctDAO;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
@@ -81,6 +85,10 @@ public class DistributeAndMoveReceiptCreatorTest
 						new DDOrderMoveScheduleService(
 								ddOrderLowLevelDAO,
 								new DDOrderMoveScheduleRepository(),
+<<<<<<< HEAD
+=======
+								ADReferenceService.newMocked(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 								huReservationService,
 								new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 														   new PPOrderIssueScheduleService(

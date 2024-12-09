@@ -1,8 +1,15 @@
 package de.metas.workflow.rest_api.service;
 
+<<<<<<< HEAD
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+=======
+import de.metas.mobile.application.MobileApplication;
+import de.metas.user.UserId;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -21,7 +28,14 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	@Override
 	@NonNull
+<<<<<<< HEAD
 	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+=======
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId)
+	{
+		return MobileApplication.super.customizeApplicationInfo(applicationInfo, loggedUserId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	WorkflowLaunchersList provideLaunchers(WorkflowLaunchersQuery query);
 

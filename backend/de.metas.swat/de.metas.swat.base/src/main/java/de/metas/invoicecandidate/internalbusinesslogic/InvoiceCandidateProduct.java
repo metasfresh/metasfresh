@@ -2,7 +2,10 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,18 +35,31 @@ import lombok.Value;
 @Value
 public class InvoiceCandidateProduct
 {
+<<<<<<< HEAD
 
 	ProductId id;
 
 	boolean stocked;
+=======
+	ProductId id;
+
+	boolean itemType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@JsonCreator
 	public InvoiceCandidateProduct(
 			@JsonProperty("id") @NonNull final ProductId id,
+<<<<<<< HEAD
 			@JsonProperty("stocked") @NonNull final Boolean stocked)
 	{
 		this.id = id;
 		this.stocked = stocked;
+=======
+			@JsonProperty("itemType") @NonNull final Boolean itemType)
+	{
+		this.id = id;
+		this.itemType = itemType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 

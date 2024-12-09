@@ -60,12 +60,16 @@ import java.util.Map;
  * Hint: use {@link ProductPrices} to get an instance.
  *
  * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class ProductPriceQuery
 {
 	public enum AttributePricing
 	{
+<<<<<<< HEAD
 		/** Only match product prices with IsAttributeDependent='Y' */
 		STRICT,
 
@@ -76,6 +80,26 @@ public class ProductPriceQuery
 		NONE,
 
 		/** No ASI related matching at all */
+=======
+		/**
+		 * Only match product prices with IsAttributeDependent='Y'
+		 */
+		STRICT,
+
+		/**
+		 * Prefer product prices with IsAttributeDependent='Y', but also allow product prices with IsAttributeDependent='N'
+		 */
+		NOT_STRICT,
+
+		/**
+		 * Only match product prices with IsAttributeDependent='N'
+		 */
+		NONE,
+
+		/**
+		 * No ASI related matching at all
+		 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		IGNORE;
 	}
 
@@ -127,13 +151,25 @@ public class ProductPriceQuery
 		return toQuery().list(type);
 	}
 
+<<<<<<< HEAD
 	/** @return first matching product price or null */
+=======
+	/**
+	 * @return first matching product price or null
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_M_ProductPrice firstMatching()
 	{
 		return firstMatching(I_M_ProductPrice.class);
 	}
 
+<<<<<<< HEAD
 	/** @return first matching product price or null */
+=======
+	/**
+	 * @return first matching product price or null
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public <T extends I_M_ProductPrice> T firstMatching(final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
@@ -211,10 +247,16 @@ public class ProductPriceQuery
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
 	 * 			@param type
+=======
+	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
+	 *                      If {@code false, it silently returns the first match which has the lowest sequence number.
+	 * @param type
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return
 	 */
 	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
@@ -352,7 +394,13 @@ public class ProductPriceQuery
 		return _productId;
 	}
 
+<<<<<<< HEAD
 	/** Matches product price which is NOT marked as "attributed pricing" */
+=======
+	/**
+	 * Matches product price which is NOT marked as "attributed pricing"
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ProductPriceQuery noAttributePricing()
 	{
 		_attributePricing = AttributePricing.NONE;
@@ -371,7 +419,13 @@ public class ProductPriceQuery
 		return _onlyValidPrices;
 	}
 
+<<<<<<< HEAD
 	/** Matches any product price which is marked as "attributed pricing" */
+=======
+	/**
+	 * Matches any product price which is marked as "attributed pricing"
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ProductPriceQuery onlyAttributePricing()
 	{
 		_attributePricing = AttributePricing.STRICT;
@@ -437,7 +491,12 @@ public class ProductPriceQuery
 		return this;
 	}
 
+<<<<<<< HEAD
 	/* package */ final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
+=======
+	/* package */
+	final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (matchers == null || matchers.isEmpty())
 		{

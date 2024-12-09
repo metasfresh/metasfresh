@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -127,7 +131,11 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
 
+<<<<<<< HEAD
 		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
+=======
+		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName+"/-1"));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.compiere.apps.search;
 
+<<<<<<< HEAD
 import java.awt.Component;
 import java.util.Map;
 import java.util.Properties;
@@ -10,6 +11,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.X_AD_WF_NextCondition;
 import org.compiere.swing.CComboBox;
@@ -17,9 +22,18 @@ import org.compiere.swing.CEditor;
 import org.compiere.swing.ToStringListCellRenderer;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Services;
+=======
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.util.Map;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Advanced search table - cell renderer and editor for AND/OR join option.
@@ -44,11 +58,19 @@ class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
 		super();
 
 		// Load translation
+<<<<<<< HEAD
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final Properties ctx = Env.getCtx();
 		join2displayName = ImmutableMap.<Join, String> builder()
 				.put(Join.AND, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_And))
 				.put(Join.OR, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_OR))
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final Properties ctx = Env.getCtx();
+		join2displayName = ImmutableMap.<Join, String> builder()
+				.put(Join.AND, adReferenceService.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_And))
+				.put(Join.OR, adReferenceService.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_OR))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -83,7 +105,11 @@ class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
 		return defaultRenderer.getTableCellRendererComponent(table, displayValue, isSelected, hasFocus, row, column);
 	}
 
+<<<<<<< HEAD
 	private final String getDisplayValue(final Object value)
+=======
+	private String getDisplayValue(final Object value)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (value == null)
 		{

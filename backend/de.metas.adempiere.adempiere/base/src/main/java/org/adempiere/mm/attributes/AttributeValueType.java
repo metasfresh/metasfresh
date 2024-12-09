@@ -5,6 +5,10 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_Attribute;
 
@@ -30,6 +34,7 @@ import org.compiere.model.X_M_Attribute;
  * #L%
  */
 
+<<<<<<< HEAD
 public enum AttributeValueType implements ReferenceListAwareEnum
 {
 	STRING(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40), //
@@ -45,6 +50,19 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 	{
 		this.code = code;
 	}
+=======
+@Getter
+@RequiredArgsConstructor
+public enum AttributeValueType implements ReferenceListAwareEnum
+{
+	STRING(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40),
+	NUMBER(X_M_Attribute.ATTRIBUTEVALUETYPE_Number),
+	DATE(X_M_Attribute.ATTRIBUTEVALUETYPE_Date),
+	LIST(X_M_Attribute.ATTRIBUTEVALUETYPE_List),
+	;
+
+	@NonNull private final String code;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public static AttributeValueType ofCode(@NonNull final String code)
 	{
@@ -90,4 +108,9 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	public boolean isList() {return LIST.equals(this);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

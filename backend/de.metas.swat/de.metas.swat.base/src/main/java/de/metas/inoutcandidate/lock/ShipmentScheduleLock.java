@@ -9,6 +9,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.swat.base

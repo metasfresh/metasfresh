@@ -31,8 +31,14 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+<<<<<<< HEAD
 @Value
 @Builder
+=======
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
+
+@Value
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @JsonDeserialize(builder = OrderCandidate.OrderCandidateBuilder.class)
 public class OrderCandidate
 {
@@ -48,11 +54,37 @@ public class OrderCandidate
 	@JsonProperty("salesRepId")
 	String salesRepId;
 
+<<<<<<< HEAD
 	@Nullable
 	public String getCustomField(@NonNull final String customPath)
 	{
 		final JsonNode customIdNode = orderNode.at(customPath);
 
 		return (customIdNode == null || customIdNode.isMissingNode() || customIdNode.isNull()) ? null : customIdNode.asText();
+=======
+	@NonNull
+	@JsonProperty("customer")
+	Customer customer;
+
+	@Builder
+	public OrderCandidate(
+			@JsonProperty("jsonOrder") @NonNull final JsonOrder jsonOrder,
+			@JsonProperty("orderNode") @NonNull final JsonNode orderNode,
+			@JsonProperty("salesRepId") @Nullable final String salesRepId)
+	{
+		this.jsonOrder = jsonOrder;
+		this.orderNode = orderNode;
+		this.salesRepId = salesRepId;
+
+		this.customer = Customer.of(orderNode.get(JSON_NODE_ORDER_CUSTOMER), jsonOrder.getOrderCustomer());
+	}
+
+	@Nullable
+	public JsonNode getCustomNode(@NonNull final String customPath)
+	{
+		final JsonNode customNode = orderNode.get(customPath);
+
+		return (customNode == null || customNode.isMissingNode() || customNode.isNull()) ? null : customNode;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

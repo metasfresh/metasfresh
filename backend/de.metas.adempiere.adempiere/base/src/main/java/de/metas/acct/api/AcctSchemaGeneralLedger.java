@@ -1,5 +1,9 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.Account;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +35,7 @@ import lombok.Value;
 public class AcctSchemaGeneralLedger
 {
 	boolean suspenseBalancing;
+<<<<<<< HEAD
 	AccountId suspenseBalancingAcctId;
 
 	boolean currencyBalancing;
@@ -57,5 +62,39 @@ public class AcctSchemaGeneralLedger
 	public AccountId getDueFromAcct(final AcctSchemaElementType segment)
 	{
 		return intercompanyDueFromAcctId;
+=======
+	Account suspenseBalancingAcct;
+
+	boolean currencyBalancing;
+	Account currencyBalancingAcct;
+
+	@NonNull
+	Account intercompanyDueToAcct;
+	@NonNull
+	Account intercompanyDueFromAcct;
+
+	@NonNull
+	Account incomeSummaryAcct;
+	@NonNull
+	Account retainedEarningAcct;
+	
+	@NonNull
+	Account purchasePriceVarianceOffsetAcct;
+
+
+	@NonNull
+	Account cashRoundingAcct;
+
+	@NonNull
+	public Account getDueToAcct(final AcctSchemaElementType segment)
+	{
+		return intercompanyDueToAcct;
+	}
+
+	@NonNull
+	public Account getDueFromAcct(final AcctSchemaElementType segment)
+	{
+		return intercompanyDueFromAcct;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

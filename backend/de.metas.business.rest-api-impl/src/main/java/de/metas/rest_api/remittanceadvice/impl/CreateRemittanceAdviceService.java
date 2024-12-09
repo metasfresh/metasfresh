@@ -35,6 +35,10 @@ import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRe
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -194,7 +198,11 @@ public class CreateRemittanceAdviceService
 		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
 		final Instant documentDate = jsonRemittanceAdvice.getDocumentDate() != null ?
 				Instant.parse(jsonRemittanceAdvice.getDocumentDate()) :
+<<<<<<< HEAD
 				Instant.now();
+=======
+				SystemTime.asInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return CreateRemittanceAdviceRequest.builder()
 				.isImported(Boolean.TRUE)

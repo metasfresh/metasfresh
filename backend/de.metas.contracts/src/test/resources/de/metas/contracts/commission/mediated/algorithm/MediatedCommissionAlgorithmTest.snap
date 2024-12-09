@@ -1,5 +1,6 @@
 de.metas.contracts.commission.mediated.algorithm.MediatedCommissionAlgorithmTest.givenValidRequest_whenCreateCommissionShares_thenReturnOneShare=[
   {
+<<<<<<< HEAD
     "config" : {
       "@type" : "MediatedCommissionConfig",
       "commissionPercent" : 10,
@@ -34,5 +35,38 @@ de.metas.contracts.commission.mediated.algorithm.MediatedCommissionAlgorithmTest
     "forecastedPointsSum" : 0,
     "invoiceablePointsSum" : 0,
     "invoicedPointsSum" : 10.00
+=======
+    "beneficiary": {
+      "bPartnerId": 2
+    },
+    "config": {
+      "@type": "MediatedCommissionConfig",
+      "commissionPercent": 10,
+      "commissionProductId": 2,
+      "mediatedCommissionContract": {
+        "@type": "MediatedCommissionContract",
+        "contractId": 1001,
+        "contractOwnerBPartnerId": 1,
+        "simulation": false
+      },
+      "mediatedCommissionSettingsLineId": 1,
+      "pointsPrecision": 2
+    },
+    "facts": [
+      {
+        "points": 10.00,
+        "state": "INVOICED",
+        "timestamp": "2600-07-29T09:11:38Z"
+      }
+    ],
+    "level": 0,
+    "payer": {
+      "bPartnerId": 1
+    },
+    "soTrx": "SALES",
+    "forecastedPointsSum": 0,
+    "invoiceablePointsSum": 0,
+    "invoicedPointsSum": 10.00
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

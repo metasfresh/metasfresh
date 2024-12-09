@@ -50,6 +50,12 @@ public class ExportPPOrderRouteContext
 	private final JsonExternalSystemRequest jsonExternalSystemRequest;
 
 	@NonNull
+<<<<<<< HEAD
+=======
+	private final Integer ppOrderMetasfreshId;
+	
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ConnectionDetails connectionDetails;
 
 	@NonNull
@@ -57,6 +63,12 @@ public class ExportPPOrderRouteContext
 
 	private final boolean pluFileExportAuditEnabled;
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	private final String customQueryAdProcessValue;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
 
@@ -72,6 +84,12 @@ public class ExportPPOrderRouteContext
 	private JsonProduct jsonProduct;
 
 	@Nullable
+<<<<<<< HEAD
+=======
+	private String customQueryProcessResponse;
+	
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Getter(AccessLevel.NONE)
 	private JsonPluFileAudit jsonPluFileAudit;
 
@@ -82,7 +100,11 @@ public class ExportPPOrderRouteContext
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String filename;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
 	{

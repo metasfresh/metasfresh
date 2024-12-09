@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -25,11 +26,48 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
+=======
+import com.google.common.base.MoreObjects;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.doc.PostingException;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
+import de.metas.util.Optionals;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+<<<<<<< HEAD
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
@@ -65,6 +103,18 @@ import de.metas.util.Optionals;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+=======
+import org.compiere.model.PO;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.IntFunction;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Standard Document Line
@@ -74,6 +124,10 @@ import lombok.NonNull;
  * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @version $Id: DocLine.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
+<<<<<<< HEAD
+=======
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
@@ -125,9 +179,15 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
 
+<<<<<<< HEAD
 	private LocalDate m_DateAcct = null;
 	private LocalDate m_DateDoc = null;
 	private int m_C_SalesRegion_ID = -1;
+=======
+	private LocalDateAndOrgId m_DateAcct = null;
+	private LocalDateAndOrgId m_DateDoc = null;
+	@Nullable private Optional<SalesRegionId> m_C_SalesRegion_ID = null; // lazy
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Optional<BPartnerId> _bpartnerId;
 	private final LocationId locationFromId = null;
 	private final LocationId locationToId = null;
@@ -139,6 +199,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private int m_ReversalLine_ID = 0;
 
+<<<<<<< HEAD
+=======
+	private AccountProvider _accountProvider; // lazy
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public DocLine(
 			@NonNull final PO linePO,
 			@NonNull final DT doc)
@@ -160,13 +225,20 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getClientId();
 	}
 
+<<<<<<< HEAD
 	private final PO getPO()
+=======
+	private PO getPO()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return p_po;
 	}
 
 	/**
+<<<<<<< HEAD
 	 * @param modelType
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return underlying model
 	 */
 	protected final <T> T getModel(final Class<T> modelType)
@@ -354,6 +426,38 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
 	}
 
+<<<<<<< HEAD
+=======
+	protected final AccountProvider getAccountProvider()
+	{
+		AccountProvider accountProvider = this._accountProvider;
+		if (accountProvider == null)
+		{
+			accountProvider = this._accountProvider = createAccountProvider();
+		}
+		return accountProvider;
+	}
+
+	protected final AccountProvider createAccountProvider()
+	{
+		AccountProvider accountProvider = getDoc().getAccountProvider();
+
+		AccountProviderExtension extension = createAccountProviderExtension();
+		if (extension != null)
+		{
+			accountProvider = accountProvider.toBuilder().extension(extension).build();
+		}
+
+		return accountProvider;
+	}
+
+	@Nullable
+	protected AccountProviderExtension createAccountProviderExtension()
+	{
+		return null;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Line Account from Product (or Charge).
 	 *
@@ -363,6 +467,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	@NonNull
 	@OverridingMethodsMustInvokeSuper
+<<<<<<< HEAD
 	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
 		//
@@ -383,11 +488,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				throw newPostingException().setAcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
 			}
 			return acct;
+=======
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
+	{
+		final ProductId productId = getProductId();
+
+		//
+		// Charge account
+		if (productId == null)
+		{
+			final ChargeId chargeId = getC_Charge_ID()
+					.orElseThrow(() -> newPostingException().setAcctSchema(as).setDetailMessage("No Charge defined"));
+
+			if (!m_doc.isSOTrx())
+			{
+				// Expense (+)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE);
+			}
+			else
+			{
+				// Revenue (-)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE.negate());
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		//
 		// Product Account
 		else
 		{
+<<<<<<< HEAD
 			return getProductAccount(acctType, as);
 		}
 	}
@@ -397,22 +526,60 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		if (m_DateAcct == null)
 		{
 			m_DateAcct = CoalesceUtil.coalesceSuppliers(
+=======
+			final TaxId taxId = getTaxId().orElse(null);
+			return getAccountProvider().getProductAccount(as.getId(), productId, taxId, acctType);
+		}
+	}
+
+	@NonNull
+	public final LocalDateAndOrgId getDateAcct()
+	{
+		if (m_DateAcct == null)
+		{
+			m_DateAcct = CoalesceUtil.coalesceSuppliersNotNull(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateAcct;
 	}
 
+<<<<<<< HEAD
 	protected final void setDateDoc(final LocalDate dateDoc)
+=======
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
+	{
+		return getDateAcct().toTimestamp(services::getTimeZone);
+	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant()
+	{
+		return getDateAcct().toInstant(services::getTimeZone);
+	}
+
+	protected final void setDateDoc(@NonNull final LocalDateAndOrgId dateDoc)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
+<<<<<<< HEAD
 	public final LocalDate getDateDoc()
 	{
 		if (m_DateDoc == null)
 		{
 			m_DateDoc = CoalesceUtil.coalesceSuppliers(
+=======
+	@NonNull
+	public final LocalDateAndOrgId getDateDoc()
+	{
+		if (m_DateDoc == null)
+		{
+			m_DateDoc = CoalesceUtil.coalesceSuppliersNotNull(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
@@ -421,6 +588,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
 		//
@@ -481,11 +649,22 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	protected final int getC_Charge_ID()
 	{
 		return getValue("C_Charge_ID");
+=======
+	protected final Timestamp getDateDocAsTimestamp()
+	{
+		return getDateDoc().toTimestamp(services::getTimeZone);
+	}
+
+	protected final Optional<ChargeId> getC_Charge_ID()
+	{
+		return getValueAsOptionalId("C_Charge_ID", ChargeId::ofRepoIdOrNull);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Get Charge Account
 	 *
+<<<<<<< HEAD
 	 * @param as     account schema
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
@@ -498,6 +677,22 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 		return MCharge.getAccount(C_Charge_ID, as.getId(), amount);
+=======
+	 * @param as        account schema
+	 * @param chargeAmt amount for expense(+)/revenue(-)
+	 * @return Charge Account or null
+	 */
+	@Nullable
+	protected final Account getChargeAccount(@NonNull final AcctSchema as, final BigDecimal chargeAmt)
+	{
+		final ChargeId chargeId = getC_Charge_ID().orElse(null);
+		if (chargeId == null)
+		{
+			return null;
+		}
+
+		return getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	protected final int getC_Period_ID()
@@ -528,7 +723,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
+<<<<<<< HEAD
 	public final ProductId getProductId()
+=======
+	public ProductId getProductId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
@@ -547,7 +746,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _productIsItem;
 	}
 
+<<<<<<< HEAD
 	private final boolean checkIsItem()
+=======
+	private boolean checkIsItem()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_M_Product product = getProduct();
 		if (product == null)
@@ -585,9 +788,15 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("M_Locator_ID");
 	}
 
+<<<<<<< HEAD
 	public final OrderLineId getOrderLineId()
 	{
 		return OrderLineId.ofRepoIdOrNull(getValue("C_OrderLine_ID"));
+=======
+	public final Optional<OrderLineId> getOrderLineId()
+	{
+		return OrderLineId.optionalOfRepoId(getValue("C_OrderLine_ID"));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final LocationId getLocationFromId()
@@ -603,7 +812,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * @return product or null if no product
 	 */
+<<<<<<< HEAD
 	private final I_M_Product getProduct()
+=======
+	private I_M_Product getProduct()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_product == null)
 		{
@@ -626,6 +839,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return services.getProductStockingUOMId(getProductId());
 	}
 
+<<<<<<< HEAD
 	/**
 	 * @return C_RevenueRecognition_ID or 0
 	 */
@@ -638,6 +852,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 		return 0;
 	}   // getC_RevenueRecognition_ID
+=======
+	// public final int getC_RevenueRecognition_ID()
+	// {
+	// 	final I_M_Product product = getProduct();
+	// 	if (product != null)
+	// 	{
+	// 		return product.getC_RevenueRecognition_ID();
+	// 	}
+	// 	return 0;
+	// }   // getC_RevenueRecognition_ID
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Quantity UOM
@@ -732,16 +957,33 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _bpartnerId.orElse(null);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	public BPartnerLocationId getBPartnerLocationId()
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected final void setBPartnerId(final BPartnerId bpartnerId)
 	{
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
+<<<<<<< HEAD
 	private final int getC_BPartner_Location_ID()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> getValue("C_BPartner_Location_ID"),
 				() -> m_doc.getC_BPartner_Location_ID());
+=======
+	private int getC_BPartner_Location_ID()
+	{
+		return CoalesceUtil.firstGreaterThanZeroSupplier(
+				() -> getValue("C_BPartner_Location_ID"),
+				m_doc::getC_BPartner_Location_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final OrgId getOrgTrxId()
@@ -755,6 +997,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 *
 	 * @return C_SalesRegion_ID
 	 */
+<<<<<<< HEAD
 	public final int getC_SalesRegion_ID()
 	{
 		if (m_C_SalesRegion_ID == -1)    // never tried
@@ -787,6 +1030,24 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("C_Project_ID");
 	}
 
+=======
+	public final Optional<SalesRegionId> getC_SalesRegion_ID()
+	{
+		Optional<SalesRegionId> salesRegionId = this.m_C_SalesRegion_ID;
+		if (salesRegionId == null)
+		{
+			final BPartnerLocationId bpartnerLocationId = getBPartnerLocationId();
+			salesRegionId = this.m_C_SalesRegion_ID = bpartnerLocationId != null
+					? services.getSalesRegionIdByBPartnerLocationId(bpartnerLocationId)
+					: Optional.empty();
+		}
+
+		return salesRegionId;
+	}
+
+	public final ProjectId getC_Project_ID() {return ProjectId.ofRepoIdOrNull(getValue("C_Project_ID"));}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final int getC_Campaign_ID()
 	{
 		return getValue("C_Campaign_ID");
@@ -802,6 +1063,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	protected OrderId getSalesOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID"));
+	}
+
+	public BPartnerId getBPartnerId2() {return BPartnerId.ofRepoIdOrNull(getValue("C_BPartner2_ID"));}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final int getUser1_ID()
 	{
 		return getValue("User1_ID");
@@ -812,7 +1084,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("User2_ID");
 	}
 
+<<<<<<< HEAD
 	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+=======
+	@SuppressWarnings("SameParameterValue")
+	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -828,11 +1105,18 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 
+<<<<<<< HEAD
 		final T id = idOrNullMapper.apply(valueInt);
 		return id;
 	}
 
 	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+=======
+		return idOrNullMapper.apply(valueInt);
+	}
+
+	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -872,12 +1156,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final Integer valueInt = (Integer)po.get_Value(index);
 			if (valueInt != null)
 			{
+<<<<<<< HEAD
 				return valueInt.intValue();
+=======
+				return valueInt;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 		return 0;
 	}
 
+<<<<<<< HEAD
 	@Nullable final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
 	{
 		final PO po = getPO();
@@ -901,6 +1190,31 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		return null;
+=======
+	@Nullable
+	public LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
+	{
+		@NonNull final PO docLinePO = getPO();
+		final int index = docLinePO.get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			return null;
+		}
+
+		final Timestamp ts = docLinePO.get_ValueAsTimestamp(index);
+		if (ts == null)
+		{
+			return null;
+		}
+
+		OrgId orgId = OrgId.ofRepoId(docLinePO.getAD_Org_ID());
+		if (orgId.isAny())
+		{
+			orgId = getDoc().getOrgId();
+		}
+
+		return LocalDateAndOrgId.ofTimestamp(ts, orgId, services::getTimeZone);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final String getValueAsString(final String columnName)
@@ -919,8 +1233,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
+<<<<<<< HEAD
 	 *
 	 * @param ReversalLine_ID
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{
@@ -989,7 +1306,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return document currency precision
 	 * @see Doc#getStdPrecision()
 	 */
+<<<<<<< HEAD
 	protected final int getStdPrecision()
+=======
+	protected final CurrencyPrecision getStdPrecision()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return m_doc.getStdPrecision();
 	}

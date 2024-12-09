@@ -339,7 +339,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
 			schedRecord.setQtyDelivered(qtyDelivered);
+<<<<<<< HEAD
 			schedRecord.setQtyReserved(BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered())));
+=======
+			schedRecord.setQtyReserved(getQtyReserved(schedRecord, olAndSched));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			updateLineNetAmt(olAndSched);
 
@@ -514,7 +518,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// Delivery rule: Force
 			if (deliveryRule.isForce())
 			{
+<<<<<<< HEAD
 				createLine(
+=======
+				createLine( // createLine will also subtract the respective qty from storages
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						olAndSched,
 						qtyToDeliver,
 						storages,
@@ -537,7 +545,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					// we invoke createLine even if ruleComplete is true and fullLine is false,
 					// because we want the quantity to be allocated.
 					// If the created line will make it into a real shipment will be decided later.
+<<<<<<< HEAD
 					createLine(
+=======
+					createLine( // createLine will also subtract the respective qty from storages
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							olAndSched,
 							qtyToDeliverEffective,
 							storages,
@@ -931,4 +943,20 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return segments.stream();
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	private static BigDecimal getQtyReserved(@NonNull final I_M_ShipmentSchedule schedRecord, @NonNull final OlAndSched olAndSched)
+	{
+		if (schedRecord.isClosed())
+		{
+			return BigDecimal.ZERO;
+		}
+		else
+		{
+			return BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered()));
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

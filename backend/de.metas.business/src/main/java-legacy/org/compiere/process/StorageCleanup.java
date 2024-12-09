@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,6 +24,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IStorageBL;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
@@ -32,11 +41,19 @@ import org.compiere.model.X_M_Movement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IStorageBL;
 import de.metas.util.Services;
+=======
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * StorageCleanup
@@ -55,6 +72,7 @@ public class StorageCleanup extends JavaProcess
 	@Override
 	protected void prepare()
 	{
+<<<<<<< HEAD
 		ProcessInfoParameter[] para = getParametersAsArray();
 		for (ProcessInfoParameter element : para)
 		{
@@ -62,6 +80,15 @@ public class StorageCleanup extends JavaProcess
 			if (element.getParameter() == null)
 			{
 				;
+=======
+		final ProcessInfoParameter[] para = getParametersAsArray();
+		for (final ProcessInfoParameter element : para)
+		{
+			final String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else if (name.equals("C_DocType_ID"))
 			{
@@ -88,7 +115,11 @@ public class StorageCleanup extends JavaProcess
 		String sql = "DELETE FROM M_Storage "
 				+ "WHERE QtyOnHand = 0 AND QtyReserved = 0 AND QtyOrdered = 0"
 				+ " AND Created < now()-3";
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("Deleted Empty #" + no);
 
 		//
@@ -151,7 +182,11 @@ public class StorageCleanup extends JavaProcess
 		BigDecimal qty = target.getQtyOnHand().negate();
 
 		// Create Movement
+<<<<<<< HEAD
 		MMovement mh = new MMovement(getCtx(), 0, get_TrxName());
+=======
+		final MMovement mh = new MMovement(getCtx(), 0, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		mh.setAD_Org_ID(target.getAD_Org_ID());
 		mh.setC_DocType_ID(p_C_DocType_ID);
 		mh.setDescription(getName());
@@ -161,11 +196,19 @@ public class StorageCleanup extends JavaProcess
 		}
 
 		int lines = 0;
+<<<<<<< HEAD
 		MStorage[] sources = getSources(target.getM_Product_ID(), target.getM_Locator_ID());
 		for (MStorage source : sources)
 		{
 			// Movement Line
 			MMovementLine ml = new MMovementLine(mh);
+=======
+		final MStorage[] sources = getSources(target.getM_Product_ID(), target.getM_Locator_ID());
+		for (final MStorage source : sources)
+		{
+			// Movement Line
+			final MMovementLine ml = new MMovementLine(mh);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			ml.setM_Product_ID(target.getM_Product_ID());
 			ml.setM_LocatorTo_ID(target.getM_Locator_ID());
 			ml.setM_AttributeSetInstanceTo_ID(0 /* target.getM_AttributeSetInstance_ID() */);
@@ -198,7 +241,11 @@ public class StorageCleanup extends JavaProcess
 		mh.processIt(MMovement.ACTION_Complete);
 		mh.save();
 
+<<<<<<< HEAD
 		final ITranslatableString docStatus = Services.get(IADReferenceDAO.class)
+=======
+		final ITranslatableString docStatus = ADReferenceService.get()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.retrieveListNameTranslatableString(
 						X_M_Movement.DOCSTATUS_AD_Reference_ID,
 						mh.getDocStatus());
@@ -217,7 +264,11 @@ public class StorageCleanup extends JavaProcess
 	 * 
 	 * @param target target Storage
 	 */
+<<<<<<< HEAD
 	private void eliminateReservation(MStorage target)
+=======
+	private void eliminateReservation(final MStorage target)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// Negative Ordered / Reserved Qty
 		if (target.getQtyReserved().signum() != 0 || target.getQtyOrdered().signum() != 0)
@@ -227,7 +278,11 @@ public class StorageCleanup extends JavaProcess
 					target.getM_Product_ID(), 0, get_TrxName());
 			if (storage0 == null)
 			{
+<<<<<<< HEAD
 				MLocator defaultLoc = findOldestLocatorWithSameWarehouse(M_Locator_ID);
+=======
+				final MLocator defaultLoc = findOldestLocatorWithSameWarehouse(M_Locator_ID);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (M_Locator_ID != defaultLoc.getM_Locator_ID())
 				{
 					M_Locator_ID = defaultLoc.getM_Locator_ID();
@@ -265,6 +320,7 @@ public class StorageCleanup extends JavaProcess
 		}
 	}	// eliminateReservation
 
+<<<<<<< HEAD
 	/**
 	 * Get oldest Default Locator of warehouse with locator
 	 * 
@@ -277,6 +333,13 @@ public class StorageCleanup extends JavaProcess
 		String trxName = null;
 		MLocator retValue = null;
 		String sql = "SELECT * FROM M_Locator l "
+=======
+	private MLocator findOldestLocatorWithSameWarehouse(final int M_Locator_ID)
+	{
+		final String trxName = null;
+		MLocator retValue = null;
+		final String sql = "SELECT * FROM M_Locator l "
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ "WHERE IsActive = 'Y' AND  IsDefault='Y'"
 				+ " AND EXISTS (SELECT * FROM M_Locator lx "
 				+ "WHERE l.M_Warehouse_ID=lx.M_Warehouse_ID AND lx.M_Locator_ID=?) "
@@ -314,7 +377,11 @@ public class StorageCleanup extends JavaProcess
 	 * @param M_Locator_ID locator
 	 * @return sources
 	 */
+<<<<<<< HEAD
 	private MStorage[] getSources(int M_Product_ID, int M_Locator_ID)
+=======
+	private MStorage[] getSources(final int M_Product_ID, final int M_Locator_ID)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		ArrayList<MStorage> list = new ArrayList<>();
 		String sql = "SELECT * "
@@ -355,7 +422,11 @@ public class StorageCleanup extends JavaProcess
 			rs = null;
 			pstmt = null;
 		}
+<<<<<<< HEAD
 		MStorage[] retValue = new MStorage[list.size()];
+=======
+		final MStorage[] retValue = new MStorage[list.size()];
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		list.toArray(retValue);
 		return retValue;
 	}	// getSources

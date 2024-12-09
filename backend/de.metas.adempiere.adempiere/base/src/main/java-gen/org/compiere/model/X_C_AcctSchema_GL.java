@@ -105,6 +105,33 @@ public class X_C_AcctSchema_GL extends org.compiere.model.PO implements I_C_Acct
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public org.compiere.model.I_C_ValidCombination getCashRounding_A()
+	{
+		return get_ValueAsPO(COLUMNNAME_CashRounding_Acct, org.compiere.model.I_C_ValidCombination.class);
+	}
+
+	@Override
+	public void setCashRounding_A(final org.compiere.model.I_C_ValidCombination CashRounding_A)
+	{
+		set_ValueFromPO(COLUMNNAME_CashRounding_Acct, org.compiere.model.I_C_ValidCombination.class, CashRounding_A);
+	}
+
+	@Override
+	public void setCashRounding_Acct (final int CashRounding_Acct)
+	{
+		set_Value (COLUMNNAME_CashRounding_Acct, CashRounding_Acct);
+	}
+
+	@Override
+	public int getCashRounding_Acct()
+	{
+		return get_ValueAsInt(COLUMNNAME_CashRounding_Acct);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_C_ValidCombination getCommitmentOffset_A() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_CommitmentOffset_Acct, org.compiere.model.I_C_ValidCombination.class);

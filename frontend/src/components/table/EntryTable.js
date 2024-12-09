@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
+<<<<<<< HEAD
 import { getTableId, getTable } from '../../reducers/tables';
 import { updateTableRowProperty } from '../../actions/TableActions';
 import {
@@ -11,6 +12,16 @@ import {
   updatePropertyValue,
   allowShortcut,
   disableShortcut,
+=======
+import { getTable, getTableId } from '../../reducers/tables';
+import { updateTableRowProperty } from '../../actions/TableActions';
+import {
+  allowShortcut,
+  disableShortcut,
+  openModal,
+  patch,
+  updatePropertyValue,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 } from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
@@ -56,6 +67,7 @@ class EntryTable extends PureComponent {
     });
   };
 
+<<<<<<< HEAD
   /**
    * @method renderElements
    * @summary ToDo: Describe the method
@@ -64,6 +76,9 @@ class EntryTable extends PureComponent {
    * @todo Write the documentation
    */
   renderElements = (elements, columnsCount) => {
+=======
+  renderRow = (rowLayout) => {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     const {
       data,
       rows,
@@ -84,11 +99,20 @@ class EntryTable extends PureComponent {
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
+<<<<<<< HEAD
     const colWidth = Math.floor(12 / columnsCount);
 
     if (rows.length) {
       for (let i = 0; i < columnsCount; i += 1) {
         const elem = elements.cols[i];
+=======
+    const columnsCount = rowLayout.colsCount ?? rowLayout.cols.length;
+    const colWidth = Math.floor(12 / columnsCount);
+
+    if (rows.length) {
+      for (let i = 0; i < columnsCount && i < rowLayout.cols.length; i++) {
+        const elem = rowLayout.cols[i];
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
         if (elem && elem.fields && elem.fields.length) {
           const fieldName = elem.fields ? elem.fields[0].field : '';
@@ -170,15 +194,26 @@ class EntryTable extends PureComponent {
   };
 
   render() {
+<<<<<<< HEAD
     const { columns } = this.props;
+=======
+    const { rowsLayout } = this.props;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     return (
       <table className="table js-table layout-fix">
         <tbody>
+<<<<<<< HEAD
           {columns.map((cols, idx) => {
             return (
               <tr className="table-context" key={`entry-row-${idx}`}>
                 {this.renderElements(cols, cols.colsCount)}
+=======
+          {rowsLayout.map((rowLayout, idx) => {
+            return (
+              <tr className="table-context" key={`entry-row-${idx}`}>
+                {this.renderRow(rowLayout)}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               </tr>
             );
           })}
@@ -189,7 +224,11 @@ class EntryTable extends PureComponent {
 }
 
 EntryTable.propTypes = {
+<<<<<<< HEAD
   columns: PropTypes.array.isRequired,
+=======
+  rowsLayout: PropTypes.array.isRequired,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   rows: PropTypes.array.isRequired,
   windowId: PropTypes.string.isRequired,
   documentId: PropTypes.string,

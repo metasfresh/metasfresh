@@ -67,12 +67,21 @@ class TableCell extends PureComponent {
     }
 
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+<<<<<<< HEAD
+=======
+    const widgetType = tableCellData?.widgetType;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     onKeyDown &&
       onKeyDown({
         event,
         property,
         readonly: isReadonly,
+<<<<<<< HEAD
         isAttributeWidget: tableCellData.widgetType === 'ProductAttributes',
+=======
+        isAttributeWidget: widgetType === 'ProductAttributes',
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       });
   };
 

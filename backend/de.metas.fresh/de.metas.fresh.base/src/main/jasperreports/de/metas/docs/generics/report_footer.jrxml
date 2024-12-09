@@ -24,6 +24,7 @@
 		<defaultValueExpression><![CDATA[new BigDecimal(1000000)]]></defaultValueExpression>
 	</parameter>
 	<queryString>
+<<<<<<< HEAD
 		<![CDATA[SELECT
 -- metas: org
 COALESCE(org_bp.name,'') 	AS org_name,
@@ -56,6 +57,10 @@ LEFT JOIN c_bank bank			ON bpb.c_bank_id	   = bank.c_bank_id AND bank.isActive =
 WHERE
 ad_org.ad_org_id = $P{org_id} AND ad_org.isActive = 'Y'
 ORDER BY bpb.isDefault DESC
+=======
+		<![CDATA[SELECT * 
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String"/>

@@ -1,14 +1,25 @@
 package de.metas.error;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -63,4 +74,9 @@ public class AdIssueId implements RepoIdAware
 	{
 		return repoId;
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable final AdIssueId id1, @Nullable final AdIssueId id2) {return Objects.equals(id1, id2);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

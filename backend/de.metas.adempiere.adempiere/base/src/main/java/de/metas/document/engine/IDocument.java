@@ -1,9 +1,15 @@
 package de.metas.document.engine;
 
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -156,9 +162,15 @@ public interface IDocument
 
 	int get_Table_ID();
 
+<<<<<<< HEAD
 	Logger get_Logger();
 
 	/** @return true if saved */
+=======
+	/**
+	 * @return true if saved
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean save();
 
 	String get_TrxName();

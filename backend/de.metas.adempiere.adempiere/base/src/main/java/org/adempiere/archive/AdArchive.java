@@ -27,27 +27,51 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.springframework.core.io.ByteArrayResource;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.io.ByteArrayInputStream;
 
 @Value
 public class AdArchive
 {
+<<<<<<< HEAD
 	private ArchiveId id;
 	private byte[] archiveData;
+=======
+	@NonNull ArchiveId id;
+	byte[] archiveData;
+	@NonNull String contentType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private AdArchive(
 			@JsonProperty("id") @NonNull final ArchiveId id,
+<<<<<<< HEAD
 			@JsonProperty("archiveData") @NonNull final byte[] archiveData)
 	{
 		this.id = id;
 		this.archiveData = archiveData;
+=======
+			@JsonProperty("archiveData") final byte[] archiveData,
+			@JsonProperty("contentType") @NonNull final String contentType)
+	{
+		this.id = id;
+		this.archiveData = archiveData;
+		this.contentType = contentType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public ByteArrayInputStream getArchiveStream()
 	{
 		return new ByteArrayInputStream(archiveData);
 	}
+<<<<<<< HEAD
+=======
+
+	public ByteArrayResource getArchiveDataAsResource() {return new ByteArrayResource(archiveData);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

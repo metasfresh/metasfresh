@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * #%L
  * de.metas.edi
@@ -20,6 +21,8 @@
  * #L%
  */
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 package de.metas.esb.edi.model;
 
 import org.adempiere.model.ModelColumn;
@@ -170,27 +173,47 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_EDI_Desadv_Parent_Pack_ID = "EDI_Desadv_Parent_Pack_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set LU Packaging-GTIN.
 	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+=======
+	 * Set Packingmaterial-GTIN.
+	 * GTIN of the container used, e.g. pallet. Is determined automatically via the packing instruction from the product master data for the respective delivery recipient.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	void setGTIN_LU_PackingMaterial (@Nullable java.lang.String GTIN_LU_PackingMaterial);
 
 	/**
 	 * Get LU Packaging-GTIN.
 	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+=======
+	void setGTIN_PackingMaterial (@Nullable java.lang.String GTIN_PackingMaterial);
+
+	/**
+	 * Get Packingmaterial-GTIN.
+	 * GTIN of the container used, e.g. pallet. Is determined automatically via the packing instruction from the product master data for the respective delivery recipient.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	@Nullable java.lang.String getGTIN_LU_PackingMaterial();
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_GTIN_LU_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack.class, "GTIN_LU_PackingMaterial", null);
 	String COLUMNNAME_GTIN_LU_PackingMaterial = "GTIN_LU_PackingMaterial";
+=======
+	@Nullable java.lang.String getGTIN_PackingMaterial();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_GTIN_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack.class, "GTIN_PackingMaterial", null);
+	String COLUMNNAME_GTIN_PackingMaterial = "GTIN_PackingMaterial";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set SSCC18.
@@ -260,6 +283,7 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
+<<<<<<< HEAD
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -281,6 +305,8 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_Line = "Line";
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
@@ -302,6 +328,7 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set LU packaging code.
 	 *
 	 * <br>Type: Table
@@ -344,6 +371,106 @@ public interface I_EDI_Desadv_Pack
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_LU_Text = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_LU_Text", null);
 	String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
+=======
+	 * Set Packaging code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID);
+
+	/**
+	 * Get Packaging code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PackagingCode_ID();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_ID", null);
+	String COLUMNNAME_M_HU_PackagingCode_ID = "M_HU_PackagingCode_ID";
+
+	/**
+	 * Set M_HU_PackagingCode_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_HU_PackagingCode_Text (@Nullable java.lang.String M_HU_PackagingCode_Text);
+
+	/**
+	 * Get M_HU_PackagingCode_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getM_HU_PackagingCode_Text();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_Text = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_Text", null);
+	String COLUMNNAME_M_HU_PackagingCode_Text = "M_HU_PackagingCode_Text";
+
+	/**
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_InOut_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
+
+	@Deprecated
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
+
+	ModelColumn<I_EDI_Desadv_Pack, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_SeqNo = new ModelColumn<>(I_EDI_Desadv_Pack.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Updated.

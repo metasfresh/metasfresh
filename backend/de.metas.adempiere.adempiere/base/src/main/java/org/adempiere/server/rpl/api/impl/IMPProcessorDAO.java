@@ -69,9 +69,15 @@ public class IMPProcessorDAO extends AbstractIMPProcessorDAO
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(impProcessor);
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql.toString(),
 				new Object[] { impProcessor.getIMP_Processor_ID() },
 				trxName);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
+															   new Object[] { impProcessor.getIMP_Processor_ID() },
+															   trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no;
 	}
 }

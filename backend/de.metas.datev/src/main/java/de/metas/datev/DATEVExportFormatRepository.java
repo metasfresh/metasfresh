@@ -1,5 +1,6 @@
 package de.metas.datev;
 
+<<<<<<< HEAD
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.datev.DATEVExportFormatColumn.DATEVExportFormatColumnBuilder;
 import de.metas.datev.model.I_DATEV_ExportFormat;
@@ -21,6 +25,20 @@ import de.metas.datev.model.I_DATEV_ExportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.ThreadLocalDecimalFormatter;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import java.text.DecimalFormatSymbols;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -90,7 +108,11 @@ public class DATEVExportFormatRepository
 			final I_DATEV_ExportFormat exportFormatPO,
 			final POInfo exportLinePOInfo)
 	{
+<<<<<<< HEAD
 		final int adColumnId = formatColumnPO.getAD_Column_ID();
+=======
+		final AdColumnId adColumnId = AdColumnId.ofRepoId(formatColumnPO.getAD_Column_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final int columnIndex = exportLinePOInfo.getColumnIndex(adColumnId);
 		final String columnName = exportLinePOInfo.getColumnName(columnIndex);
 		if (Check.isEmpty(columnName, true))

@@ -1,7 +1,10 @@
 package de.metas.handlingunits.picking.requests;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inout.ShipmentScheduleId;
@@ -10,6 +13,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.handlingunits.base

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -11,6 +15,10 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.function.Consumer;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -132,6 +140,20 @@ public class OrgId implements RepoIdAware
 		return !isAny();
 	}
 
+<<<<<<< HEAD
+=======
+	public void ifRegular(@NonNull final Consumer<OrgId> consumer)
+	{
+		if (isRegular())
+		{
+			consumer.accept(this);
+		}
+	}
+
+	@Nullable
+	public OrgId asRegularOrNull() {return isRegular() ? this : null;}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static boolean equals(@Nullable final OrgId id1, @Nullable final OrgId id2)
 	{
 		return Objects.equals(id1, id2);

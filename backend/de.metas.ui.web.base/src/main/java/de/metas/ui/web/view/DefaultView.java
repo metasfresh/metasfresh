@@ -38,6 +38,10 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.QueryLimit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
@@ -468,7 +472,11 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
+<<<<<<< HEAD
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+=======
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		assertNotClosed();
 
@@ -476,8 +484,12 @@ public final class DefaultView implements IEditableView
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
+<<<<<<< HEAD
 				.findEntities(ctx)
 				.getValues();
+=======
+				.findEntities(ctx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -499,7 +511,23 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+=======
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
+	{
+		return streamByIds(rowIds, null, QueryLimit.ONE_THOUSAND);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds, null, suggestedLimit);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @Nullable final DocumentQueryOrderByList orderBys, @NonNull final QueryLimit suggestedLimit)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (rowIds.isEmpty())
 		{
@@ -511,11 +539,19 @@ public final class DefaultView implements IEditableView
 			checkChangedRows();
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
+<<<<<<< HEAD
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
 			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)
 					.maxRows(1000) // MAX rows to fetch
+=======
+			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getOrderedSelection(orderBys);
+
+			return IteratorUtils.<IViewRow>newPagedIterator()
+					.firstRow(0)
+					.maxRows(suggestedLimit.toIntOrZero()) // MAX rows to fetch
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.pageSize(100) // fetch 100items/chunk
 					.pageFetcher((firstRow, pageSize) -> Page.ofRowsOrNull(viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageSize)))
 					.build()
@@ -523,10 +559,18 @@ public final class DefaultView implements IEditableView
 		}
 		else
 		{
+<<<<<<< HEAD
 			// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
 			// and the records recently retrieved have a big chance to be cached.
 			return rowIds.stream()
 					.distinct()
+=======
+			// NOTE: we get/retrieve one by one because we assume the "selected documents" were recently retrieved,
+			// and the records recently retrieved have a big chance to be cached.
+			return rowIds.stream()
+					.distinct()
+					.limit(suggestedLimit.isLimited() ? suggestedLimit.toInt() : Long.MAX_VALUE)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.map(rowId -> {
 						try
 						{

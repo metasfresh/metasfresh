@@ -249,7 +249,11 @@ public class MRequisitionLine extends X_M_RequisitionLine
 				+ "(SELECT COALESCE(SUM(LineNetAmt),0) FROM M_RequisitionLine rl "
 				+ "WHERE r.M_Requisition_ID=rl.M_Requisition_ID) "
 				+ "WHERE M_Requisition_ID=?";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, new Object[] { getM_Requisition_ID() }, ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getM_Requisition_ID() }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_parent = null;
 	}
 

@@ -342,14 +342,32 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
+<<<<<<< HEAD
 				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
 				+ " VALUES (?, ?, ?, ?, ?)";
+=======
+				+ " ("
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_PInstance_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Log_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Date
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Number
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Msg
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Warnings
+				+ " )"
+				+ " VALUES (?, ?, ?, ?, ?, ?)";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			for (final ProcessInfoLog log : logsToSave)
 			{
+<<<<<<< HEAD
 				final Object[] sqlParams = new Object[] {
 						pinstanceId,
 						log.getLog_ID(),
@@ -360,6 +378,40 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 				DB.setParameters(pstmt, sqlParams);
 				pstmt.addBatch();
+=======
+				final List<String> warningMessages = log.getWarningMessages();
+				if(Check.isEmpty(warningMessages))
+				{
+					final Object[] sqlParams = new Object[] {
+							pinstanceId,
+							log.getLog_ID(),
+							log.getP_Date(),
+							log.getP_Number(),
+							log.getP_Msg(),
+							null
+					};
+
+					DB.setParameters(pstmt, sqlParams);
+					pstmt.addBatch();
+				}
+				else
+				{
+					for(final String warningMessage : warningMessages)
+					{
+						final Object[] sqlParams = new Object[] {
+								pinstanceId,
+								log.getLog_ID(),
+								log.getP_Date(),
+								log.getP_Number(),
+								log.getP_Msg(),
+								warningMessage
+						};
+
+						DB.setParameters(pstmt, sqlParams);
+						pstmt.addBatch();
+					}
+				}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			pstmt.executeBatch();
@@ -690,6 +742,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 	private void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

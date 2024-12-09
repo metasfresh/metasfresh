@@ -1,10 +1,16 @@
 package de.metas.acct.aggregation.legacy.impl;
 
 import ch.qos.logback.classic.Level;
+<<<<<<< HEAD
 import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
 import de.metas.acct.aggregation.legacy.IFactAcctLogIterable;
 import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
 import de.metas.acct.api.IFactAcctDAO;
+=======
+import de.metas.acct.aggregation.legacy.IFactAcctLogIterable;
+import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
@@ -60,8 +66,16 @@ public class LegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
 {
 	private static final Logger logger = LogManager.getLogger(LegacyFactAcctLogDAO.class);
 
+<<<<<<< HEAD
 	/** Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance} */
 	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
+=======
+	private static final String DB_SCHEMA = "de_metas_acct";
+	/**
+	 * Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance}
+	 */
+	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public IFactAcctLogIterable tagAndRetrieve(final Properties ctx, final QueryLimit limit)
@@ -137,12 +151,21 @@ public class LegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_Account_ID, key.getC_ElementValue_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_AcctSchema_ID, key.getC_AcctSchema_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_PostingType, key.getPostingType())
+<<<<<<< HEAD
 				// .addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_Period_ID, key.getC_Period_ID()) // note: don't enforce it because we are not enfocing the dates
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Client_ID, key.getAD_Client_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Org_ID, key.getAD_Org_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_PA_ReportCube_ID, key.getPA_ReportCube_ID() <= 0 ? null : key.getPA_ReportCube_ID())
 		//
 		;
+=======
+				// .addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_Period_ID, key.getC_Period_ID()) // note: don't enforce it because we are not enforcing the dates
+				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Client_ID, key.getAD_Client_ID())
+				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Org_ID, key.getAD_Org_ID())
+				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_PA_ReportCube_ID, key.getPA_ReportCube_ID() <= 0 ? null : key.getPA_ReportCube_ID())
+				//
+				;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable

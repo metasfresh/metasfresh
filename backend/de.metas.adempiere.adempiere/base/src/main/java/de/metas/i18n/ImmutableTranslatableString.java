@@ -1,7 +1,10 @@
 package de.metas.i18n;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonInclude;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableMap;
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
@@ -44,6 +47,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	private final String defaultValue;
 
 	@lombok.Builder
+<<<<<<< HEAD
 	ImmutableTranslatableString(
 			@Nullable @Singular final Map<String, String> trls,
 			@Nullable final String defaultValue)
@@ -52,6 +56,46 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		this.defaultValue = defaultValue == null ? "" : defaultValue;
 	}
 
+=======
+	private ImmutableTranslatableString(
+			@Nullable @Singular final Map<String, String> trls,
+			@Nullable final String defaultValue)
+	{
+		this.trlMap = normalizeTrlsMap(trls);
+		this.defaultValue = defaultValue == null ? "" : defaultValue;
+	}
+
+	public static ImmutableTranslatableString ofMap(
+			@Nullable final Map<String, String> trls,
+			@Nullable final String defaultValue)
+	{
+		return new ImmutableTranslatableString(trls, defaultValue);
+	}
+
+	public static ImmutableTranslatableString ofDefaultValue(@Nullable final String defaultValue)
+	{
+		return ofMap(null, defaultValue);
+	}
+
+	private static ImmutableMap<String, String> normalizeTrlsMap(@Nullable final Map<String, String> trls)
+	{
+		if (trls == null || trls.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		else if (trls.containsValue(null))
+		{
+			ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+			trls.forEach((adLanguage, trl) -> builder.put(adLanguage, trl != null ? trl : ""));
+			return builder.build();
+		}
+		else
+		{
+			return ImmutableMap.copyOf(trls);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	@Deprecated
 	public String toString()

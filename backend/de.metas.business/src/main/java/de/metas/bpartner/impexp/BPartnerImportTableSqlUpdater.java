@@ -110,7 +110,11 @@ public class BPartnerImportTableSqlUpdater
 	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		stopwatch.stop();
 
 		logger.info("{}: Updated {} records in {}", description, no, stopwatch);

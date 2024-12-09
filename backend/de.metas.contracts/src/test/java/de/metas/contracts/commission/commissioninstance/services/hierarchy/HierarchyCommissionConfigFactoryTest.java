@@ -22,6 +22,11 @@
 
 package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -51,7 +56,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -61,21 +69,36 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static de.metas.contracts.commission.CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID;
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class HierarchyCommissionConfigFactoryTest
 {
 	private CommissionHierarchyFactory commissionHierarchyFactory;
@@ -94,6 +117,11 @@ public class HierarchyCommissionConfigFactoryTest
 
 	private CommissionTriggerType commissionTriggerType;
 
+<<<<<<< HEAD
+=======
+	private Expect expect;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@BeforeEach
 	void beforeEach()
 	{
@@ -148,6 +176,7 @@ public class HierarchyCommissionConfigFactoryTest
 		commissionTriggerType = CommissionTriggerType.InvoiceCandidate;
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -162,6 +191,8 @@ public class HierarchyCommissionConfigFactoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void createFor()
 	{
@@ -219,7 +250,11 @@ public class HierarchyCommissionConfigFactoryTest
 		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(3);
 
+<<<<<<< HEAD
 		SnapshotMatcher.expect(config).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(config);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void setSalesRepOfEndCustomerTo(final BPartnerId salesRepLvl0Id)
@@ -281,7 +316,11 @@ public class HierarchyCommissionConfigFactoryTest
 
 		// then
 		assertThat(configs).hasSize(2);
+<<<<<<< HEAD
 		SnapshotMatcher.expect(configs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -544,7 +583,11 @@ public class HierarchyCommissionConfigFactoryTest
 
 		// then
 		assertThat(configs).hasSize(2);
+<<<<<<< HEAD
 		SnapshotMatcher.expect(configs).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -675,7 +718,11 @@ public class HierarchyCommissionConfigFactoryTest
 					assertThat(HierarchyConfig.cast(config).getId()).isEqualTo(configData2.getHierarchyConfigId());
 				});
 
+<<<<<<< HEAD
 		SnapshotMatcher.expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "flatrateConditionsBuilder", builderClassName = "FlatrateConditionsBuilder")

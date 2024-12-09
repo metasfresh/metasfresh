@@ -23,10 +23,19 @@
 package de.metas.edi.esb.ordersimport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.sun.istack.Nullable;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+<<<<<<< HEAD
+=======
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.ExceptionUtil;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
@@ -34,6 +43,10 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -45,6 +58,14 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+<<<<<<< HEAD
+=======
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Component
 public class EcosioOrdersRoute
@@ -55,6 +76,11 @@ public class EcosioOrdersRoute
 	 */
 	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.ecosio.remote";
 
+<<<<<<< HEAD
+=======
+	private static final String ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT = "ECOSIO_ORDER_ROUTE_CONTEXT";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@VisibleForTesting
 	static final String INPUT_ORDERS_LOCAL = "edi.file.orders.ecosio";
 
@@ -81,6 +107,7 @@ public class EcosioOrdersRoute
 					.to("{{" + INPUT_ORDERS_LOCAL + "}}");
 		}
 
+<<<<<<< HEAD
 		from("{{" + INPUT_ORDERS_LOCAL + "}}")
 				.routeId("ecosio-XML-Orders-To-MF-OLCand")
 				.split(xpath("/EDI_Message/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
@@ -123,6 +150,66 @@ public class EcosioOrdersRoute
 				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+=======
+		// @formatter:off
+		from("{{" + INPUT_ORDERS_LOCAL + "}}")
+				.routeId("ecosio-XML-Orders-To-MF-OLCand")
+				.process(this::initRouteContext)
+				.split(xpath("/EDI_Message/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
+					.doTry()
+						.unmarshal(dataFormat)
+						.process(exchange -> {
+							final EDIImpCOLCandType olCandXML = exchange.getIn().getBody(EDIImpCOLCandType.class);
+
+							olCandXML.setADClientValueAttr(adClientValue);
+							olCandXML.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
+							olCandXML.setReplicationModeAttr(ReplicationModeEnum.Table);
+							olCandXML.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
+							olCandXML.setVersionAttr("*");
+
+							// there might be multiple orders in one file. so we compose the replication-name like this to make sure one order is one replication-trx
+							final String trxNameAttr = olCandXML.getPOReference() + "_" + exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
+							olCandXML.setTrxNameAttr(trxNameAttr);
+
+							// add the current trx to context
+							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+							context.setCurrentReplicationTrx(olCandXML.getTrxNameAttr());
+
+							olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
+							olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
+
+							// do not let the ORDERS file decide on this. It's internal to metasfresh
+							olCandXML.setDeliveryRule(COrderDeliveryRuleEnum.fromValue(defaultDeliveryRule)); // TODO: let metasfresh decide
+
+							if (olCandXML.getDeliveryViaRule() == null)
+							{
+								olCandXML.setDeliveryViaRule(COrderDeliveryViaRuleEnum.fromValue(defaultDeliveryViaRule));
+							}
+
+							rewriteDatePromised(olCandXML.getDatePromised());
+
+							final EDIImpADInputDataSourceLookupINType dataDestinationLookup =
+									Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
+															  Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
+							olCandXML.setADDataDestinationID(dataDestinationLookup);
+						})
+						.marshal(dataFormat)
+
+						.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
+						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
+						.process(EcosioOrdersRoute::setImportStatusOk)
+					.endDoTry()
+					.doCatch(Exception.class)
+						.process(EcosioOrdersRoute::setImportStatusError)
+					.end()
+				.end()
+				.process(EcosioOrdersRoute::prepareNotifyReplicationTrxDone)
+				.split(body())
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+				.end();
+		// @formatter:on
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -144,4 +231,46 @@ public class EcosioOrdersRoute
 			datePromised.setSecond(0);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	private void initRouteContext(final Exchange exchange)
+	{
+		final String clientValue = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADClientValue);
+
+		final EcosioOrdersRouteContext context = EcosioOrdersRouteContext.builder()
+				.clientValue(clientValue)
+				.build();
+
+		exchange.setProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, context);
+	}
+
+	private static void prepareNotifyReplicationTrxDone(@NonNull final Exchange exchange)
+	{
+		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+
+		final List<NotifyReplicationTrxRequest> trxUpdateList = context.getImportedTrxName2TrxStatus()
+				.keySet()
+				.stream()
+				.map(context::getStatusRequestFor)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+
+		exchange.getIn().setBody(trxUpdateList);
+	}
+
+	private static void setImportStatusOk(@NonNull final Exchange exchange)
+	{
+		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+		context.setCurrentReplicationTrxStatus(EcosioOrdersRouteContext.TrxImportStatus.ok());
+	}
+
+	private static void setImportStatusError(@NonNull final Exchange exchange)
+	{
+		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
+		context.setCurrentReplicationTrxStatus(EcosioOrdersRouteContext.TrxImportStatus.error(errorMsg));
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

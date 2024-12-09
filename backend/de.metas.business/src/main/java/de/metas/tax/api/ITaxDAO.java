@@ -68,6 +68,11 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
+<<<<<<< HEAD
+=======
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Tax getBy(final TaxQuery taxQuery);
 
 	@Builder

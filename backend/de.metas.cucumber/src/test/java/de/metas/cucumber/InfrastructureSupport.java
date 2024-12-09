@@ -37,7 +37,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.time.Duration;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class InfrastructureSupport
 {
@@ -198,6 +202,18 @@ public class InfrastructureSupport
 							.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 							.build());
 			logger.info("Applied migration scripts (took {})", stopwatch);
+<<<<<<< HEAD
+=======
+
+			// apply our local migration scripts to get our DB up to date
+			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
+			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
+					.workspaceDir(workspaceDir)
+					.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
+					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+					.build();
+			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{

@@ -48,20 +48,30 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
+<<<<<<< HEAD
 import de.metas.quantity.Quantity;
+=======
+import de.metas.quantity.Quantitys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+<<<<<<< HEAD
 import org.compiere.model.I_C_UOM;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
@@ -97,7 +107,11 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	{
 		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
 
+<<<<<<< HEAD
 		final OrderAndLineId orderandLineIdOrNull = OrderAndLineId.ofRepoIdsOrNull(
+=======
+		final OrderAndLineId orderAndLineIdOrNull = OrderAndLineId.ofRepoIdsOrNull(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				event.getSalesOrderRepoId(),
 				event.getSalesOrderLineRepoId());
 
@@ -108,8 +122,11 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.getDefaultVendorProductInfo(product.getId(), orgId)
 				.orElseThrow(() -> new AdempiereException("Missing vendorProductInfos for productId=" + product.getId() + " and orgId=" + orgId + ";"));
 
+<<<<<<< HEAD
 		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Dimension dimension = Dimension.builder()
 				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
 				.campaignId(event.getCampaignId())
@@ -139,8 +156,13 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
+<<<<<<< HEAD
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
+=======
+				.qtyToPurchase(Quantitys.of(materialDescriptor.getQuantity(), product.getUomId()))
+				.salesOrderAndLineIdOrNull(orderAndLineIdOrNull)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
@@ -162,8 +184,13 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
+<<<<<<< HEAD
 					newPurchaseCandidate.getVendorId(),
 					newPurchaseCandidateId);
+=======
+																											newPurchaseCandidate.getVendorId(),
+																											newPurchaseCandidateId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally

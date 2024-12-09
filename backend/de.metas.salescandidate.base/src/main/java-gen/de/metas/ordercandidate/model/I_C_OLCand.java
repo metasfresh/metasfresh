@@ -1,9 +1,15 @@
 package de.metas.ordercandidate.model;
 
+<<<<<<< HEAD
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+=======
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -32,7 +38,11 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Data destination.
+<<<<<<< HEAD
 	 * Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+=======
+	 * Specifies which part of metasfresh shall process the given record
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -42,7 +52,11 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Data destination.
+<<<<<<< HEAD
 	 * Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+=======
+	 * Specifies which part of metasfresh shall process the given record
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -75,8 +89,32 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Statusmeldung.
 	 * System-Nachricht
+=======
+	 * Set Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
+
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
+	 * Set Note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -85,8 +123,12 @@ public interface I_C_OLCand
 	void setAD_Note_ID (int AD_Note_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Statusmeldung.
 	 * System-Nachricht
+=======
+	 * Get Note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -141,7 +183,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Erfasst durch.
+=======
+	 * Set Recorded By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -150,7 +196,11 @@ public interface I_C_OLCand
 	void setAD_User_EnteredBy_ID (int AD_User_EnteredBy_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Erfasst durch.
+=======
+	 * Get Recorded By.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -420,7 +470,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Geschäftspartner abw..
+=======
+	 * Set Alt. Business Partner.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
@@ -430,7 +484,11 @@ public interface I_C_OLCand
 	void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Geschäftspartner abw..
+=======
+	 * Get Alt. Business Partner.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
@@ -482,8 +540,12 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Standort eff..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+=======
+	 * Set Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -494,8 +556,12 @@ public interface I_C_OLCand
 	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Standort eff..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+=======
+	 * Get Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -508,8 +574,12 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Standort abw..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+=======
+	 * Set Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -518,8 +588,12 @@ public interface I_C_OLCand
 	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Standort abw..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+=======
+	 * Get Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -555,8 +629,12 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Kosten.
 	 * Zusätzliche Kosten
+=======
+	 * Set Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -565,8 +643,12 @@ public interface I_C_OLCand
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Kosten.
 	 * Zusätzliche Kosten
+=======
+	 * Get Costs.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -797,7 +879,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Maßeinheit int..
+=======
+	 * Set UOM.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -806,7 +892,11 @@ public interface I_C_OLCand
 	void setC_UOM_Internal_ID (int C_UOM_Internal_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Maßeinheit int..
+=======
+	 * Get UOM.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -817,7 +907,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Kand.-Datum.
+=======
+	 * Set Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -826,7 +920,11 @@ public interface I_C_OLCand
 	void setDateCandidate (java.sql.Timestamp DateCandidate);
 
 	/**
+<<<<<<< HEAD
 	 * Get Kand.-Datum.
+=======
+	 * Get Date.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -930,8 +1028,13 @@ public interface I_C_OLCand
 	String COLUMNNAME_DatePromised_Override = "DatePromised_Override";
 
 	/**
+<<<<<<< HEAD
 	 * Set Lieferart.
 	 * Definiert die zeitliche Steuerung von Lieferungen
+=======
+	 * Set Delivery Rule.
+	 * Defines the timing of Delivery
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -940,8 +1043,13 @@ public interface I_C_OLCand
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferart.
 	 * Definiert die zeitliche Steuerung von Lieferungen
+=======
+	 * Get Delivery Rule.
+	 * Defines the timing of Delivery
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -997,7 +1105,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_Description = "Description";
 
 	/**
+<<<<<<< HEAD
 	 * Set Schlusstext.
+=======
+	 * Set End note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1006,7 +1118,11 @@ public interface I_C_OLCand
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
+<<<<<<< HEAD
 	 * Get Schlusstext.
+=======
+	 * Get End note.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1018,7 +1134,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
 	/**
+<<<<<<< HEAD
 	 * Set Description Header.
+=======
+	 * Set Description (GL Journal).
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1027,7 +1147,11 @@ public interface I_C_OLCand
 	void setDescriptionHeader (@Nullable java.lang.String DescriptionHeader);
 
 	/**
+<<<<<<< HEAD
 	 * Get Description Header.
+=======
+	 * Get Description (GL Journal).
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1062,7 +1186,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_Discount = "Discount";
 
 	/**
+<<<<<<< HEAD
 	 * Set Lieferempfänger eff..
+=======
+	 * Set Ship Business Partner eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1073,7 +1201,11 @@ public interface I_C_OLCand
 	void setDropShip_BPartner_Effective_ID (int DropShip_BPartner_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferempfänger eff..
+=======
+	 * Get Ship Business Partner eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1106,7 +1238,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Lieferempfänger abw..
+=======
+	 * Set Ship Business Partner override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1115,7 +1251,11 @@ public interface I_C_OLCand
 	void setDropShip_BPartner_Override_ID (int DropShip_BPartner_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferempfänger abw..
+=======
+	 * Get Ship Business Partner override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1126,7 +1266,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_BPartner_Override_ID = "DropShip_BPartner_Override_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Lieferadresse eff..
+=======
+	 * Set Ship Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1137,7 +1281,11 @@ public interface I_C_OLCand
 	void setDropShip_Location_Effective_ID (int DropShip_Location_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferadresse eff..
+=======
+	 * Get Ship Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1168,7 +1316,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Lieferadresse abw..
+=======
+	 * Set Ship Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1177,7 +1329,11 @@ public interface I_C_OLCand
 	void setDropShip_Location_Override_ID (int DropShip_Location_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Lieferadresse abw..
+=======
+	 * Get Ship Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1386,7 +1542,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
 
 	/**
+<<<<<<< HEAD
 	 * Set Übergabeadresse eff..
+=======
+	 * Set Handover Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1397,7 +1557,11 @@ public interface I_C_OLCand
 	void setHandOver_Location_Effective_ID (int HandOver_Location_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Übergabeadresse eff..
+=======
+	 * Get Handover Location eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1410,7 +1574,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_Location_Effective_ID = "HandOver_Location_Effective_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Übergabeadresse.
+=======
+	 * Set unloading address.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1419,7 +1587,11 @@ public interface I_C_OLCand
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Übergabeadresse.
+=======
+	 * Get unloading address.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1430,7 +1602,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Übergabeadresse abw..
+=======
+	 * Set Handover Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1439,7 +1615,11 @@ public interface I_C_OLCand
 	void setHandOver_Location_Override_ID (int HandOver_Location_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Übergabeadresse abw..
+=======
+	 * Get Handover Location override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1586,6 +1766,30 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
+
+	/**
+	 * Get Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHeaderAggregationKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_HeaderAggregationKey = new ModelColumn<>(I_C_OLCand.class, "HeaderAggregationKey", null);
+	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Import warning message.
 	 *
 	 * <br>Type: String
@@ -1628,6 +1832,32 @@ public interface I_C_OLCand
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+
+	/**
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceRule();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_OLCand.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1823,8 +2053,34 @@ public interface I_C_OLCand
 	String COLUMNNAME_Line = "Line";
 
 	/**
+<<<<<<< HEAD
 	 * Set Merkmals-Satz.
 	 * Merkmals-Satz zum Produkt
+=======
+	 * Set Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManualQtyInPriceUOM (@Nullable BigDecimal ManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ManualQtyInPriceUOM = new ModelColumn<>(I_C_OLCand.class, "ManualQtyInPriceUOM", null);
+	String COLUMNNAME_ManualQtyInPriceUOM = "ManualQtyInPriceUOM";
+
+	/**
+	 * Set Attribute Set.
+	 * Product Attribute Set
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1833,8 +2089,13 @@ public interface I_C_OLCand
 	void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Merkmals-Satz.
 	 * Merkmals-Satz zum Produkt
+=======
+	 * Get Attribute Set.
+	 * Product Attribute Set
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1877,7 +2138,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Packvorschrift-Produkt Zuordnung eff..
+=======
+	 * Set Packing Instruction eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1888,7 +2153,11 @@ public interface I_C_OLCand
 	void setM_HU_PI_Item_Product_Effective_ID (int M_HU_PI_Item_Product_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Packvorschrift-Produkt Zuordnung eff..
+=======
+	 * Get Packing Instruction eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1923,7 +2192,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Packvorschrift-Produkt Zuordnung abw..
+=======
+	 * Set Packing Instruction Override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1932,7 +2205,11 @@ public interface I_C_OLCand
 	void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Packvorschrift-Produkt Zuordnung abw..
+=======
+	 * Get Packing Instruction Override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1964,7 +2241,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produkt eff..
+=======
+	 * Set Product eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1975,7 +2256,11 @@ public interface I_C_OLCand
 	void setM_Product_Effective_ID (int M_Product_Effective_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produkt eff..
+=======
+	 * Get Product eff..
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2010,7 +2295,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produkt abw..
+=======
+	 * Set Product override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2019,7 +2308,11 @@ public interface I_C_OLCand
 	void setM_Product_Override_ID (int M_Product_Override_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produkt abw..
+=======
+	 * Get Product override.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2051,7 +2344,11 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_ProductPrice_Attribute_ID = "M_ProductPrice_Attribute_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produkt-Preis.
+=======
+	 * Set Product Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2060,7 +2357,11 @@ public interface I_C_OLCand
 	void setM_ProductPrice_ID (int M_ProductPrice_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produkt-Preis.
+=======
+	 * Get Product Price.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2344,8 +2645,12 @@ public interface I_C_OLCand
 	String COLUMNNAME_PriceInternal = "PriceInternal";
 
 	/**
+<<<<<<< HEAD
 	 * Set Preiseinheit int..
 	 * Interne Preiseinheit laut Stammdaten
+=======
+	 * Set Price UOM.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2354,8 +2659,12 @@ public interface I_C_OLCand
 	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Preiseinheit int..
 	 * Interne Preiseinheit laut Stammdaten
+=======
+	 * Get Price UOM.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2387,8 +2696,13 @@ public interface I_C_OLCand
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+<<<<<<< HEAD
 	 * Set Produktbeschreibung.
 	 * Produktbeschreibung
+=======
+	 * Set Product Description.
+	 * Product Description
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2397,8 +2711,13 @@ public interface I_C_OLCand
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
+<<<<<<< HEAD
 	 * Get Produktbeschreibung.
 	 * Produktbeschreibung
+=======
+	 * Get Product Description.
+	 * Product Description
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2431,6 +2750,30 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEntered_Override (@Nullable BigDecimal QtyEntered_Override);
+
+	/**
+	 * Get Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEntered_Override();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
+	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Packaging capacity.
 	 * Capacity in the respective product's unit of measuerement
 	 *
@@ -2498,6 +2841,50 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyShipped = "QtyShipped";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight (@Nullable BigDecimal QtyShipped_CatchWeight);
+
+	/**
+	 * Get Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyShipped_CatchWeight();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped_CatchWeight = new ModelColumn<>(I_C_OLCand.class, "QtyShipped_CatchWeight", null);
+	String COLUMNNAME_QtyShipped_CatchWeight = "QtyShipped_CatchWeight";
+
+	/**
+	 * Set Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight_UOM_ID (int QtyShipped_CatchWeight_UOM_ID);
+
+	/**
+	 * Get Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyShipped_CatchWeight_UOM_ID();
+
+	String COLUMNNAME_QtyShipped_CatchWeight_UOM_ID = "QtyShipped_CatchWeight_UOM_ID";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
@@ -2544,6 +2931,7 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+<<<<<<< HEAD
 
 	/**
 	 * Set Qty Override.
@@ -2565,4 +2953,6 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
 	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

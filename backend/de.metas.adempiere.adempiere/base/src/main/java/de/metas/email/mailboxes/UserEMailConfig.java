@@ -2,11 +2,20 @@ package de.metas.email.mailboxes;
 
 import de.metas.email.EMailAddress;
 import de.metas.user.UserId;
+<<<<<<< HEAD
+=======
+import de.metas.util.StringUtils;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +39,7 @@ import lombok.Value;
  */
 
 @Value
+<<<<<<< HEAD
 @Builder
 @ToString(exclude = "password")
 public class UserEMailConfig
@@ -39,4 +49,26 @@ public class UserEMailConfig
 	EMailAddress email;
 	String username;
 	String password;
+=======
+@ToString(exclude = "password")
+public class UserEMailConfig
+{
+	@NonNull UserId userId;
+	@Nullable EMailAddress email;
+	@Nullable String username;
+	@Nullable String password;
+
+	@Builder
+	private UserEMailConfig(
+			@NonNull final UserId userId, 
+			@Nullable final EMailAddress email, 
+			@Nullable final String username, 
+			@Nullable final String password)
+	{
+		this.userId = userId;
+		this.email = email;
+		this.username = StringUtils.trimBlankToNull(username);
+		this.password = password;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -22,6 +22,7 @@
 
 package de.metas;
 
+<<<<<<< HEAD
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -30,11 +31,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.user.UserId;
+import de.metas.util.JSONObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -42,6 +53,14 @@ import static org.assertj.core.api.Assertions.*;
 
 class CreatedUpdatedInfoTest
 {
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+class CreatedUpdatedInfoTest
+{
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final ZonedDateTime CREATED = LocalDate.of(2019, Month.MARCH, 8)
 			.atTime(13, 20, 42, 2)
 			.atZone(ZoneId.of("+01:00"));
@@ -50,6 +69,7 @@ class CreatedUpdatedInfoTest
 			.atTime(14, 20, 42, 2)
 			.atZone(ZoneId.of("+01:00"));
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void init()
 	{
@@ -62,6 +82,8 @@ class CreatedUpdatedInfoTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void createNew_updated()
 	{
@@ -69,7 +91,11 @@ class CreatedUpdatedInfoTest
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
+<<<<<<< HEAD
 		expect(createdUpdatedInfo).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(createdUpdatedInfo);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test

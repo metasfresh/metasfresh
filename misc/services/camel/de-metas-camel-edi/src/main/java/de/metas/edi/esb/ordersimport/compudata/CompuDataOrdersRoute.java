@@ -47,6 +47,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * <a href="http://www.smooks.org/mediawiki/index.php?title=V1.5:Smooks_v1.5_User_Guide#Apache_Camel_Integration"> Read more about Smooks Integration</a>
  */
@@ -143,6 +149,7 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 		// process the unmarshalled output
 		// @formatter:off
 		ediToXMLOrdersRoute
+<<<<<<< HEAD
 				.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
 				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
 				//
@@ -155,6 +162,29 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 				.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+=======
+				.doTry()
+					.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
+					.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
+						//
+						// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
+						.aggregationStrategy(new ListAggregationStrategy())
+						//
+						.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
+						.marshal(jaxb)
+						//
+						.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
+						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
+					.end()
+					.process(CompudataEDIOrdersBean::prepareNotifyReplicationTrxDone)
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+				.endDoTry()
+				.doCatch(Exception.class)
+					.process(CompudataEDIOrdersBean::prepareNotifyReplicationTrxError)
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+				.end();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// @formatter:on
 	}
 }

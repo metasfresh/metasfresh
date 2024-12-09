@@ -1,6 +1,10 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -10,6 +14,10 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.QueryLimit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
@@ -24,7 +32,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+<<<<<<< HEAD
 import static de.metas.common.util.CoalesceUtil.coalesce;
+=======
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
 
@@ -78,7 +90,10 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
 	 * or if there is no pendant in the given <code>org</code>.
+<<<<<<< HEAD
 	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Nullable
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
@@ -117,10 +132,26 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
+<<<<<<< HEAD
+=======
+	Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull String queryString,
+			@NonNull ClientId clientId,
+			@NonNull QueryLimit limit);
+
+	void save(I_M_Product record);
+
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Value
 	class ProductQuery
 	{
@@ -154,8 +185,13 @@ public interface IProductDAO extends ISingletonService
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
+<<<<<<< HEAD
 			this.includeAnyOrg = coalesce(includeAnyOrg, false);
 			this.outOfTrx = coalesce(outOfTrx, false);
+=======
+			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
+			this.outOfTrx = coalesceNotNull(outOfTrx, false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -170,6 +206,11 @@ public interface IProductDAO extends ISingletonService
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
+<<<<<<< HEAD
+=======
+	ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull Set<ProductId> productIds);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
 
 	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
@@ -202,6 +243,14 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
+<<<<<<< HEAD
+=======
+	/**
+	 * @return {@code true} if product is used in orders, invoices, shipments or cost-details.
+	 */
+	boolean isProductUsed(ProductId productId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

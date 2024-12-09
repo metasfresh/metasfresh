@@ -1,6 +1,7 @@
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.getByConfigIdAndRequest=[
   [
     {
+<<<<<<< HEAD
       "runtimeParameterId" : 100001,
       "externalSystemParentConfigId" : 1,
       "request" : "request",
@@ -13,10 +14,25 @@ de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTes
       "request" : "request",
       "name" : "name2",
       "value" : "value2"
+=======
+      "externalSystemParentConfigId": 1,
+      "name": "name1",
+      "request": "request",
+      "runtimeParameterId": 100001,
+      "value": "value1"
+    },
+    {
+      "externalSystemParentConfigId": 1,
+      "name": "name2",
+      "request": "request",
+      "runtimeParameterId": 100002,
+      "value": "value2"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]
 
+<<<<<<< HEAD
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_new=[
   {
     "runtimeParameterId" : 100001,
@@ -35,16 +51,34 @@ de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTes
     "request" : "request",
     "name" : "name",
     "value" : "value"
+=======
+
+de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_new=[
+  {
+    "externalSystemParentConfigId": 1,
+    "name": "name",
+    "request": "request",
+    "runtimeParameterId": 100001,
+    "value": "value"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_update=[
   {
+<<<<<<< HEAD
     "runtimeParameterId" : 100001,
     "externalSystemParentConfigId" : 1,
     "request" : "request",
     "name" : "name",
     "value" : "value_updated"
+=======
+    "externalSystemParentConfigId": 1,
+    "name": "name",
+    "request": "request",
+    "runtimeParameterId": 100001,
+    "value": "value_updated"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

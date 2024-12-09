@@ -64,10 +64,13 @@ public class RabbitMQTestConfiguration implements IEventBusQueueConfiguration
 	{
 		return Optional.of(topic.getName());
 	}
+<<<<<<< HEAD
 
 	@Override
 	public String getFanoutExchangeName()
 	{
 		return exchangeName;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

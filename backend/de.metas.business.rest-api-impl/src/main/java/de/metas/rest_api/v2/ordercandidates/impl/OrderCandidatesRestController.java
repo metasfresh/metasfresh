@@ -2,11 +2,17 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
+<<<<<<< HEAD
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
+=======
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
@@ -59,7 +65,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderCandidatesRestController
 {
 	private final String PATH_BULK = "/bulk";
+<<<<<<< HEAD
 	private final String PATH_CLEAR_TO_PROCESS = "/clearToProcess";
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final String PATH_PROCESS = "/process";
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
@@ -127,6 +136,7 @@ public class OrderCandidatesRestController
 		}
 	}
 
+<<<<<<< HEAD
 	/**
 	 * @deprecated please consider using {@link OrderCandidatesRestController#processOLCands(de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest)} instead.
 	 */
@@ -147,6 +157,8 @@ public class OrderCandidatesRestController
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@PutMapping(PATH_PROCESS)
 	public ResponseEntity<JsonProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
 	{

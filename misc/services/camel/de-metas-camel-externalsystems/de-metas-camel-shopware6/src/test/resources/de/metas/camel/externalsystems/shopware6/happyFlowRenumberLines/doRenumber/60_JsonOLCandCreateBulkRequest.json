@@ -16,6 +16,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -24,6 +25,11 @@
       },
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "productIdentifier": "val-productNumber",
       "qty": 1,
       "price": 14.8,
@@ -32,12 +38,26 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 10,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 10,
+      "description": "lineDescription",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": {
         "groupKey": "parentId",
         "groupMainItem": false
@@ -47,6 +67,11 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -66,6 +91,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -74,6 +100,11 @@
       },
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "productIdentifier": "val-productNumber2",
       "qty": 10,
       "price": 0,
@@ -82,12 +113,31 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 20,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 20,
+      "description": "lineDescription2",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": {
         "groupKey": "externalLineId2",
         "groupMainItem": true
@@ -97,6 +147,209 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId5",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber5",
+      "qty": 40,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": false,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 30,
+      "description": "lineDescription5",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId6",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber6",
+      "qty": 50,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": false,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 40,
+      "description": "lineDescription6",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId3",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber3",
+      "qty": 20,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 50,
+      "description": "lineDescription3",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId4",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber4",
+      "qty": 30,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 60,
+      "description": "lineDescription4",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -116,6 +369,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -125,6 +379,12 @@
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": 1001,
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "1001",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "qty": 1,
       "price": 10,
       "currencyCode": "EUR",
@@ -132,18 +392,36 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 30,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 70,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": null,
       "description": null,
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -163,6 +441,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -172,6 +451,12 @@
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": 1002,
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "1002",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "qty": 1,
       "price": 7,
       "currencyCode": "EUR",
@@ -179,18 +464,36 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 40,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 80,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": null,
       "description": null,
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }

@@ -1,15 +1,27 @@
 package de.metas.banking.service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
 import de.metas.banking.BankAccountId;
+=======
+import de.metas.banking.BankAccountId;
+import de.metas.banking.importfile.BankStatementImportFileId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.banking.base
@@ -36,6 +48,12 @@ import lombok.Value;
 @Builder
 public class BankStatementCreateRequest
 {
+<<<<<<< HEAD
+=======
+	@Nullable
+	BankStatementImportFileId bankStatementImportFileId;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	OrgId orgId;
 
@@ -50,6 +68,12 @@ public class BankStatementCreateRequest
 
 	@Nullable
 	String description;
+<<<<<<< HEAD
+=======
+	
+	@Nullable 
+	BigDecimal beginningBalance;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Nullable
 	ElectronicFundsTransfer eft;

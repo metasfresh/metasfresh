@@ -2,6 +2,10 @@ package de.metas.security;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.i18n.BooleanWithReason;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.MobileApplicationRepoId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
@@ -13,6 +17,10 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
@@ -99,6 +107,11 @@ public interface IUserRolePermissions
 
 	<T extends Constraint> Optional<T> getConstraint(Class<T> constraintType);
 
+<<<<<<< HEAD
+=======
+	ElementPermission checkMobileApplicationPermission(@NonNull MobileApplicationRepoId applicationId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/*************************************************************************
 	 * Appends where clause to SQL statement for Table
 	 *

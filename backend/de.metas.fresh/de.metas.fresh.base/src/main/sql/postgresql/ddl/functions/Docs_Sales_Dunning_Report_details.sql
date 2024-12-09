@@ -16,22 +16,38 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_details(IN p_Record_ID   numeri
                 feeamt       numeric,
                 totalamt     numeric,
                 duedate      timestamp WITH TIME ZONE,
+<<<<<<< HEAD
                 daysdue      numeric
+=======
+                daysdue      numeric,
+                DunningLevel character varying
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             )
 AS
 $$
 SELECT COALESCE(dt_trl.printname, dt.PrintName)                                             AS PrintName,
        COALESCE(doc.DocumentNo, 'ERROR')                                                    AS DocumentNo,
        doc.DocumentDate,
+<<<<<<< HEAD
        c.iso_code                                                                           AS currency,
+=======
+       c.cursymbol                                                                          AS currency,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
        doc.GrandTotal,
        doc.PaidAmt                                                                          AS paidamt,
        doc.GrandTotal - doc.PaidAmt                                                         AS openamt,
        dl.amt                                                                               AS FeeAmt,
        invoiceopen(dc.Record_ID, 0::numeric) + dl.amt                                       AS totalamt,
        paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp WITH TIME ZONE) AS DueDate,
+<<<<<<< HEAD
        dc.DaysDue
 FROM C_DunningDoc dd
+=======
+       dc.DaysDue,
+       dlv.printname                                                                        AS DunningLevel
+FROM C_DunningDoc dd
+         LEFT JOIN C_DunningLevel dlv ON dd.c_dunninglevel_id = dlv.c_dunninglevel_id
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
          LEFT JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID
          LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID AND dls.isActive = 'Y'
          LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID AND dc.isActive = 'Y'

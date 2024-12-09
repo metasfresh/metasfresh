@@ -15,8 +15,21 @@ import javax.annotation.Nullable;
 public class HULabelPrintRequest
 {
 	@NonNull HULabelSourceDocType sourceDocType;
+<<<<<<< HEAD
 	@NonNull @Singular("hu") ImmutableList<HUToReport> hus;
 	boolean onlyIfAutoPrint;
 	@Nullable PrintCopies printCopiesOverride;
+=======
+	
+	@NonNull @Singular("hu") ImmutableList<HUToReport> hus;
+
+	/**
+	 * Autoprint can be switched on/off via sysconfig {@link HULabelConfigFromSysConfigProvider#SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED}.
+	 */
+	boolean onlyIfAutoPrint;
+		
+	@Nullable PrintCopies printCopiesOverride;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	boolean failOnMissingLabelConfig;
 }

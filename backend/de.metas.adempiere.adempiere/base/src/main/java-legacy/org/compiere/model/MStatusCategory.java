@@ -100,7 +100,11 @@ public class MStatusCategory extends X_R_StatusCategory
 			return null;
 		String sql = "UPDATE R_Status SET R_StatusCategory_ID=" + retValue.getR_StatusCategory_ID()
 			+ " WHERE R_StatusCategory_ID IS NULL AND AD_Client_ID=" + AD_Client_ID;
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, null);
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		s_log.info("Default for AD_Client_ID=" + AD_Client_ID + " - Status #" + no);
 		return retValue;
 	}	//	createDefault

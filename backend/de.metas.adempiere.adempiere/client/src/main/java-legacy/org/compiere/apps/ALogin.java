@@ -16,6 +16,36 @@
  *****************************************************************************/
 package org.compiere.apps;
 
+<<<<<<< HEAD
+=======
+import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
+import java.awt.Cursor;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+
+import javax.swing.ImageIcon;
+import javax.swing.JPasswordField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;

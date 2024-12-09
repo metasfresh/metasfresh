@@ -63,7 +63,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -71,7 +75,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateBPartner(final ImportRecordsSelection selection)
@@ -83,7 +91,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateBpGroup(final ImportRecordsSelection selection)
@@ -95,7 +107,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_BP_Group_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdatePricingSystem(final ImportRecordsSelection selection)
@@ -107,7 +123,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE M_PricingSystem_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateCountry(final ImportRecordsSelection selection)
@@ -119,7 +139,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_Country_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -127,7 +151,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_Country_ID IS NULL AND CountryCode IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateCurrency(final ImportRecordsSelection selection)
@@ -139,7 +167,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -147,7 +179,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL AND ISO_Code IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateUom(final ImportRecordsSelection selection)
@@ -159,7 +195,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -167,7 +207,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_UOM_ID IS NULL AND UOM IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateTaxCategory(final ImportRecordsSelection selection)
@@ -179,7 +223,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_TaxCategory_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -187,7 +235,11 @@ public class CampaignPriceImportTableSqlUpdater
 				.append("WHERE C_TaxCategory_ID IS NULL AND C_TaxCategory_Name IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void dbUpdateCampaignPrice(final ImportRecordsSelection selection, final Properties ctx)
@@ -209,6 +261,10 @@ public class CampaignPriceImportTableSqlUpdater
 				+ "WHERE C_Campaign_Price_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
 				+ selection.toSqlWhereClause("i");
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

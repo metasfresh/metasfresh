@@ -15,6 +15,10 @@ import de.metas.util.Check;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.Builder;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
@@ -49,6 +53,10 @@ public class UserNotificationsQueue
 {
 	private static final Logger logger = LogManager.getLogger(UserNotificationsQueue.class);
 
+<<<<<<< HEAD
+=======
+	@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final UserId userId;
 	private JSONOptions jsonOptions;
 
@@ -57,6 +65,11 @@ public class UserNotificationsQueue
 	private final INotificationRepository notificationsRepo;
 
 	private final WebsocketSender websocketSender;
+<<<<<<< HEAD
+=======
+	
+	@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final WebsocketTopicName websocketEndpoint;
 
 	@Builder
@@ -84,6 +97,7 @@ public class UserNotificationsQueue
 				.toString();
 	}
 
+<<<<<<< HEAD
 	public UserId getUserId()
 	{
 		return userId;
@@ -94,6 +108,8 @@ public class UserNotificationsQueue
 		return websocketEndpoint;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void fireEventOnWebsocket(final JSONNotificationEvent event)
 	{
 		websocketSender.convertAndSend(websocketEndpoint, event);

@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+<<<<<<< HEAD
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -36,6 +37,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
+=======
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.ArchiveId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,16 +56,26 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+<<<<<<< HEAD
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+=======
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class ArchiveDAO implements IArchiveDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	// private static final transient Logger logger = CLogMgt.getLogger(ArchiveDAO.class);
 
@@ -150,6 +167,7 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public <T> Stream<AdArchive> streamArchivesForFilter(@NonNull final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass)
 	{
 		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(objectClass)
@@ -164,6 +182,8 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
 	{
 		queryBL.createQueryBuilder(I_AD_Archive.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -183,4 +203,21 @@ public class ArchiveDAO implements IArchiveDAO
 		return archive;
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		retrieveArchivesQuery(Env.getCtx(), recordReference)
+				.create()
+				.stream()
+				.forEach(archive -> {
+					archive.setPOReference(poReference);
+					
+					saveRecord(archive);
+				});
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

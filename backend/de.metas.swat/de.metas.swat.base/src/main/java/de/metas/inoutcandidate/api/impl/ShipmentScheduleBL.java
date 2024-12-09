@@ -24,6 +24,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -247,8 +251,20 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
 	{
+=======
+	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
+		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
+		{
+			return false;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
@@ -353,12 +369,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
+<<<<<<< HEAD
 		if (!wasClosed)
 		{
 			return false;
 		}
 
 		return true; // was closed, but is now open
+=======
+		return wasClosed;// was closed, but is now open
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -430,7 +450,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
+<<<<<<< HEAD
 		final Quantity result = Quantitys.create(
+=======
+		final Quantity result = Quantitys.of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
 				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);
@@ -444,7 +468,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void updateCatchUoms(@NonNull final ProductId productId, long delayMs)
+=======
+	public void updateCatchUoms(@NonNull final ProductId productId, final long delayMs)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (delayMs < 0)
 		{
@@ -547,7 +575,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+=======
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule schedule)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
@@ -574,14 +606,22 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx0(userChanges));
 	}
 
+<<<<<<< HEAD
 	private void applyUserChangesInTrx0(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+=======
+	private void applyUserChangesInTrx0(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = userChanges.getShipmentScheduleIds();
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> recordsById = shipmentSchedulePA.getByIds(shipmentScheduleIds);
 
 		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
 		{
+<<<<<<< HEAD
 			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
+=======
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 
 				final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);

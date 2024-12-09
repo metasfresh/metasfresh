@@ -68,17 +68,30 @@ public class All_ReferenceListAwareEnums_Test
 	public static class ReferenceListAwareEnumArgumentsProvider implements ArgumentsProvider
 	{
 		@Override
+<<<<<<< HEAD
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context)
+=======
+		public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return provideClasses().map(Arguments::of);
 		}
 
 		private Stream<Class<? extends ReferenceListAwareEnum>> provideClasses()
 		{
+<<<<<<< HEAD
 			Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
+=======
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
+			final Reflections reflections = new Reflections(new ConfigurationBuilder()
+					.addUrls(ClasspathHelper.forClassLoader())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends ReferenceListAwareEnum>> classes = reflections.getSubTypesOf(ReferenceListAwareEnum.class);

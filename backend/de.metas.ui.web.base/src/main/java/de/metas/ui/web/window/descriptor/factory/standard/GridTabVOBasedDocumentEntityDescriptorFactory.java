@@ -1,12 +1,19 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -153,6 +160,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		collectSpecialFieldsDone();
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public String getTableName() {return documentEntity().getTableNameNotNull();}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ILogicExpression getTabDisplayLogic()
 	{
 		return documentEntity().getDisplayLogic();
@@ -493,7 +506,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Nullable
 	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
 	{
+<<<<<<< HEAD
 		if(gridFieldVO.isVirtualColumn())
+=======
+		if (gridFieldVO.isVirtualColumn())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return gridFieldVO.getColumnSql(contextTableName);
 		}
@@ -707,7 +724,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Generic ZoomInto button
 		if (tableName != null)
 		{
+<<<<<<< HEAD
 			if (adColumnBL.isRecordIdColumnName(fieldName))
+=======
+			if (IColumnBL.isRecordIdColumnName(fieldName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)

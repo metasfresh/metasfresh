@@ -80,12 +80,19 @@ public class AppConfiguration
 			public void beforeApplicationStart(final CamelContext camelContext)
 			{
 				camelContext.setAutoStartup(false);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				final Environment env = context.getEnvironment();
 
 				logger.log(Level.INFO, "Configured RabbitMQ hostname:port is  {}:{}", env.getProperty("camel.component.rabbitmq.hostname"), env.getProperty("camel.component.rabbitmq.port-number"));
 
+<<<<<<< HEAD
 				final String metasfreshAPIBaseURL = env.getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+=======
+				final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				if (Check.isBlank(metasfreshAPIBaseURL))
 				{

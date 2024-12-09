@@ -1,14 +1,23 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.business
@@ -37,7 +46,11 @@ public class CostDetailReverseRequest
 	AcctSchemaId acctSchemaId;
 	CostingDocumentRef reversalDocumentRef;
 	CostingDocumentRef initialDocumentRef;
+<<<<<<< HEAD
 	LocalDate date;
+=======
+	Instant date;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	String description;
 
 	@Builder
@@ -45,7 +58,11 @@ public class CostDetailReverseRequest
 			@NonNull AcctSchemaId acctSchemaId,
 			@NonNull CostingDocumentRef reversalDocumentRef,
 			@NonNull CostingDocumentRef initialDocumentRef,
+<<<<<<< HEAD
 			@NonNull LocalDate date,
+=======
+			@NonNull Instant date,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable String description)
 	{
 		this.acctSchemaId = acctSchemaId;

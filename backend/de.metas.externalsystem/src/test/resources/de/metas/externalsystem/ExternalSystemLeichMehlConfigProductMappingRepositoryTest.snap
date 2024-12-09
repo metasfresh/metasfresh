@@ -1,5 +1,6 @@
 de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithAndWithoutPartnerExists_getPartnerOne=[
   {
+<<<<<<< HEAD
     "id" : 2,
     "pluFile" : "pluFilePartner",
     "pluType" : "CU",
@@ -20,12 +21,36 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
         }
       ]
     }
+=======
+    "bPartnerId": 1,
+    "id": 2,
+    "leichMehlPluFileConfigGroup": {
+      "customQueryProcessValue": "ExternalSystem_Config_LeichMehl_CustomQuery",
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFilePartner",
+    "pluType": "CU",
+    "productId": 1
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getCUOne=[
   {
+<<<<<<< HEAD
     "id" : 1,
     "pluFile" : "pluFile",
     "productId" : 1,
@@ -46,12 +71,35 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
       ]
     },
     "pluType" : "CU"
+=======
+    "bPartnerId": 1,
+    "id": 1,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFile",
+    "pluType": "CU",
+    "productId": 1
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getTUOne=[
   {
+<<<<<<< HEAD
     "id" : 2,
     "pluFile" : "pluFilePartner",
     "productId" : 1,
@@ -72,5 +120,27 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
       ]
     },
     "pluType" : "TU"
+=======
+    "bPartnerId": 1,
+    "id": 2,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFilePartner",
+    "pluType": "TU",
+    "productId": 1
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

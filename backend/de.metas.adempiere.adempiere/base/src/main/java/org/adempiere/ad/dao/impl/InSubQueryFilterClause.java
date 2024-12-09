@@ -1,15 +1,24 @@
 package org.adempiere.ad.dao.impl;
 
+<<<<<<< HEAD
 import java.util.function.Consumer;
 
+=======
+import lombok.NonNull;
+import lombok.ToString;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 
+<<<<<<< HEAD
 import lombok.NonNull;
 import lombok.ToString;
+=======
+import java.util.function.Consumer;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -46,7 +55,11 @@ public class InSubQueryFilterClause<ModelType, ParentType> implements IInSubQuer
 	private final InSubQueryFilter.Builder<ModelType> inSubQueryBuilder;
 	private boolean destroyed = false;
 
+<<<<<<< HEAD
 	InSubQueryFilterClause(@NonNull final String tableName, @NonNull final ParentType parent, @NonNull final Consumer<InSubQueryFilter<ModelType>> finisher)
+=======
+	public InSubQueryFilterClause(@NonNull final String tableName, @NonNull final ParentType parent, @NonNull final Consumer<InSubQueryFilter<ModelType>> finisher)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.parent = parent;
 		this.finisher = finisher;

@@ -44,12 +44,21 @@ class DateFilterUtil
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 				.setFieldName(DateFilterVO.PARAM_Date)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
 				.setWidgetType(DocumentFieldWidgetType.LocalDate)
 				.setOperator(Operator.EQUAL)
 				.setMandatory(true)
 				.setShowIncrementDecrementButtons(true);
+=======
+				.fieldName(DateFilterVO.PARAM_Date)
+				.displayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
+				.widgetType(DocumentFieldWidgetType.LocalDate)
+				.operator(Operator.EQUAL)
+				.mandatory(true)
+				.showIncrementDecrementButtons(true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)

@@ -30,7 +30,10 @@ import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+<<<<<<< HEAD
 import de.metas.tax.api.ITaxBL;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -39,7 +42,10 @@ import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -49,7 +55,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
+<<<<<<< HEAD
 import org.compiere.util.TrxRunnableAdapter;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -266,10 +275,13 @@ public class MOrderLine extends X_C_OrderLine
 	 * Product
 	 */
 	private MProduct m_product = null;
+<<<<<<< HEAD
 	/**
 	 * Charge
 	 */
 	private MCharge m_charge = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Parent
@@ -361,6 +373,7 @@ public class MOrderLine extends X_C_OrderLine
 	}    // setTax
 
 	/**
+<<<<<<< HEAD
 	 * Calculate Extended Amt. May or may not include tax
 	 */
 	public void setLineNetAmt()
@@ -444,6 +457,8 @@ public class MOrderLine extends X_C_OrderLine
 	}
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Get Tax
 	 *
 	 * @return tax
@@ -1082,7 +1097,15 @@ public class MOrderLine extends X_C_OrderLine
 					+ " SET TotalLines="
 					+ "(SELECT COALESCE(SUM(ol.LineNetAmt),0) FROM C_OrderLine ol WHERE ol.C_Order_ID=o.C_Order_ID) "
 					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 1)
+			{
+				new AdempiereException("Updating TotalLines failed for C_Order_IDs=" + orderIds);
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		// Update Order Header: GrandTotal
 		{
@@ -1092,7 +1115,15 @@ public class MOrderLine extends X_C_OrderLine
 					// SUM up C_OrderTax.TaxAmt only for those lines which does not have Tax Included
 					+ "(SELECT COALESCE(SUM(TaxAmt),0) FROM C_OrderTax ot WHERE o.C_Order_ID=ot.C_Order_ID AND ot.IsActive='Y' AND ot.IsTaxIncluded='N') "
 					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 1)
+			{
+				new AdempiereException("Updating GrandTotal failed for C_Order_IDs=" + orderIds);
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 }    // MOrderLine

@@ -299,7 +299,11 @@ class ShipmentCandidateAPIService
 		{
 			final InputDataSourceId id = InputDataSourceId.ofRepoId(olCand.getAD_InputDataSource_ID()); // C_OLCand.AD_InputDataSource_ID is mandatory
 			final I_AD_InputDataSource byId = inputDataSourceDAO.getById(id);
+<<<<<<< HEAD
 			
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (Check.isNotBlank(byId.getInternalName()))
 			{
 				itemBuilder.orderDataSourceInternalName(byId.getInternalName());

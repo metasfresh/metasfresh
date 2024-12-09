@@ -92,8 +92,13 @@ class Column extends PureComponent {
     });
   };
 
+<<<<<<< HEAD
   renderEntryTable = (groups) => {
     const columns = groups.reduce((columnsArray, group) => {
+=======
+  renderEntryTable = (elementGroups) => {
+    const rowsLayout = elementGroups.reduce((acc, group) => {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       const cols = [];
       group.elementsLine.forEach((line) => {
         if (line && line.elements && line.elements.length) {
@@ -101,12 +106,20 @@ class Column extends PureComponent {
         }
       });
 
+<<<<<<< HEAD
       columnsArray.push({
+=======
+      acc.push({
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         cols,
         colsCount: group.columnCount,
       });
 
+<<<<<<< HEAD
       return columnsArray;
+=======
+      return acc;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }, []);
 
     const {
@@ -129,7 +142,11 @@ class Column extends PureComponent {
         )}
       >
         <EntryTable
+<<<<<<< HEAD
           columns={columns}
+=======
+          rowsLayout={rowsLayout}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           windowId={windowId}
           documentId={dataId}
           tabId={tabId}

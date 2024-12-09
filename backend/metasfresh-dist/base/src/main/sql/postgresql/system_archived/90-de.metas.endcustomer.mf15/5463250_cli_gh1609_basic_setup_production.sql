@@ -1,6 +1,15 @@
 -- 2017-05-22T12:01:12.583
 -- URL zum Konzept
+<<<<<<< HEAD
 INSERT INTO S_Resource (AD_Client_ID,AD_Org_ID,AD_User_ID,ChargeableQty,Created,CreatedBy,DailyCapacity,IsActive,IsAvailable,IsManufacturingResource,ManufacturingResourceType,M_Warehouse_ID,Name,PercentUtilization,PlanningHorizon,QueuingTime,S_Resource_ID,S_ResourceType_ID,Updated,UpdatedBy,Value,WaitingTime) VALUES (1000000,1000000,100,0,TO_TIMESTAMP('2017-05-22 12:01:12','YYYY-MM-DD HH24:MI:SS'),100,0,'Y','Y','Y','PT',540008,'test',100,1,0,540006,1000000,TO_TIMESTAMP('2017-05-22 12:01:12','YYYY-MM-DD HH24:MI:SS'),100,'1000000',0)
+=======
+INSERT INTO S_Resource (AD_Client_ID,AD_Org_ID,AD_User_ID,ChargeableQty,Created,CreatedBy,DailyCapacity,IsActive,IsAvailable,IsManufacturingResource,ManufacturingResourceType,
+                        /*M_Warehouse_ID,*/
+                        Name,PercentUtilization,PlanningHorizon,QueuingTime,S_Resource_ID,S_ResourceType_ID,Updated,UpdatedBy,Value,WaitingTime) 
+VALUES (1000000,1000000,100,0,TO_TIMESTAMP('2017-05-22 12:01:12','YYYY-MM-DD HH24:MI:SS'),100,0,'Y','Y','Y','PT',
+        /*540008,*/
+        'test',100,1,0,540006,1000000,TO_TIMESTAMP('2017-05-22 12:01:12','YYYY-MM-DD HH24:MI:SS'),100,'1000000',0)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ;
 
 -- 2017-05-22T12:01:12.786

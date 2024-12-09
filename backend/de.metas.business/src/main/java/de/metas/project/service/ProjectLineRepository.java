@@ -105,8 +105,13 @@ public class ProjectLineRepository
 		return ProjectLine.builder()
 				.id(ProjectAndLineId.ofRepoId(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+<<<<<<< HEAD
 				.plannedQty(Quantitys.create(record.getPlannedQty(), uomId))
 				.committedQty(Quantitys.create(record.getCommittedQty(), uomId))
+=======
+				.plannedQty(Quantitys.of(record.getPlannedQty(), uomId))
+				.committedQty(Quantitys.of(record.getCommittedQty(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.description(record.getDescription())
 				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.build();

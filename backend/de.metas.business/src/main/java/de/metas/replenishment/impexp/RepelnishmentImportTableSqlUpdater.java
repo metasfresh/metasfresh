@@ -74,7 +74,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Found Products={}", no);
 	}
 
@@ -86,7 +90,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append(" ) WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void dbUpdateWarehouse(@NonNull final ImportRecordsSelection selection)
@@ -97,7 +105,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append(" ) WHERE M_Warehouse_ID IS NULL AND WarehouseValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void dbUpdateLocators(@NonNull final ImportRecordsSelection selection)
@@ -108,7 +120,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void dbUpdatePeriodIds(final ImportRecordsSelection selection)
@@ -126,7 +142,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_DateGeneral + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Found Products={}", no);
 	}
 
@@ -152,7 +172,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE M_Replenish_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Found Products={}", no);
 	}
 
@@ -167,7 +191,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Product is mandatory={}", no);
 
 
@@ -176,7 +204,11 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Warehouse_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_WarehouseValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
+<<<<<<< HEAD
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+=======
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Warehouse is mandatory={}", no);
 	}
 }

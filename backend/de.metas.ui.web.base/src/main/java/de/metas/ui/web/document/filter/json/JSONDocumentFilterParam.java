@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+<<<<<<< HEAD
+=======
+import lombok.Builder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Value;
 
 import java.util.Optional;
@@ -68,6 +72,10 @@ public class JSONDocumentFilterParam
 	Object valueTo;
 
 	@JsonCreator
+<<<<<<< HEAD
+=======
+	@Builder
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private JSONDocumentFilterParam(
 			@JsonProperty("parameterName") final String parameterName,
 			@JsonProperty("value") final Object value,

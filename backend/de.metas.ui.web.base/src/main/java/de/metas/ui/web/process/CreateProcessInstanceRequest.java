@@ -1,5 +1,6 @@
 package de.metas.ui.web.process;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Objects;
 
@@ -10,10 +11,23 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -43,6 +57,7 @@ import lombok.Value;
  *
  */
 @Value
+<<<<<<< HEAD
 @Immutable
 public final class CreateProcessInstanceRequest
 {
@@ -52,13 +67,29 @@ public final class CreateProcessInstanceRequest
 	private final ViewRowIdsSelection viewRowIdsSelection;
 	private final ViewRowIdsSelection parentViewRowIdsSelection;
 	private final ViewRowIdsSelection childViewRowIdsSelection;
+=======
+public class CreateProcessInstanceRequest
+{
+	ProcessId processId;
+	DocumentPath singleDocumentPath;
+	List<DocumentPath> selectedIncludedDocumentPaths;
+	ViewRowIdsSelection viewRowIdsSelection;
+	DocumentQueryOrderByList viewOrderBys;
+	ViewRowIdsSelection parentViewRowIdsSelection;
+	ViewRowIdsSelection childViewRowIdsSelection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private CreateProcessInstanceRequest(
 			@NonNull final ProcessId processId,
 			@Nullable final DocumentPath singleDocumentPath,
 			@Nullable final List<DocumentPath> selectedIncludedDocumentPaths,
+<<<<<<< HEAD
 			@Nullable final ViewRowIdsSelection viewRowIdsSelection,
+=======
+			@Nullable final ViewRowIdsSelection viewRowIdsSelection, 
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final ViewRowIdsSelection parentViewRowIdsSelection,
 			@Nullable final ViewRowIdsSelection childViewRowIdsSelection)
 	{
@@ -68,6 +99,10 @@ public final class CreateProcessInstanceRequest
 		this.selectedIncludedDocumentPaths = selectedIncludedDocumentPaths != null ? ImmutableList.copyOf(selectedIncludedDocumentPaths) : ImmutableList.of();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;
+<<<<<<< HEAD
+=======
+		this.viewOrderBys = viewOrderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.parentViewRowIdsSelection = parentViewRowIdsSelection;
 		this.childViewRowIdsSelection = childViewRowIdsSelection;
 	}

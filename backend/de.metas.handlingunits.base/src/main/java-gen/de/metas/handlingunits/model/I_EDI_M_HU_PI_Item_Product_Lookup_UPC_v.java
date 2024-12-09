@@ -1,8 +1,15 @@
 package de.metas.handlingunits.model;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /** Generated Interface for EDI_M_HU_PI_Item_Product_Lookup_UPC_v
  *  @author metasfresh (generated) 
  */
@@ -17,6 +24,30 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGLN (@Nullable java.lang.String GLN);
+
+	/**
+	 * Get GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGLN();
+
+	ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, Object> COLUMN_GLN = new ModelColumn<>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "GLN", null);
+	String COLUMNNAME_GLN = "GLN";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -60,6 +91,30 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set StoreGLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStoreGLN (@Nullable java.lang.String StoreGLN);
+
+	/**
+	 * Get StoreGLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStoreGLN();
+
+	ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, Object> COLUMN_StoreGLN = new ModelColumn<>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "StoreGLN", null);
+	String COLUMNNAME_StoreGLN = "StoreGLN";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set UPC.
 	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *

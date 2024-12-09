@@ -289,7 +289,11 @@ public final class Language implements Serializable
 	 * @param langInfo either language (en) or locale (en-US) or display name
 	 * @return true if base language
 	 */
+<<<<<<< HEAD
 	public static boolean isBaseLanguage(final String langInfo)
+=======
+	public static boolean isBaseLanguage(@Nullable final String langInfo)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (langInfo == null)
 		{

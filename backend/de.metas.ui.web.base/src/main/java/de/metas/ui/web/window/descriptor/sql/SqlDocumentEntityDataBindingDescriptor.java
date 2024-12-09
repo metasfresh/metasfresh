@@ -17,6 +17,10 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
@@ -71,6 +75,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
 	}
 
+<<<<<<< HEAD
+=======
+	public static boolean isAssignableFrom(@Nullable final DocumentEntityDataBindingDescriptor descriptor)
+	{
+		return descriptor instanceof SqlDocumentEntityDataBindingDescriptor;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final String TABLEALIAS_Master = "master";
 
 	public static final String FIELDNAME_Version = "Updated";
@@ -89,12 +101,20 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
+<<<<<<< HEAD
 	private final DocumentQueryOrderByList defaultOrderBys;
+=======
+	@Getter private final DocumentQueryOrderByList defaultOrderBys;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ImmutableMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 	private final ImmutableList<SqlDocumentFieldDataBindingDescriptor> keyFields;
 
+<<<<<<< HEAD
 	private final Optional<String> sqlSelectVersionById;
+=======
+	@Getter private final Optional<String> sqlSelectVersionById;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -219,11 +239,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	}
 
+<<<<<<< HEAD
 	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
 		return defaultOrderBys;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{
@@ -240,11 +263,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return _fieldsByFieldName.values();
 	}
 
+<<<<<<< HEAD
 	public Optional<String> getSqlSelectVersionById()
 	{
 		return sqlSelectVersionById;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public boolean isVersioningSupported()
 	{
@@ -392,7 +418,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return getFieldsByFieldName()
 					.values()
 					.stream()
+<<<<<<< HEAD
 					.filter(field -> field.isDefaultOrderBy())
+=======
+					.filter(SqlDocumentFieldDataBindingDescriptor::isDefaultOrderBy)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.sorted(Comparator.comparing(SqlDocumentFieldDataBindingDescriptor::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
@@ -493,7 +523,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 
+<<<<<<< HEAD
 			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.castOrNull(field);
+=======
+			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.cast(field);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
 
 			return this;

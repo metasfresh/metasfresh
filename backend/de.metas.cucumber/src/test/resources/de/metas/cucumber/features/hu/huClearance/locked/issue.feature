@@ -49,7 +49,11 @@ Feature: Locked HUs can not be issued to production order
       | huProduct_inventoryLine | createdCU |
 
     And transform CU to new TUs
+<<<<<<< HEAD
       | sourceCU  | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs | resultedNewCUs |
+=======
+      | sourceCU  | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs | OPT.resultedNewCUs |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | createdCU | 10    | huProductTU             | createdTU      | newCreatedCU   |
 
     And after not more than 60s, M_HUs should have

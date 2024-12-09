@@ -1,5 +1,6 @@
 package de.metas.rfq.impl;
 
+<<<<<<< HEAD
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
@@ -10,6 +11,18 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
+=======
+import de.metas.document.archive.spi.impl.DefaultModelArchiver;
+import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailText;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.report.PrintFormatId;
 import de.metas.rfq.IRfqDAO;
@@ -25,8 +38,12 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+<<<<<<< HEAD
 import org.adempiere.service.IClientDAO;
 import org.compiere.Adempiere;
+=======
+import org.compiere.SpringContextHolder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
@@ -64,8 +81,12 @@ import java.sql.Timestamp;
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+<<<<<<< HEAD
 	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = Adempiere.getBean(MailService.class);
+=======
+	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public enum RfQReportType
 	{
@@ -115,15 +136,24 @@ import java.sql.Timestamp;
 		}
 
 		//
+<<<<<<< HEAD
 		final MailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
 
 		//
 		final String subject = mailTextBuilder.getMailHeader();
 		final String message = mailTextBuilder.getFullMailText();
+=======
+		final MailText mailText = createMailTextBuilder(rfqResponse, rfqReportType).build();
+
+		//
+		final String subject = mailText.getMailHeader();
+		final String message = mailText.getFullMailText();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final PrintFormatId printFormatId = getPrintFormatId(rfqResponse, rfqReportType);
 		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse, printFormatId);
 		final ArchiveResult pdfArchive = archiver.archive();
 
+<<<<<<< HEAD
 		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
 
@@ -139,6 +169,21 @@ import java.sql.Timestamp;
 				mailTextBuilder.isHtml()); // html
 		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData());
 		final EMailSentStatus emailSentStatus = email.send();
+=======
+		final Mailbox mailbox = mailService.findMailbox(MailboxQuery.ofClientId(ClientId.ofRepoId(rfqResponse.getAD_Client_ID())));
+
+		//
+		// Send it
+		final EMail email = mailService.sendEMail(EMailRequest.builder()
+				.mailbox(mailbox)
+				.to(userToEmail)
+				.subject(subject)
+				.message(message)
+				.html(mailText.isHtml())
+				.attachmentIfNotEmpty("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData())
+				.build());
+		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
@@ -147,11 +192,19 @@ import java.sql.Timestamp;
 			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
 					pdfArchive.getArchiveRecord(), // archive
+<<<<<<< HEAD
 					(UserEMailConfig)null, // user
 					from, // from
 					to, // to
 					(EMailAddress)null, // cc
 					(EMailAddress)null, // bcc
+=======
+					null, // user
+					from, // from
+					to, // to
+					null, // cc
+					null, // bcc
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
 			);
 		}

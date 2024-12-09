@@ -7,6 +7,10 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
+<<<<<<< HEAD
+=======
+import de.metas.security.RoleId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
@@ -27,6 +31,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+<<<<<<< HEAD
+=======
+import org.compiere.util.KeyNamePair;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Login;
 import org.compiere.util.Splash;
 import org.slf4j.Logger;
@@ -130,7 +138,12 @@ public abstract class SwingUIApplicationTemplate
 			final I_AD_User user = userBL.getById(UserId.METASFRESH);
 			final String username = userBL.extractUserLogin(user);
 			final HashableString password = userBL.extractUserPassword(user);
+<<<<<<< HEAD
 			final Role systemRole = login.authenticate(username, password).getAvailableRoles()
+=======
+			final Role systemRole = login.authenticate(username, password)
+					.getAvailableRoles()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.stream()
 					.filter(role -> role.getId().isSystem())
 					.findFirst()

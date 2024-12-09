@@ -57,7 +57,11 @@ public class DefaultGroupingProvider implements IOLCandGroupingProvider
 		groupingValues.add(olCand.getBPartnerInfo());
 		groupingValues.add(olCand.getBillBPartnerInfo());
 
+<<<<<<< HEAD
 		groupingValues.add(olCand.getDateDoc());
+=======
+		groupingValues.add(olCand.getDateOrdered());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// task 06269 note that for now we set datepromised only in the header, so different DatePromised values result in different orders, and all ol have the same datepromised
 		groupingValues.add(olCand.getDatePromised());

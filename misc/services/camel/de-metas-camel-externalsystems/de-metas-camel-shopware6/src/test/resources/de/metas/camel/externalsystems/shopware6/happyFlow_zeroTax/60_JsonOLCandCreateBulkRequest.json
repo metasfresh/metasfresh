@@ -2,6 +2,7 @@
   "requests": [
     {
       "orgCode": "orgCode",
+<<<<<<< HEAD
       "externalLineId": "externalLineId",
       "externalHeaderId": "externalHeaderId",
       "dataSource": "int-Shopware",
@@ -52,6 +53,8 @@
     },
     {
       "orgCode": "orgCode",
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "externalLineId": "externalLineId2",
       "externalHeaderId": "externalHeaderId",
       "dataSource": "int-Shopware",
@@ -66,6 +69,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -74,6 +78,11 @@
       },
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "productIdentifier": "ext-Shopware6-productId2",
       "qty": 10,
       "price": 0,
@@ -82,12 +91,31 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 20,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 10,
+      "description": "lineDescription2",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": {
         "groupKey": "externalLineId2",
         "groupMainItem": true
@@ -97,6 +125,10 @@
       "importWarningMessage": null,
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -116,6 +148,7 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
+<<<<<<< HEAD
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
@@ -125,6 +158,12 @@
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": 1001,
+=======
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "1001",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "qty": 1,
       "price": 7.5,
       "currencyCode": "EUR",
@@ -132,18 +171,35 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
+<<<<<<< HEAD
       "dateCandidate": "2021-01-11",
       "line": 30,
+=======
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "dateCandidate": "2021-01-11",
+      "line": 20,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+<<<<<<< HEAD
       "orderLineGroup": null,
       "description": null,
       "dateOrdered": "2021-01-12",
       "importWarningMessage": null,
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+=======
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }

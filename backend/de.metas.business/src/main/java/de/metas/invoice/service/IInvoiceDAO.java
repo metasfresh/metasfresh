@@ -22,6 +22,10 @@ package de.metas.invoice.service;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -30,9 +34,18 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.UnpaidInvoiceQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -72,7 +85,11 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
+<<<<<<< HEAD
 	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+=======
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceAndLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
@@ -91,9 +108,15 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
+<<<<<<< HEAD
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds,DocBaseAndSubType targetDocType);
 
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
+=======
+	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
+
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
@@ -143,6 +166,13 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
 
+<<<<<<< HEAD
+=======
+	List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
@@ -171,15 +201,33 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
+<<<<<<< HEAD
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+=======
+	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
+
+	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
+<<<<<<< HEAD
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
+=======
+	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
+
+	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
+
+	/**
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
+	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
+	 */
+	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

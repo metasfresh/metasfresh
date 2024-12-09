@@ -27,6 +27,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -200,18 +204,26 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
+<<<<<<< HEAD
 	private void pickHU(final HURow row)
 	{
 		final HuId huId = row.getHuId();
 
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
+=======
+	private void pickHU(@NonNull final HURow row)
+	{
+		final HuId huId = row.getHuId();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final PickRequest pickRequest = PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(PickFrom.ofHuId(huId))
 				.pickingSlotId(pickingSlotId)
 				.build();
 
+<<<<<<< HEAD
 		final ProcessPickingRequest processPickingRequest = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))
 				.ppOrderId(ppOrderView.getPpOrderId())
@@ -220,6 +232,21 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.build();
 
 		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, processPickingRequest);
+=======
+		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
+				.huIds(ImmutableSet.of(huId))
+				.shipmentScheduleId(shipmentScheduleId)
+				.isTakeWholeHU(isTakeWholeHU);
+
+		final IView view = getView();
+		if (view instanceof PPOrderLinesView)
+		{
+			final PPOrderLinesView ppOrderView = PPOrderLinesView.cast(view);
+			pickingRequestBuilder.ppOrderId(ppOrderView.getPpOrderId());
+		}
+
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, pickingRequestBuilder.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

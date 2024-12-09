@@ -10,11 +10,19 @@ import de.metas.common.ordercandidates.v1.response.JsonOLCand;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v1.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+<<<<<<< HEAD
+=======
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.document.DocBaseAndSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
+<<<<<<< HEAD
 import de.metas.order.OrderLineGroup;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -142,6 +150,19 @@ public class JsonConverters
 		{
 			uomId = productInfo.getUomId();
 		}
+<<<<<<< HEAD
+=======
+		final JsonDocTypeInfo invoiceDocType = request.getInvoiceDocType();
+		final DocBaseAndSubType docBaseAndSubType;
+		if (invoiceDocType == null)
+		{
+			docBaseAndSubType = null;
+		}
+		else
+		{
+			docBaseAndSubType = DocBaseAndSubType.of(invoiceDocType.getDocBaseType(), invoiceDocType.getDocSubType());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return OLCandCreateRequest.builder()
 				//
@@ -162,8 +183,13 @@ public class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
+<<<<<<< HEAD
 				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
+=======
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId))
+				.docTypeOrderId(docTypeService.getOrderDocTypeIdOrNull(request.getOrderDocType(), orgId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
 				.presetDateShipped(request.getPresetDateShipped())
@@ -275,7 +301,10 @@ public class JsonConverters
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
 		final String orgCode = orgDAO.retrieveOrgValue(orgId);
+<<<<<<< HEAD
 		final OrderLineGroup orderLineGroup = olCand.getOrderLineGroup();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -290,7 +319,11 @@ public class JsonConverters
 				.dropShipBPartner(toJson(orgCode, olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
+<<<<<<< HEAD
 				.dateOrdered(olCand.getDateDoc())
+=======
+				.dateOrdered(olCand.getDateOrdered())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

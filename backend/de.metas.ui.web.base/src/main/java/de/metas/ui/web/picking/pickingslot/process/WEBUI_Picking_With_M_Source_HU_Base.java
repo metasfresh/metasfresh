@@ -15,10 +15,20 @@ import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
+=======
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.PickingConfig;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -32,6 +42,10 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+<<<<<<< HEAD
+=======
+import org.springframework.lang.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.List;
 
@@ -71,6 +85,10 @@ import java.util.List;
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
+<<<<<<< HEAD
+=======
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	protected final boolean noSourceHUAvailable()
 	{
@@ -89,7 +107,11 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
+<<<<<<< HEAD
 		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
+=======
+		return  huPickingSlotBL.retrieveAvailableSourceHUs(query)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
@@ -125,19 +147,30 @@ import java.util.List;
 		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
 	}
 
+<<<<<<< HEAD
 	protected boolean isForceDelivery()
 	{
 		return DeliveryRule.ofCode(getCurrentShipmentSchedule().getDeliveryRule()).isForce();
+=======
+	protected final boolean isForceDelivery()
+	{
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(getCurrentShipmentSchedule());
+		return deliveryRule.isForce();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
+<<<<<<< HEAD
 		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
+<<<<<<< HEAD
 				.qtyToPack(qtyToPack)
 				.packToHuId(packToHuId)
 				.sourceHUIds(huIdsToPick)
@@ -145,6 +178,16 @@ import java.util.List;
 				.shipmentScheduleId(getCurrentShipmentScheduleId())
 				.allowOverDelivery(allowOverDelivery)
 				.build());
+=======
+														  .qtyToPack(qtyToPack)
+														  .packToHuId(packToHuId)
+														  .sourceHUIds(huIdsToPick)
+														  .pickingSlotId(pickingSlotId)
+														  .shipmentScheduleId(getCurrentShipmentScheduleId())
+														  .allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+														  .isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
+														  .build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
@@ -201,6 +244,22 @@ import java.util.List;
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	protected PickingConfig getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
+
+	@Nullable
+	protected OrderId getCurrentlyPickingOrderId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();

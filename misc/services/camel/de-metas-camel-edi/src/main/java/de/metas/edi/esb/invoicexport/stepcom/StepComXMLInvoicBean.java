@@ -96,7 +96,12 @@ import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
+<<<<<<< HEAD
 public class StepComXMLInvoicBean
+=======
+public class 
+StepComXMLInvoicBean
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
 
@@ -131,7 +136,11 @@ public class StepComXMLInvoicBean
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
+<<<<<<< HEAD
 		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
+=======
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Xrech4H xrech4H = createDocument(exchange, xmlCctopInvoice, settings);
 
 		final Document document = INVOIC_objectFactory.createDocument();
@@ -250,7 +259,11 @@ public class StepComXMLInvoicBean
 		final TAMOU1 trailerTaxAmount = INVOIC_objectFactory.createTAMOU1();
 		trailerTaxAmount.setDOCUMENTID(documentId);
 		trailerTaxAmount.setAMOUNTQUAL(AmountQual.TZAX.name());
+<<<<<<< HEAD
 		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalvat(), decimalFormat));
+=======
+		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalVat(), decimalFormat));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		trailerTaxAmount.setCURRENCY(invoice.getISOCode());
 		docTrailer.getTAMOU1().add(trailerTaxAmount);
 

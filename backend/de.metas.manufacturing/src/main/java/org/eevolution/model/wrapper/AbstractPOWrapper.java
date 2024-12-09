@@ -38,11 +38,20 @@ package org.eevolution.model.wrapper;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.compiere.model.PO;
 
+=======
+import org.adempiere.ad.column.AdColumnId;
+import org.compiere.model.PO;
+
+import java.sql.Timestamp;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
  * @version 1.0, October 14th 2005
@@ -166,7 +175,11 @@ public abstract class AbstractPOWrapper {
 	 *  @param AD_Column_ID column
 	 *  @return value or null
 	 */
+<<<<<<< HEAD
 	public Object get_ValueOfColumn(int AD_Column_ID) {
+=======
+	public Object get_ValueOfColumn(AdColumnId AD_Column_ID) {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return  po.get_ValueOfColumn(AD_Column_ID); //  get_ValueOfColumn
 	}
@@ -212,6 +225,7 @@ public abstract class AbstractPOWrapper {
 	}
 
 	/**
+<<<<<<< HEAD
 	 *  Return new - old.
 	 * 	- New Value if Old Value is null
 	 * 	- New Value - Old Value if Number
@@ -238,6 +252,8 @@ public abstract class AbstractPOWrapper {
 	}
 
 	/**
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * 	Set Custom Column
 	 *	@param columnName column
 	 *	@param value value

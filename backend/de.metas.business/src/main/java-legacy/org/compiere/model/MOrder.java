@@ -33,6 +33,10 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
@@ -879,8 +883,13 @@ public class MOrder extends X_C_Order implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Order_ID=" + getC_Order_ID();
+<<<<<<< HEAD
 		final int noLine = DB.executeUpdateEx("UPDATE C_OrderLine " + set, get_TrxName());
 		final int noTax = DB.executeUpdateEx("UPDATE C_OrderTax " + set, get_TrxName());
+=======
+		final int noLine = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderTax " + set, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		invalidateLines();
 		m_taxes = null;
 		log.debug("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -1026,7 +1035,11 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "(SELECT Description,POReference "
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(sql, get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Description -> #" + no);
 		}
 
@@ -1041,7 +1054,11 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID)"
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			// Don't touch Closed/Reversed entries
+<<<<<<< HEAD
 			final int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Payment -> #" + no);
 		}
 
@@ -1185,7 +1202,11 @@ public class MOrder extends X_C_Order implements IDocument
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
 
 		// Std Period open?
+<<<<<<< HEAD
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+=======
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -1311,8 +1332,20 @@ public class MOrder extends X_C_Order implements IDocument
 	// of stocks before delete.
 	public boolean reserveStock(final I_C_DocType docType, final List<MOrderLine> lines)
 	{
+<<<<<<< HEAD
 		final I_C_DocType dt = docType == null
 				? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID())
+=======
+		int docTypeId = getC_DocType_ID(); // in case of draft, doctype is 0
+		if (docTypeId <= 0 )
+		{
+			// check DocTypeTarget
+			docTypeId= getC_DocTypeTarget_ID();
+		}
+
+		final I_C_DocType dt = docType == null
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				: docType;
 
 		// Binding
@@ -1372,7 +1405,11 @@ public class MOrder extends X_C_Order implements IDocument
 			final BigDecimal difference = target
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
+<<<<<<< HEAD
 			if (difference.signum() == 0)
+=======
+			if (difference.signum() == 0 && !line.isDeliveryClosed())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				final MProduct product = line.getProduct();
 				if (product != null)
@@ -1437,7 +1474,11 @@ public class MOrder extends X_C_Order implements IDocument
 							line.getM_AttributeSetInstance_ID(),
 							line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO,
+<<<<<<< HEAD
 							reserved,
+=======
+							line.isDeliveryClosed() ? line.getQtyDelivered().subtract(line.getQtyOrdered()) : reserved,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							ordered,
 							get_TrxName());
 				}    // stockec
@@ -1470,7 +1511,11 @@ public class MOrder extends X_C_Order implements IDocument
 		log.debug("");
 
 		// Delete Taxes
+<<<<<<< HEAD
 		DB.executeUpdateEx("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_taxes = null;
 
 		// Lines
@@ -1511,7 +1556,11 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
 					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
+<<<<<<< HEAD
 					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+=======
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
@@ -1673,7 +1722,12 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)        // (W)illCall(I)nvoice
 				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)    // (W)illCall(P)ickup
+<<<<<<< HEAD
 				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))            // (W)alkIn(R)eceipt
+=======
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)            // (W)alkIn(R)eceipt
+		)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
@@ -1694,8 +1748,14 @@ public class MOrder extends X_C_Order implements IDocument
 		}    // Shipment
 
 		// Create SO Invoice - Always invoice complete Order
+<<<<<<< HEAD
 		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
 				|| X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
+=======
+		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
+		)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
@@ -1873,7 +1933,12 @@ public class MOrder extends X_C_Order implements IDocument
 		// If we have a Shipment - use that as a base
 		if (shipment != null)
 		{
+<<<<<<< HEAD
 			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule()))
+=======
+			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule())
+					&& !X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}

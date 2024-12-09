@@ -1,15 +1,34 @@
 package de.metas.ui.web.view.json;
 
+<<<<<<< HEAD
 import java.util.List;
 
+=======
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.GuavaCollectors;
+=======
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -35,10 +54,21 @@ import de.metas.util.GuavaCollectors;
 
 /**
  * JSON representation of {@link DocumentQueryOrderBy}.
+<<<<<<< HEAD
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+=======
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ */
+@Value
+@Builder
+@Jacksonized
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE) // cannot use it because of "otherProperties"
+@Getter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class JSONViewOrderBy
 {
 	public static List<JSONViewOrderBy> ofList(final DocumentQueryOrderByList orderBys)
@@ -48,6 +78,7 @@ public class JSONViewOrderBy
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		return orderBys
 				.stream()
 				.map(orderBy -> of(orderBy))
@@ -56,10 +87,17 @@ public class JSONViewOrderBy
 	}
 
 	private static JSONViewOrderBy of(final DocumentQueryOrderBy orderBy)
+=======
+		return orderBys.stream().map(JSONViewOrderBy::of).collect(ImmutableList.toImmutableList());
+	}
+
+	private static JSONViewOrderBy of(@NonNull final DocumentQueryOrderBy orderBy)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new JSONViewOrderBy(orderBy.getFieldName(), orderBy.isAscending());
 	}
 
+<<<<<<< HEAD
 	@JsonProperty("fieldName")
 	private final String fieldName;
 	@JsonProperty("ascending")
@@ -72,6 +110,31 @@ public class JSONViewOrderBy
 	)
 	{
 		super();
+=======
+	public static DocumentQueryOrderByList toDocumentQueryOrderByList(@Nullable final List<JSONViewOrderBy> orderBys)
+	{
+		if (orderBys == null || orderBys.isEmpty())
+		{
+			return DocumentQueryOrderByList.EMPTY;
+		}
+
+		return orderBys.stream()
+				.map(JSONViewOrderBy::toDocumentQueryOrderBy)
+				.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+	}
+
+	@JsonProperty("fieldName")
+	String fieldName;
+	@JsonProperty("ascending")
+	boolean ascending;
+
+	@JsonCreator
+	public JSONViewOrderBy(
+			@JsonProperty("fieldName") final String fieldName,
+			@JsonProperty("ascending") final boolean ascending
+	)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.fieldName = fieldName;
 		this.ascending = ascending;
 	}
@@ -85,6 +148,7 @@ public class JSONViewOrderBy
 				.toString();
 	}
 
+<<<<<<< HEAD
 	public String getFieldName()
 	{
 		return fieldName;
@@ -93,5 +157,13 @@ public class JSONViewOrderBy
 	public boolean isAscending()
 	{
 		return ascending;
+=======
+	public DocumentQueryOrderBy toDocumentQueryOrderBy()
+	{
+		return DocumentQueryOrderBy.builder()
+				.fieldName(fieldName)
+				.ascending(ascending)
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

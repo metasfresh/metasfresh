@@ -73,7 +73,11 @@ public class NoteDelete extends JavaProcess
 		if (p_KeepLogDays > 0)
 			sql += " AND (Created+" + p_KeepLogDays + ") < now()";
 		//
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return "@Deleted@ = " + no;
 	}	//	doIt
 

@@ -394,6 +394,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.build();
 
 		return husFinder.streamHus()
+<<<<<<< HEAD
+=======
+				.filter(huForInventoryLine -> ProductId.equals(productId, huForInventoryLine.getProductId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 	}
 

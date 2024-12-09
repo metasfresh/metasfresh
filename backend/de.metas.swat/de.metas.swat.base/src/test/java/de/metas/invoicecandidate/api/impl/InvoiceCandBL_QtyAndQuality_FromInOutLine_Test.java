@@ -21,6 +21,10 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
+<<<<<<< HEAD
+=======
+import org.compiere.model.X_M_Product;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,6 +64,10 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test // extends AbstractI
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
+<<<<<<< HEAD
+=======
+		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 

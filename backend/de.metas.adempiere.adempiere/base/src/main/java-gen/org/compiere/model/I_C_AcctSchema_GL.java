@@ -16,6 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Interface for C_AcctSchema_GL
  *  @author Adempiere (generated) 
@@ -114,6 +120,35 @@ public interface I_C_AcctSchema_GL
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Cash Rounding Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCashRounding_Acct (int CashRounding_Acct);
+
+	/**
+	 * Get Cash Rounding Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCashRounding_Acct();
+
+	@Nullable
+	org.compiere.model.I_C_ValidCombination getCashRounding_A();
+
+	void setCashRounding_A(@Nullable org.compiere.model.I_C_ValidCombination CashRounding_A);
+
+	ModelColumn<I_C_AcctSchema_GL, I_C_ValidCombination> COLUMN_CashRounding_Acct = new ModelColumn<>(I_C_AcctSchema_GL.class, "CashRounding_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_CashRounding_Acct = "CashRounding_Acct";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Commitment Offset.
 	 * Budgetary Commitment Offset Account
 	 *

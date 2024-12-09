@@ -26,8 +26,14 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+<<<<<<< HEAD
  import lombok.Getter;
 import lombok.NonNull;
+=======
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -42,7 +48,48 @@ import java.util.Optional;
 @EqualsAndHashCode(exclude = "uom", doNotUseGetters = true)
 public final class Capacity
 {
+<<<<<<< HEAD
 
+=======
+	@Getter private final ProductId productId;
+	private final UomId uomId;
+	private final I_C_UOM uom;
+	private final BigDecimal capacity;
+	@Getter private final boolean infiniteCapacity;
+	private final boolean allowNegativeCapacity;
+	/**
+	 * Constructs a finite capacity definition
+	 */
+	private Capacity(
+			@NonNull final BigDecimal capacity,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom,
+			final boolean allowNegativeCapacity)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		this.capacity = capacity;
+
+		infiniteCapacity = false;
+		this.allowNegativeCapacity = allowNegativeCapacity;
+	}
+	/**
+	 * Constructs an infinite capacity definition
+	 */
+	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		capacity = null;
+
+		infiniteCapacity = true;
+		allowNegativeCapacity = true;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static Capacity createInfiniteCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom)
@@ -74,6 +121,7 @@ public final class Capacity
 		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
 	}
 
+<<<<<<< HEAD
 	@Getter private final ProductId productId;
 	private final UomId uomId;
 	private final I_C_UOM uom;
@@ -115,6 +163,8 @@ public final class Capacity
 		allowNegativeCapacity = true;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
@@ -131,7 +181,11 @@ public final class Capacity
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isPositive()
 	{
 		return toBigDecimal().signum() > 0;
@@ -180,9 +234,15 @@ public final class Capacity
 
 		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
+<<<<<<< HEAD
 						quantity.toBigDecimal(),
 						quantity.getUOM(),
 						uom);
+=======
+							quantity.toBigDecimal(),
+							quantity.getUOM(),
+							uom);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
 
@@ -197,15 +257,26 @@ public final class Capacity
 			if (mustCreateZeroCapacity)
 			{
 				return createZeroCapacity(productId,
+<<<<<<< HEAD
 						uom,
 						allowNegativeCapacity);
+=======
+										  uom,
+										  allowNegativeCapacity);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
 		return createCapacity(capacityAvailable,
+<<<<<<< HEAD
 				productId,
 				uom,
 				allowNegativeCapacity);
+=======
+							  productId,
+							  uom,
+							  allowNegativeCapacity);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -214,7 +285,12 @@ public final class Capacity
 	 * <p>
 	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
 	 *
+<<<<<<< HEAD
 	 * @param targetUom quantity's unit of measure
+=======
+	 * @param qty
+	 * @param targetUom   quantity's unit of measure
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
 	public Optional<QuantityTU> calculateQtyTU(
@@ -282,4 +358,18 @@ public final class Capacity
 				+ ", allowNegativeCapacity=" + allowNegativeCapacity
 				+ "]";
 	}
+<<<<<<< HEAD
 }
+=======
+
+	public Quantity computeQtyCUs(final int qtyTUs)
+	{
+		if (qtyTUs < 0)
+		{
+			throw new AdempiereException("@QtyPacks@ < 0");
+		}
+
+		return multiply(qtyTUs).toQuantity();
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

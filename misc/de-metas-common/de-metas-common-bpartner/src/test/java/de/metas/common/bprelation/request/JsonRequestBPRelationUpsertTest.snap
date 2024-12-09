@@ -1,5 +1,6 @@
 de.metas.common.bprelation.request.JsonRequestBPRelationUpsertTest.serializeDeserialize=[
   {
+<<<<<<< HEAD
     "orgCode" : "org123",
     "locationIdentifier" : "loc123",
     "relatesTo" : [
@@ -17,6 +18,25 @@ de.metas.common.bprelation.request.JsonRequestBPRelationUpsertTest.serializeDese
         "remitTo" : true,
         "shipTo" : true,
         "active" : true
+=======
+    "locationIdentifier": "loc123",
+    "orgCode": "org123",
+    "relatesTo": [
+      {
+        "active": true,
+        "billTo": true,
+        "description": "relDesc",
+        "externalId": "ext123",
+        "fetchedFrom": true,
+        "handOverLocation": true,
+        "name": "relName",
+        "payFrom": true,
+        "remitTo": true,
+        "role": "Caregiver",
+        "shipTo": true,
+        "targetBpartnerIdentifier": "targetBP123",
+        "targetLocationIdentifier": "targetLoc123"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       }
     ]
   }

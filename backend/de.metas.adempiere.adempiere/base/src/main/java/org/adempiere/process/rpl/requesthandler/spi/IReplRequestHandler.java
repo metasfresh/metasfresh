@@ -30,7 +30,11 @@ import org.compiere.model.PO;
 
 /**
  * SPI to be extended by request handler implementations.
+<<<<<<< HEAD
  * 
+=======
+ * <p/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * Please consider extending the adapter: {@link ReplRequestHandlerAdapter}.
  * 
  * @author ts
@@ -46,8 +50,11 @@ public interface IReplRequestHandler
 	 *            the PO that was just received via replication interface and that therefore represents the request
 	 * @param ctx
 	 *            context info to be used when processing the request
+<<<<<<< HEAD
 	 * 
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	IReplRequestHandlerResult handleRequest(PO po, IReplRequestHandlerCtx ctx);
 }

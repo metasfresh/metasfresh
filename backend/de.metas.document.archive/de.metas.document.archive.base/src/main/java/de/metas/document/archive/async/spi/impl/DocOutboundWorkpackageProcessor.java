@@ -23,6 +23,10 @@ package de.metas.document.archive.async.spi.impl;
  */
 
 import de.metas.async.AsyncBatchId;
+<<<<<<< HEAD
+=======
+import ch.qos.logback.classic.Level;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -37,6 +41,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.impl.TextTemplateBL;
 import de.metas.letters.model.I_C_Letter;
+<<<<<<< HEAD
+=======
+import de.metas.logging.LogManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.user.UserId;
@@ -51,6 +59,10 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+<<<<<<< HEAD
+=======
+import org.slf4j.Logger;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -68,6 +80,11 @@ import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AU
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
+<<<<<<< HEAD
+=======
+	private static final Logger logger = LogManager.getLogger(DocOutboundWorkpackageProcessor.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
@@ -81,6 +98,11 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
 		{
+<<<<<<< HEAD
+=======
+			Loggables.withLogger(logger, Level.INFO).addLog("SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION=Y -> Skipping DocOutboundWorkpackageProcessor!");
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Result.SUCCESS;
 		}
 

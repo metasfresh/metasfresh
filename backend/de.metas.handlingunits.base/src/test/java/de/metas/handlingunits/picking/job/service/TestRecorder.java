@@ -12,8 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Disabled
 public class TestRecorder
@@ -50,9 +53,12 @@ public class TestRecorder
 	{
 		reportStep(name, huTracer.dumpAllHUsToJson());
 	}
+<<<<<<< HEAD
 
 	public void assertMatchesSnapshot()
 	{
 		expect(this).toMatchSnapshot();
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -80,7 +80,11 @@ public class InvoiceCandidateRecordService
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final UomId stockUomId = productBL.getStockUOMId(productId);
+<<<<<<< HEAD
 		final boolean stocked = productBL.isStocked(productId);
+=======
+		final boolean itemType = productBL.isItemType(productId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final UomId icUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
 
@@ -93,7 +97,11 @@ public class InvoiceCandidateRecordService
 				.id(invoiceCandidateId)
 				.soTrx(soTrx)
 				.uomId(icUomId)
+<<<<<<< HEAD
 				.product(new InvoiceCandidateProduct(productId, stocked))
+=======
+				.product(new InvoiceCandidateProduct(productId, itemType))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
@@ -294,15 +302,26 @@ public class InvoiceCandidateRecordService
 				.stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
 				.reduce(BigDecimal::add)
+<<<<<<< HEAD
 				.map(qtyPickedStockUOMSum -> Quantitys.create(qtyPickedStockUOMSum, stockUomId))
 				.orElseGet(() -> Quantitys.create(BigDecimal.ZERO, stockUomId));
 
 		final Quantity qtyPickedInUOM = Quantitys.create(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
+=======
+				.map(qtyPickedStockUOMSum -> Quantitys.of(qtyPickedStockUOMSum, stockUomId))
+				.orElseGet(() -> Quantitys.of(BigDecimal.ZERO, stockUomId));
+
+		final Quantity qtyPickedInUOM = Quantitys.of(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Quantity qtyPickedCatch = qtyPickedRecords
 				.stream()
 				.filter(qtyPickedRecord -> qtyPickedRecord.getQtyDeliveredCatch() != null && qtyPickedRecord.getCatch_UOM_ID() > 0)
+<<<<<<< HEAD
 				.map(qtyPickedRecord -> Quantitys.create(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
+=======
+				.map(qtyPickedRecord -> Quantitys.of(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.reduce(Quantity::add)
 				.filter(qtyPickedCatchSum -> qtyPickedCatchSum.toBigDecimal().signum() != 0)
 				.orElse(null);

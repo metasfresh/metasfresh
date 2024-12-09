@@ -600,6 +600,10 @@ class DocumentListContainer extends Component {
       viewId,
       viewData: { mapConfig },
       isModal,
+<<<<<<< HEAD
+=======
+      addViewLocationData,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     } = this.props;
 
     locationSearchRequest({ windowId, viewId }).then(({ data }) => {
@@ -824,6 +828,10 @@ export default connect(
     setBreadcrumb,
     fetchQuickActions,
     deleteQuickActions,
+<<<<<<< HEAD
+=======
+    addViewLocationData,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   },
   null,
   { forwardRef: true }

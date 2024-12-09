@@ -22,6 +22,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,9 @@ import org.compiere.model.I_M_PricingSystem;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
@@ -54,9 +58,27 @@ import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocument
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /* package */class MaterialTrackingDocuments implements IMaterialTrackingDocuments
 {
@@ -75,12 +97,18 @@ import lombok.NonNull;
 
 	private MaterialTrackingDocumentsPricingInfo pricingInfo;
 
+<<<<<<< HEAD
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/09657_WP-Auswertung_wird_beim_Schlie%C3%9Fen_nicht_erstellt_%28109750474442%29
 	 */
 	private Set<Integer> ppOrdersToBeConsideredClosed = new HashSet<>();
 
 	private Set<Integer> ppOrdersToBeConsideredNotClosed = new HashSet<>();
+=======
+	private final Set<Integer> ppOrdersToBeConsideredClosed = new HashSet<>();
+
+	private final Set<Integer> ppOrdersToBeConsideredNotClosed = new HashSet<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public MaterialTrackingDocuments(@NonNull final I_M_Material_Tracking materialTracking)
 	{
@@ -124,9 +152,13 @@ import lombok.NonNull;
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
 	 * @param allProductionOrders
 	 * @return the IQualityInspectionOrder that were not yet invoiced according to {@link IMaterialTrackingPPOrderDAO#isInvoiced(I_PP_Order)}.
+=======
+	 * @return the IQualityInspectionOrder that were not yet invoiced according to {@link IMaterialTrackingPPOrderDAO#isPPOrderInvoicedForMaterialTracking(I_PP_Order, I_M_Material_Tracking)}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private List<? extends IQualityInspectionOrder> filterOutInvoicedPPOrders(final List<IQualityInspectionOrder> allProductionOrders)
 	{
@@ -170,7 +202,11 @@ import lombok.NonNull;
 
 		// task 08848: we need to order the QualityInspections by their production dates.
 		// Just ordering them by M_Material_Tracking_Ref_ID is not OK because some of data records in might have been created late.
+<<<<<<< HEAD
 		Collections.sort(qualityInspectionOrders, (o1, o2) -> {
+=======
+		qualityInspectionOrders.sort((o1, o2) -> {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final Timestamp date1 = materialTrackingPPOrderBL.getDateOfProduction(o1.getPP_Order());
 			final Timestamp date2 = materialTrackingPPOrderBL.getDateOfProduction(o2.getPP_Order());
 
@@ -192,7 +228,11 @@ import lombok.NonNull;
 
 		for (final IQualityInspectionOrder qiOrderInterface : allProductionOrders)
 		{
+<<<<<<< HEAD
 			QualityInspectionOrder qiOrder = (QualityInspectionOrder)qiOrderInterface;
+=======
+			final QualityInspectionOrder qiOrder = (QualityInspectionOrder)qiOrderInterface;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			//
 			// Case: current order is an inspection order
@@ -231,14 +271,22 @@ import lombok.NonNull;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public IVendorInvoicingInfo getVendorInvoicingInfoForPLV(I_M_PriceList_Version plv)
+=======
+	public IVendorInvoicingInfo getVendorInvoicingInfoForPLV(final I_M_PriceList_Version plv)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final MaterialTrackingAsVendorInvoicingInfo materialTrackingAsVendorInvoicingInfo = new MaterialTrackingAsVendorInvoicingInfo(getM_Material_Tracking());
 		materialTrackingAsVendorInvoicingInfo.setM_PriceList_Version(plv);
 		return materialTrackingAsVendorInvoicingInfo;
 	}
 
+<<<<<<< HEAD
 	private final MaterialTrackingDocumentsPricingInfo getPricingInfo()
+=======
+	private MaterialTrackingDocumentsPricingInfo getPricingInfo()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (pricingInfo == null)
 		{

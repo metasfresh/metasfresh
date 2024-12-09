@@ -85,6 +85,11 @@ public class AcctSchemaTestHelper
 		acctSchemaGL.setIncomeSummary_Acct(1);
 		acctSchemaGL.setRetainedEarning_Acct(1);
 		acctSchemaGL.setPPVOffset_Acct(1);
+<<<<<<< HEAD
+=======
+		acctSchemaGL.setCashRounding_Acct(1);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(acctSchemaGL);
 
 		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);

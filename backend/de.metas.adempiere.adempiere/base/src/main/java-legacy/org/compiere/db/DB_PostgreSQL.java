@@ -821,7 +821,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		// New Sequence
 		if (!hasSequence(dbSequenceName, trxName))
 		{
+<<<<<<< HEAD
 			no = DB.executeUpdate("CREATE SEQUENCE " + dbSequenceName.toUpperCase()
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail("CREATE SEQUENCE " + dbSequenceName.toUpperCase()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -831,7 +835,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		// Already existing sequence => ALTER
 		else
 		{
+<<<<<<< HEAD
 			no = DB.executeUpdate("ALTER SEQUENCE " + dbSequenceName.toUpperCase()
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail("ALTER SEQUENCE " + dbSequenceName.toUpperCase()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -864,7 +872,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 
 		// NOTE: we are not using parameters because this command will be logged in migration scripts.
+<<<<<<< HEAD
 		DB.executeUpdateEx("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

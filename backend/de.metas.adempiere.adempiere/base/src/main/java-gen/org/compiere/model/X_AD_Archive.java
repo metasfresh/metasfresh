@@ -12,7 +12,11 @@ import java.util.Properties;
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = 457753025L;
+=======
+	private static final long serialVersionUID = 171076542L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -305,6 +309,21 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 

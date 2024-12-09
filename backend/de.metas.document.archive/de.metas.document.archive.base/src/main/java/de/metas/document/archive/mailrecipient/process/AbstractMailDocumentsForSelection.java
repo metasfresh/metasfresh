@@ -21,7 +21,11 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
 import org.adempiere.util.lang.Mutable;
+=======
+import org.adempiere.util.lang.MutableInt;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -88,7 +92,11 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 		// Enqueue selected archives as workpackages
 		final Stream<I_C_Doc_Outbound_Log_Line> docOutboundLines = getPDFArchiveDocOutboundLinesForSelection(pinstanceId);
 
+<<<<<<< HEAD
 		final Mutable<Integer> counter = new Mutable<>(0);
+=======
+		final MutableInt counter = MutableInt.zero();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), MailWorkpackageProcessor.class);
 
@@ -100,13 +108,21 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 					.addElement(docOutboundLogLine)
 					.buildAndEnqueue();
 
+<<<<<<< HEAD
 			counter.setValue(counter.getValue() + 1);
+=======
+			counter.incrementAndGet();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		});
 
 		return msgBL.getMsg(getCtx(), Async_Constants.MSG_WORKPACKAGES_CREATED, new Object[] { counter.getValue() });
 	}
 
+<<<<<<< HEAD
 	private final Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLinesForSelection(final PInstanceId pinstanceId)
+=======
+	private Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLinesForSelection(final PInstanceId pinstanceId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Stream<I_C_Doc_Outbound_Log> logsIterator = retrieveSelectedDocOutboundLogs(pinstanceId);
 
@@ -118,7 +134,11 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 				.filter(docOutboundLogLine -> isEmailSendable(docOutboundLogLine, collector));
 	}
 
+<<<<<<< HEAD
 	private final Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final PInstanceId pinstanceId)
+=======
+	private Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final PInstanceId pinstanceId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Iterator<I_C_Doc_Outbound_Log> iterator = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
@@ -133,17 +153,27 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 	/**
 	 * To be overridden where necessary
 	 *
+<<<<<<< HEAD
 	 * @param log
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return document log line
 	 */
 	protected I_C_Doc_Outbound_Log_Line retrieveDocumentLogLine(final I_C_Doc_Outbound_Log log)
 	{
+<<<<<<< HEAD
 
 		final I_C_Doc_Outbound_Log_Line logLine = docOutboundDAO.retrieveCurrentPDFArchiveLogLineOrNull(log);
 		return logLine;
 	}
 
 	private final boolean isEmailSendable(
+=======
+		return docOutboundDAO.retrieveCurrentPDFArchiveLogLineOrNull(log);
+	}
+
+	private boolean isEmailSendable(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final I_C_Doc_Outbound_Log_Line logLine,
 			@NonNull final ProblemCollector collector)
 	{

@@ -1,5 +1,6 @@
 de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.serializeDeserialize=[
   {
+<<<<<<< HEAD
     "jsonAlbertaBPartner" : {
       "isArchived" : true,
       "archivedSet" : true,
@@ -88,5 +89,66 @@ de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.ser
         "legalCarerSet" : true
       }
     ]
+=======
+    "jsonAlbertaBPartner": {
+      "archivedSet": true,
+      "isArchived": true,
+      "timestamp": "2019-11-22T00:00:00Z",
+      "timestampSet": true,
+      "title": "title",
+      "titleSet": true,
+      "titleShort": "titleShort",
+      "titleShortSet": true
+    },
+    "jsonAlbertaCareGivers": [
+      {
+        "caregiverIdentifier": "11111",
+        "isLegalCarer": true,
+        "legalCarerSet": true,
+        "type": "type",
+        "typeSet": true
+      }
+    ],
+    "jsonAlbertaPatient": {
+      "careDegree": 2.2,
+      "careDegreeSet": true,
+      "classification": "classification",
+      "classificationSet": true,
+      "copaymentFrom": "2021-05-24",
+      "copaymentFromSet": true,
+      "copaymentTo": "2021-05-24",
+      "copaymentToSet": true,
+      "createdAt": "2019-11-22T00:00:00Z",
+      "createdAtSet": true,
+      "createdByIdentifier": "6666666",
+      "createdByIdentifierSet": true,
+      "deactivationComment": "comment",
+      "deactivationCommentSet": true,
+      "deactivationDate": "2021-05-24",
+      "deactivationDateSet": true,
+      "deactivationReason": "reason",
+      "deactivationReasonSet": true,
+      "dischargeDate": "2019-11-22",
+      "dischargeDateSet": true,
+      "fieldNurseIdentifier": "4444444",
+      "fieldNurseIdentifierSet": true,
+      "hospitalIdentifier": "1111111",
+      "hospitalIdentifierSet": true,
+      "isIVTherapy": true,
+      "isTransferPatient": true,
+      "ivTherapySet": true,
+      "numberOfInsured": "333333",
+      "numberOfInsuredSet": true,
+      "payerIdentifier": "2222222",
+      "payerIdentifierSet": true,
+      "payerType": "payerType",
+      "payerTypeSet": true,
+      "transferPatientSet": true,
+      "updateByIdentifierSet": false,
+      "updatedAt": "2019-11-22T00:00:00Z",
+      "updatedAtSet": true
+    },
+    "role": "Patient"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -31,6 +31,10 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.FixedConversionRate;
@@ -40,6 +44,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+<<<<<<< HEAD
+=======
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -50,6 +59,10 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+<<<<<<< HEAD
+=======
+import de.metas.organization.InstantAndOrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -84,7 +97,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -113,6 +129,10 @@ public class PaymentBL implements IPaymentBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+<<<<<<< HEAD
+=======
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -178,7 +198,11 @@ public class PaymentBL implements IPaymentBL
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
+<<<<<<< HEAD
 		final LocalDate ConvDate = TimeUtil.asLocalDate(payment.getDateTrx());
+=======
+		final Instant ConvDate = payment.getDateTrx().toInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -297,7 +321,11 @@ public class PaymentBL implements IPaymentBL
 		// Get Currency Info
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
+<<<<<<< HEAD
 		final LocalDate convDate = TimeUtil.asLocalDate(payment.getDateTrx());
+=======
+		final Instant convDate = payment.getDateTrx() != null ? payment.getDateTrx().toInstant() : SystemTime.asInstant();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -409,7 +437,14 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
+<<<<<<< HEAD
 			invoices.add(alloc.getC_Invoice());
+=======
+			if (alloc.getC_Invoice_ID() > 0)
+			{
+				invoices.add(alloc.getC_Invoice());
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		for (final I_C_Invoice inv : invoices)
@@ -525,6 +560,30 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void scheduleUpdateIsAllocated(@NonNull final PaymentId paymentId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"paymentBL.scheduleUpdateIsAllocated",
+				ImmutableSet.of(paymentId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<PaymentId> paymentIds)
+	{
+		paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds))
+				.forEach(payment -> {
+					final boolean updated = testAllocation(payment);
+					if (updated)
+					{
+						paymentDAO.save(payment);
+					}
+				});
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void testAllocation(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = getById(paymentId);
@@ -617,7 +676,11 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final I_C_Payment payment,
 			@NonNull final Money writeOffAmt,
 			@NonNull final Instant writeOffDate,
+<<<<<<< HEAD
 			@Nullable String description)
+=======
+			@Nullable final String description)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
@@ -660,6 +723,15 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void markNotReconciled(@NonNull final PaymentId paymentId)
+	{
+		markNotReconciled(ImmutableSet.of(paymentId));
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void markNotReconciled(
 			@NonNull final Collection<PaymentId> paymentIds)
 	{
@@ -686,6 +758,15 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void markReconciled(@NonNull final PaymentReconcileRequest request)
+	{
+		markReconciled(ImmutableList.of(request), ImmutableList.of());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void markReconciled(
 			@NonNull final Collection<PaymentReconcileRequest> requests)
 	{
@@ -846,10 +927,16 @@ public class PaymentBL implements IPaymentBL
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+<<<<<<< HEAD
 				TimeUtil.asLocalDate(payment.getDateAcct()),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
 				ClientId.ofRepoId(payment.getAD_Client_ID()),
 				OrgId.ofRepoId(payment.getAD_Org_ID()));
+=======
+				InstantAndOrgId.ofTimestamp(payment.getDateAcct(), OrgId.ofRepoId(payment.getAD_Org_ID())),
+				paymentCurrencyContext.getCurrencyConversionTypeId(),
+				ClientId.ofRepoId(payment.getAD_Client_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)
@@ -873,7 +960,11 @@ public class PaymentBL implements IPaymentBL
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
 		// Invoice
+<<<<<<< HEAD
 		final I_C_Invoice invoice = InvoiceId.ofRepoIdOptional(payment.getC_Invoice_ID())
+=======
+		final I_C_Invoice invoice = InvoiceId.optionalOfRepoId(payment.getC_Invoice_ID())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.map(invoiceBL::getById)
 				.orElse(null);
 
@@ -905,4 +996,15 @@ public class PaymentBL implements IPaymentBL
 			throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void reversePaymentById(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment payment = getById(paymentId);
+		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

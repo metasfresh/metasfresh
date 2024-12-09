@@ -22,6 +22,11 @@
 
 package de.metas.externalsystem;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
@@ -33,6 +38,7 @@ import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +55,23 @@ import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 {
+=======
+import org.compiere.model.I_AD_Process;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
+{
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private ExternalSystemLeichMehlConfigProductMappingRepository externalSystemLeichMehlConfigProductMappingRepository;
 
 	@BeforeEach
@@ -58,6 +81,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		externalSystemLeichMehlConfigProductMappingRepository = new ExternalSystemLeichMehlConfigProductMappingRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -70,6 +94,8 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void getExternalSystemLeichMehlConfigProductMappings_whenConfigWithAndWithoutPartnerExists_getPartnerOne()
 	{
@@ -78,10 +104,22 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		final ProductId productId = ProductId.ofRepoId(1);
 		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
 
+<<<<<<< HEAD
 		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
 		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
 		pluFileConfigGroup.setName("testGroupName");
 
+=======
+		final I_AD_Process customProcess = newInstance(I_AD_Process.class);
+		customProcess.setValue("ExternalSystem_Config_LeichMehl_CustomQuery");
+		saveRecord(customProcess);
+
+		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
+		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		pluFileConfigGroup.setName("testGroupName");
+		pluFileConfigGroup.setIsAdditionalCustomQuery(true);
+		pluFileConfigGroup.setAD_Process_CustomQuery_ID(customProcess.getAD_Process_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(pluFileConfigGroup);
 
 		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
@@ -92,7 +130,10 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		pluFileConfig.setReplacement("replacement");
 		pluFileConfig.setReplaceRegExp("replacePattern");
 		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(pluFileConfig);
 
 		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
@@ -101,7 +142,10 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		productMappingRecord.setPLU_File("pluFile");
 		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
 		productMappingRecord.setCU_TU_PLU(PLUType.CU.getCode());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(productMappingRecord);
 
 		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
@@ -111,7 +155,10 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		productMappingRecord2.setPLU_File("pluFilePartner");
 		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
 		productMappingRecord2.setCU_TU_PLU(PLUType.CU.getCode());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(productMappingRecord2);
 
 		// when
@@ -124,7 +171,11 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
+<<<<<<< HEAD
 		expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -249,7 +300,11 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
+<<<<<<< HEAD
 		expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -307,7 +362,11 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
+<<<<<<< HEAD
 		expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 	
 }

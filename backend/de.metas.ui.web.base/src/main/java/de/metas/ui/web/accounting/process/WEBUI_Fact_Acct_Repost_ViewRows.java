@@ -1,5 +1,6 @@
 package de.metas.ui.web.accounting.process;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import de.metas.ui.web.accounting.filters.FactAcctFilterDescriptorsProviderFactory;
@@ -10,14 +11,32 @@ import org.compiere.model.I_Fact_Acct;
 
 import com.google.common.collect.ImmutableSet;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.accounting.filters.FactAcctFilterDescriptorsProviderFactory;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import de.metas.util.StreamUtils;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_Fact_Acct;
+
+import java.util.Collection;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -63,6 +82,7 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 
 	@Override
 	@RunOutOfTrx
+<<<<<<< HEAD
 	protected String doIt() throws Exception
 	{
 		final Set<DocumentToRepost> documentsToRepost = getDocumentsToRepost();
@@ -71,11 +91,24 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 			return MSG_OK;
 		}
 
+=======
+	protected String doIt()
+	{
+		StreamUtils.dice(streamDocumentsToRepost(), 1000)
+				.forEach(this::enqueueChunk);
+
+		return MSG_OK;
+	}
+
+	private void enqueueChunk(final Collection<DocumentToRepost> documentsToRepost)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		FactAcctRepostCommand.builder()
 				.forcePosting(forcePosting)
 				.documentsToRepost(documentsToRepost)
 				.build()
 				.execute();
+<<<<<<< HEAD
 
 		return MSG_OK;
 	}
@@ -86,6 +119,14 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 				.map(this::extractDocumentToRepost)
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
+=======
+	}
+
+	private Stream<DocumentToRepost> streamDocumentsToRepost()
+	{
+		return getView().streamByIds(getSelectedRowIds(), QueryLimit.NO_LIMIT)
+				.map(this::extractDocumentToRepost);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private DocumentToRepost extractDocumentToRepost(@NonNull final IViewRow row)

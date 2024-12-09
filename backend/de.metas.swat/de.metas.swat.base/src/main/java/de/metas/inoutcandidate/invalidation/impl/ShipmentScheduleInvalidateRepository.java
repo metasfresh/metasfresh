@@ -4,7 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
@@ -80,6 +84,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	private static final String M_SHIPMENT_SCHEDULE_RECOMPUTE = "M_ShipmentSchedule_Recompute";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
+=======
+	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Invalidate by M_Product_ID
@@ -120,7 +128,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
@@ -136,7 +148,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final int clientId = Env.getAD_Client_ID(ctx);
 		final String chunkUUID = UUID.randomUUID().toString();
 
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} entries for AD_Client_ID={}", count, clientId);
 
 		if (count > 0)
@@ -199,7 +215,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} shipment schedules for headerAggregationKeys={}", count, headerAggregationKeys);
 		//
 		if (count > 0)
@@ -234,7 +254,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
 				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
@@ -255,7 +279,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "\n WHERE " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'"
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, pinstanceId);
 		//
 		if (count > 0)
@@ -333,7 +361,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Execute
 		final String trxName = ITrx.TRXNAME_None;
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
 		//
@@ -567,7 +599,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
 				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
 				;
+<<<<<<< HEAD
 		final int countTagged = DB.executeUpdateEx(sqlUpdate, ITrx.TRXNAME_None);
+=======
+		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 
@@ -578,7 +614,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final Object[] param = { pinstanceId };
 		final Mutable<HashSet<Integer>> shipmentScheduleIds = new Mutable<>(new HashSet<>());
+<<<<<<< HEAD
 		DB.executeUpdateEx(
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				sql,
 				param,
 				ITrx.TRXNAME_None,
@@ -599,10 +639,15 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateShipmentScheduleCache(@NonNull final Set<Integer> shipmentScheduleIds)
 	{
+<<<<<<< HEAD
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+=======
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -611,7 +656,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final Object[] sqlParams = new Object[] { pinstanceId };
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
+<<<<<<< HEAD
 		final int result = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+=======
+		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
 	}
 
@@ -650,10 +699,16 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateCacheForAllShipmentSchedules()
 	{
+<<<<<<< HEAD
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+=======
+
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**

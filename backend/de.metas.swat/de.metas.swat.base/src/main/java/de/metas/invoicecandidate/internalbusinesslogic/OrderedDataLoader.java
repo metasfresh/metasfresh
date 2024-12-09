@@ -1,11 +1,14 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
@@ -22,6 +25,14 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -73,6 +84,7 @@ public class OrderedDataLoader
 
 		if (hasInvalidOrder)
 		{
+<<<<<<< HEAD
 			result.qty(Quantitys.createZero(icUomId));
 			result.qtyInStockUom(Quantitys.createZero(stockUomId));
 		}
@@ -80,6 +92,15 @@ public class OrderedDataLoader
 		{
 			result.qty(Quantitys.create(invoiceCandidateRecord.getQtyEntered(), icUomId));
 			result.qtyInStockUom(Quantitys.create(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
+=======
+			result.qty(Quantitys.zero(icUomId));
+			result.qtyInStockUom(Quantitys.zero(stockUomId));
+		}
+		else
+		{
+			result.qty(Quantitys.of(invoiceCandidateRecord.getQtyEntered(), icUomId));
+			result.qtyInStockUom(Quantitys.of(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return result.build();

@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ReferenceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
@@ -34,7 +38,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+<<<<<<< HEAD
 import de.metas.reflist.ReferenceId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -60,6 +67,10 @@ import de.metas.workflow.service.WFNodeCreateRequest;
 import de.metas.workflow.service.WFNodeLayoutChangeRequest;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -373,7 +384,11 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		try
 		{
 			return WFNodeTransitionCondition.builder()
+<<<<<<< HEAD
 					.adColumnId(record.getAD_Column_ID())
+=======
+					.adColumnId(AdColumnId.ofRepoId(record.getAD_Column_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.andJoin(X_AD_WF_NextCondition.ANDOR_And.equals(record.getAndOr()))
 					.operation(record.getOperation())
 					.conditionValue1(record.getValue())

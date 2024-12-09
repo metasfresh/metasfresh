@@ -3,6 +3,11 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -20,8 +25,11 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
@@ -54,9 +62,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 public abstract class AbstractDocumentBL implements IDocumentBL
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
+=======
+	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
+
+	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
@@ -106,7 +120,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
+<<<<<<< HEAD
 		return perfMonServicew.monitorSpan(
+=======
+		return perfMonServicew.monitor(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				() -> processIt0(document, action, throwExIfNotSuccess),
 				DocactionAPMHelper.createMetadataFor(document, action));
 	}
@@ -150,7 +168,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		});
 
+<<<<<<< HEAD
 		return processed != null && processed.booleanValue();
+=======
+		return processed != null && processed;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception
@@ -363,7 +385,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public String getDocumentNo(final Object model)
+=======
+	public String getDocumentNo(@NonNull final Object model)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// First try: document's DocumentNo if available
@@ -475,23 +501,38 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public final Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue()
 	{
+<<<<<<< HEAD
 		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
 		final Properties ctx = Env.getCtx();
 		final String adLanguage = Env.getAD_Language(ctx);
 
 		final Map<String, IDocActionItem> docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final Properties ctx = Env.getCtx();
+		final String adLanguage = Env.getAD_Language(ctx);
+
+		return adReferenceService.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.stream()
 				.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
 				.sorted(Comparator.comparing(DocActionItem::toString))
 				.collect(GuavaCollectors.toImmutableMapByKey(IDocActionItem::getValue));
+<<<<<<< HEAD
 		return docActionItemsByValue;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static final class DocActionItem implements IDocActionItem
 	{
 		private final String value;
 		private final String caption;
+<<<<<<< HEAD
 		private String description;
+=======
+		private final String description;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private DocActionItem(final ADRefListItem adRefListItem, final String adLanguage)
 		{

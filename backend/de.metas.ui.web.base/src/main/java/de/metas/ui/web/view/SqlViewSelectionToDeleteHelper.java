@@ -67,7 +67,11 @@ public class SqlViewSelectionToDeleteHelper
 			if (sqlBuilder.getParametersCount() >= 1000)
 			{
 				final SqlAndParams sql = sqlBuilder.build();
+<<<<<<< HEAD
 				DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				sqlBuilder = null;
 			}
 		}
@@ -75,7 +79,11 @@ public class SqlViewSelectionToDeleteHelper
 		if (sqlBuilder != null)
 		{
 			final SqlAndParams sql = sqlBuilder.build();
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		logger.debug("{} view selections scheduled to be deleted", selectionIds.size());
@@ -102,7 +110,11 @@ public class SqlViewSelectionToDeleteHelper
 			final String sql = "UPDATE " + I_T_WEBUI_ViewSelection_ToDelete.Table_Name + " SET "
 					+ I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
 					+ " WHERE " + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + " IS NULL";
+<<<<<<< HEAD
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+=======
+			final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (count <= 0)
 			{
 				return;
@@ -120,7 +132,11 @@ public class SqlViewSelectionToDeleteHelper
 					+ "\n           s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_View_UUID + "=t." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
 					+ "\n           AND s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
 					+ "\n )";
+<<<<<<< HEAD
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+=======
+			final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.trace("Deleted {} rows from {}", count, I_T_WEBUI_ViewSelectionLine.Table_Name);
 		}
 
@@ -133,7 +149,11 @@ public class SqlViewSelectionToDeleteHelper
 					+ "\n           s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_View_UUID + "=t." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
 					+ "\n           AND s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
 					+ "\n )";
+<<<<<<< HEAD
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+=======
+			final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.trace("Deleted {} rows from {}", count, I_T_WEBUI_ViewSelection.Table_Name);
 		}
 
@@ -146,7 +166,11 @@ public class SqlViewSelectionToDeleteHelper
 					+ "\n           s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_View_UUID + "=t." + I_T_ES_FTS_Search_Result.COLUMNNAME_Search_UUID
 					+ "\n           AND s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
 					+ "\n )";
+<<<<<<< HEAD
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+=======
+			final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.trace("Deleted {} rows from {}", count, I_T_ES_FTS_Search_Result.Table_Name);
 		}
 
@@ -155,7 +179,11 @@ public class SqlViewSelectionToDeleteHelper
 		{
 			final String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection_ToDelete.Table_Name
 					+ " WHERE " + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?";
+<<<<<<< HEAD
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+=======
+			final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.trace("Deleted {} rows from {}", count, I_T_WEBUI_ViewSelection_ToDelete.Table_Name);
 		}
 

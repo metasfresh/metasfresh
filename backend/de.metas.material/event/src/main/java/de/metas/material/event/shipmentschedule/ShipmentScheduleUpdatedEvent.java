@@ -1,5 +1,9 @@
 package de.metas.material.event.shipmentschedule;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.DocumentLineDescriptor;
@@ -40,29 +44,41 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
+<<<<<<< HEAD
+=======
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleUpdatedEvent";
 
+<<<<<<< HEAD
 	private final BigDecimal orderedQuantityDelta;
 
 	private final BigDecimal reservedQuantityDelta;
 
 	private final DocumentLineDescriptor documentLineDescriptor;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonCreator
 	@Builder
 	public ShipmentScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
+<<<<<<< HEAD
 			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
+=======
+			@JsonProperty("shipmentScheduleDetail") final ShipmentScheduleDetail shipmentScheduleDetail,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
 		super(eventDescriptor,
+<<<<<<< HEAD
 				materialDescriptor,
 				minMaxDescriptor,
 				reservedQuantity,
@@ -71,5 +87,26 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 		this.orderedQuantityDelta = orderedQuantityDelta;
 		this.reservedQuantityDelta = reservedQuantityDelta;
 		this.documentLineDescriptor = documentLineDescriptor;
+=======
+			  materialDescriptor,
+			  minMaxDescriptor,
+			  shipmentScheduleDetail,
+			  shipmentScheduleId,
+			  documentLineDescriptor);
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getReservedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getReservedQuantityDelta();
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantityDelta();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

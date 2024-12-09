@@ -22,6 +22,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.spi;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,10 +31,22 @@ import java.util.List;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Interface containing all the information needed to do quality based invoicing
@@ -61,6 +74,7 @@ public interface IQualityBasedConfig
 	 * Returns the quality adjustment for the given month.
 	 *
 	 * @param month 0-based number of the month, i.e. 0 is january. Note that we have it 0-based, because that is also how it's done in <code>java.util.Calendar</code>.
+<<<<<<< HEAD
 	 * @return
 	 */
 	BigDecimal getQualityAdjustmentForMonthOrNull(int month);
@@ -71,6 +85,11 @@ public interface IQualityBasedConfig
 	 * @param outboundDate
 	 * @return
 	 */
+=======
+	 */
+	BigDecimal getQualityAdjustmentForMonthOrNull(int month);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	BigDecimal getQualityAdjustmentForDateOrNull(Date outboundDate);
 
 	BigDecimal getScrapPercentageTreshold();
@@ -79,8 +98,11 @@ public interface IQualityBasedConfig
 
 	/**
 	 * Note: this method can return true, and the fee might still be 0. This would mean that there is an invoice line, but with a net amount of 0.
+<<<<<<< HEAD
 	 * 
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	boolean isFeeForScrap();
 
@@ -88,31 +110,49 @@ public interface IQualityBasedConfig
 	 *
 	 * @param m_Product the unwanted (by-)product for which there is a fee when it is produced.
 	 * @param percentage the percentage of the produced product.
+<<<<<<< HEAD
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	BigDecimal getFeeForProducedMaterial(I_M_Product m_Product, BigDecimal percentage);
 
 	String getFeeNameForProducedProduct(I_M_Product product);
 
+<<<<<<< HEAD
 	List<IInvoicingItem> getAdditionalFeeProducts();
+=======
+	@NonNull
+	List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	Currency getCurrency();
 
 	/**
 	 * Gets a list of {@link QualityInspectionLineType} which needs to be in PP Order Report.
+<<<<<<< HEAD
 	 *
 	 * Only the those types will be in the report and exactly in the given order.
 	 *
 	 * @return
+=======
+	 * <p>
+	 * Only the those types will be in the report and exactly in the given order.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	List<QualityInspectionLineType> getPPOrderReportLineTypes();
 
 	/**
 	 * Gets a list of {@link QualityInvoiceLineGroupType} which needs to be in invoice candidates.
+<<<<<<< HEAD
 	 *
 	 * Only the those types will be processed and exactly in the given order.
 	 *
 	 * @return
+=======
+	 * <p>
+	 * Only the those types will be processed and exactly in the given order.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	List<QualityInvoiceLineGroupType> getQualityInvoiceLineGroupTypes();
 
@@ -131,9 +171,17 @@ public interface IQualityBasedConfig
 
 	/**
 	 * Product for auslagerung.
+<<<<<<< HEAD
 	 * 
 	 * @return
 	 * @task 08720
 	 */
 	I_M_Product getRegularPPOrderProduct();
+=======
+	 */
+	I_M_Product getRegularPPOrderProduct();
+
+	@NonNull
+	List<IInvoicingItem> getRawAdditionalFeeProducts();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

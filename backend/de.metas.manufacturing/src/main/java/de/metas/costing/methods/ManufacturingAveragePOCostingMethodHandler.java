@@ -5,12 +5,22 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+<<<<<<< HEAD
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
+=======
+import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostPrice;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -19,9 +29,12 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -32,12 +45,22 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderCosts;
+=======
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+<<<<<<< HEAD
 import java.util.Optional;
+=======
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 /*
@@ -73,14 +96,27 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
+<<<<<<< HEAD
+=======
+	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
 	public ManufacturingAveragePOCostingMethodHandler(
+<<<<<<< HEAD
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.utils = utils;
+=======
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
+	{
+		this.utils = utils;
+		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -96,12 +132,23 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
 		if (existingCostDetail != null)
 		{
 			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+=======
+	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -109,9 +156,15 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 	}
 
+<<<<<<< HEAD
 	private Optional<CostDetailCreateResult> createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+=======
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
+	{
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
@@ -138,7 +191,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
+<<<<<<< HEAD
 				return Optional.empty();
+=======
+				return null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -178,7 +235,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
+<<<<<<< HEAD
 		return Optional.ofNullable(result);
+=======
+		return CostDetailCreateResultsList.ofNullable(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)
@@ -261,8 +322,13 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createActivityControl(
+<<<<<<< HEAD
 			final CostDetailCreateRequest request,
 			final Duration totalDuration)
+=======
+			final CostDetailCreateRequest ignoredRequest,
+			final Duration ignoredTotalDuration)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Computing activity costs is not yet supported");
@@ -276,6 +342,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostAmount> calculateSeedCosts(
 			final CostSegment costSegment,
 			final OrderLineId orderLineId)
@@ -284,9 +351,20 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

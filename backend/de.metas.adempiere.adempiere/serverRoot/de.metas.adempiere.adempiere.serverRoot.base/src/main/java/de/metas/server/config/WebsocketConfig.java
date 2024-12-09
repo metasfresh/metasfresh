@@ -4,7 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.util.Check;
+=======
+import de.metas.util.StringUtils;
+import de.metas.websocket.OutboundWebsocketTopicNamePrefixAware;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.websocket.producers.WebSocketProducerFactory;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -23,6 +28,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -32,6 +41,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer
 
 	private final ImmutableSet<String> topicNamePrefixes;
 
+<<<<<<< HEAD
 	public WebsocketConfig(@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories)
 	{
 		topicNamePrefixes = extractTopicPrefixes(producerFactories);
@@ -45,6 +55,35 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer
 				.filter(Objects::nonNull)
 				.filter(Check::isNotBlank)
 				.collect(ImmutableSet.toImmutableSet());
+=======
+	public WebsocketConfig(
+			@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories,
+			@NonNull final Optional<List<OutboundWebsocketTopicNamePrefixAware>> outboundTopicNamePrefixAwares)
+	{
+		topicNamePrefixes = extractTopicPrefixes(producerFactories, outboundTopicNamePrefixAwares);
+	}
+
+	private static ImmutableSet<String> extractTopicPrefixes(
+			@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories,
+			@NonNull final Optional<List<OutboundWebsocketTopicNamePrefixAware>> outboundTopicNamePrefixAwares)
+	{
+		final ImmutableSet.Builder<String> result = ImmutableSet.builder();
+		producerFactories.orElse(ImmutableList.of())
+				.stream()
+				.map(WebSocketProducerFactory::getTopicNamePrefix)
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.forEach(result::add);
+		outboundTopicNamePrefixAwares.orElse(ImmutableList.of())
+				.stream()
+				.map(OutboundWebsocketTopicNamePrefixAware::getOutboundTopicNamePrefixes)
+				.flatMap(Set::stream)
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.forEach(result::add);
+
+		return result.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

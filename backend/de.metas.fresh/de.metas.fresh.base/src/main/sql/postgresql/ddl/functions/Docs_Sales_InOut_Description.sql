@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(IN record_id   numeric,
                                                                                         IN ad_language Character Varying(6))
 ;
@@ -22,6 +23,33 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_D
                 sr_email     character varying,
                 printname    character varying,
                 order_docno  text
+=======
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(IN record_id  numeric,
+                                                                                        IN p_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(record_id  numeric,
+                                                                                           p_language character varying)
+    RETURNS TABLE
+            (
+                description   character varying,
+                documentno    character varying,
+                movementdate  timestamp WITHOUT TIME ZONE,
+                reference     character varying,
+                bp_value      character varying,
+                eori          character varying,
+                cont_name     text,
+                cont_phone    character varying,
+                cont_fax      character varying,
+                cont_email    character varying,
+                sr_name       text,
+                sr_phone      character varying,
+                sr_fax        character varying,
+                sr_email      character varying,
+                printname     character varying,
+                order_docno   text,
+                billtoaddress character varying
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             )
     STABLE
     LANGUAGE sql
@@ -33,6 +61,10 @@ SELECT io.description                        AS description,
        io.poreference                        AS reference,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
+<<<<<<< HEAD
+=======
+       bp.customernoatvendor                 AS customernoatvendor,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
@@ -48,6 +80,7 @@ SELECT io.description                        AS description,
        srep.fax                              AS sr_fax,
        srep.email                            AS sr_email,
        COALESCE(dtt.printname, dt.printname) AS printname,
+<<<<<<< HEAD
        o.docno                               AS order_docno
 FROM m_inout io
          INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
@@ -57,6 +90,22 @@ FROM m_inout io
          LEFT OUTER JOIN AD_User cont ON io.AD_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
          LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
          LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID AND srgr.isActive = 'Y'
+=======
+       o.docno                               AS order_docno,
+       REPLACE(
+               REPLACE(ord.billtoaddress, E'\r\n', ' | '),
+               E'\n', ' | '
+       )                                     AS billtoaddress
+FROM m_inout io
+         INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
+         LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
+         INNER JOIN c_bpartner bp ON io.c_bpartner_id = bp.c_bpartner_id
+         INNER JOIN c_order ord ON io.c_order_id = ord.c_order_id
+         LEFT OUTER JOIN AD_User srep ON io.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
+         LEFT OUTER JOIN AD_User cont ON io.AD_User_ID = cont.AD_User_ID
+         LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
+         LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
          LEFT JOIN LATERAL
     (
@@ -66,6 +115,7 @@ FROM m_inout io
              JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
              JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
+<<<<<<< HEAD
     WHERE iol.M_InOut_ID = $1
     ) o ON TRUE
 WHERE io.m_inout_id = $1
@@ -75,3 +125,10 @@ $$
 
 ALTER FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_inout_description(numeric, varchar) OWNER TO metasfresh
 ;
+=======
+    WHERE iol.M_InOut_ID = record_id
+    ) o ON TRUE
+WHERE io.m_inout_id = record_id
+$$
+;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

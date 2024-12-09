@@ -11,7 +11,11 @@ import lombok.Value;
 import org.adempiere.service.ClientId;
 
 import java.math.BigDecimal;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Objects;
 import java.util.Optional;
 
@@ -20,7 +24,11 @@ import java.util.Optional;
 public class CurrencyConversionContext
 {
 	@NonNull
+<<<<<<< HEAD
 	LocalDate conversionDate;
+=======
+	Instant conversionDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	CurrencyConversionTypeId conversionTypeId;
 	@NonNull

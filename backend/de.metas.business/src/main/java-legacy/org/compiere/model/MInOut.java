@@ -17,6 +17,10 @@
 package org.compiere.model;
 
 import de.metas.acct.api.IFactAcctDAO;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -28,6 +32,10 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -38,6 +46,10 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+<<<<<<< HEAD
+=======
+import de.metas.inout.InOutId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -60,7 +72,10 @@ import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -614,7 +629,11 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public String getDocStatusName()
 	{
+<<<<<<< HEAD
 		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
+=======
+		return ADReferenceService.get().retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	} // getDocStatusName
 
 	/**
@@ -857,7 +876,11 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
+<<<<<<< HEAD
 		final int noLine = DB.executeUpdate(sql, get_TrxName());
+=======
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1123,7 +1146,11 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
+<<<<<<< HEAD
 			final int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -2271,7 +2298,11 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
+<<<<<<< HEAD
 		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
+=======
+		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(InOutId.ofRepoIdOrNull(getM_InOut_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
 			{
@@ -2307,7 +2338,11 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		//
 		// Make sure it's not a reversal or reversed document.

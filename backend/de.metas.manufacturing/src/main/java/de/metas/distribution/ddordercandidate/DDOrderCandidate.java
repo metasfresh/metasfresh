@@ -145,7 +145,11 @@ public class DDOrderCandidate
 				//
 				.productId(ProductId.ofRepoId(data.getProductId()))
 				.hupiItemProductId(data.getHupiItemProductId())
+<<<<<<< HEAD
 				.qty(Quantitys.create(data.getQty(), UomId.ofRepoId(data.getUomId())))
+=======
+				.qty(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.qtyTUs(1)// TODO
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
 				//

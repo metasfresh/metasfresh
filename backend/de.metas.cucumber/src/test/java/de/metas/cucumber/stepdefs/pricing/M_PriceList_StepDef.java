@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -205,6 +209,17 @@ public class M_PriceList_StepDef
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+<<<<<<< HEAD
+=======
+	private I_M_PriceList getExistingPriceList(final boolean soTrx, final int pricingSystemId, final CountryId countryId)
+	{
+		final I_M_PriceList m_priceList;
+		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(PricingSystemId.ofRepoId(pricingSystemId), countryId, SOTrx.ofBoolean(soTrx));
+		m_priceList = existingPriceLists.isEmpty() ? InterfaceWrapperHelper.newInstance(I_M_PriceList.class) : existingPriceLists.get(0);
+		return m_priceList;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private static CurrencyCode extractCurrencyCode(final DataTableRow row)
 	{
@@ -253,6 +268,33 @@ public class M_PriceList_StepDef
 		DataTableRows.of(dataTable).forEach(this::createM_ProductPrice);
 	}
 
+<<<<<<< HEAD
+=======
+	@And("update metasfresh masterdata M_ProductPrice")
+	public void update_masterdata_M_ProductPrice(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateMasterDataM_ProductPrice(tableRow);
+		}
+	}
+
+	private void updateMasterDataM_ProductPrice(@NonNull final Map<String, String> tableRow)
+	{
+		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_ProductPrice productPriceRecord = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		productPriceRecord.setC_UOM_ID(productPriceUomId.getRepoId());
+
+		saveRecord(productPriceRecord);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@And("update M_ProductPrice:")
 	public void update_M_ProductPrice(@NonNull final DataTable dataTable)
 	{
@@ -318,6 +360,10 @@ public class M_PriceList_StepDef
 				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
 				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
 
+<<<<<<< HEAD
+=======
+		productPrice.setIsActive(true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
 		productPrice.setM_Product_ID(productId);

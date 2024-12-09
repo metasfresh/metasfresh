@@ -2,15 +2,22 @@ package de.metas.banking.callout;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
+<<<<<<< HEAD
 import de.metas.banking.api.BankAccountAcctRepository;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.currency.CurrencyRepository;
+<<<<<<< HEAD
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.MoneyService;
 import de.metas.util.Services;
+=======
+import de.metas.money.MoneyService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -66,11 +73,17 @@ public class C_BankStatementLine_Test
 		final BankStatementBL bankStatementBL = new BankStatementBL(
 				new BankAccountService(
 						bankRepo = new BankRepository(),
+<<<<<<< HEAD
 						new BankAccountAcctRepository(),
 						new CurrencyRepository()),
 				new MoneyService(new CurrencyRepository()));
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		callout = new C_BankStatementLine(bankStatementBL, currencyConversionBL);
+=======
+						new CurrencyRepository()),
+				new MoneyService(new CurrencyRepository()));
+		callout = new C_BankStatementLine(bankStatementBL);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "bankStatementLine", builderClassName = "$BankStatementLineBuilder")

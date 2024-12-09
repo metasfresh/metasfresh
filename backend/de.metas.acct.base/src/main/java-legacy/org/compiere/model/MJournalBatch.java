@@ -16,6 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -124,6 +128,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	}	//	setClientOrg
 
 	/**
+<<<<<<< HEAD
 	 * 	Set Accounting Date.
 	 * 	Set also Period if not set earlier
 	 *	@param DateAcct date
@@ -142,6 +147,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	 *	@return Array of lines
 	 */
 	public MJournal[] getJournals (boolean requery)
+=======
+	 * 	Get Journal Lines
+	 *    @return Array of lines
+	 */
+	private MJournal[] getJournals ()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		ArrayList<MJournal> list = new ArrayList<>();
 		String sql = "SELECT * FROM GL_Journal WHERE GL_JournalBatch_ID=? ORDER BY DocumentNo";
@@ -225,14 +236,22 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
+<<<<<<< HEAD
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+=======
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
 		}
 
 		//	Add up Amounts & prepare them
+<<<<<<< HEAD
 		MJournal[] journals = getJournals(false);
+=======
+		MJournal[] journals = getJournals();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (journals.length == 0)
 		{
 			throw AdempiereException.noLines();
@@ -337,7 +356,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		approveIt();
 
 		//	Add up Amounts & complete them
+<<<<<<< HEAD
 		MJournal[] journals = getJournals(true);
+=======
+		MJournal[] journals = getJournals();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		BigDecimal TotalDr = BigDecimal.ZERO;
 		BigDecimal TotalCr = BigDecimal.ZERO;		
 		for (final MJournal journal : journals)
@@ -445,7 +468,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		MJournal[] journals = getJournals(true);
+=======
+		MJournal[] journals = getJournals();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (MJournal journal2 : journals)
 		{
 			MJournal journal = journal2;
@@ -502,7 +529,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		MJournal[] journals = getJournals(true);
+=======
+		MJournal[] journals = getJournals();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -585,7 +616,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		MJournal[] journals = getJournals(true);
+=======
+		MJournal[] journals = getJournals();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -649,7 +684,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		for (MJournal journal : getJournals(true))
+=======
+		for (MJournal journal : getJournals())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			if (DOCSTATUS_Completed.equals(journal.getDocStatus()))
 			{
@@ -691,7 +730,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		.append(msgBL.translate(getCtx(),"TotalDr")).append("=").append(getTotalDr())
 		.append(" ")
 		.append(msgBL.translate(getCtx(),"TotalCR")).append("=").append(getTotalCr())
+<<<<<<< HEAD
 		.append(" (#").append(getJournals(false).length).append(")");
+=======
+		.append(" (#").append(getJournals().length).append(")");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//	 - Description
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());

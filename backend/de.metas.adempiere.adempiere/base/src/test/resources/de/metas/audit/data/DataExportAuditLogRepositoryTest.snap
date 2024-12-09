@@ -1,5 +1,6 @@
 de.metas.audit.data.DataExportAuditLogRepositoryTest.save=[
   {
+<<<<<<< HEAD
     "dataExportAuditLogId" : {
       "repoId" : 100001,
       "dataExportAuditId" : 1
@@ -7,5 +8,14 @@ de.metas.audit.data.DataExportAuditLogRepositoryTest.save=[
     "action" : "AssignedToParent",
     "externalSystemConfigId" : 3,
     "adPInstanceId" : 4
+=======
+    "action": "AssignedToParent",
+    "adPInstanceId": 4,
+    "dataExportAuditLogId": {
+      "dataExportAuditId": 1,
+      "repoId": 100001
+    },
+    "externalSystemConfigId": 3
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

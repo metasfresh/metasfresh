@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -64,6 +65,28 @@ public class ScanAnythingMobileApplication implements MobileApplication
 				.applicationParameter("handledApplicationIds", handledApplicationIds)
 				.build();
 	}
+=======
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplication;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class ScanAnythingMobileApplication implements MobileApplication
+{
+	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("scanAnything");
+
+	private static final ImmutableSet<MobileApplicationId> HANDLED_APPLICATION_IDS = ImmutableSet.of(
+			WorkplaceManager.APPLICATION_ID,
+			WorkstationManager.APPLICATION_ID
+	);
+
+	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public MobileApplicationId getApplicationId()
@@ -72,8 +95,24 @@ public class ScanAnythingMobileApplication implements MobileApplication
 	}
 
 	@Override
+<<<<<<< HEAD
 	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
 	{
 		return APPLICATION_INFO;
 	}
+=======
+	public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+	{
+		final ITranslatableString caption = HANDLED_APPLICATION_IDS.stream()
+				.map(mobileApplicationInfoRepository::getById)
+				.map(MobileApplicationInfo::getCaption)
+				.collect(TranslatableStrings.joining(", "));
+
+		return applicationInfo.toBuilder()
+				.caption(caption)
+				.applicationParameter("handledApplicationIds", HANDLED_APPLICATION_IDS)
+				.build();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

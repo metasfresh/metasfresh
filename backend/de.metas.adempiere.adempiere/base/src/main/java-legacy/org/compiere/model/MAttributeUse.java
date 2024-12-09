@@ -16,12 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 
+=======
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+
+import java.sql.ResultSet;
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Attribute Use Model
  *
@@ -57,14 +66,22 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ " SET IsInstanceAttribute='Y' "
 					+ "WHERE M_AttributeSet_ID=" + attributeSetId
 					+ " AND IsInstanceAttribute='N'"
+<<<<<<< HEAD
 					+ " AND (IsSerNo='Y' OR IsLot='Y' OR IsGuaranteeDate='Y'"
 					+ " OR EXISTS (SELECT * FROM M_AttributeUse mau"
+=======
+					+ " AND (EXISTS (SELECT * FROM M_AttributeUse mau"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')"
 					+ ")";
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		// Update M_AttributeSet.IsInstanceAttribute='N'
@@ -73,13 +90,20 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ " SET IsInstanceAttribute='N' "
 					+ "WHERE M_AttributeSet_ID=" + attributeSetId
 					+ " AND IsInstanceAttribute='Y'"
+<<<<<<< HEAD
 					+ "	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N'"
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					+ " AND NOT EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')";
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

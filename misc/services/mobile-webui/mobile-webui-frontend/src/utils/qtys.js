@@ -73,7 +73,11 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
     MAX_maximumFractionDigits
   );
 
+<<<<<<< HEAD
   qtyEffective = parseFloat(qtyEffective.toFixed(maximumFractionDigits));
+=======
+  qtyEffective = parseFloat(Number(qtyEffective).toFixed(maximumFractionDigits));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
   if (maximumFractionDigits < MAX_maximumFractionDigits) {
     formatOptions.minimumFractionDigits = 0;

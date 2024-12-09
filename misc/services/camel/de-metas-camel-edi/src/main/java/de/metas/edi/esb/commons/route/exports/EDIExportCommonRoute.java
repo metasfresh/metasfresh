@@ -76,7 +76,11 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					// INVOIC - figure out which clearing center we shall use
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.process(exchange -> {
+<<<<<<< HEAD
 							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceivergln();
+=======
+							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceiverGLN();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
@@ -92,11 +96,22 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						// DESADV - figure out which clearing center we shall use
 						.process(exchange -> {
+<<<<<<< HEAD
 							final String receiverGLN = exchange.getIn().getBody(EDIExpDesadvType.class).getCBPartnerID().getEdiRecipientGLN();
 							final ClearingCenter clearingCenter = DesadvSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
 						.log(LoggingLevel.INFO, "EDI: ClearingCenter="+header("ClearingCenter"))
+=======
+							
+							// may be null if the buyer does not receive DESADVs
+							final String receiverGLN = exchange.getIn().getBody(EDIExpDesadvType.class).getCBPartnerID().getEdiRecipientGLN();
+							
+							final ClearingCenter clearingCenter = DesadvSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
+							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
+						})
+						.log(LoggingLevel.INFO, "EDI: ClearingCenter=" + header("ClearingCenter"))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.choice()
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.STEPcom.toString()))
 								.to(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)

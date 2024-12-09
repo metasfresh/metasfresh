@@ -90,7 +90,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Set C_BPartner_ID for {} records", no);
 	}
 
@@ -105,7 +109,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Set DropShip_BPartner_ID for {} records", no);
 	}
 
@@ -120,7 +128,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Set C_Flatrate_Conditions_ID for {} records", no);
 	}
 
@@ -135,7 +147,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Set M_Product_ID for {} records (by Value)", no);
 	}
 
@@ -150,7 +166,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL";
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("Set M_Product_ID for {} records (by Name)", no);
 	}
 
@@ -160,7 +180,11 @@ public class FlatrateTermImportTableSqlUpdater
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_Flatrate_Term.I_ISIMPORTED_ImportFailed, errorMsg + "; " };
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	}
 }

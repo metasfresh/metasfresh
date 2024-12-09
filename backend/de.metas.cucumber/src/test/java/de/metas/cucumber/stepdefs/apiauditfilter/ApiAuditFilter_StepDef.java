@@ -43,19 +43,37 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
+<<<<<<< HEAD
 
 	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
 	{
 		this.testContext = testContext;
+=======
+	private final API_Audit_Config_StepDefData apiAuditConfigTable;
+
+	public ApiAuditFilter_StepDef(
+			@NonNull final TestContext testContext,
+			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
+	{
+		this.testContext = testContext;
+		this.apiAuditConfigTable = apiAuditConfigTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("all the API audit data is reset")
 	public void reset_data()
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@When("invoke replay audit")

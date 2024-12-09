@@ -59,7 +59,11 @@ public class ProductPlanningDAO_findPlantTest
 		final int productId = -1; // N/A
 		final int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
 
+<<<<<<< HEAD
 		final ResourceId plantActual = productPlanningDAO.findPlant(
+=======
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				adOrgId,
 				warehouse,
 				productId,
@@ -84,7 +88,11 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct("product");
 		createProductPlanningWithPlant(org, warehouse, product);
 
+<<<<<<< HEAD
 		final ResourceId plantActual = productPlanningDAO.findPlant(
+=======
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -107,7 +115,11 @@ public class ProductPlanningDAO_findPlantTest
 		final int adOrgId = 1;
 		final int productId = 2;
 
+<<<<<<< HEAD
 		assertThatThrownBy(() -> productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None))
+=======
+		assertThatThrownBy(() -> productPlanningDAO.findPlantId(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.isInstanceOf(NoPlantForWarehouseException.class);
 	}
 
@@ -126,7 +138,11 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct("product");
 		final ProductPlanning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
 
+<<<<<<< HEAD
 		final ResourceId plantActual = productPlanningDAO.findPlant(
+=======
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -145,7 +161,11 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 		createProductPlanningWithPlant(org, warehouse, product);
 
+<<<<<<< HEAD
 		assertThatThrownBy(() -> productPlanningDAO.findPlant(
+=======
+		assertThatThrownBy(() -> productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -169,7 +189,11 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanning(org, warehouse, product, null);
 		createProductPlanning(org, warehouse, product, null);
 
+<<<<<<< HEAD
 		final ResourceId plantActual = productPlanningDAO.findPlant(
+=======
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),

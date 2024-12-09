@@ -32,6 +32,10 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
+<<<<<<< HEAD
+=======
+import org.compiere.model.X_M_Product;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -121,6 +125,10 @@ public class M_InOutLine_HandlerTest
 
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
 		packagingProduct.setC_UOM_ID(packagingProductUom.getC_UOM_ID());
+<<<<<<< HEAD
+=======
+		packagingProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		save(packagingProduct);
 
 		final I_C_UOM packagingUom = newInstance(I_C_UOM.class);

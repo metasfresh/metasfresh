@@ -105,7 +105,11 @@ public class QuerySelectionToDeleteHelper
 
 			if (counter >= 1000)
 			{
+<<<<<<< HEAD
 				DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+=======
+				DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				sql = new StringBuilder();
 				sql.append(sqlInsertInto);
 				counter = 0;
@@ -113,7 +117,11 @@ public class QuerySelectionToDeleteHelper
 		}
 		if (counter > 0)
 		{
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		logger.debug("{} query selections are now scheduled to be deleted", counter);
@@ -165,9 +173,15 @@ public class QuerySelectionToDeleteHelper
 					+ " WHERE"
 					+ " UUID IN (SELECT distinct UUID FROM T_Query_Selection_ToDelete WHERE Executor_UUID IS NULL LIMIT ?)";
 
+<<<<<<< HEAD
 			final int querySelectionToDeleteCount = DB.executeUpdateEx(sql,
 					new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
 					ITrx.TRXNAME_ThreadInherited);
+=======
+			final int querySelectionToDeleteCount = DB.executeUpdateAndThrowExceptionOnFail(sql,
+																							new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
+																							ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.debug("Tagged {} selectionIds to be deleted", querySelectionToDeleteCount);
 			if (querySelectionToDeleteCount <= 0)
 			{

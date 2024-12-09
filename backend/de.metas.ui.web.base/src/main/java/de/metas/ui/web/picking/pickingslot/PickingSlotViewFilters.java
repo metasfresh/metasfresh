@@ -61,10 +61,17 @@ public class PickingSlotViewFilters
 				.setFrequentUsed(true)
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(PARAM_Barcode)
 						.setDisplayName(TranslatableStrings.adMessage(MSG_BarcodeFilter))
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Text)
+=======
+						.fieldName(PARAM_Barcode)
+						.displayName(TranslatableStrings.adMessage(MSG_BarcodeFilter))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Text)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}

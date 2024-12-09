@@ -64,7 +64,11 @@ class QuotationLineAggregator
 	{
 		this.priceCalculator = priceCalculator;
 		this.key = key;
+<<<<<<< HEAD
 		this.qty = Quantitys.createZero(key.getUomId());
+=======
+		this.qty = Quantitys.zero(key.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static QuotationLineKey extractKey(@NonNull final ServiceRepairProjectCostCollector costCollector)

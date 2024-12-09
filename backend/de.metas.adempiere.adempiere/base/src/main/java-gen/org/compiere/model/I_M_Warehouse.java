@@ -640,4 +640,30 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_Value = new ModelColumn<>(I_M_Warehouse.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+<<<<<<< HEAD
+=======
+
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

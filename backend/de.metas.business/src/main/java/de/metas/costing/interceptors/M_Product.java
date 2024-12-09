@@ -2,6 +2,10 @@ package de.metas.costing.interceptors;
 
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
+<<<<<<< HEAD
+=======
+import de.metas.product.ProductConstants;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -49,12 +53,33 @@ class M_Product
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Product.COLUMNNAME_C_UOM_ID)
 	public void assertNoCosts(final I_M_Product product)
 	{
+<<<<<<< HEAD
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		if (costDetailsService.hasCostDetailsForProductId(productId))
 		{
 			throw new AdempiereException("@CannotDeleteProductsWithCostDetails@");
 		}
 
+=======
+		assertNoCost(product);
+	}
+
+	private void assertNoCost(final I_M_Product product)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		if (costDetailsService.hasCostDetailsForProductId(productId))
+		{
+			throw new AdempiereException(ProductConstants.MSG_PRODUCT_ALREADY_USED);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Product.COLUMNNAME_C_UOM_ID)
+	public void updateCostUom(final I_M_Product product)
+	{
+		assertNoCost(product);
+		currentCostsRepository.updateUOMForProduct(product);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Product.COLUMNNAME_M_Product_Category_ID)

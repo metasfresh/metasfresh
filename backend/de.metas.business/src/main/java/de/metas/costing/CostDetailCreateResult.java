@@ -1,9 +1,20 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+=======
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
+import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.costing.methods.CostAmountType;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -30,15 +41,22 @@ import lombok.Value;
 @Value
 public class CostDetailCreateResult
 {
+<<<<<<< HEAD
 	CostSegment costSegment;
 	CostElement costElement;
 	CostAmount amt;
 	Quantity qty;
+=======
+	@NonNull CostSegment costSegment;
+	@NonNull CostElement costElement;
+	@NonNull @With @Getter CostAmountAndQtyDetailed amtAndQty;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private CostDetailCreateResult(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
+<<<<<<< HEAD
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty)
 	{
@@ -47,4 +65,16 @@ public class CostDetailCreateResult
 		this.amt = amt;
 		this.qty = qty;
 	}
+=======
+			@NonNull final CostAmountAndQtyDetailed amtAndQty)
+	{
+		this.costSegment = costSegment;
+		this.costElement = costElement;
+		this.amtAndQty = amtAndQty;
+	}
+
+	public CostAmountAndQty getAmtAndQty(@NonNull final CostAmountType type) {return amtAndQty.getAmtAndQty(type);}
+
+	public CostAmountDetailed getAmt() {return amtAndQty.getAmt();}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

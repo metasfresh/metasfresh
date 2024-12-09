@@ -71,10 +71,20 @@ CREATE FUNCTION report.fresh_qty_statistics_report_kg
 	) 
 	RETURNS SETOF report.fresh_qty_statistics_report_kg AS
 $BODY$
+<<<<<<< HEAD
 	SELECT 
 		*, 1 AS UnionOrder
 	FROM 	
 		report.fresh_statistics_kg ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+=======
+with statistics AS
+    (select * from report.fresh_statistics_kg ($1, $2, $3, $4, $5, $6, $7, $8, $9))
+
+	SELECT 
+		*, 1 AS UnionOrder
+	FROM 	
+		statistics
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 UNION ALL
 	SELECT 
 		pc_name, null AS P_name, null AS P_value, UOMSymbol,
@@ -88,7 +98,11 @@ UNION ALL
 		param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
 		2 AS UnionOrder
 	FROM 	
+<<<<<<< HEAD
 		report.fresh_statistics_kg ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+=======
+		statistics
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	GROUP BY
 		pc_name, UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
@@ -107,7 +121,11 @@ UNION ALL
 		param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
 		3 AS UnionOrder
 	FROM 	
+<<<<<<< HEAD
 		report.fresh_statistics_kg ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+=======
+		statistics
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	GROUP BY
 		UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
@@ -123,7 +141,11 @@ UNION ALL
 		param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
 		4 AS UnionOrder
 	FROM 	
+<<<<<<< HEAD
 		report.fresh_statistics_kg ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+=======
+		statistics
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	GROUP BY
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 		StartDate, EndDate,

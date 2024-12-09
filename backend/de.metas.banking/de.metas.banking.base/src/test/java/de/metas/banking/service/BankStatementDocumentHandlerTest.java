@@ -10,6 +10,11 @@ import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
+<<<<<<< HEAD
+=======
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.banking.service.impl.C_BankStatementLine_MockedInterceptor;
 import de.metas.bpartner.BPartnerId;
@@ -20,6 +25,11 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentTableFields;
+<<<<<<< HEAD
+=======
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -103,10 +113,24 @@ public class BankStatementDocumentHandlerTest
 			}
 		};
 
+<<<<<<< HEAD
 		// bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		final BankStatementPaymentBL bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				new MoneyService(new CurrencyRepository()));
+=======
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final MoneyService moneyService = new MoneyService(currencyRepository);
+		SpringContextHolder.registerJUnitBean(moneyService);
+
+		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
+
+		// bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+		final BankStatementPaymentBL bankStatementPaymentBL = new BankStatementPaymentBL(
+				bankStatementBL,
+				moneyService,
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BankStatementDocumentHandlerRequiredServicesFacade servicesFacade = new BankStatementDocumentHandlerRequiredServicesFacade(
 				bankStatementPaymentBL,
@@ -121,7 +145,11 @@ public class BankStatementDocumentHandlerTest
 
 		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
+<<<<<<< HEAD
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
+=======
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		createMasterData();
 	}

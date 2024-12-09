@@ -1,5 +1,6 @@
 package de.metas.ui.web.accounting.process;
 
+<<<<<<< HEAD
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
@@ -7,12 +8,23 @@ import com.google.common.collect.ImmutableList;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_Fact_Acct_Transactions_View;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 {
@@ -24,7 +36,11 @@ public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 	{
 		final I_Fact_Acct factAcct = factAcctDAO.getById(factAcctRecordId);
 
+<<<<<<< HEAD
 		final int factAcctTableId = getTableId(I_Fact_Acct.class);
+=======
+		final int factAcctTableId = getTableId(I_Fact_Acct_Transactions_View.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final TableRecordReference documentReference = TableRecordReference.of(factAcct.getAD_Table_ID(), factAcct.getRecord_ID());
 

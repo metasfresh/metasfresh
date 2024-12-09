@@ -5,7 +5,10 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+<<<<<<< HEAD
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -26,7 +29,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DD_Order_PostMaterialEvent
 {
+<<<<<<< HEAD
 	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull private final PostMaterialEventService materialEventService;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)

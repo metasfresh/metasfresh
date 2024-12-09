@@ -2,8 +2,13 @@ package de.metas.ui.web.document.filter.provider.standard;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
+<<<<<<< HEAD
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+=======
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -12,20 +17,36 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+<<<<<<< HEAD
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+=======
+import de.metas.ui.web.document.filter.sql.SqlDefaultDocumentFilterConverter;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+<<<<<<< HEAD
+=======
+import de.metas.util.Check;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +78,10 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 {
 	// services
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
+<<<<<<< HEAD
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IViewsRepository viewsRepository;
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
@@ -77,6 +101,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	}
 
 	@Override
+<<<<<<< HEAD
 	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
@@ -85,6 +110,13 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 
 	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields, final boolean isAutodetectDefaultDateFilter)
 	{
+=======
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
+	{
+		final ImmutableList<DocumentFieldDescriptor> fields = context.getFields();
+		final boolean isAutodetectDefaultDateFilter = context.isAutodetectDefaultDateFilter();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
 				.filter(DocumentFieldDescriptor::hasFileringInfo)
 				.filter(field -> field.getDefaultFilterInfo().isDefaultFilter())
@@ -100,7 +132,15 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		//
 		// Default filters
 		DocumentFilterDescriptor defaultDateFilter = null;
+<<<<<<< HEAD
 		DocumentFilterDescriptor.Builder defaultFilterBuilder = null;
+=======
+		final DocumentFilterDescriptor.Builder defaultFilterBuilder = DocumentFilterDescriptor.builder()
+				.setFilterId(FILTER_ID_Default)
+				.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_DEFAULT_FILTERS_GROUP)
+				.setDisplayName(TranslatableStrings.adMessage(MSG_DefaultFilterName))
+				.setFrequentUsed(false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ArrayList<DocumentFilterDescriptor> inlineFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
@@ -129,6 +169,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			}
 			else
 			{
+<<<<<<< HEAD
 				if (defaultFilterBuilder == null)
 				{
 					defaultFilterBuilder = DocumentFilterDescriptor.builder()
@@ -137,11 +178,39 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 							.setDisplayName(msgBL.getTranslatableMsgText(MSG_DefaultFilterName))
 							.setFrequentUsed(false);
 				}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				defaultFilterBuilder.addParameter(filterParam);
 			}
 		}
 
 		//
+<<<<<<< HEAD
+=======
+		// Filters of included tabs
+		for (final DocumentEntityDescriptor includedEntity : context.getIncludedEntities())
+		{
+			final DetailId detailId = Check.assumeNotNull(includedEntity.getDetailId(), "detailId shall be not null for {}", includedEntity);
+			for (final DocumentFilterDescriptor includedFilter : includedEntity.getFilterDescriptors().getAll())
+			{
+				final String includedFilterId = includedFilter.getFilterId();
+				if (FILTER_ID_Default.equals(includedFilterId))
+				{
+					for (final DocumentFilterParamDescriptor includedFilterParam : includedFilter.getParameters())
+					{
+						defaultFilterBuilder.addParameter(
+								includedFilterParam.toBuilder()
+										.parameterName(SqlDefaultDocumentFilterConverter.includedFilterParameterName(detailId, includedFilterId, includedFilterParam.getParameterName()))
+										.fieldName(SqlDefaultDocumentFilterConverter.includedFilterParameterName(detailId, includedFilterId, includedFilterParam.getFieldName()))
+										.mandatory(false)
+						);
+					}
+				}
+			}
+		}
+
+		//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Facet filters
 		final ArrayList<DocumentFilterDescriptor> facetFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForFacetFiltering)
@@ -151,12 +220,21 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			facetFilters.add(facetFilter);
 		}
 
+<<<<<<< HEAD
+=======
+		//
+		// Assemble final filter descriptors list
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ArrayList<DocumentFilterDescriptor> descriptors = new ArrayList<>();
 		if (defaultDateFilter != null)
 		{
 			descriptors.add(defaultDateFilter);
 		}
+<<<<<<< HEAD
 		if (defaultFilterBuilder != null)
+=======
+		if (defaultFilterBuilder.hasParameters())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			descriptors.add(defaultFilterBuilder.build());
 		}
@@ -205,6 +283,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		}
 
 		return DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 				.setDisplayName(displayName)
 				.setFieldName(fieldName)
 				.setWidgetType(widgetTypeEffective)
@@ -213,6 +292,16 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.setMandatory(false)
 				.setShowIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
 				.setAutoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
+=======
+				.displayName(displayName)
+				.fieldName(fieldName)
+				.widgetType(widgetTypeEffective)
+				.operator(operator)
+				.lookupDescriptor(lookupDescriptor)
+				.mandatory(false)
+				.showIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
+				.autoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
@@ -251,12 +340,21 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.setDisplayName(field.getCaption())
 				.setFacetFilter(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 						.setFieldName(facetsLookupDescriptor.getFieldName())
 						.setOperator(Operator.IN_ARRAY)
 						.setDisplayName(field.getCaption())
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.MultiValuesList)
 						.setLookupDescriptor(facetsLookupDescriptor))
+=======
+						.fieldName(facetsLookupDescriptor.getFieldName())
+						.operator(Operator.IN_ARRAY)
+						.displayName(field.getCaption())
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.MultiValuesList)
+						.lookupDescriptor(facetsLookupDescriptor))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

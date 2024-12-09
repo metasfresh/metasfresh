@@ -153,7 +153,11 @@ public class BundleUtil
 		boolean updated = false;
 		if (oldStatus == null || newStatus.compareTo(oldStatus) != 0)
 		{
+<<<<<<< HEAD
 			int no = DB.executeUpdateEx(
+=======
+			int no = DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					"UPDATE R_Group SET "+R_Group_CCM_Bundle_Status+"=? WHERE R_Group_ID=?",
 					new Object[]{newStatus, R_Group_ID},
 					trxName);

@@ -1,5 +1,6 @@
 package de.metas.util.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.awt.Color;
@@ -14,6 +15,8 @@ import org.compiere.model.X_AD_Color;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.ColorId;
@@ -22,6 +25,23 @@ import de.metas.util.MFColor;
 import de.metas.util.MFColorType;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Color;
+import org.compiere.model.MImage;
+import org.compiere.model.X_AD_Color;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.net.URL;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -53,6 +73,10 @@ public class ColorRepository implements IColorRepository
 	private static final CCache<String, ColorId> colorIdByName = CCache.<String, ColorId> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
 
 	@Override
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public MFColor getColorById(final int adColorId)
 	{
 		if (adColorId <= 0)
@@ -63,6 +87,17 @@ public class ColorRepository implements IColorRepository
 		return colorValuesById.getOrLoad(adColorId, () -> createMFColorById(adColorId));
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	@Nullable
+	public MFColor getColorById(@Nullable final ColorId colorId)
+	{
+		return colorId != null ? colorValuesById.getOrLoad(colorId.getRepoId(), () -> createMFColorById(colorId.getRepoId())) : null;
+	}
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private static MFColor createMFColorById(final int adColorId)
 	{
 		final I_AD_Color colorRecord = loadOutOfTrx(adColorId, I_AD_Color.class);

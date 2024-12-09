@@ -355,7 +355,11 @@ public class APanel extends CPanel
 	@SuppressWarnings("unused")
 	private AppsAction aEnd, aHome, aHelp,
 			aPreference,
+<<<<<<< HEAD
 			aOnline, aMailSupport, aAbout, aExit,
+=======
+			aOnline, aAbout, aExit,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			aDeleteSelection;
 	// private AppsAction aCalculator, aCalendar, aEditor, aScript;
 
@@ -464,7 +468,10 @@ public class APanel extends CPanel
 		menuBar.add(mHelp);
 		aHelp = addAction("Help", mHelp, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), false, false);
 		aOnline = addAction("Online", mHelp, null, false, false);
+<<<<<<< HEAD
 		aMailSupport = addAction("EMailSupport", mHelp, null, false, false);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		aAbout = addAction("About", mHelp, null, false, false);
 	}
 
@@ -509,7 +516,10 @@ public class APanel extends CPanel
 			addToolbarSeparator();
 			toolBar.add(AProcess.createAppsAction(this, isTabIncluded).getButton()); // metas: us1247
 			toolBar.add(aAttachment.getButton());
+<<<<<<< HEAD
 			toolBar.add(AEMailLetter.createAppsAction(this, isTabIncluded).getButton()); // metas-2009_0017_AP1_G41
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			toolBar.add(aChat.getButton());
 		}
 
@@ -2878,7 +2888,11 @@ public class APanel extends CPanel
 		}
 	}
 
+<<<<<<< HEAD
 	private final void actionButton0(final VButton vButton) throws Exception
+=======
+	private void actionButton0(final VButton vButton) throws Exception
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
@@ -2892,7 +2906,11 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
+<<<<<<< HEAD
 		if (columnBL.isRecordIdColumnName (columnName))
+=======
+		if (IColumnBL.isRecordIdColumnName (columnName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
 			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);

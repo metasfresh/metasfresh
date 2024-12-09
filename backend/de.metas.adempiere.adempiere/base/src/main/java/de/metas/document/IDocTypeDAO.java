@@ -22,6 +22,7 @@ package de.metas.document;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -30,11 +31,18 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.document.engine.IDocumentBL;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.GLCategoryId;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
 
 public interface IDocTypeDAO extends ISingletonService
 {
@@ -42,11 +50,37 @@ public interface IDocTypeDAO extends ISingletonService
 
 	I_C_DocType getById(DocTypeId docTypeId);
 
+=======
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+public interface IDocTypeDAO extends ISingletonService
+{
+	@NonNull
+	I_C_DocType getById(int docTypeId);
+
+	@NonNull
+	I_C_DocType getById(DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
 	 */
 	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
 	Optional<I_C_DocType> retrieveDocType(DocTypeQuery docTypeQuery);
@@ -60,7 +94,10 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
 	 *
+<<<<<<< HEAD
 	 * @param query
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return a list of docTypes never <code>null</code>. Those with <code>IsDefault</code> and with <code>AD_Org_ID > 0</code> will be first in the list.
 	 */
 	List<I_C_DocType> retrieveDocTypesByBaseType(DocTypeQuery query);
@@ -68,6 +105,7 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
 	 */
+<<<<<<< HEAD
 	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
@@ -98,5 +136,37 @@ public interface IDocTypeDAO extends ISingletonService
 		final int documentCopies;
 	}
 
+=======
+	Optional<DocBaseType> getDocBaseTypeCounter(DocBaseType docBaseType);
+
+	DocTypeId createDocType(DocTypeCreateRequest request);
+	
+	void save(@NonNull I_C_DocType dt);
+
+	@Value
+	@Builder
+	class DocTypeCreateRequest
+	{
+		@NonNull Properties ctx;
+		@Default int adOrgId = -1;
+		String entityType;
+		@NonNull String name;
+		String printName;
+		@NonNull DocBaseType docBaseType;
+		@NonNull @Default DocSubType docSubType = DocSubType.NONE;
+		Boolean isSOTrx;
+		int docTypeShipmentId;
+		int docTypeInvoiceId;
+		@NonNull GLCategoryId glCategoryId;
+
+		int docNoSequenceId;
+		int newDocNoSequenceStartNo;
+
+		int documentCopies;
+	}
+
+	DocBaseType getDocBaseTypeById(@NonNull DocTypeId docTypeId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
 }

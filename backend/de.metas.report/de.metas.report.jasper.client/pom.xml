@@ -36,6 +36,7 @@
 					<groupId>org.apache.lucene</groupId>
 					<artifactId>lucene-queryparser</artifactId>
 				</exclusion>
+<<<<<<< HEAD
 				<!-- exclude itext, because jasper 6.2.1 accidentally uses version 2.1.7.js5-SNAPSHOT -->
 				<exclusion>
 					<groupId>com.lowagie</groupId>
@@ -46,12 +47,19 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			</exclusions>
 		</dependency>
 
 		<dependency>
+<<<<<<< HEAD
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
+=======
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -102,6 +110,15 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		</dependency>
 
 		<dependency>
+<<<<<<< HEAD
+=======
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

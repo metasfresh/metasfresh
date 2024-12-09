@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+<<<<<<< HEAD
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
@@ -32,6 +33,16 @@ import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+=======
+import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
@@ -115,6 +126,11 @@ public class ImportOrdersRouteContext
 	@Getter(AccessLevel.NONE)
 	private final boolean skipNextImportStartingTimestamp;
 
+<<<<<<< HEAD
+=======
+	private final int pageLimit;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -148,7 +164,19 @@ public class ImportOrdersRouteContext
 	private JsonProductLookup jsonProductLookup;
 
 	@Nullable
+<<<<<<< HEAD
 	JsonOrderAddress orderShippingAddress;
+=======
+	JsonAddress orderShippingAddress;
+
+	@Setter(AccessLevel.NONE)
+	private int ordersResponsePageIndex;
+
+	private boolean moreOrdersAvailable;
+
+	@Nullable
+	private PriceListBasicInfo priceListBasicInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -277,6 +305,7 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public ExternalIdentifier getMetasfreshId()
 	{
 		final String id = getId(metasfreshIdJsonPath);
@@ -288,11 +317,19 @@ public class ImportOrdersRouteContext
 					.build();
 		}
 		return getUserId();
+=======
+	public ExternalIdentifier getBPExternalIdentifier()
+	{
+		final Customer customer = getOrderNotNull().getCustomer();
+
+		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
+<<<<<<< HEAD
 		final String id = getId(shopwareIdJsonPath);
 		if (!Check.isBlank(id))
 		{
@@ -323,6 +360,11 @@ public class ImportOrdersRouteContext
 			return id;
 		}
 		return null;
+=======
+		final Customer customer = getOrderNotNull().getCustomer();
+
+		return customer.getShopwareId(shopwareIdJsonPath);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
@@ -339,8 +381,13 @@ public class ImportOrdersRouteContext
 				.orElse("");
 
 		final String locationBPartnerName =
+<<<<<<< HEAD
 				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
 				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+=======
+				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
+						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
@@ -350,7 +397,11 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public JsonOrderAddress getOrderShippingAddressNotNull()
+=======
+	public JsonAddress getOrderShippingAddressNotNull()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
 	}
@@ -365,4 +416,12 @@ public class ImportOrdersRouteContext
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
 	}
+<<<<<<< HEAD
+=======
+
+	public void incrementPageIndex()
+	{
+		this.ordersResponsePageIndex++;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

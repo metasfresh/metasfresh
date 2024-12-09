@@ -140,4 +140,13 @@ public class DocOutboundService implements IPDFArchiveProvider
 		return null;
 	}
 
+<<<<<<< HEAD
+=======
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		archiveDAO.updatePOReferenceIfExists(recordReference, poReference);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

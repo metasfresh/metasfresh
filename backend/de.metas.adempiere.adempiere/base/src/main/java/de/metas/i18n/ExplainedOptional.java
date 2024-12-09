@@ -92,13 +92,25 @@ public final class ExplainedOptional<T>
 
 	public T orElseThrow()
 	{
+<<<<<<< HEAD
+=======
+		return orElseThrow(AdempiereException::new);
+	}
+
+	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (value != null)
 		{
 			return value;
 		}
 		else
 		{
+<<<<<<< HEAD
 			throw new AdempiereException(explanation);
+=======
+			throw exceptionFactory.apply(explanation);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

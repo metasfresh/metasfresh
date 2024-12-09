@@ -1,6 +1,12 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.invoice_440;
 
 import de.metas.bpartner.BPartnerId;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.GLN;
@@ -61,7 +67,11 @@ public class Invoice440ExportClientTest
 
 		final InvoiceToExport invoice = InvoiceToExport.builder()
 				.id(invoiceId)
+<<<<<<< HEAD
 				.docSubType("EA")
+=======
+				.docBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.Healthcare_CH_EA))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.metasfreshVersion(matasfreshVersion)
 				.recipient(recipient)
 				.biller(biller)

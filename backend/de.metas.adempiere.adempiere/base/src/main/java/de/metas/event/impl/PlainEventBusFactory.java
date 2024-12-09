@@ -13,7 +13,10 @@ import org.compiere.Adempiere;
 
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Optional;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.concurrent.ExecutorService;
 
 /*
@@ -73,7 +76,11 @@ public class PlainEventBusFactory implements IEventBusFactory
 	private EventBus createEventBus(final Topic topic)
 	{
 		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
+<<<<<<< HEAD
 		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(Optional.empty(), new SimpleMeterRegistry()));
+=======
+		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(new SimpleMeterRegistry()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ExecutorService executor = null;
 		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));

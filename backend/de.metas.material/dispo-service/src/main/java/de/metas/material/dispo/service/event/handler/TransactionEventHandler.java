@@ -460,6 +460,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
 				.builder()
 				.storageAttributesKey(transactionEvent.getMaterialDescriptor().getStorageAttributesKey())
+<<<<<<< HEAD
+=======
+				.warehouseId(transactionEvent.getMaterialDescriptor().getWarehouseId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 
 		final CandidatesQuery queryWithAttributesKey = queryWithoutAttributesKey

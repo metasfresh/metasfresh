@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.process;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +16,19 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -68,6 +82,7 @@ public class MD_Cockpit_DocumentDetail_Display extends MaterialCockpitViewBasedP
 		return MSG_OK;
 	}
 
+<<<<<<< HEAD
 	private Set<Integer> getSelectedCockpitRecordIdsRecursively()
 	{
 		final MaterialCockpitView materialCockpitView = getView();
@@ -79,6 +94,8 @@ public class MD_Cockpit_DocumentDetail_Display extends MaterialCockpitViewBasedP
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private List<TableRecordReference> retrieveCockpitDetailRecordReferences(final Set<Integer> cockpitRowIds)
 	{
 		Check.assumeNotEmpty(cockpitRowIds, "cockpitRowIds is not empty");

@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.trace;
 
+<<<<<<< HEAD
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
@@ -13,6 +14,10 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
@@ -30,6 +35,17 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.function.BiFunction;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

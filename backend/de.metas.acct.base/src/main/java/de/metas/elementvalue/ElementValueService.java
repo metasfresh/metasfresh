@@ -27,11 +27,22 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
+<<<<<<< HEAD
 import de.metas.acct.model.validator.C_ElementValue;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+=======
+import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.elementvalue.ElementValueRepository.AccountValueComparisonMode;
+import de.metas.treenode.TreeNodeService;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
@@ -47,8 +58,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class ElementValueService
 {
+<<<<<<< HEAD
 	private final ElementValueRepository elementValueRepository;
 	private final TreeNodeService treeNodeService;
+=======
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ElementValueRepository elementValueRepository;
+	private final TreeNodeService treeNodeService;
+	private static final String SYSCONFIG_AccountValueComparisonMode = "ElementValueService.AccountValueComparisonMode";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public ElementValueService(
 			@NonNull final ElementValueRepository elementValueRepository,
@@ -99,7 +117,11 @@ public class ElementValueService
 				root.setSeqNo(0);
 				elementValueRepository.save(root);
 
+<<<<<<< HEAD
 				savedElementValues.add(ElementValueRepository.toElementValue(root));
+=======
+				savedElementValues.add(ElementValueRepository.fromRecord(root));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			for (final ElementValueId parentId : elementValuesByParentId.keySet())
@@ -107,7 +129,11 @@ public class ElementValueService
 				final List<I_C_ElementValue> children = elementValuesByParentId.get(parentId);
 				sortByAccountNoAndSave(children);
 
+<<<<<<< HEAD
 				children.forEach(child -> savedElementValues.add(ElementValueRepository.toElementValue(child)));
+=======
+				children.forEach(child -> savedElementValues.add(ElementValueRepository.fromRecord(child)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -186,6 +212,18 @@ public class ElementValueService
 	// TODO: introduce ChartOfAccountsId as parameter
 	public ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
 	{
+<<<<<<< HEAD
 		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 	}
+=======
+		final AccountValueComparisonMode comparisonMode = getAccountValueComparisonMode();
+		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo, comparisonMode);
+	}
+
+	private AccountValueComparisonMode getAccountValueComparisonMode()
+	{
+		return AccountValueComparisonMode.ofNullableString(sysConfigBL.getValue(SYSCONFIG_AccountValueComparisonMode));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

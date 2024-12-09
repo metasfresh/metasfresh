@@ -1,5 +1,6 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,17 +17,27 @@ import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+=======
+import de.metas.costing.AggregatedCostAmount;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
+<<<<<<< HEAD
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
+=======
+import de.metas.costing.CostElement;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+<<<<<<< HEAD
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -35,6 +46,14 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -77,7 +96,11 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		final CostAmount amt = request.getAmt();
@@ -93,8 +116,12 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			}
 			else
 			{
+<<<<<<< HEAD
 				final CostAmount priceAdjust = amt;
 				currentCosts.addToOwnCostPrice(priceAdjust);
+=======
+				currentCosts.addToOwnCostPrice(amt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -110,7 +137,11 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
@@ -121,6 +152,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
 		return Optionals.firstPresentOfSuppliers(
@@ -254,6 +286,8 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}	// getLastPOPrice
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		throw new UnsupportedOperationException();
@@ -262,7 +296,103 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
+<<<<<<< HEAD
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+=======
+		// TODO: do it right! It's copied from de.metas.costing.methods.AveragePOCostingMethodHandler.createMovementCosts
+
+		final CostElement costElement = request.getCostElement();
+		if (costElement == null)
+		{
+			throw new AdempiereException("No cost element: " + request);
+		}
+
+		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
+		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
+
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
+		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
+		final Quantity outboundQty = utils.convertToUOM(
+				request.getQtyToMove().negate(),
+				currentCostPrice.getUomId(),
+				request.getProductId());
+		final CostAmount outboundAmt = currentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
+
+		final CostDetailCreateRequest outboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getOutboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getOutboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt)
+				.qty(outboundQty)
+				.date(request.getDate())
+				.build();
+		final CostDetailCreateRequest inboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getInboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getInboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt.negate())
+				.qty(outboundQty.negate())
+				.date(request.getDate())
+				.build();
+
+		//
+		// Moving costs inside costing segment
+		// => no changes, just record the cost details
+		final CostDetailCreateResult outboundResult;
+		final CostDetailCreateResult inboundResult;
+		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
+		{
+			final CostDetailPreviousAmounts inboundPreviousCosts = outboundPreviousCosts;
+
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest, inboundPreviousCosts);
+		}
+		//
+		// Moving costs between costing segments
+		// => change current costs, record the cost details
+		else
+		{
+			outboundResult = utils.createCostDetailRecordWithChangedCosts(
+					outboundCostDetailRequest,
+					outboundPreviousCosts);
+
+			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(outboundCurrentCosts);
+
+			// Inbound cost
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
+			inboundResult = utils.createCostDetailRecordWithChangedCosts(
+					inboundCostDetailRequest,
+					inboundPreviousCosts);
+
+			inboundCurrentCosts.addWeightedAverage(
+					inboundCostDetailRequest.getAmt(),
+					inboundCostDetailRequest.getQty(),
+					utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(inboundCurrentCosts);
+		}
+
+		return MoveCostsResult.builder()
+				.outboundCosts(AggregatedCostAmount.builder()
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
+				.inboundCosts(AggregatedCostAmount.builder()
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+				.build();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

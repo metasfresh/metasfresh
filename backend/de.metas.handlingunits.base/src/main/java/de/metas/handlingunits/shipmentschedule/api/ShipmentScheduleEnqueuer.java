@@ -71,7 +71,10 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.math.BigDecimal;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +82,11 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
+<<<<<<< HEAD
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override;
+=======
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -261,6 +268,7 @@ public class ShipmentScheduleEnqueuer
 			}
 		}
 
+<<<<<<< HEAD
 		final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
 		if (qtysToDeliverOverride != null)
 		{
@@ -270,6 +278,12 @@ public class ShipmentScheduleEnqueuer
 				workpackageBuilder.parameters()
 						.setParameter(PARAM_PREFIX_QtyToDeliver_Override + shipmentScheduleId.getRepoId(), qtyToDeliverOverride);
 			}
+=======
+		final QtyToDeliverMap qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
+		if (qtysToDeliverOverride != null)
+		{
+			workpackageBuilder.parameters().setParameter(PARAM_QtyToDeliver_Override, qtysToDeliverOverride.toJsonString());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -332,7 +346,11 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
+<<<<<<< HEAD
 	 * task https://metasfresh.atlassian.net/browse/FRESH-342
+=======
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-342">task</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public static class Result implements IEnqueueResult
 	{
@@ -378,7 +396,11 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
+<<<<<<< HEAD
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
+=======
+		public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -397,7 +419,11 @@ public class ShipmentScheduleEnqueuer
 		 */
 		@Builder.Default
 		boolean onTheFlyPickToPackingInstructions = false;
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		boolean completeShipments;
 		boolean isCloseShipmentSchedules;
 		boolean isShipmentDateToday;
@@ -410,7 +436,11 @@ public class ShipmentScheduleEnqueuer
 		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
 
 		@Nullable
+<<<<<<< HEAD
 		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
+=======
+		QtyToDeliverMap qtysToDeliverOverride;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }

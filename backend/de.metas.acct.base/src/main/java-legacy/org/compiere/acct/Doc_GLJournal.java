@@ -11,6 +11,10 @@ import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
@@ -117,6 +121,10 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
 			docLineDR.setAccount(glJournalLine.getAccount_DR());
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			docLines.add(docLineDR);
 		}
 		if (glJournalLine.isAllowAccountCR())
@@ -273,7 +281,11 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
 
 		// GLJ
+<<<<<<< HEAD
 		if (getDocumentType().equals(DOCTYPE_GLJournal))
+=======
+		if (DocBaseType.GLJournal.equals(getDocBaseType()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
@@ -287,6 +299,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line,
 						as.getCurrencyId());
 
+<<<<<<< HEAD
 				final FactLine factLine = fact.createLine(line,
 						line.getAccount(),
 						line.getCurrencyId(),
@@ -299,13 +312,25 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 
 				factLine.setCurrencyConversionCtx(currencyConversionCtx);
 				factLine.convert();
+=======
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount())
+						.setAmtSource(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr())
+						.setCurrencyConversionCtx(currencyConversionCtx)
+						.buildAndAdd();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}    // for all lines
 		}
 		else
 		{
 			throw newPostingException()
 					.setAcctSchema(as)
+<<<<<<< HEAD
 					.setDetailMessage("DocumentType unknown: " + getDocumentType());
+=======
+					.setDetailMessage("DocumentType unknown: " + getDocBaseType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		//
 		return ImmutableList.of(fact);
@@ -318,8 +343,12 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
 				line.getDateAcct(),
 				line.getCurrencyConversionTypeId(),
+<<<<<<< HEAD
 				line.getClientId(),
 				line.getOrgId());
+=======
+				line.getClientId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)

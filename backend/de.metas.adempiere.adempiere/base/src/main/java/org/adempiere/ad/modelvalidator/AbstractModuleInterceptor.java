@@ -22,6 +22,7 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -30,12 +31,26 @@ import org.compiere.model.I_AD_Client;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.compiere.model.I_AD_Client;
+
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * To be extended by module/project main interceptors.
@@ -64,6 +79,10 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		registerCallouts(Services.get(IProgramaticCalloutProvider.class));
 		setupCaching(Services.get(IModelCacheService.class));
 		setupEventBus();
+<<<<<<< HEAD
+=======
+		setupMigrationScriptsLogger();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		onAfterInit();
 	}
 	
@@ -121,7 +140,11 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		// nothing on this level
 	}
 
+<<<<<<< HEAD
 	private final void setupEventBus()
+=======
+	private void setupEventBus()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<Topic> userNotificationsTopics = getAvailableUserNotificationsTopics();
 		if (userNotificationsTopics != null && !userNotificationsTopics.isEmpty())
@@ -141,6 +164,21 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		return ImmutableList.of();
 	}
 
+<<<<<<< HEAD
+=======
+	private void setupMigrationScriptsLogger()
+	{
+		final Set<String> tableNames = getTableNamesToSkipOnMigrationScriptsLogging();
+		if (tableNames != null && !tableNames.isEmpty())
+		{
+			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+			migrationLogger.addTablesToIgnoreList(tableNames);
+		}
+	}
+
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging() {return ImmutableSet.of();}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{

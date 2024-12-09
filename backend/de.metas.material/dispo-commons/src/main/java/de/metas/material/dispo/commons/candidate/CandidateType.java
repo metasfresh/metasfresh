@@ -93,5 +93,12 @@ public enum CandidateType implements ReferenceListAwareEnum
 		return DECREASING_STOCK_TYPES.contains(this);
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isSupply() {return SUPPLY.equals(this);}
+
+	public boolean isStock() {return STOCK.equals(this);}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static boolean equals(@Nullable final CandidateType type1, @Nullable final CandidateType type2) {return Objects.equals(type1, type2);}
 }

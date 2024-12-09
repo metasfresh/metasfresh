@@ -107,6 +107,10 @@ public class AD_Tab
 		tab.setDescription(tabElement.getDescription());
 		tab.setHelp(tabElement.getHelp());
 		tab.setCommitWarning(tabElement.getCommitWarning());
+<<<<<<< HEAD
+=======
+		tab.setEntityType(tab.getAD_Window().getEntityType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void recreateElementLinkForTab(final I_AD_Tab tab)

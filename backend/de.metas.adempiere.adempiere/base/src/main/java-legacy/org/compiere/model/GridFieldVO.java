@@ -24,6 +24,10 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
+<<<<<<< HEAD
+=======
+import de.metas.util.OptionalBoolean;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
@@ -36,6 +40,10 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -155,6 +163,10 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean readOnly,
+<<<<<<< HEAD
+=======
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean loadAllLanguages,
 			final boolean applyRolePermissions,
 			final ResultSet rs)
@@ -412,7 +424,11 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
+<<<<<<< HEAD
 			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
+=======
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs, tabIncludeFiltersStrategy);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
@@ -440,25 +456,70 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   // create
 
+<<<<<<< HEAD
 	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
 	{
 		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
 		if (!defaultFilter && !facetFilter)
+=======
+	@Nullable
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(
+			@NonNull final ResultSet rs,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy) throws SQLException
+	{
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.None)
+		{
+			return null;
+		}
+
+		final OptionalBoolean isFilterField = OptionalBoolean.ofNullableString(rs.getString(I_AD_Field.COLUMNNAME_IsFilterField));
+		if (isFilterField.isFalse())
+		{
+			return null;
+		}
+
+		final boolean isDefaultFilterColumn;
+		final boolean isFacetFilter;
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Explicit)
+		{
+			isDefaultFilterColumn = isFilterField.isTrue();
+			isFacetFilter = isFilterField.isTrue() && StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Auto)
+		{
+			isDefaultFilterColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+			isFacetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown TabIncludeFiltersStrategy: " + tabIncludeFiltersStrategy);
+		}
+
+		if (!isDefaultFilterColumn && !isFacetFilter)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
 
 		return GridFieldDefaultFilterDescriptor.builder()
 				//
+<<<<<<< HEAD
 				.defaultFilter(defaultFilter)
+=======
+				.defaultFilter(isDefaultFilterColumn)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				//
+<<<<<<< HEAD
 				.facetFilter(facetFilter)
+=======
+				.facetFilter(isFacetFilter)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
 				.maxFacetsToFetch(rs.getInt(I_AD_Column.COLUMNNAME_MaxFacetsToFetch))
 				//

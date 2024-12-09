@@ -38,6 +38,10 @@ export class AttributesDropdown extends PureComponent {
       rowIndex,
       tabIndex,
       isModal,
+<<<<<<< HEAD
+=======
+      maxHeight,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       //
       onFieldChange,
       onFieldPatch,
@@ -57,6 +61,10 @@ export class AttributesDropdown extends PureComponent {
             'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
             { 'attributes-dropup': rowIndex > DROPUP_START }
           )}
+<<<<<<< HEAD
+=======
+          style={maxHeight && maxHeight > 0 ? { maxHeight } : {}}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           onKeyDown={this.handleKeyDown}
         >
           {layout.map((elementLayout, elementIndex) => (
@@ -113,6 +121,10 @@ AttributesDropdown.propTypes = {
   rowIndex: PropTypes.number,
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
+<<<<<<< HEAD
+=======
+  maxHeight: PropTypes.number,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   //
   onFieldChange: PropTypes.func.isRequired,
   onFieldPatch: PropTypes.func.isRequired,

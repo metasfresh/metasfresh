@@ -141,7 +141,11 @@ public class JdbcTableExportDataDestination implements IExportDataDestination
 		sqlParams.addAll(source.getSqlParams());
 
 		final String trxName = Trx.TRXNAME_None;
+<<<<<<< HEAD
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
+=======
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Inserted {} records into {} from {}", new Object[] { count, tableName, source });
 	}
 

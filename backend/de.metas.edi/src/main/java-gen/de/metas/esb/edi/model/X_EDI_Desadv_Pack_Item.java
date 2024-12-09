@@ -1,10 +1,17 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Model for EDI_Desadv_Pack_Item
  *  @author metasfresh (generated) 
@@ -13,7 +20,11 @@ import javax.annotation.Nullable;
 public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_EDI_Desadv_Pack_Item, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -354804449L;
+=======
+	private static final long serialVersionUID = 1014721542L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack_Item (final Properties ctx, final int EDI_Desadv_Pack_Item_ID, @Nullable final String trxName)
@@ -129,6 +140,21 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setLine (final int Line)
+	{
+		set_Value (COLUMNNAME_Line, Line);
+	}
+
+	@Override
+	public int getLine() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Line);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setLotNumber (final @Nullable java.lang.String LotNumber)
 	{
 		set_Value (COLUMNNAME_LotNumber, LotNumber);

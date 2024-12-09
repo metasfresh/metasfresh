@@ -1,12 +1,22 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
 import java.util.Properties;
 
+=======
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.util.ISingletonService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import de.metas.util.ISingletonService;
+=======
+import javax.annotation.Nullable;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -50,6 +60,7 @@ public interface IAccountDAO extends ISingletonService
 		return getById(Env.getCtx(), accountId);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * @param ctx
 	 * @param dimension
@@ -57,4 +68,13 @@ public interface IAccountDAO extends ISingletonService
 	 */
 	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
 
+=======
+	ElementValueId getElementValueIdByAccountId(@NonNull AccountId accountId);
+
+	@Nullable
+	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
+
+	@NonNull
+	AccountId getOrCreate(@NonNull AccountDimension dimension);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

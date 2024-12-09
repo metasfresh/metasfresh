@@ -122,7 +122,11 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 					// first check if this is all about a Record_ID/AD_Table_ID reference.
 					// if that is the case, then we need to verify that the AD_Table_ID of 'record' actually points to the table named 'forwardTableName'
+<<<<<<< HEAD
 					if (columnBL.isRecordIdColumnName(forwardColumnName))
+=======
+					if (IColumnBL.isRecordIdColumnName(forwardColumnName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					{
 						final String tableColumnName = columnBL.getTableIdColumnName(currentTableName, forwardColumnName)
 								.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", currentTableName, forwardColumnName));
@@ -215,7 +219,11 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 				// if we have a case of AD_Table_ID/Record_ID,
 				// then we need to make sure to only load records whose AD_Table_ID references currentRecord
+<<<<<<< HEAD
 				if (columnBL.isRecordIdColumnName(backwardColumnName))
+=======
+				if (IColumnBL.isRecordIdColumnName(backwardColumnName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					// note that referencedTableColumnName = AD_Table_ID, in most cases
 					final String referencedTableColumnName = columnBL.getTableIdColumnName(backwardTableName, backwardRef.getReferencingColumnName())

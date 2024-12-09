@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 @Value
 public class CostDetailPreviousAmounts
 {
+<<<<<<< HEAD
 	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
 	{
 		return builder()
@@ -43,6 +44,8 @@ public class CostDetailPreviousAmounts
 				.build();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull UomId uomId;
 	@NonNull CurrencyId currencyId;
 
@@ -72,5 +75,18 @@ public class CostDetailPreviousAmounts
 		this.cumulatedAmt = cumulatedAmt;
 		this.cumulatedQty = cumulatedQty;
 	}
+<<<<<<< HEAD
+=======
+
+	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
+	{
+		return builder()
+				.costPrice(currentCost.getCostPrice())
+				.qty(currentCost.getCurrentQty())
+				.cumulatedAmt(currentCost.getCumulatedAmt())
+				.cumulatedQty(currentCost.getCumulatedQty())
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }
 

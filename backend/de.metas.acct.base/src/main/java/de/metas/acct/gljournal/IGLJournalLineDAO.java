@@ -22,6 +22,7 @@ package de.metas.acct.gljournal;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 
@@ -29,6 +30,13 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 
 import de.metas.util.ISingletonService;
+=======
+import de.metas.util.ISingletonService;
+import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalLine;
+
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IGLJournalLineDAO extends ISingletonService
 {
@@ -41,4 +49,8 @@ public interface IGLJournalLineDAO extends ISingletonService
 
 	int retrieveLastLineNo(I_GL_Journal glJournal);
 
+<<<<<<< HEAD
+=======
+	void save(I_GL_JournalLine glJournalLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

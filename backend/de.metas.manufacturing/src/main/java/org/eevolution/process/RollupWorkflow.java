@@ -400,7 +400,11 @@ public class RollupWorkflow extends JavaProcess
 
 		public BigDecimal getCostAsBigDecimal()
 		{
+<<<<<<< HEAD
 			return cost.getValue();
+=======
+			return cost.toBigDecimal();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 }

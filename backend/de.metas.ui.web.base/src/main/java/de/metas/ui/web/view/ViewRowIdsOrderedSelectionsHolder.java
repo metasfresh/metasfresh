@@ -228,8 +228,18 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return selections.withDefaultSelection(defaultSelectionBeforeFacetsFiltering, defaultSelection);
 	}
 
+<<<<<<< HEAD
 	public ViewRowIdsOrderedSelection getOrderedSelection(final DocumentQueryOrderByList orderBys)
 	{
+=======
+	public ViewRowIdsOrderedSelection getOrderedSelection(@Nullable final DocumentQueryOrderByList orderBys)
+	{
+		if(orderBys == null || orderBys.isEmpty())
+		{
+			return getDefaultSelection();
+		}
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return computeCurrentSelections(selections -> computeOrderBySelectionIfAbsent(selections, orderBys))
 				.getSelection(orderBys);
 	}

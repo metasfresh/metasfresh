@@ -1,7 +1,11 @@
 package de.metas.inoutcandidate.lock;
 
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
@@ -11,6 +15,10 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,10 +57,18 @@ import java.util.Set;
  */
 
 @Repository
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRepository
 {
 	private static final Logger logger = LogManager.getLogger(SqlShipmentScheduleLockRepository.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+<<<<<<< HEAD
+=======
+	@NonNull private final ModelCacheInvalidationService modelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public void lock(@NonNull final ShipmentScheduleLockRequest request)
@@ -165,7 +181,11 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		final String sql = "DELETE FROM " + I_M_ShipmentSchedule_Lock.Table_Name
 				+ " WHERE " + DB.buildSqlList(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds, sqlParams);
 
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		fireShipmentSchedulesChanged(shipmentScheduleIds);
 	}
@@ -223,6 +243,10 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		}
 
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
+<<<<<<< HEAD
 		Services.get(IModelCacheInvalidationService.class).invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+=======
+		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -1,18 +1,25 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
+<<<<<<< HEAD
 import de.metas.costing.CostSegment;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+<<<<<<< HEAD
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -33,6 +40,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+=======
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.springframework.stereotype.Component;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.business
@@ -70,7 +83,11 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -90,8 +107,12 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 			}
 			else
 			{
+<<<<<<< HEAD
 				final CostAmount priceAdjust = amt;
 				currentCosts.addToOwnCostPrice(priceAdjust);
+=======
+				currentCosts.addToOwnCostPrice(amt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -118,6 +139,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Optional<CostAmount> calculateSeedCosts(
 			final CostSegment costSegment,
 			final OrderLineId orderLineId_NOTUSED)
@@ -184,6 +206,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}    // getLastInvoicePrice
 
 	@Override
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		throw new UnsupportedOperationException();
@@ -195,4 +219,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

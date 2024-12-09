@@ -1,6 +1,7 @@
 package org.eevolution.model.validator;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+<<<<<<< HEAD
 import de.metas.uom.UomId;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -27,6 +28,13 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
  * #L%
  */
 
+=======
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -35,11 +43,16 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.CostCollectorType;
+<<<<<<< HEAD
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.material.planning.pporder.LiberoException;
 import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.util.Services;
+=======
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.model.I_PP_Cost_Collector;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector

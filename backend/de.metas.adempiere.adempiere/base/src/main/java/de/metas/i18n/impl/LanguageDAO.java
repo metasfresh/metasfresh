@@ -252,7 +252,11 @@ public class LanguageDAO implements ILanguageDAO
 	private int deleteTableTranslations(final String trlTableName, final String adLanguage)
 	{
 		final String sql = "DELETE FROM  " + trlTableName + " WHERE AD_Language=?";
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.info("Removed {} translations for {} ({})", no, trlTableName, adLanguage);
 		return no;
 	}
@@ -333,7 +337,11 @@ public class LanguageDAO implements ILanguageDAO
 		.append("\n WHERE " + trlAlias + "." + keyColumn + " IS NULL");
 		// @formatter:on
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdateEx(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 		{
 			logger.info("Added {} missing translations for {} ({})", no, trlTableName, adLanguage);

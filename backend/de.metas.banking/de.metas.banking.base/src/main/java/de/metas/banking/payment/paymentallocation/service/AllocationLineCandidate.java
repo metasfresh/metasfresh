@@ -19,7 +19,10 @@ import java.util.Objects;
  * Immutable allocation candidate.
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @Value
 public class AllocationLineCandidate

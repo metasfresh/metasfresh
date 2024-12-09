@@ -1,5 +1,6 @@
 package de.metas.email;
 
+<<<<<<< HEAD
 import java.net.URI;
 import java.util.Random;
 
@@ -13,6 +14,23 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.email.mailboxes.Mailbox;
+=======
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxType;
+import de.metas.email.mailboxes.SMTPConfig;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.net.URI;
+import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -38,16 +56,25 @@ import de.metas.email.mailboxes.Mailbox;
 
 /**
  * Tests if {@link EMail} related objects are JSON serializable.
+<<<<<<< HEAD
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
+=======
+ *
+ * @author metas-dev <dev@metasfresh.com>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class EMailJsonTest
 {
 	private ObjectMapper jsonObjectMapper;
 	private Random random;
 
+<<<<<<< HEAD
 	@Before
+=======
+	@BeforeEach
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void init()
 	{
 		Adempiere.enableUnitTestMode(); // needed to display Mailbox passwords
@@ -63,8 +90,14 @@ public class EMailJsonTest
 	{
 		testSerializeDeserialize(EMailSentStatus.NOT_SENT);
 		testSerializeDeserialize(EMailSentStatus.ok("1234"));
+<<<<<<< HEAD
 		testSerializeDeserialize(EMailSentStatus.error("some error"));
 		testSerializeDeserialize(EMailSentStatus.invalid("some invalid error"));
+=======
+		testSerializeDeserialize(EMailSentStatus.error(new AdempiereException("some error")));
+		testSerializeDeserialize(EMailSentStatus.invalid("some invalid error"));
+		testSerializeDeserialize(EMailSentStatus.invalid(new AdempiereException("some invalid error")));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -77,6 +110,7 @@ public class EMailJsonTest
 	@Test
 	public void test_Mailbox() throws Exception
 	{
+<<<<<<< HEAD
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost("smtpHost")
 				.email(EMailAddress.ofString("from@email.com"))
@@ -87,12 +121,28 @@ public class EMailJsonTest
 				.userToColumnName("userToColumnName")
 				.build();
 		testJsonToStringEquals(mailbox);
+=======
+		testJsonToStringEquals(
+				Mailbox.builder()
+						.email(EMailAddress.ofString("from@email.com"))
+						.userToColumnName("userToColumnName")
+						.type(MailboxType.SMTP)
+						.smtpConfig(SMTPConfig.builder()
+								.smtpHost("smtpHost")
+								.smtpAuthorization(true)
+								.username("username")
+								.password("password111")
+								.build())
+						.build()
+		);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
 	public void test_EMail() throws Exception
 	{
 		final Mailbox mailbox = Mailbox.builder()
+<<<<<<< HEAD
 				.smtpHost("smtpHost")
 				.email(EMailAddress.ofString("from@email.com"))
 				.smtpAuthorization(true)
@@ -100,6 +150,17 @@ public class EMailJsonTest
 				.password("password111")
 				.sendEmailsFromServer(true)
 				.userToColumnName("userToColumnName")
+=======
+				.email(EMailAddress.ofString("from@email.com"))
+				.userToColumnName("userToColumnName")
+				.type(MailboxType.SMTP)
+				.smtpConfig(SMTPConfig.builder()
+						.smtpHost("smtpHost")
+						.smtpAuthorization(true)
+						.username("username")
+						.password("password111")
+						.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 		final EMailAddress to = EMailAddress.ofString("to@email.com");
 		final String subject = "test email subject";
@@ -118,7 +179,11 @@ public class EMailJsonTest
 		testJsonToStringEquals(email);
 	}
 
+<<<<<<< HEAD
 	private final byte[] generateBytes(final int size)
+=======
+	private byte[] generateBytes(final int size)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final byte[] bytes = new byte[size];
 		random.nextBytes(bytes);
@@ -129,21 +194,35 @@ public class EMailJsonTest
 	{
 		final T valueDeserialized = testSerializeDeserialize(value);
 
+<<<<<<< HEAD
 		final String valueStr = value == null ? null : value.toString();
 		final String valueDeserializedStr = valueDeserialized == null ? null : valueDeserialized.toString();
 		Assert.assertEquals(valueStr, valueDeserializedStr);
+=======
+		final String valueStr = value.toString();
+		final String valueDeserializedStr = valueDeserialized == null ? null : valueDeserialized.toString();
+		assertThat(valueDeserializedStr).isEqualTo(valueStr);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private <T> void testJsonEquals(final T value) throws Exception
 	{
 		final T valueDeserialized = testSerializeDeserialize(value);
+<<<<<<< HEAD
 		Assert.assertEquals(value, valueDeserialized);
+=======
+		assertThat(valueDeserialized).isEqualTo(value);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private <T> T testSerializeDeserialize(final T value) throws Exception
 	{
+<<<<<<< HEAD
 		@SuppressWarnings("unchecked")
 		final Class<T> type = (Class<T>)value.getClass();
+=======
+		@SuppressWarnings("unchecked") final Class<T> type = (Class<T>)value.getClass();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String jsonStr = jsonObjectMapper.writeValueAsString(value);
 		System.out.println("\n\n-------------------------------------------------------------------------------------------");

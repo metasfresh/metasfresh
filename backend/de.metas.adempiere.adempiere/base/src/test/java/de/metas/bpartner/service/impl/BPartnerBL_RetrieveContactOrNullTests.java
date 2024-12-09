@@ -1,5 +1,6 @@
 package de.metas.bpartner.service.impl;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +18,9 @@ import org.junit.Test;
 
 import com.google.common.base.Predicates;
 
+=======
+import com.google.common.base.Predicates;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -28,6 +32,22 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -187,9 +207,15 @@ public class BPartnerBL_RetrieveContactOrNullTests
 		assertThat(result.getName()).isEqualTo("C");
 	}
 
+<<<<<<< HEAD
 	private de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
 	{
 		final de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
+=======
+	private BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
+	{
+		final BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.builder()
 				.bpartnerId(bpartnerId);
 		return builder;

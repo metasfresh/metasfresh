@@ -13,9 +13,17 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
+<<<<<<< HEAD
 import java.sql.Timestamp;
 import java.util.List;
 
+=======
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.model.I_AD_Archive;
@@ -26,11 +34,16 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.util.Services;
+=======
+import java.sql.Timestamp;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class Archive {
 
@@ -230,7 +243,11 @@ public class Archive {
 		//	Created
 		if (createdFrom != null)
 		{
+<<<<<<< HEAD
 			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom, true));
+=======
+			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		if (createdTo != null)
 		{

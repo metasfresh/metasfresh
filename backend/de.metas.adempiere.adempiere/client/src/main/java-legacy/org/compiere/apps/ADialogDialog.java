@@ -228,7 +228,10 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	private JMenuBar menuBar = new JMenuBar();
 	private JMenu mFile = AEnv.getMenu("File");
+<<<<<<< HEAD
 	private CMenuItem mEMail = new CMenuItem();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private CMenuItem mEnd = new CMenuItem();
 	private CMenuItem mPreference = new CMenuItem();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
@@ -251,9 +254,12 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		this.setJMenuBar(menuBar);
 		confirmPanel.setActionListener(this); // set it first just to know buttons are working in case something failed
 		//
+<<<<<<< HEAD
 		mEMail.setIcon(Images.getImageIcon2("EMailSupport16"));
 		mEMail.setText(msgBL.getMsg(Env.getCtx(), "EMailSupport"));
 		mEMail.addActionListener(this);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		mPreference.setIcon(Images.getImageIcon2("Preference16"));
 		mPreference.setText(msgBL.getMsg(Env.getCtx(), "Preference"));
 		mPreference.addActionListener(this);
@@ -277,7 +283,10 @@ public final class ADialogDialog extends CDialog implements ActionListener
 				, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0));
 		//
 		menuBar.add(mFile);
+<<<<<<< HEAD
 		mFile.add(mEMail);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (Env.getUserRolePermissions().isShowPreference())
 			mFile.add(mPreference);
 		mFile.addSeparator();
@@ -384,6 +393,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 			m_returnCode = A_CANCEL;
 			dispose();
 		}
+<<<<<<< HEAD
 		else if (e.getSource() == mEMail)
 		{
 			String title = getTitle();
@@ -391,6 +401,8 @@ public final class ADialogDialog extends CDialog implements ActionListener
 			dispose();                  // otherwise locking
 			ADialog.createSupportEMail(this, title, text);
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		else if (e.getSource() == mPreference)
 		{
 			if (Env.getUserRolePermissions().isShowPreference())
@@ -464,7 +476,11 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Request focus on inital answer (see {@link #getInialAnswer()}) button.
+=======
+	 * Request focus on inital answer.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private void focusInitialAnswerButton()
 	{

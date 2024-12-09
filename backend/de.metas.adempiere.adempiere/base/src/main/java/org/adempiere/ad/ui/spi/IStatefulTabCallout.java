@@ -2,6 +2,11 @@ package org.adempiere.ad.ui.spi;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,8 +33,13 @@ public interface IStatefulTabCallout extends ITabCallout
 {
 	/**
 	 * Called after {@link ICalloutRecord} was initialized.
+<<<<<<< HEAD
 	 * 
 	 * @param calloutRecord
 	 */
 	void onInit(ICalloutRecord calloutRecord);
+=======
+	 */
+	void onInit(@Nullable ICalloutRecord calloutRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -13,6 +13,10 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+<<<<<<< HEAD
+=======
+import de.metas.organization.IOrgDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -34,6 +38,10 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+<<<<<<< HEAD
+=======
+import java.time.ZoneId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +80,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class OrderFactory
 {
+<<<<<<< HEAD
+=======
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static OrderFactory newPurchaseOrder()
 	{
 		return new OrderFactory()
@@ -149,6 +163,14 @@ public class OrderFactory
 				orderBL.setBillLocation(order);
 			}
 
+<<<<<<< HEAD
+=======
+			if (order.getM_PricingSystem_ID() > 0 && order.getC_BPartner_Location_ID() > 0)
+			{
+				orderBL.setPriceList(order);
+			}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			saveRecord(order);
 
 			return order;
@@ -296,7 +318,12 @@ public class OrderFactory
 
 	public ZonedDateTime getDatePromised()
 	{
+<<<<<<< HEAD
 		return TimeUtil.asZonedDateTime(order.getDatePromised());
+=======
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+		return TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public OrderFactory shipBPartner(
@@ -309,14 +336,25 @@ public class OrderFactory
 		OrderDocumentLocationAdapterFactory
 				.locationAdapter(order)
 				.setFrom(DocumentLocation.builder()
+<<<<<<< HEAD
 								 .bpartnerId(bpartnerId)
 								 .bpartnerLocationId(bpartnerLocationId)
 								 .contactId(contactId)
 								 .build());
+=======
+						.bpartnerId(bpartnerId)
+						.bpartnerLocationId(bpartnerLocationId)
+						.contactId(contactId)
+						.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return this;
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
 	{
 		shipBPartner(bpartnerId, null, null);
@@ -335,7 +373,11 @@ public class OrderFactory
 		return this;
 	}
 
+<<<<<<< HEAD
 	public OrderFactory poReference(final String poReference)
+=======
+	public OrderFactory poReference(@Nullable final String poReference)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		assertNotBuilt();
 		order.setPOReference(poReference);

@@ -22,6 +22,7 @@
 
 package de.metas.banking.callout;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import org.adempiere.ad.callout.annotations.Callout;
@@ -41,22 +42,42 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+=======
+import de.metas.banking.model.BankStatementLineAmounts;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.invoice.InvoiceId;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Callout(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
 	private final IBankStatementBL bankStatementBL;
+<<<<<<< HEAD
 	private final ICurrencyBL currencyConversionBL;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final BankStatementLineAmountsCallout bankStatementLineAmountsCallout = new BankStatementLineAmountsCallout();
 	private final CashJournalLineAmountsCallout cashJournalLineAmountsCallout = new CashJournalLineAmountsCallout();
 
 	public C_BankStatementLine(
+<<<<<<< HEAD
 			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final ICurrencyBL currencyConversionBL)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.currencyConversionBL = currencyConversionBL;
+=======
+			@NonNull final IBankStatementBL bankStatementBL)
+	{
+		this.bankStatementBL = bankStatementBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private AmountsCallout getAmountsCallout(@NonNull final I_C_BankStatementLine bsl)
@@ -96,6 +117,7 @@ public class C_BankStatementLine
 		getAmountsCallout(bsl).onInterestAmtChanged(bsl);
 	}
 
+<<<<<<< HEAD
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID)
 	public void onLink_BankStatement_IDChangedResetAmounts(final @NonNull I_C_BankStatementLine bsl)
 	{
@@ -139,6 +161,8 @@ public class C_BankStatementLine
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
 	public void onC_Invoice_ID_Changed(@NonNull final I_C_BankStatementLine bsl)
 	{

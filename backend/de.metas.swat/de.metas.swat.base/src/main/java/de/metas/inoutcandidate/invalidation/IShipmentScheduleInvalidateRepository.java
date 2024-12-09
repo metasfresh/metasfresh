@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.invalidation;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
@@ -7,12 +8,23 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+
+import java.util.Collection;
+import java.util.Properties;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

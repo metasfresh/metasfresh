@@ -1,5 +1,6 @@
 package de.metas.cache.model;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -7,19 +8,33 @@ import java.util.function.Function;
 
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -47,7 +62,11 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class CacheInvalidateMultiRequest
 {
+<<<<<<< HEAD
 	public static final CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest request)
+=======
+	public static CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (request == CacheInvalidateRequest.all())
 		{
@@ -56,17 +75,29 @@ public class CacheInvalidateMultiRequest
 		return new CacheInvalidateMultiRequest(ImmutableSet.of(request));
 	}
 
+<<<<<<< HEAD
 	public static final CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
+=======
+	public static CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
+<<<<<<< HEAD
 	public static final CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest... requests)
+=======
+	public static CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest... requests)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
+<<<<<<< HEAD
 	public static final CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
+=======
+	public static CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Set<CacheInvalidateRequest> requests = multiRequests.stream()
 				.flatMap(multiRequest -> multiRequest.getRequests().stream())
@@ -95,7 +126,11 @@ public class CacheInvalidateMultiRequest
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 	}
 
+<<<<<<< HEAD
 	public static <T extends RepoIdAware> CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
+=======
+	public static CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return rootRecords(rootTableName, ids, Function.identity());
 	}
@@ -163,8 +198,12 @@ public class CacheInvalidateMultiRequest
 
 	private static final CacheInvalidateMultiRequest ALL = new CacheInvalidateMultiRequest(ImmutableSet.of(CacheInvalidateRequest.all()));
 
+<<<<<<< HEAD
 	@JsonProperty("requests")
 	private final Set<CacheInvalidateRequest> requests;
+=======
+	@JsonProperty("requests") Set<CacheInvalidateRequest> requests;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	@JsonCreator
@@ -190,6 +229,7 @@ public class CacheInvalidateMultiRequest
 		return requests.stream().anyMatch(CacheInvalidateRequest::isAll);
 	}
 
+<<<<<<< HEAD
 	public boolean matchesTableNameEffective(final String tableName)
 	{
 		return requests.stream().anyMatch(request -> matchesTableNameEffective(request, tableName));
@@ -201,6 +241,8 @@ public class CacheInvalidateMultiRequest
 		return Objects.equals(tableName, tableNameEffective);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Set<String> getTableNamesEffective()
 	{
 		return requests.stream()

@@ -15,6 +15,11 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -170,6 +175,7 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
+<<<<<<< HEAD
 		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
 				.orElse(null);
@@ -177,6 +183,18 @@ public class JsonConverters
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocSubType)
 				.orElse(null);
+=======
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
+				.orElse(null);
+
+		final DocSubType subType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocSubType)
+				.map(DocSubType::ofNullableCode)
+				.orElse(DocSubType.ANY);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
@@ -204,7 +222,11 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
+<<<<<<< HEAD
 				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
+=======
+				.docTypeInvoiceId(docBaseType != null ? docTypeService.getDocTypeId(docBaseType, subType, orgId) : null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -357,7 +379,11 @@ public class JsonConverters
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
+<<<<<<< HEAD
 				.dateOrdered(olCand.getDateDoc())
+=======
+				.dateOrdered(olCand.getDateOrdered())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

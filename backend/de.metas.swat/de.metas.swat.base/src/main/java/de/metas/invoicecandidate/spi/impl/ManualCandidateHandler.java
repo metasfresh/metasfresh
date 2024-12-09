@@ -179,7 +179,11 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 				final CurrencyId currencyId = CurrencyId.ofRepoId(icRecord.getC_Currency_ID());
 
 				throw new InvalidQtyForPartialAmtToInvoiceException(
+<<<<<<< HEAD
 						Quantitys.create(qtyToInvoiceInStockUOM, productId),
+=======
+						Quantitys.of(qtyToInvoiceInStockUOM, productId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						icRecord,
 						Money.of(netAmtToInvoice, currencyId),
 						Money.of(netAmtToInvoiceNew, currencyId));

@@ -99,6 +99,16 @@ public class StepDefUtil
 		Thread.sleep(waitingTimeMillis);
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	@Deprecated
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -178,10 +188,17 @@ public class StepDefUtil
 			throw e;
 		}
 
+<<<<<<< HEAD
 		if (logContext != null)
 		{
 			logContext.run();
 		}
+=======
+			if (logContext != null)
+			{
+				logContext.run();
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		Assertions.fail("the given worker didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
@@ -335,7 +352,11 @@ public class StepDefUtil
 			throw e;
 		}
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));

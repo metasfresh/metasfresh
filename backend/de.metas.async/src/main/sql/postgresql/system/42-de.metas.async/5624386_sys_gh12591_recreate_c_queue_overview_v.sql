@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 drop view "de.metas.monitoring".async_unprocessed_workpackage_sum_v
 ;
 
@@ -5,6 +6,15 @@ drop view "de.metas.async".c_queue_unprocessed_workpackage_counts_v
 ;
 
 DROP VIEW "de.metas.async".c_queue_overview_v;
+=======
+drop view if exists "de.metas.monitoring".async_unprocessed_workpackage_sum_v
+;
+
+drop view if exists "de.metas.async".c_queue_unprocessed_workpackage_counts_v
+;
+
+DROP VIEW if exists "de.metas.async".c_queue_overview_v cascade;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 CREATE OR REPLACE VIEW "de.metas.async".c_queue_overview_v AS
 SELECT qwp.c_queue_workpackage_id,

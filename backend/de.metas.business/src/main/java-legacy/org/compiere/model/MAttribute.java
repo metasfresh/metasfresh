@@ -295,7 +295,11 @@ public class MAttribute extends X_M_Attribute
 					+ " AND EXISTS (SELECT * FROM M_AttributeUse mau "
 					+ "WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID"
 					+ " AND mau.M_Attribute_ID=" + getM_Attribute_ID() + ")";
+<<<<<<< HEAD
 			final int no = DB.executeUpdateEx(sql, get_TrxName());
+=======
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("AttributeSet Instance set #{}", no);
 		}
 		return success;

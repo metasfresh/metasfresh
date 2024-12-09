@@ -175,7 +175,11 @@ final class PPOrderBOMCreateCommand
 		if (docBaseType.isRepairOrder())
 		{
 			final UomId uomId = UomId.ofRepoId(orderBOMLine.getC_UOM_ID());
+<<<<<<< HEAD
 			return Quantitys.createZero(uomId);
+=======
+			return Quantitys.zero(uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{

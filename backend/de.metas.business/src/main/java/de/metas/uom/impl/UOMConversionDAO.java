@@ -40,6 +40,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
 	}
 
+<<<<<<< HEAD
 	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
 	{
 		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
@@ -66,6 +67,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.build();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public UOMConversionsMap getGenericConversions()
 	{
@@ -145,4 +148,43 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		saveRecord(record);
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
+	{
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(UOMConversionDAO::toUOMConversionOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+
+		return buildUOMConversionsMap(productId,
+									  productStockingUomId,
+									  rates);
+	}
+
+	@NonNull
+	private static UOMConversionsMap buildUOMConversionsMap(
+			@NonNull final ProductId productId,
+			@NonNull final UomId productStockingUomId,
+			@NonNull final ImmutableList<UOMConversionRate> rates)
+	{
+		return UOMConversionsMap.builder()
+				.productId(productId)
+				.hasRatesForNonStockingUOMs(!rates.isEmpty())
+				.rates(ImmutableList.<UOMConversionRate>builder()
+							   .add(UOMConversionRate.one(productStockingUomId)) // default conversion
+							   .addAll(rates)
+							   .build())
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

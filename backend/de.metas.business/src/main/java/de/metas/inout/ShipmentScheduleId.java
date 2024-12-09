@@ -2,7 +2,11 @@
  * #%L
  * de.metas.business
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +31,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+<<<<<<< HEAD
+=======
+import de.metas.util.lang.RepoIdAwares;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -41,7 +49,10 @@ public class ShipmentScheduleId implements RepoIdAware
 {
 	private static final String M_SHIPMENT_SCHEDULE_TABLE_NAME = "M_ShipmentSchedule";
 
+<<<<<<< HEAD
 	@JsonCreator
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static ShipmentScheduleId ofRepoId(final int repoId)
 	{
 		return new ShipmentScheduleId(repoId);
@@ -52,6 +63,16 @@ public class ShipmentScheduleId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+<<<<<<< HEAD
+=======
+	// NOTE: we need this String deserializer in order to use ShipmentScheduleId as a map key in a map that needs to deserialized from json
+	@JsonCreator
+	public static ShipmentScheduleId ofString(@NonNull final String repoIdStr)
+	{
+		return RepoIdAwares.ofObject(repoIdStr, ShipmentScheduleId.class, ShipmentScheduleId::ofRepoId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<ShipmentScheduleId> ids)
 	{
 		if (ids.isEmpty())
@@ -96,6 +117,11 @@ public class ShipmentScheduleId implements RepoIdAware
 		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, getRepoId());
 	}
 
+<<<<<<< HEAD
+=======
+	public static boolean equals(@Nullable final ShipmentScheduleId id1, @Nullable final ShipmentScheduleId id2) {return Objects.equals(id1, id2);}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static TableRecordReferenceSet toTableRecordReferenceSet(@NonNull final Collection<ShipmentScheduleId> ids)
 	{
 		return TableRecordReferenceSet.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, ids);

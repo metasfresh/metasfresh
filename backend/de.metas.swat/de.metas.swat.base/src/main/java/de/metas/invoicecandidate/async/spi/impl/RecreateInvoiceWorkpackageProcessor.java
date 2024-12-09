@@ -24,10 +24,18 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+<<<<<<< HEAD
+=======
+import de.metas.util.ILoggable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.trx.api.ITrxManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
@@ -53,6 +61,10 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+<<<<<<< HEAD
+=======
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ICommissionTriggerService commissionTriggerService = SpringContextHolder.instance.getBean(ICommissionTriggerService.class);
 
@@ -60,15 +72,28 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private static final AdMessageKey MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION = AdMessageKey.of("MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION");
 
 	@Override
+<<<<<<< HEAD
+=======
+	public boolean isRunInTransaction() {return false;}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String trxName_IGNORED)
 	{
 		final int pinstanceInt = getParameters().getParameterAsInt(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, workpackage.getAD_PInstance_ID());
 		Check.assume(pinstanceInt > 0, "pinstanceInt>=0 on workpackage={}", workpackage);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(pinstanceInt);
 
 		Check.assume(workpackage.getC_Async_Batch_ID() > 0, "workpackage.getC_Async_Batch_ID() > 0 for workpackage=", workpackage);
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(workpackage.getC_Async_Batch_ID());
+<<<<<<< HEAD
+=======
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ILockCommand elementsLocker = lockManager.lock()
 				.setOwner(LockOwner.newOwner(getClass().getSimpleName()))
@@ -76,24 +101,39 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_C_Invoice_Candidate.class, pinstanceId);
 
+<<<<<<< HEAD
 		try (final ILockAutoCloseable lock = elementsLocker.acquire().asAutoCloseable())
 		{
 			processWorkPackage0(pinstanceId, asyncBatchId);
+=======
+		try (final ILockAutoCloseable ignored = elementsLocker.acquire().asAutoCloseable())
+		{
+			processWorkPackage0(pinstanceId, asyncBatch);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return Result.SUCCESS;
 	}
 
+<<<<<<< HEAD
 	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
 
+=======
+	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_Async_Batch asyncBatch)
+	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
+		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		while (invoiceIterator.hasNext())
 		{
 			final I_C_Invoice invoice = invoiceIterator.next();
 
 			if (!canVoidPaidInvoice(invoice))
 			{
+<<<<<<< HEAD
 				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
 				continue;
 			}
@@ -119,6 +159,45 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		}
 	}
 
+=======
+				loggable.addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
+				continue;
+			}
+
+			final Set<InvoiceCandidateId> invoiceCandIds = voidAndReturnInvoiceCandIds(invoice);
+			if (invoiceCandIds.isEmpty())
+			{
+				loggable.addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
+				continue;
+			}
+
+			enqueueForInvoicing(invoiceCandIds, asyncBatch);
+		}
+	}
+
+	private Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
+	{
+		// NOTE: we have to separate voidAndReturnInvoiceCandIds and enqueueForInvoicing in 2 transactions because
+		// InvoiceCandidateEnqueuer is calling updateSelectionBeforeEnqueueing in a new transaction (for some reason?!?)
+		// and that is introducing a deadlock in case we are also changing C_Invoice_Candidate table here.
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		return trxManager.callInNewTrx(() -> invoiceCandBL.voidAndReturnInvoiceCandIds(invoice));
+	}
+
+	private void enqueueForInvoicing(final Set<InvoiceCandidateId> invoiceCandIds, final @NonNull I_C_Async_Batch asyncBatch)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setC_Async_Batch(asyncBatch)
+				.setInvoicingParams(getIInvoicingParams())
+				.setFailIfNothingEnqueued(true)
+				.enqueueInvoiceCandidateIds(invoiceCandIds);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	private Iterator<I_C_Invoice> retrieveSelection(@NonNull final PInstanceId pinstanceId)
 	{

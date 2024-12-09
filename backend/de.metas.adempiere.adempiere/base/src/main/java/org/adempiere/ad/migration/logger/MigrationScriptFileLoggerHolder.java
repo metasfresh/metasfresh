@@ -4,6 +4,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
+=======
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
@@ -109,7 +113,11 @@ public class MigrationScriptFileLoggerHolder
 
 		//
 		// Check that INSERT/UPDATE/DELETE statements are about our ignored tables
+<<<<<<< HEAD
 		final Set<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC();
+=======
+		final Set<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC(Env.getClientIdOrSystem());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final String tableNameUC : exceptionTablesUC)
 		{
 			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + " "))

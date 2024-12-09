@@ -113,7 +113,11 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 		return PickingSlotsClearingView.builder()
 				.viewId(viewId)
+<<<<<<< HEAD
 				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
+=======
+				.rows(() -> pickingSlotRepo.retrievePickingSlotsRowsForClearing(query))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.filterDescriptors(filterDescriptors)
 				.filters(filters)

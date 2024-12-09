@@ -36,6 +36,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ISysConfigBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -67,6 +71,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -76,6 +84,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 public abstract class AbstractExcelExporter
 {
+<<<<<<< HEAD
+=======
+	private final static String SYS_CONFIG_NUMERIC_FORMAT = "de.metas.impexp.spreadsheet.excel.NumericFormat";
+
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Is the current Row a Function Row
 	 *
@@ -399,7 +414,16 @@ public abstract class AbstractExcelExporter
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final DecimalFormat df = DisplayType.getNumberFormat(displayType, getLanguage());
+<<<<<<< HEAD
 			final String format = getNumberFormatString(df, isHighlightNegativeNumbers);
+=======
+
+			final String format = Optional.ofNullable(sysConfigBL.getValue(SYS_CONFIG_NUMERIC_FORMAT,
+																		   null,
+																		   Env.getAD_Org_ID(Env.getCtx()),
+																		   Env.getAD_Client_ID()))
+					.orElseGet(() -> getNumberFormatString(df, isHighlightNegativeNumbers));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final DataFormat dataFormat = getDataFormat();
 			style.setDataFormat(dataFormat.getFormat(format));
@@ -732,12 +756,20 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
+<<<<<<< HEAD
 	public File exportToTempFile()
+=======
+	public File exportToTempFile(@NonNull String fileNamePrefix)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final File file;
 		try
 		{
+<<<<<<< HEAD
 			file = File.createTempFile("Report_", "." + excelFormat.getFileExtension());
+=======
+			file = File.createTempFile(fileNamePrefix, "." + excelFormat.getFileExtension());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (final IOException ex)
 		{

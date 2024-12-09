@@ -22,11 +22,18 @@ package org.adempiere.server.rpl.api;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.Properties;
 
 import org.w3c.dom.Document;
 
+=======
+import org.w3c.dom.Document;
+
+import java.util.Properties;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Helper used to actual import an XML document
  * 
@@ -38,18 +45,26 @@ public interface IImportHelper
 
 	/**
 	 * After initialization API calls this method to configure initial context
+<<<<<<< HEAD
 	 * 
 	 * @param initialCtx
 	 */
 	public void setInitialCtx(Properties initialCtx);
+=======
+	 */
+	void setInitialCtx(Properties initialCtx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Import XML document
 	 * 
+<<<<<<< HEAD
 	 * @param ctx
 	 * @param result
 	 * @param documentToBeImported
 	 * @param trxName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return response document or null if there is no response
 	 */
 	Document importXMLDocument(StringBuilder result, Document documentToBeImported, String trxName);

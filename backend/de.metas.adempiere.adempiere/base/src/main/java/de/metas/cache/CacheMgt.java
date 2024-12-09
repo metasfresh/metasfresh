@@ -16,6 +16,7 @@
  *****************************************************************************/
 package de.metas.cache;
 
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -29,12 +30,29 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
+import com.google.common.collect.Maps;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+<<<<<<< HEAD
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -42,6 +60,7 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+<<<<<<< HEAD
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -59,6 +78,20 @@ import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Adempiere Cache Management
@@ -77,19 +110,31 @@ public final class CacheMgt
 
 	public static final String JMX_BASE_NAME = "de.metas.cache";
 
+<<<<<<< HEAD
+=======
+	@Getter @NonNull private final CCacheConfigDefaults configDefaults = CCacheConfigDefaults.computeFrom(SpringContextHolder.instance);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ConcurrentHashMap<CacheLabel, CachesGroup> cachesByLabel = new ConcurrentHashMap<>();
 
 	private final CopyOnWriteArrayList<ICacheResetListener> globalCacheResetListeners = new CopyOnWriteArrayList<>();
 	private final ConcurrentMap<String, CopyOnWriteArrayList<ICacheResetListener>> cacheResetListenersByTableName = new ConcurrentHashMap<>();
 
+<<<<<<< HEAD
 	/* package */ static final transient Logger logger = LogManager.getLogger(CacheMgt.class);
+=======
+	/* package */ static final Logger logger = LogManager.getLogger(CacheMgt.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final AtomicBoolean cacheResetRunning = new AtomicBoolean();
 	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	private CacheMgt()
 	{
+<<<<<<< HEAD
 		JMXRegistry.get().registerJMX(new JMXCacheMgt(), OnJMXAlreadyExistsPolicy.Replace);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -123,6 +168,7 @@ public final class CacheMgt
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(instance))
 		{
+<<<<<<< HEAD
 			final Boolean registerWeak = null; // auto
 			register(instance, registerWeak);
 		}
@@ -139,12 +185,22 @@ public final class CacheMgt
 			labels.stream()
 					.map(this::getCachesGroup)
 					.forEach(cacheGroup -> cacheGroup.addCache(cache));
+=======
+			final Set<CacheLabel> labels = Check.assumeNotEmpty(instance.getLabels(), "labels is not empty");
+			labels.stream()
+					.map(this::getCachesGroup)
+					.forEach(cacheGroup -> cacheGroup.addCache(instance));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
 	public void unregister(final CacheInterface cache)
 	{
+<<<<<<< HEAD
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
+=======
+		try (final IAutoCloseable ignored = CacheMDC.putCache(cache))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			cache.getLabels()
 					.stream()
@@ -153,17 +209,26 @@ public final class CacheMgt
 		}
 	}
 
+<<<<<<< HEAD
 	public Set<CacheLabel> getCacheLabels()
 	{
 		return ImmutableSet.copyOf(cachesByLabel.keySet());
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Set<String> getTableNamesToBroadcast()
 	{
 		return CacheInvalidationRemoteHandler.instance.getTableNamesToBroadcast();
 	}
 
+<<<<<<< HEAD
 	/** @return last time cache reset timestamp */
+=======
+	/**
+	 * @return last time cache reset timestamp
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public long getLastCacheReset()
 	{
 		return lastCacheReset.get();
@@ -183,6 +248,7 @@ public final class CacheMgt
 			return 0;
 		}
 
+<<<<<<< HEAD
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("Full CacheReset")
 				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
@@ -209,19 +275,34 @@ public final class CacheMgt
 			total = cachesByLabel.values()
 					.stream()
 					.mapToLong(CachesGroup::invalidateAllNoFail)
+=======
+		try
+		{
+			final long total = streamCaches()
+					.mapToLong(CachesGroup::invalidateNoFail)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.sum();
 
 			fireGlobalCacheResetListeners(CacheInvalidateMultiRequest.all());
 
 			lastCacheReset.incrementAndGet();
+<<<<<<< HEAD
+=======
+
+			logger.info("Reset all: cache instances invalidated ({} cached items invalidated).", total);
+			return total;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		finally
 		{
 			cacheResetRunning.set(false);
 		}
+<<<<<<< HEAD
 
 		logger.info("Reset all: cache instances invalidated ({} cached items invalidated).", total);
 		return total;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void fireGlobalCacheResetListeners(final CacheInvalidateMultiRequest multiRequest)
@@ -241,7 +322,11 @@ public final class CacheMgt
 					.stream()
 					.map(cacheResetListenersByTableName::get)
 					.filter(Objects::nonNull)
+<<<<<<< HEAD
 					.flatMap(listeners -> listeners.stream())
+=======
+					.flatMap(Collection::stream)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
 		}
 	}
@@ -268,27 +353,47 @@ public final class CacheMgt
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allRecordsForTable(tableName);
 		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
+<<<<<<< HEAD
 	}	// reset
 
 	/**
 	 * Invalidate all cached entries for given TableName.
 	 *
+=======
+	}    // reset
+
+	/**
+	 * Invalidate all cached entries for given TableName.
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * The event won't be broadcasted.
 	 *
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("UnusedReturnValue")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public long resetLocal(final String tableName)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allRecordsForTable(tableName);
 		return reset(request, ResetMode.LOCAL);
+<<<<<<< HEAD
 	}	// reset
+=======
+	}    // reset
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
 	 *
 	 * @param tableName table name
+<<<<<<< HEAD
 	 * @param recordId record if applicable or negative for all
+=======
+	 * @param recordId  record if applicable or negative for all
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return how many cache entries were invalidated
 	 */
 	public long reset(final String tableName, final int recordId)
@@ -302,9 +407,20 @@ public final class CacheMgt
 		return reset(request, mode);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
 	 *
+=======
+	public long reset(@NonNull final TableRecordReference reference)
+	{
+		return reset(reference.getTableName(), reference.getRecord_ID());
+	}
+
+	/**
+	 * Reset cache for TableName/Record_ID when given transaction is committed.
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If no transaction was given or given transaction was not found, the cache is reset right away.
 	 */
 	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateMultiRequest request)
@@ -350,6 +466,7 @@ public final class CacheMgt
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
+<<<<<<< HEAD
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("CacheReset")
 				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
@@ -362,6 +479,8 @@ public final class CacheMgt
 
 	private Long reset0(final CacheInvalidateMultiRequest multiRequest, final ResetMode mode)
 	{
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final long resetCount;
 		if (mode.isResetLocal())
 		{
@@ -391,7 +510,11 @@ public final class CacheMgt
 			return reset();
 		}
 
+<<<<<<< HEAD
 		int total = 0;
+=======
+		long total = 0;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final CacheInvalidateRequest request : multiRequest.getRequests())
 		{
 			final long totalPerRequest = invalidateForRequest(request);
@@ -456,10 +579,14 @@ public final class CacheMgt
 	 */
 	private long computeTotalSize()
 	{
+<<<<<<< HEAD
 		return cachesByLabel.values()
 				.stream()
 				.mapToLong(CachesGroup::computeTotalSize)
 				.sum();
+=======
+		return streamCaches().mapToLong(CacheInterface::size).sum();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -468,7 +595,11 @@ public final class CacheMgt
 	@Override
 	public String toString()
 	{
+<<<<<<< HEAD
 		return "CacheMgt[Instances="	+ cachesByLabel.size() + "]";
+=======
+		return "CacheMgt[Instances=" + cachesByLabel.size() + "]";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -502,6 +633,10 @@ public final class CacheMgt
 				.addIfAbsent(cacheResetListener);
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("UnusedReturnValue")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean removeCacheResetListener(@NonNull final String tableName, @NonNull final ICacheResetListener cacheResetListener)
 	{
 		final CopyOnWriteArrayList<ICacheResetListener> cacheResetListeners = cacheResetListenersByTableName.get(tableName);
@@ -513,10 +648,52 @@ public final class CacheMgt
 		return cacheResetListeners.remove(cacheResetListener);
 	}
 
+<<<<<<< HEAD
 	/** Collects records that needs to be removed from cache when a given transaction is committed */
 	private static final class RecordsToResetOnTrxCommitCollector
 	{
 		/** Gets/creates the records collector which needs to be reset when transaction is committed */
+=======
+	private Stream<CacheInterface> streamCaches()
+	{
+		return cachesByLabel.values().stream()
+				.flatMap(CachesGroup::streamCaches)
+				.collect(GuavaCollectors.distinctBy(CacheInterface::getCacheId));
+	}
+
+	public Stream<CCacheStats> streamStats(@NonNull final CCacheStatsPredicate predicate)
+	{
+		return streamStats().filter(predicate);
+	}
+
+	public Stream<CCacheStats> streamStats()
+	{
+		return streamCaches()
+				.map(CacheMgt::extractStatsOrNull)
+				.filter(Objects::nonNull);
+	}
+
+	private static CCacheStats extractStatsOrNull(final CacheInterface cacheInterface)
+	{
+		return cacheInterface instanceof CCache ? ((CCache<?, ?>)cacheInterface).stats() : null;
+	}
+
+	public Optional<CacheInterface> getById(final long cacheId)
+	{
+		return streamCaches()
+				.filter(cache -> cache.getCacheId() == cacheId)
+				.findFirst();
+	}
+
+	/**
+	 * Collects records that needs to be removed from cache when a given transaction is committed
+	 */
+	private static final class RecordsToResetOnTrxCommitCollector
+	{
+		/**
+		 * Gets/creates the records collector which needs to be reset when transaction is committed
+		 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public static RecordsToResetOnTrxCommitCollector getCreate(final ITrx trx)
 		{
 			return trx.getProperty(TRX_PROPERTY, () -> {
@@ -545,7 +722,13 @@ public final class CacheMgt
 
 		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
+<<<<<<< HEAD
 		/** Enqueues a record */
+=======
+		/**
+		 * Enqueues a record
+		 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public void addRecord(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode resetMode)
 		{
 			multiRequest.getRequests()
@@ -553,7 +736,13 @@ public final class CacheMgt
 			logger.debug("Scheduled cache invalidation on transaction commit: {} ({})", multiRequest, resetMode);
 		}
 
+<<<<<<< HEAD
 		/** Reset the cache for all enqueued records */
+=======
+		/**
+		 * Reset the cache for all enqueued records
+		 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private void sendRequestsAndClear()
 		{
 			if (request2resetMode.isEmpty())
@@ -595,9 +784,13 @@ public final class CacheMgt
 	private static class CachesGroup
 	{
 		private final CacheLabel label;
+<<<<<<< HEAD
 		private final ConcurrentMap<Long, CacheInterface> caches = new MapMaker()
 				.weakValues()
 				.makeMap();
+=======
+		private final ConcurrentMap<Long, CacheInterface> caches = new MapMaker().weakValues().makeMap();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		public CachesGroup(@NonNull final CacheLabel label)
 		{
@@ -631,6 +824,7 @@ public final class CacheMgt
 
 		private Stream<CacheInterface> streamCaches()
 		{
+<<<<<<< HEAD
 			return caches.values()
 					.stream()
 					.filter(Objects::nonNull);
@@ -644,19 +838,30 @@ public final class CacheMgt
 		}
 
 		public long invalidateAllNoFail()
+=======
+			return caches.values().stream().filter(Objects::nonNull);
+		}
+
+		private long invalidateAllNoFail()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return streamCaches()
 					.mapToLong(CachesGroup::invalidateNoFail)
 					.sum();
 		}
 
+<<<<<<< HEAD
 		public long invalidateForRecordNoFail(final TableRecordReference recordRef)
+=======
+		private long invalidateForRecordNoFail(final TableRecordReference recordRef)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return streamCaches()
 					.mapToLong(cache -> invalidateNoFail(cache, recordRef))
 					.sum();
 		}
 
+<<<<<<< HEAD
 		private static long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
 		{
 			try (final IAutoCloseable ignored = CacheMDC.putCache(cacheInstance))
@@ -671,6 +876,8 @@ public final class CacheMgt
 			}
 		}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		private static long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
 			try (final IAutoCloseable ignored = CacheMDC.putCache(cacheInstance))
@@ -684,7 +891,25 @@ public final class CacheMgt
 			catch (final Exception ex)
 			{
 				// log but don't fail
+<<<<<<< HEAD
 				logger.warn("Error while reseting {}. Ignored.", cacheInstance, ex);
+=======
+				logger.warn("Error while resetting {}. Ignored.", cacheInstance, ex);
+				return 0;
+			}
+		}
+
+		private static long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
+		{
+			try (final IAutoCloseable ignored = CacheMDC.putCache(cacheInstance))
+			{
+				return cacheInstance.resetForRecordId(recordRef);
+			}
+			catch (final Exception ex)
+			{
+				// log but don't fail
+				logger.warn("Error while resetting {} for {}. Ignored.", cacheInstance, recordRef, ex);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				return 0;
 			}
 		}

@@ -1,5 +1,6 @@
 de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Invoice450ToCrossVersionModelToolTest.toCrossVersionResponse=[
   {
+<<<<<<< HEAD
     "payload" : {
       "invoice" : {
         "requestTimestamp" : 1535971639,
@@ -45,6 +46,53 @@ de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Inv
             }
           }
         }
+=======
+    "payload": {
+      "body": {
+        "biller": {
+          "eanParty": "1234567890123"
+        },
+        "contact": {
+          "company": {
+            "companyName": "Contact-CompanyName"
+          },
+          "employee": {
+            "familyName": "Contact-FamilyName",
+            "givenName": "Contact-GivenName",
+            "online": {
+              "email": [
+                "Contact@Email"
+              ]
+            },
+            "telecom": {
+              "phone": [
+                "Contact-Phone"
+              ]
+            }
+          }
+        },
+        "patient": {
+          "person": {
+            "familyName": "Patient-FamilyName",
+            "givenName": "Patient-GivenName"
+          }
+        },
+        "rejected": {
+          "errors": [
+            {
+              "code": "Error-Code",
+              "text": "Error-Text"
+            }
+          ],
+          "statusIn": "received",
+          "statusOut": "canceled"
+        }
+      },
+      "invoice": {
+        "requestDate": "2018-09-02T22:00:00.000+00:00",
+        "requestId": "KV_12345",
+        "requestTimestamp": 1535971639
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       }
     }
   }

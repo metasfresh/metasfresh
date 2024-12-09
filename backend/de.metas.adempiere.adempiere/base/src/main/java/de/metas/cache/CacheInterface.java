@@ -16,10 +16,17 @@
  *****************************************************************************/
 package de.metas.cache;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+=======
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Adempiere Cache Interface
  *
@@ -28,6 +35,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  */
 public interface CacheInterface
 {
+<<<<<<< HEAD
+=======
+	/**
+	 * @return unique cache ID
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	long getCacheId();
 
 	/**

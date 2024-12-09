@@ -1,10 +1,13 @@
 package de.metas.costing.methods;
 
+<<<<<<< HEAD
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -20,6 +23,13 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -58,7 +68,11 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+=======
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -82,6 +96,10 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmountAndQty(amt, qty),
 				previousCosts);

@@ -1,5 +1,6 @@
 package de.metas.procurement.base.order.impl;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -14,6 +15,11 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+=======
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -25,6 +31,7 @@ import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.product.IProductDAO;
+<<<<<<< HEAD
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,6 +40,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.annotation.Nullable;
+=======
+import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.lang3.NotImplementedException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

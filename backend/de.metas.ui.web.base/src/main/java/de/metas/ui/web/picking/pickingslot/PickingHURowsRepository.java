@@ -1,16 +1,30 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.SetMultimap;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+<<<<<<< HEAD
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+=======
+import de.metas.handlingunits.picking.PickingCandidateService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -33,16 +47,24 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+=======
+import java.util.HashSet;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -78,23 +100,46 @@ import java.util.function.Supplier;
 public class PickingHURowsRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
+<<<<<<< HEAD
 	private final ExtendedMemorizingSupplier<HUEditorViewRepository> huEditorRepoSupplier;
 	private final PickingCandidateRepository pickingCandidatesRepo;
+=======
+
+	private final ExtendedMemorizingSupplier<HUEditorViewRepository> huEditorRepoSupplier;
+	private final PickingCandidateRepository pickingCandidatesRepo;
+	private final PickingCandidateService pickingCandidateService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Autowired
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
+<<<<<<< HEAD
 			@NonNull final HUReservationService huReservationService)
 	{
 		this(
 				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
 				pickingCandidatesRepo);
+=======
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PickingCandidateService pickingCandidateService,
+			@NonNull final ADReferenceService adReferenceService)
+	{
+		this(
+				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService, adReferenceService),
+				pickingCandidatesRepo,
+				pickingCandidateService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+<<<<<<< HEAD
 			@NonNull final HUReservationService huReservationService)
+=======
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
@@ -103,6 +148,10 @@ public class PickingHURowsRepository
 				//.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+<<<<<<< HEAD
+=======
+				.adReferenceService(adReferenceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -112,10 +161,19 @@ public class PickingHURowsRepository
 	@VisibleForTesting
 	PickingHURowsRepository(
 			@NonNull final Supplier<HUEditorViewRepository> huEditorRepoSupplier,
+<<<<<<< HEAD
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo)
 	{
 		this.huEditorRepoSupplier = ExtendedMemorizingSupplier.of(huEditorRepoSupplier);
 		this.pickingCandidatesRepo = pickingCandidatesRepo;
+=======
+			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
+			@NonNull final PickingCandidateService pickingCandidateService)
+	{
+		this.huEditorRepoSupplier = ExtendedMemorizingSupplier.of(huEditorRepoSupplier);
+		this.pickingCandidatesRepo = pickingCandidatesRepo;
+		this.pickingCandidateService = pickingCandidateService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private HUEditorViewRepository getHUEditorViewRepository()
@@ -171,6 +229,7 @@ public class PickingHURowsRepository
 
 	private ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<PickingCandidate> pickingCandidates)
 	{
+<<<<<<< HEAD
 		final HUEditorViewRepository huEditorRepo = getHUEditorViewRepository();
 
 		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
@@ -190,10 +249,35 @@ public class PickingHURowsRepository
 				continue;
 			}
 			if (huId2huRow.containsKey(huId))
+=======
+		final ImmutableList<PickingCandidate> pickingCandidateToTakeIntoAccount = pickingCandidates.stream()
+				.filter(pickingCandidate -> !pickingCandidate.isRejectedToPick())
+				.filter(pickingCandidate -> pickingCandidate.getPickFrom().getHuId() != null)
+				.filter(pickingCandidate -> pickingCandidate.getPickingSlotId() != null)
+				.collect(ImmutableList.toImmutableList());
+
+		final PickingCandidateHURowsProvider huRowsProvider = PickingCandidateHURowsProvider.builder()
+				.huEditorViewRepository(getHUEditorViewRepository())
+				.pickingCandidatesRepo(pickingCandidatesRepo)
+				.pickingCandidateService(pickingCandidateService)
+				.pickingCandidates(pickingCandidateToTakeIntoAccount)
+				.build();
+
+		final ImmutableMap<HuId, PickedHUEditorRow> huId2EditorRow = huRowsProvider.getForPickingCandidates();
+
+		final HashSet<HuId> seenHUIds = new HashSet<>();
+
+		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
+		for (final PickingCandidate pickingCandidate : pickingCandidateToTakeIntoAccount)
+		{
+			final HuId huId = pickingCandidate.getPickFrom().getHuId();
+			if (seenHUIds.contains(huId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				continue;
 			}
 
+<<<<<<< HEAD
 			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
 			if (pickingSlotId == null)
 			{
@@ -208,11 +292,22 @@ public class PickingHURowsRepository
 
 			huId2huRow.put(huId, row);
 			builder.put(pickingSlotId, row);
+=======
+			final PickedHUEditorRow huEditorRow = huId2EditorRow.get(pickingCandidate.getPickFrom().getHuId());
+			if (huEditorRow == null)
+			{
+				continue;
+			}
+
+			seenHUIds.addAll(huEditorRow.getHuEditorRow().getAllHuIds());
+			builder.put(pickingCandidate.getPickingSlotId(), huEditorRow);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return builder.build();
 	}
 
+<<<<<<< HEAD
 	private static boolean isPickingCandidateProcessed(@NonNull final PickingCandidate pc)
 	{
 		final PickingCandidateStatus status = pc.getProcessingStatus();
@@ -234,6 +329,8 @@ public class PickingHURowsRepository
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ListMultimap<PickingSlotId, PickedHUEditorRow> //
 			retrieveAllPickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_PickingSlot> pickingSlots)
 	{
@@ -251,6 +348,7 @@ public class PickingHURowsRepository
 					final HuId huId = pickingSlotAndHU.getValue();
 
 					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
+<<<<<<< HEAD
 					final boolean pickingCandidateProcessed = true;
 					final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
@@ -273,4 +371,13 @@ public class PickingHURowsRepository
 		HUEditorRow huEditorRow;
 		boolean processed;
 	}
+=======
+
+					Check.assumeNotNull(huEditorRow, "HUEditorRow cannot be null if huId is provided!");
+
+					return GuavaCollectors.entry(pickingSlotId, PickedHUEditorRow.ofProcessedRow(huEditorRow));
+				})
+				.collect(GuavaCollectors.toImmutableListMultimap());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

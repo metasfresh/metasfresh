@@ -1,9 +1,17 @@
 package de.metas.document.impl;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+<<<<<<< HEAD
+=======
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -16,18 +24,43 @@ public class DocTypeBL implements IDocTypeBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	@Override
+<<<<<<< HEAD
 	public I_C_DocType getById(final DocTypeId docTypeId)
+=======
+	@NonNull
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return docTypesRepo.getById(docTypeId);
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	@NonNull
+	public I_C_DocType getByIdInTrx(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getByIdInTrx(docTypeId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
 	{
 		return docTypesRepo.getDocTypeIdOrNull(docTypeQuery);
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
@@ -135,4 +168,13 @@ public class DocTypeBL implements IDocTypeBL
 		return (X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType()) || X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
 				&& X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType());
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void save(@NonNull final I_C_DocType dt)
+	{
+		docTypesRepo.save(dt);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -21,6 +21,13 @@
   box-sizing: border-box;
 }
 
+<<<<<<< HEAD
+=======
+html {
+  overflow: hidden !important;
+}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

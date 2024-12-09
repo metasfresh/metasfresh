@@ -1,9 +1,13 @@
 package de.metas.invoice;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import org.compiere.model.X_C_DocType;
 
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.lang.SOTrx;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -11,6 +15,11 @@ import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.business
@@ -35,6 +44,7 @@ import lombok.NonNull;
 
 public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 {
+<<<<<<< HEAD
 	VendorInvoice(X_C_DocType.DOCBASETYPE_APInvoice, SOTrx.PURCHASE, false),//
 	VendorCreditMemo(X_C_DocType.DOCBASETYPE_APCreditMemo, SOTrx.PURCHASE, true),//
 	CustomerInvoice(X_C_DocType.DOCBASETYPE_ARInvoice, SOTrx.SALES, false),//
@@ -54,12 +64,35 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	@Getter
 	private final SOTrx soTrx;
 
+=======
+	VendorInvoice(DocBaseType.PurchaseInvoice, SOTrx.PURCHASE, false),//
+	VendorCreditMemo(DocBaseType.PurchaseCreditMemo, SOTrx.PURCHASE, true),//
+	CustomerInvoice(DocBaseType.SalesInvoice, SOTrx.SALES, false),//
+	CustomerCreditMemo(DocBaseType.SalesCreditMemo, SOTrx.SALES, true), //
+	//
+	/** Legacy commission/salary invoice */
+	@Deprecated
+	AEInvoice(DocBaseType.GehaltsrechnungAngestellter, SOTrx.PURCHASE, false),
+	/**
+	 * Legacy invoice for recurrent payment
+	 */
+	@Deprecated
+	AVInvoice(DocBaseType.InterneRechnungLieferant, SOTrx.PURCHASE, false),
+	;
+
+	@NonNull @Getter private final DocBaseType docBaseType;
+	@NonNull @Getter private final SOTrx soTrx;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Getter
 	private final boolean creditMemo;
 
 	private static final ValuesIndex<InvoiceDocBaseType> index = ReferenceListAwareEnums.index(values());
 
+<<<<<<< HEAD
 	InvoiceDocBaseType(@NonNull final String docBaseType, @NonNull final SOTrx soTrx, final boolean creditMemo)
+=======
+	InvoiceDocBaseType(@NonNull final DocBaseType docBaseType, @NonNull final SOTrx soTrx, final boolean creditMemo)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.docBaseType = docBaseType;
 		this.soTrx = soTrx;
@@ -88,10 +121,22 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		}
 	}
 
+<<<<<<< HEAD
 	@Override
 	public String getCode()
 	{
 		return getDocBaseType();
+=======
+	public static InvoiceDocBaseType ofDocBaseType(@NonNull final DocBaseType docBaseType)
+	{
+		return ofCode(docBaseType.getCode());
+	}
+
+	@Override
+	public String getCode()
+	{
+		return getDocBaseType().getCode();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public boolean isSales()
@@ -99,6 +144,20 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return getSoTrx().isSales();
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isPurchase()
+	{
+		return getSoTrx().isPurchase();
+	}
+
+	/**
+	 * @return is Account Payable (AP), aka purchase
+	 * @see #isPurchase()
+	 */
+	public boolean isAP() {return isPurchase();}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isCustomerInvoice()
 	{
 		return this == CustomerInvoice;

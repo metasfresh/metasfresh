@@ -2,10 +2,17 @@ package de.metas.handlingunits.materialtracking.process;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+<<<<<<< HEAD
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
+=======
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.producer.HUToDistribute;
+import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;

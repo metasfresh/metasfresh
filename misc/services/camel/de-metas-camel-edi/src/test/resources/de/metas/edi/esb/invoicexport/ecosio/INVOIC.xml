@@ -4,6 +4,10 @@
     <C_Invoice_ID>1488989</C_Invoice_ID>
     <DateInvoiced>2021-02-05+01:00</DateInvoiced>
     <DateOrdered>2021-02-05+01:00</DateOrdered>
+<<<<<<< HEAD
+=======
+    <DateAcct>2021-02-05+01:00</DateAcct>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     <eancom_doctype>380</eancom_doctype>
     <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
     <GrandTotal>120.70</GrandTotal>
@@ -11,12 +15,25 @@
     <ISO_Code>CHF</ISO_Code>
     <MovementDate>2021-01-19+01:00</MovementDate>
     <POReference>POReference</POReference>
+<<<<<<< HEAD
     <receivergln>1234567890123</receivergln>
     <sendergln>1234567890124</sendergln>
     <shipment_documentno>1171035</shipment_documentno>
     <TotalLines>117.76</TotalLines>
     <totaltaxbaseamt>117.76</totaltaxbaseamt>
     <totalvat>2.94</totalvat>
+=======
+    <ReceiverGLN>1234567890123</ReceiverGLN>
+    <SenderGLN>1234567890124</SenderGLN>
+    <shipment_documentno>1171035</shipment_documentno>
+    <TotalLines>117.76</TotalLines>
+    <TotalTaxBaseAmt>117.76</TotalTaxBaseAmt>
+    <TotalVat>2.94</TotalVat>
+    <SurchargeAmt>-3.53</SurchargeAmt>
+    <TotalLinesWithSurchargeAmt>114.23</TotalLinesWithSurchargeAmt>
+    <TotalVatWithSurchargeAmt>8.00</TotalVatWithSurchargeAmt>
+    <GrandTotalWithSurchargeAmt>122.23</GrandTotalWithSurchargeAmt>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     <EDI_cctop_000_v>
         <!--EDI_cctop_000_v via C_BPartner_Location_ID-->
         <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
@@ -151,7 +168,10 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty24_CU-EAN1</EAN_CU>
         <EAN_TU>Qty24_TU-EAN1</EAN_TU>
+<<<<<<< HEAD
         <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -178,7 +198,10 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty60_CU-EAN1</EAN_CU>
         <EAN_TU>Qty60_TU-EAN1</EAN_TU>
+<<<<<<< HEAD
         <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -205,7 +228,10 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty10_CU-EAN1</EAN_CU>
         <EAN_TU>Qty10_TU-EAN1</EAN_TU>
+<<<<<<< HEAD
         <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_901_991_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -214,6 +240,12 @@
         <TaxAmt>2.94</TaxAmt>
         <TaxBaseAmt>117.76</TaxBaseAmt>
         <TotalAmt>120.70</TotalAmt>
+<<<<<<< HEAD
+=======
+        <SurchargeAmt>-3.53</SurchargeAmt>
+        <TaxBaseAmtWithSurchargeAmt>114.23</TaxBaseAmtWithSurchargeAmt>
+        <TaxAmtWithSurchargeAmt>8.00</TaxAmtWithSurchargeAmt>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     </EDI_cctop_901_991_v>
     <CountryCode>CH</CountryCode>
     <CountryCode_3digit>CHE</CountryCode_3digit>

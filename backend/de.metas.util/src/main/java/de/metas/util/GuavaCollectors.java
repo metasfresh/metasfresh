@@ -59,6 +59,21 @@ import java.util.stream.StreamSupport;
 @UtilityClass
 public final class GuavaCollectors
 {
+<<<<<<< HEAD
+=======
+	public static <T> Collector<T, ?, ArrayList<T>> toArrayList()
+	{
+		return Collector.of(
+				ArrayList::new,
+				ArrayList::add,
+				(acc1, acc2) -> {
+					acc1.addAll(acc2);
+					return acc1;
+				},
+				Function.identity());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 */
@@ -366,6 +381,27 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+<<<<<<< HEAD
+=======
+	public static <T> Collector<T, ?, T> uniqueElementOrThrow(@NonNull final Function<Set<T>, ? extends RuntimeException> exceptionSupplier)
+	{
+		return Collector.<T, Set<T>, T>of(
+				LinkedHashSet::new,
+				Set::add,
+				(l, r) -> {
+					l.addAll(r);
+					return l;
+				},
+				set -> {
+					if (set.size() != 1)
+					{
+						throw exceptionSupplier.apply(set);
+					}
+					return set.iterator().next();
+				});
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static <T> Stream<List<T>> groupByAndStream(final Stream<T> stream, final Function<T, ?> classifier)
 	{
 		final boolean parallel = false;

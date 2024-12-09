@@ -38,7 +38,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -82,7 +86,11 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+<<<<<<< HEAD
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+=======
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());

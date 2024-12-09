@@ -22,12 +22,15 @@ package de.metas.shipping.callout;
  * #L%
  */
 
+<<<<<<< HEAD
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -37,6 +40,14 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Inventory;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

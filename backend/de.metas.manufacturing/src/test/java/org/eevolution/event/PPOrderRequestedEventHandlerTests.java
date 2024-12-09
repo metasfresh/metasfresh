@@ -222,8 +222,13 @@ public class PPOrderRequestedEventHandlerTests
 		}
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(),
+<<<<<<< HEAD
 				AttributesKey.ofAttributeValueIds(12345),
 				bomMainProduct.getM_AttributeSetInstance_ID());
+=======
+																							  AttributesKey.ofAttributeValueIds(12345),
+																							  bomMainProduct.getM_AttributeSetInstance_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		ppOrderPojo = PPOrder.builder()
 				.ppOrderData(PPOrderData.builder()

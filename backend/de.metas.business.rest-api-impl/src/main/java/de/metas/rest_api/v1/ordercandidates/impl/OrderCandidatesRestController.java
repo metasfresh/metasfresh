@@ -20,8 +20,11 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+<<<<<<< HEAD
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -30,7 +33,10 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+<<<<<<< HEAD
 import de.metas.rest_api.utils.ApiAPMHelper;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
@@ -48,8 +54,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+<<<<<<< HEAD
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -193,17 +202,24 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+<<<<<<< HEAD
 		perfMonService.monitorSpan(
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
 				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+=======
+		bulkRequest.getRequests()
+						.stream()
+						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createOrUpdateMasterdata(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+<<<<<<< HEAD
 		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
 				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
 		{
@@ -224,6 +240,8 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 
 		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgId);
@@ -301,6 +319,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+<<<<<<< HEAD
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("CreatOrderLineCandidatesBulk")
 				.type(Type.REST_API_PROCESSING.getCode())
@@ -315,6 +334,8 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()

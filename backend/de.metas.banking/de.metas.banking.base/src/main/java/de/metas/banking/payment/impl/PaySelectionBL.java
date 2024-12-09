@@ -9,6 +9,10 @@ import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
+<<<<<<< HEAD
+=======
+import de.metas.banking.PaySelectionLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -35,6 +39,10 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_Payment;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 
@@ -43,6 +51,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -56,7 +68,17 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
 	@Override
+<<<<<<< HEAD
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
+=======
+	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
+	{
+		return paySelectionDAO.getById(paySelectionId);
+	}
+
+	@Override
+	public void updateFromInvoice(final I_C_PaySelectionLine psl)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 
@@ -183,31 +205,51 @@ public class PaySelectionBL implements IPaySelectionBL
 	 * <li>was not created before
 	 * <li>line is not linked to a bank statement line ref
 	 * </ul>
+<<<<<<< HEAD
 	 *
 	 * @return newly created payment or <code>null</code> if no payment was generated.
 	 */
 	private org.compiere.model.I_C_Payment createPaymentIfNeeded(final I_C_PaySelectionLine line)
+=======
+	 */
+	private void createPaymentIfNeeded(final I_C_PaySelectionLine line)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// Skip if a payment was already created
 		if (line.getC_Payment_ID() > 0)
 		{
+<<<<<<< HEAD
 			return null;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		// Skip if this pay selection line is already in a bank statement
 		// because in that case, the payment shall be generated there
 		if (isReconciled(line))
 		{
+<<<<<<< HEAD
 			return null;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		try
 		{
+<<<<<<< HEAD
 			final org.compiere.model.I_C_Payment payment = createPayment(line);
 			line.setC_Payment(payment);
 			paySelectionDAO.save(line);
 
 			return payment;
+=======
+			final I_C_Payment payment = createPayment(line);
+			line.setC_Payment_ID(payment.getC_Payment_ID());
+			paySelectionDAO.save(line);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (final Exception ex)
 		{
@@ -227,10 +269,16 @@ public class PaySelectionBL implements IPaySelectionBL
 	 * <p>
 	 * NOTE: this method is NOT checking if the payment was already created or it's not needed.
 	 *
+<<<<<<< HEAD
 	 * @param line
 	 * @return generated payment.
 	 */
 	private org.compiere.model.I_C_Payment createPayment(final I_C_PaySelectionLine line)
+=======
+	 * @return generated payment.
+	 */
+	private I_C_Payment createPayment(final I_C_PaySelectionLine line)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
@@ -315,7 +363,11 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
+<<<<<<< HEAD
 		final ImmutableSet<de.metas.banking.PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+=======
+		final ImmutableSet<PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionIds)
@@ -442,4 +494,16 @@ public class PaySelectionBL implements IPaySelectionBL
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds)
+	{
+		return paySelectionDAO.retrievePaySelectionLinesByIds(paySelectionLineIds)
+				.stream()
+				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,12 +1,21 @@
+<<<<<<< HEAD
 import React, { useContext, createContext } from 'react';
 import { useStore, useDispatch } from 'react-redux';
+=======
+import React, { createContext, useContext } from 'react';
+import { useDispatch, useStore } from 'react-redux';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 import { loginByQrCode, loginRequest, logoutRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
+<<<<<<< HEAD
 import { setToken, clearToken } from '../actions/TokenActions';
+=======
+import { clearToken, setToken } from '../actions/TokenActions';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import { setLanguage } from '../utils/translations';
 import { getIsLoggedInFromState, getTokenFromState } from '../reducers/appHandler';
 
@@ -25,8 +34,18 @@ export function ProvideAuth({ children }) {
   if (!token) {
     const tokenFromCookie = Cookies.get('Token');
     const languageFromCookie = Cookies.get('Language');
+<<<<<<< HEAD
     if (tokenFromCookie) {
       auth.loginByToken({ token: tokenFromCookie, language: languageFromCookie });
+=======
+    const userFullnameFromCookies = Cookies.get('UserFullname');
+    if (tokenFromCookie) {
+      auth.loginByToken({
+        token: tokenFromCookie,
+        language: languageFromCookie,
+        userFullname: userFullnameFromCookies,
+      });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       console.log('ProvideAuth: Logged in by token from cookie');
     }
   }
@@ -50,14 +69,24 @@ function createAuthObject() {
   const store = useStore();
   const dispatch = useDispatch();
 
+<<<<<<< HEAD
   const loginByToken = async ({ token, language }) => {
+=======
+  const loginByToken = async ({ token, language, userFullname }) => {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     if (language) {
       setLanguage(language);
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
     }
 
+<<<<<<< HEAD
     dispatch(setToken(token));
     Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
+=======
+    dispatch(setToken({ token, userFullname }));
+    Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
+    Cookies.set('UserFullname', userFullname, { expires: COOKIE_EXPIRATION });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     axios.defaults.headers.common['Authorization'] = token;
     if (language) {
@@ -67,11 +96,19 @@ function createAuthObject() {
 
   const login = (username, password) => {
     return loginRequest(username, password)
+<<<<<<< HEAD
       .then(async ({ error, token, language }) => {
         if (error) {
           return Promise.reject(error);
         } else {
           await loginByToken({ token, language });
+=======
+      .then(async ({ error, token, language, userFullname }) => {
+        if (error) {
+          return Promise.reject(error);
+        } else {
+          await loginByToken({ token, language, userFullname });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           return Promise.resolve();
         }
       })
@@ -83,11 +120,19 @@ function createAuthObject() {
 
   const qrLogin = (qrCode) => {
     return loginByQrCode(qrCode)
+<<<<<<< HEAD
       .then(async ({ error, token, language }) => {
         if (error) {
           return Promise.reject(error);
         } else {
           await loginByToken({ token, language });
+=======
+      .then(async ({ error, token, language, userFullname }) => {
+        if (error) {
+          return Promise.reject(error);
+        } else {
+          await loginByToken({ token, language, userFullname });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
           return Promise.resolve();
         }
       })
@@ -105,6 +150,10 @@ function createAuthObject() {
     dispatch(clearToken());
 
     Cookies.remove('Token', { expires: COOKIE_EXPIRATION });
+<<<<<<< HEAD
+=======
+    Cookies.remove('UserFullname', { expires: COOKIE_EXPIRATION });
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     axios.defaults.headers.common['Authorization'] = null;
 

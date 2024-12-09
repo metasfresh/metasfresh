@@ -1,5 +1,9 @@
 package org.compiere.acct;
 
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 
@@ -31,4 +35,19 @@ public class DocLine_Order extends DocLine<Doc_Order>
 	{
 		super(InterfaceWrapperHelper.getPO(orderLine), doc);
 	}
+<<<<<<< HEAD
+=======
+
+	private I_C_OrderLine getOrderLine()
+	{
+		return getModel(I_C_OrderLine.class);
+	}
+
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final I_C_OrderLine orderLine = getOrderLine();
+		return OrderId.ofRepoIdOrNull(orderLine.getC_Order_ID());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

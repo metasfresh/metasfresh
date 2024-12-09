@@ -96,7 +96,12 @@ public class LayoutFactory
 	}
 
 	// services
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
+=======
+	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Autowired
 	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
@@ -195,6 +200,11 @@ public class LayoutFactory
 				.toString();
 	}
 
+<<<<<<< HEAD
+=======
+	public String getTableName() {return descriptorsFactory.getTableName();}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isSkipAD_Tab_ID(final AdTabId adTabId)
 	{
 		return childAdTabIdsToSkip.contains(adTabId);
@@ -536,7 +546,11 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
+<<<<<<< HEAD
 		if(viewEditMode != null)
+=======
+		if (viewEditMode != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return viewEditMode;
 		}
@@ -711,7 +725,11 @@ public class LayoutFactory
 			return null;
 		}
 
+<<<<<<< HEAD
 		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
+=======
+		if (!quickInputDescriptors.hasQuickInputEntityDescriptor(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),

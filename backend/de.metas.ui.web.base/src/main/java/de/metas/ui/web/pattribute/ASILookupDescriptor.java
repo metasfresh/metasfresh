@@ -24,7 +24,11 @@ package de.metas.ui.web.pattribute;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
+<<<<<<< HEAD
 import de.metas.cache.CCache.CCacheStats;
+=======
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -50,6 +54,10 @@ import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.NamePair;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,9 +66,21 @@ import java.util.Set;
 @ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+<<<<<<< HEAD
 	public static ASILookupDescriptor of(final I_M_Attribute attribute)
 	{
 		final IAttributeValuesProvider attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
+=======
+	public static ASILookupDescriptor of(@NonNull final I_M_Attribute attribute)
+	{
+		final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+		final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);
+		return of(attributeValuesProvider);
+	}
+
+	public static ASILookupDescriptor of(@NonNull final IAttributeValuesProvider attributeValuesProvider)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
@@ -145,6 +165,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return attributeValuesProvider.getCacheStats();
 	}
 
+<<<<<<< HEAD
 	public int getM_AttributeValue_ID(final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
@@ -155,6 +176,16 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		final String valueKey = lookupValue.getIdAsString();
 		final AttributeValueId attributeValueId = attributeValuesProvider.getAttributeValueIdOrNull(valueKey);
 		return AttributeValueId.toRepoId(attributeValueId);
+=======
+	public AttributeValueId getAttributeValueId(@Nullable final LookupValue lookupValue)
+	{
+		return lookupValue != null ? getAttributeValueId(lookupValue.getIdAsString()) : null;
+	}
+
+	public AttributeValueId getAttributeValueId(@Nullable final String code)
+	{
+		return code != null ? attributeValuesProvider.getAttributeValueIdOrNull(code) : null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -203,7 +234,10 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 				.collect(LookupValuesList.collect())
 				.pageByOffsetAndLimit(offset, limit);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

@@ -27,11 +27,18 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.location.DocumentLocation;
+<<<<<<< HEAD
 import de.metas.pricing.PricingSystemId;
 import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 
+=======
+import de.metas.location.CountryId;
+import de.metas.pricing.PricingSystemId;
+import org.compiere.model.I_M_PriceList_Version;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Contains vendor invoicing informations.
  * <p>
@@ -61,6 +68,11 @@ public interface IVendorInvoicingInfo
 	 */
 	int getC_Currency_ID();
 
+<<<<<<< HEAD
+=======
+	CountryId getCountryId();
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	I_M_PriceList_Version getM_PriceList_Version();
 
 	/**

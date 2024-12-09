@@ -10,11 +10,16 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
+<<<<<<< HEAD
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
+=======
+public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 
 	private static final long serialVersionUID = 853148688L;
 
+<<<<<<< HEAD
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
     {
@@ -26,6 +31,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
     {
       super (ctx, rs, trxName);
     }
+=======
+	/** Standard Constructor */
+	public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
+	{
+		super (ctx, C_Invoice_Candidate_ID, trxName);
+	}
+
+	/** Load Constructor */
+	public X_C_Invoice_Candidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 
 	/** Load Meta Data */
@@ -38,14 +56,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
 	{
+<<<<<<< HEAD
 		if (AD_InputDataSource_ID < 1) 
 			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
 		else 
+=======
+		if (AD_InputDataSource_ID < 1)
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getAD_InputDataSource_ID() 
+=======
+	public int getAD_InputDataSource_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
@@ -53,14 +81,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_Note_ID (final int AD_Note_ID)
 	{
+<<<<<<< HEAD
 		if (AD_Note_ID < 1) 
 			set_Value (COLUMNNAME_AD_Note_ID, null);
 		else 
+=======
+		if (AD_Note_ID < 1)
+			set_Value (COLUMNNAME_AD_Note_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_AD_Note_ID, AD_Note_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getAD_Note_ID() 
+=======
+	public int getAD_Note_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Note_ID);
 	}
@@ -68,14 +106,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
+<<<<<<< HEAD
 		if (AD_Table_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
+=======
+		if (AD_Table_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getAD_Table_ID() 
+=======
+	public int getAD_Table_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
@@ -83,14 +131,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
 	{
+<<<<<<< HEAD
 		if (AD_User_InCharge_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
 		else 
+=======
+		if (AD_User_InCharge_ID < 1)
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getAD_User_InCharge_ID() 
+=======
+	public int getAD_User_InCharge_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
@@ -102,7 +160,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isApprovalForInvoicing() 
+=======
+	public boolean isApprovalForInvoicing()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_ApprovalForInvoicing);
 	}
@@ -110,14 +172,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
+=======
+		if (Bill_BPartner_ID < 1)
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_BPartner_ID() 
+=======
+	public int getBill_BPartner_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
 	}
@@ -128,7 +200,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("Bill_BPartner_Name is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getBill_BPartner_Name() 
+=======
+	public java.lang.String getBill_BPartner_Name()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_Bill_BPartner_Name);
 	}
@@ -136,14 +212,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_Location_ID (final int Bill_Location_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_Location_ID < 1) 
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
 		else 
+=======
+		if (Bill_Location_ID < 1)
+			set_Value (COLUMNNAME_Bill_Location_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_Location_ID, Bill_Location_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_Location_ID() 
+=======
+	public int getBill_Location_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_ID);
 	}
@@ -151,14 +237,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_Location_Override_ID (final int Bill_Location_Override_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_Location_Override_ID < 1) 
 			set_Value (COLUMNNAME_Bill_Location_Override_ID, null);
 		else 
+=======
+		if (Bill_Location_Override_ID < 1)
+			set_Value (COLUMNNAME_Bill_Location_Override_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_Location_Override_ID, Bill_Location_Override_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_Location_Override_ID() 
+=======
+	public int getBill_Location_Override_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_Override_ID);
 	}
@@ -178,14 +274,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_Location_Override_Value_ID (final int Bill_Location_Override_Value_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_Location_Override_Value_ID < 1) 
 			set_Value (COLUMNNAME_Bill_Location_Override_Value_ID, null);
 		else 
+=======
+		if (Bill_Location_Override_Value_ID < 1)
+			set_Value (COLUMNNAME_Bill_Location_Override_Value_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_Location_Override_Value_ID, Bill_Location_Override_Value_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_Location_Override_Value_ID() 
+=======
+	public int getBill_Location_Override_Value_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_Override_Value_ID);
 	}
@@ -205,14 +311,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_Location_Value_ID (final int Bill_Location_Value_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_Location_Value_ID < 1) 
 			set_Value (COLUMNNAME_Bill_Location_Value_ID, null);
 		else 
+=======
+		if (Bill_Location_Value_ID < 1)
+			set_Value (COLUMNNAME_Bill_Location_Value_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_Location_Value_ID, Bill_Location_Value_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_Location_Value_ID() 
+=======
+	public int getBill_Location_Value_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_Value_ID);
 	}
@@ -220,14 +336,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_User_ID < 1) 
 			set_Value (COLUMNNAME_Bill_User_ID, null);
 		else 
+=======
+		if (Bill_User_ID < 1)
+			set_Value (COLUMNNAME_Bill_User_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_User_ID, Bill_User_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_User_ID() 
+=======
+	public int getBill_User_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
 	}
@@ -235,14 +361,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setBill_User_ID_Override_ID (final int Bill_User_ID_Override_ID)
 	{
+<<<<<<< HEAD
 		if (Bill_User_ID_Override_ID < 1) 
 			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, null);
 		else 
+=======
+		if (Bill_User_ID_Override_ID < 1)
+			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, Bill_User_ID_Override_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getBill_User_ID_Override_ID() 
+=======
+	public int getBill_User_ID_Override_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID_Override_ID);
 	}
@@ -250,14 +386,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Activity_ID (final int C_Activity_ID)
 	{
+<<<<<<< HEAD
 		if (C_Activity_ID < 1) 
 			set_Value (COLUMNNAME_C_Activity_ID, null);
 		else 
+=======
+		if (C_Activity_ID < 1)
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Activity_ID() 
+=======
+	public int getC_Activity_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
 	}
@@ -265,14 +411,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
+<<<<<<< HEAD
 		if (C_Async_Batch_ID < 1) 
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
 		else 
+=======
+		if (C_Async_Batch_ID < 1)
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Async_Batch_ID() 
+=======
+	public int getC_Async_Batch_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
@@ -280,14 +436,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_BPartner_SalesRep_ID (final int C_BPartner_SalesRep_ID)
 	{
+<<<<<<< HEAD
 		if (C_BPartner_SalesRep_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
 		else 
+=======
+		if (C_BPartner_SalesRep_ID < 1)
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, C_BPartner_SalesRep_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_BPartner_SalesRep_ID() 
+=======
+	public int getC_BPartner_SalesRep_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
@@ -307,14 +473,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Campaign_ID (final int C_Campaign_ID)
 	{
+<<<<<<< HEAD
 		if (C_Campaign_ID < 1) 
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
 		else 
+=======
+		if (C_Campaign_ID < 1)
+			set_Value (COLUMNNAME_C_Campaign_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Campaign_ID() 
+=======
+	public int getC_Campaign_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
 	}
@@ -322,14 +498,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Charge_ID (final int C_Charge_ID)
 	{
+<<<<<<< HEAD
 		if (C_Charge_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Charge_ID, null);
 		else 
+=======
+		if (C_Charge_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Charge_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_Charge_ID, C_Charge_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Charge_ID() 
+=======
+	public int getC_Charge_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
 	}
@@ -337,14 +523,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_ConversionType_ID (final int C_ConversionType_ID)
 	{
+<<<<<<< HEAD
 		if (C_ConversionType_ID < 1) 
 			set_Value (COLUMNNAME_C_ConversionType_ID, null);
 		else 
+=======
+		if (C_ConversionType_ID < 1)
+			set_Value (COLUMNNAME_C_ConversionType_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_ConversionType_ID, C_ConversionType_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_ConversionType_ID() 
+=======
+	public int getC_ConversionType_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_ConversionType_ID);
 	}
@@ -352,14 +548,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Currency_ID (final int C_Currency_ID)
 	{
+<<<<<<< HEAD
 		if (C_Currency_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
 		else 
+=======
+		if (C_Currency_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Currency_ID() 
+=======
+	public int getC_Currency_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
@@ -367,14 +573,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
 	{
+<<<<<<< HEAD
 		if (C_DocTypeInvoice_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
 		else 
+=======
+		if (C_DocTypeInvoice_ID < 1)
+			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_DocTypeInvoice_ID() 
+=======
+	public int getC_DocTypeInvoice_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
 	}
@@ -382,14 +598,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
+<<<<<<< HEAD
 		if (C_Flatrate_Term_ID < 1) 
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
 		else 
+=======
+		if (C_Flatrate_Term_ID < 1)
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Flatrate_Term_ID() 
+=======
+	public int getC_Flatrate_Term_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
@@ -409,14 +635,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_ILCandHandler_ID (final int C_ILCandHandler_ID)
 	{
+<<<<<<< HEAD
 		if (C_ILCandHandler_ID < 1) 
 			set_Value (COLUMNNAME_C_ILCandHandler_ID, null);
 		else 
+=======
+		if (C_ILCandHandler_ID < 1)
+			set_Value (COLUMNNAME_C_ILCandHandler_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_ILCandHandler_ID, C_ILCandHandler_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_ILCandHandler_ID() 
+=======
+	public int getC_ILCandHandler_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_ILCandHandler_ID);
 	}
@@ -436,14 +672,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Incoterms_ID (final int C_Incoterms_ID)
 	{
+<<<<<<< HEAD
 		if (C_Incoterms_ID < 1) 
 			set_Value (COLUMNNAME_C_Incoterms_ID, null);
 		else 
+=======
+		if (C_Incoterms_ID < 1)
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Incoterms_ID() 
+=======
+	public int getC_Incoterms_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
 	}
@@ -463,14 +709,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_Agg_ID (final int C_Invoice_Candidate_Agg_ID)
 	{
+<<<<<<< HEAD
 		if (C_Invoice_Candidate_Agg_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Agg_ID, null);
 		else 
+=======
+		if (C_Invoice_Candidate_Agg_ID < 1)
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Agg_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Agg_ID, C_Invoice_Candidate_Agg_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Invoice_Candidate_Agg_ID() 
+=======
+	public int getC_Invoice_Candidate_Agg_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Agg_ID);
 	}
@@ -490,14 +746,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_Effective_ID (final int C_Invoice_Candidate_HeaderAggregation_Effective_ID)
 	{
+<<<<<<< HEAD
 		if (C_Invoice_Candidate_HeaderAggregation_Effective_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID, null);
 		else 
+=======
+		if (C_Invoice_Candidate_HeaderAggregation_Effective_ID < 1)
+			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID, C_Invoice_Candidate_HeaderAggregation_Effective_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Invoice_Candidate_HeaderAggregation_Effective_ID() 
+=======
+	public int getC_Invoice_Candidate_HeaderAggregation_Effective_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID);
 	}
@@ -517,14 +783,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_ID (final int C_Invoice_Candidate_HeaderAggregation_ID)
 	{
+<<<<<<< HEAD
 		if (C_Invoice_Candidate_HeaderAggregation_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, null);
 		else 
+=======
+		if (C_Invoice_Candidate_HeaderAggregation_ID < 1)
+			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, C_Invoice_Candidate_HeaderAggregation_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Invoice_Candidate_HeaderAggregation_ID() 
+=======
+	public int getC_Invoice_Candidate_HeaderAggregation_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID);
 	}
@@ -544,14 +820,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_Override_ID (final int C_Invoice_Candidate_HeaderAggregation_Override_ID)
 	{
+<<<<<<< HEAD
 		if (C_Invoice_Candidate_HeaderAggregation_Override_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID, null);
 		else 
+=======
+		if (C_Invoice_Candidate_HeaderAggregation_Override_ID < 1)
+			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID, C_Invoice_Candidate_HeaderAggregation_Override_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Invoice_Candidate_HeaderAggregation_Override_ID() 
+=======
+	public int getC_Invoice_Candidate_HeaderAggregation_Override_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID);
 	}
@@ -559,14 +845,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_ID (final int C_Invoice_Candidate_ID)
 	{
+<<<<<<< HEAD
 		if (C_Invoice_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
 		else 
+=======
+		if (C_Invoice_Candidate_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, C_Invoice_Candidate_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Invoice_Candidate_ID() 
+=======
+	public int getC_Invoice_Candidate_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
 	}
@@ -586,14 +882,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_InvoiceSchedule_ID (final int C_InvoiceSchedule_ID)
 	{
+<<<<<<< HEAD
 		if (C_InvoiceSchedule_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_InvoiceSchedule_ID, null);
 		else 
+=======
+		if (C_InvoiceSchedule_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceSchedule_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_InvoiceSchedule_ID, C_InvoiceSchedule_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_InvoiceSchedule_ID() 
+=======
+	public int getC_InvoiceSchedule_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InvoiceSchedule_ID);
 	}
@@ -604,7 +910,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("C_Order_BPartner is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Order_BPartner() 
+=======
+	public int getC_Order_BPartner()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_BPartner);
 	}
@@ -624,14 +934,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Order_CompensationGroup_ID (final int C_Order_CompensationGroup_ID)
 	{
+<<<<<<< HEAD
 		if (C_Order_CompensationGroup_ID < 1) 
 			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, null);
 		else 
+=======
+		if (C_Order_CompensationGroup_ID < 1)
+			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, C_Order_CompensationGroup_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Order_CompensationGroup_ID() 
+=======
+	public int getC_Order_CompensationGroup_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_CompensationGroup_ID);
 	}
@@ -651,14 +971,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
+<<<<<<< HEAD
 		if (C_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
 		else 
+=======
+		if (C_Order_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Order_ID() 
+=======
+	public int getC_Order_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -678,14 +1008,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_OrderLine_ID (final int C_OrderLine_ID)
 	{
+<<<<<<< HEAD
 		if (C_OrderLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
 		else 
+=======
+		if (C_OrderLine_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_OrderLine_ID() 
+=======
+	public int getC_OrderLine_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
@@ -696,7 +1036,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("C_PaymentTerm_Effective_ID is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_PaymentTerm_Effective_ID() 
+=======
+	public int getC_PaymentTerm_Effective_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_Effective_ID);
 	}
@@ -704,14 +1048,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
+<<<<<<< HEAD
 		if (C_PaymentTerm_ID < 1) 
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
 		else 
+=======
+		if (C_PaymentTerm_ID < 1)
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_PaymentTerm_ID() 
+=======
+	public int getC_PaymentTerm_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
 	}
@@ -719,14 +1073,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_PaymentTerm_Override_ID (final int C_PaymentTerm_Override_ID)
 	{
+<<<<<<< HEAD
 		if (C_PaymentTerm_Override_ID < 1) 
 			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, null);
 		else 
+=======
+		if (C_PaymentTerm_Override_ID < 1)
+			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, C_PaymentTerm_Override_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_PaymentTerm_Override_ID() 
+=======
+	public int getC_PaymentTerm_Override_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_Override_ID);
 	}
@@ -734,14 +1098,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
+<<<<<<< HEAD
 		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
 		else 
+=======
+		if (C_Project_ID < 1)
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Project_ID() 
+=======
+	public int getC_Project_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
@@ -749,14 +1123,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Shipping_Location_ID (final int C_Shipping_Location_ID)
 	{
+<<<<<<< HEAD
 		if (C_Shipping_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
 		else 
+=======
+		if (C_Shipping_Location_ID < 1)
+			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, C_Shipping_Location_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Shipping_Location_ID() 
+=======
+	public int getC_Shipping_Location_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Shipping_Location_ID);
 	}
@@ -767,7 +1151,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("C_Tax_Effective_ID is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Tax_Effective_ID() 
+=======
+	public int getC_Tax_Effective_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_Effective_ID);
 	}
@@ -775,14 +1163,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Tax_ID (final int C_Tax_ID)
 	{
+<<<<<<< HEAD
 		if (C_Tax_ID < 1) 
 			set_Value (COLUMNNAME_C_Tax_ID, null);
 		else 
+=======
+		if (C_Tax_ID < 1)
+			set_Value (COLUMNNAME_C_Tax_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Tax_ID, C_Tax_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Tax_ID() 
+=======
+	public int getC_Tax_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
 	}
@@ -790,14 +1188,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Tax_Override_ID (final int C_Tax_Override_ID)
 	{
+<<<<<<< HEAD
 		if (C_Tax_Override_ID < 1) 
 			set_Value (COLUMNNAME_C_Tax_Override_ID, null);
 		else 
+=======
+		if (C_Tax_Override_ID < 1)
+			set_Value (COLUMNNAME_C_Tax_Override_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_Tax_Override_ID, C_Tax_Override_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_Tax_Override_ID() 
+=======
+	public int getC_Tax_Override_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_Override_ID);
 	}
@@ -805,14 +1213,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
+<<<<<<< HEAD
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
+=======
+		if (C_UOM_ID < 1)
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getC_UOM_ID() 
+=======
+	public int getC_UOM_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -824,7 +1242,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateAcct() 
+=======
+	public java.sql.Timestamp getDateAcct()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
@@ -836,7 +1258,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateInvoiced() 
+=======
+	public java.sql.Timestamp getDateInvoiced()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateInvoiced);
 	}
@@ -848,7 +1274,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateOrdered() 
+=======
+	public java.sql.Timestamp getDateOrdered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
@@ -859,7 +1289,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("DatePromised is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDatePromised() 
+=======
+	public java.sql.Timestamp getDatePromised()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
@@ -871,7 +1305,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateToInvoice() 
+=======
+	public java.sql.Timestamp getDateToInvoice()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateToInvoice);
 	}
@@ -882,7 +1320,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("DateToInvoice_Effective is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateToInvoice_Effective() 
+=======
+	public java.sql.Timestamp getDateToInvoice_Effective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateToInvoice_Effective);
 	}
@@ -894,7 +1336,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDateToInvoice_Override() 
+=======
+	public java.sql.Timestamp getDateToInvoice_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateToInvoice_Override);
 	}
@@ -906,7 +1352,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getDeliveryDate() 
+=======
+	public java.sql.Timestamp getDeliveryDate()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
 	}
@@ -918,7 +1368,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getDescription() 
+=======
+	public java.lang.String getDescription()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -930,7 +1384,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getDescriptionBottom() 
+=======
+	public java.lang.String getDescriptionBottom()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_DescriptionBottom);
 	}
@@ -942,7 +1400,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getDescriptionHeader() 
+=======
+	public java.lang.String getDescriptionHeader()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_DescriptionHeader);
 	}
@@ -954,7 +1416,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getDiscount() 
+=======
+	public BigDecimal getDiscount()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Discount);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -967,7 +1433,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getDiscount_Override() 
+=======
+	public BigDecimal getDiscount_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Discount_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -980,7 +1450,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getEMail() 
+=======
+	public java.lang.String getEMail()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -992,7 +1466,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getErrorMsg() 
+=======
+	public java.lang.String getErrorMsg()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_ErrorMsg);
 	}
@@ -1004,7 +1482,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getExternalHeaderId() 
+=======
+	public java.lang.String getExternalHeaderId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
 	}
@@ -1016,7 +1498,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getExternalLineId() 
+=======
+	public java.lang.String getExternalLineId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
@@ -1024,19 +1510,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setFirst_Ship_BPLocation_ID (final int First_Ship_BPLocation_ID)
 	{
+<<<<<<< HEAD
 		if (First_Ship_BPLocation_ID < 1) 
 			set_Value (COLUMNNAME_First_Ship_BPLocation_ID, null);
 		else 
+=======
+		if (First_Ship_BPLocation_ID < 1)
+			set_Value (COLUMNNAME_First_Ship_BPLocation_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_First_Ship_BPLocation_ID, First_Ship_BPLocation_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getFirst_Ship_BPLocation_ID() 
+=======
+	public int getFirst_Ship_BPLocation_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_First_Ship_BPLocation_ID);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * GroupCompensationAmtType AD_Reference_ID=540759
 	 * Reference name: GroupCompensationAmtType
 	 */
@@ -1052,7 +1552,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getGroupCompensationAmtType() 
+=======
+	public java.lang.String getGroupCompensationAmtType()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_GroupCompensationAmtType);
 	}
@@ -1064,7 +1568,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getGroupCompensationBaseAmt() 
+=======
+	public BigDecimal getGroupCompensationBaseAmt()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationBaseAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1077,13 +1585,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getGroupCompensationPercentage() 
+=======
+	public BigDecimal getGroupCompensationPercentage()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationPercentage);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * GroupCompensationType AD_Reference_ID=540758
 	 * Reference name: GroupCompensationType
 	 */
@@ -1099,7 +1615,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getGroupCompensationType() 
+=======
+	public java.lang.String getGroupCompensationType()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_GroupCompensationType);
 	}
@@ -1111,7 +1631,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getHeaderAggregationKey() 
+=======
+	public java.lang.String getHeaderAggregationKey()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
@@ -1119,14 +1643,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setHeaderAggregationKeyBuilder_ID (final int HeaderAggregationKeyBuilder_ID)
 	{
+<<<<<<< HEAD
 		if (HeaderAggregationKeyBuilder_ID < 1) 
 			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, null);
 		else 
+=======
+		if (HeaderAggregationKeyBuilder_ID < 1)
+			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, HeaderAggregationKeyBuilder_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getHeaderAggregationKeyBuilder_ID() 
+=======
+	public int getHeaderAggregationKeyBuilder_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_HeaderAggregationKeyBuilder_ID);
 	}
@@ -1138,7 +1672,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getHeaderAggregationKey_Calc() 
+=======
+	public java.lang.String getHeaderAggregationKey_Calc()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey_Calc);
 	}
@@ -1150,12 +1688,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getIncotermLocation() 
+=======
+	public java.lang.String getIncotermLocation()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * InvoicableQtyBasedOn AD_Reference_ID=541023
 	 * Reference name: InvoicableQtyBasedOn
 	 */
@@ -1171,12 +1717,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoicableQtyBasedOn() 
+=======
+	public java.lang.String getInvoicableQtyBasedOn()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1200,12 +1754,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoiceRule() 
+=======
+	public java.lang.String getInvoiceRule()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceRule);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * InvoiceRule_Effective AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1228,12 +1790,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("InvoiceRule_Effective is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoiceRule_Effective() 
+=======
+	public java.lang.String getInvoiceRule_Effective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceRule_Effective);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * InvoiceRule_Override AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1257,7 +1827,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoiceRule_Override() 
+=======
+	public java.lang.String getInvoiceRule_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceRule_Override);
 	}
@@ -1269,7 +1843,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoiceScheduleAmtStatus() 
+=======
+	public java.lang.String getInvoiceScheduleAmtStatus()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceScheduleAmtStatus);
 	}
@@ -1281,19 +1859,42 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getInvoicingErrorMsg() 
+=======
+	public java.lang.String getInvoicingErrorMsg()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicingErrorMsg);
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setIsEdiEnabled (final boolean IsEdiEnabled)
 	{
 		set_Value (COLUMNNAME_IsEdiEnabled, IsEdiEnabled);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isEdiEnabled() 
+=======
+	public boolean isEdiEnabled()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
 	}
@@ -1305,7 +1906,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isEdiInvoicRecipient() 
+=======
+	public boolean isEdiInvoicRecipient()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiInvoicRecipient);
 	}
@@ -1317,7 +1922,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isError() 
+=======
+	public boolean isError()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsError);
 	}
@@ -1329,7 +1938,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isFreightCost() 
+=======
+	public boolean isFreightCost()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFreightCost);
 	}
@@ -1341,7 +1954,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isGroupCompensationLine() 
+=======
+	public boolean isGroupCompensationLine()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
 	}
@@ -1353,7 +1970,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isInDispute() 
+=======
+	public boolean isInDispute()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInDispute);
 	}
@@ -1365,7 +1986,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isInOutApprovedForInvoicing() 
+=======
+	public boolean isInOutApprovedForInvoicing()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInOutApprovedForInvoicing);
 	}
@@ -1377,7 +2002,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isInvoicingError() 
+=======
+	public boolean isInvoicingError()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoicingError);
 	}
@@ -1389,7 +2018,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isManual() 
+=======
+	public boolean isManual()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManual);
 	}
@@ -1400,7 +2033,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("IsMaterialTracking is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isMaterialTracking() 
+=======
+	public boolean isMaterialTracking()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMaterialTracking);
 	}
@@ -1412,7 +2049,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isPackagingMaterial() 
+=======
+	public boolean isPackagingMaterial()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPackagingMaterial);
 	}
@@ -1424,7 +2065,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isPrinted() 
+=======
+	public boolean isPrinted()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
 	}
@@ -1436,7 +2081,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isSimulation() 
+=======
+	public boolean isSimulation()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulation);
 	}
@@ -1448,7 +2097,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isSOTrx() 
+=======
+	public boolean isSOTrx()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
@@ -1460,12 +2113,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isTaxIncluded() 
+=======
+	public boolean isTaxIncluded()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * IsTaxIncluded_Override AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1481,7 +2142,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getIsTaxIncluded_Override() 
+=======
+	public java.lang.String getIsTaxIncluded_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_IsTaxIncluded_Override);
 	}
@@ -1493,7 +2158,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isToClear() 
+=======
+	public boolean isToClear()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToClear);
 	}
@@ -1504,7 +2173,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("IsToRecompute is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isToRecompute() 
+=======
+	public boolean isToRecompute()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToRecompute);
 	}
@@ -1516,7 +2189,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getLine() 
+=======
+	public int getLine()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Line);
 	}
@@ -1528,7 +2205,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getLineAggregationKey() 
+=======
+	public java.lang.String getLineAggregationKey()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_LineAggregationKey);
 	}
@@ -1536,14 +2217,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setLineAggregationKeyBuilder_ID (final int LineAggregationKeyBuilder_ID)
 	{
+<<<<<<< HEAD
 		if (LineAggregationKeyBuilder_ID < 1) 
 			set_Value (COLUMNNAME_LineAggregationKeyBuilder_ID, null);
 		else 
+=======
+		if (LineAggregationKeyBuilder_ID < 1)
+			set_Value (COLUMNNAME_LineAggregationKeyBuilder_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_LineAggregationKeyBuilder_ID, LineAggregationKeyBuilder_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getLineAggregationKeyBuilder_ID() 
+=======
+	public int getLineAggregationKeyBuilder_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_LineAggregationKeyBuilder_ID);
 	}
@@ -1555,7 +2246,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getLineAggregationKey_Suffix() 
+=======
+	public java.lang.String getLineAggregationKey_Suffix()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_LineAggregationKey_Suffix);
 	}
@@ -1567,7 +2262,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getLineNetAmt() 
+=======
+	public BigDecimal getLineNetAmt()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1588,14 +2287,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_InOut_ID (final int M_InOut_ID)
 	{
+<<<<<<< HEAD
 		if (M_InOut_ID < 1) 
 			set_Value (COLUMNNAME_M_InOut_ID, null);
 		else 
+=======
+		if (M_InOut_ID < 1)
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_InOut_ID() 
+=======
+	public int getM_InOut_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
@@ -1603,14 +2312,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_Material_Tracking_ID (final int M_Material_Tracking_ID)
 	{
+<<<<<<< HEAD
 		if (M_Material_Tracking_ID < 1) 
 			set_Value (COLUMNNAME_M_Material_Tracking_ID, null);
 		else 
+=======
+		if (M_Material_Tracking_ID < 1)
+			set_Value (COLUMNNAME_M_Material_Tracking_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_M_Material_Tracking_ID, M_Material_Tracking_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_Material_Tracking_ID() 
+=======
+	public int getM_Material_Tracking_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Material_Tracking_ID);
 	}
@@ -1618,14 +2337,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_PriceList_Version_ID (final int M_PriceList_Version_ID)
 	{
+<<<<<<< HEAD
 		if (M_PriceList_Version_ID < 1) 
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
 		else 
+=======
+		if (M_PriceList_Version_ID < 1)
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, M_PriceList_Version_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_PriceList_Version_ID() 
+=======
+	public int getM_PriceList_Version_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_Version_ID);
 	}
@@ -1633,14 +2362,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
+<<<<<<< HEAD
 		if (M_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
 		else 
+=======
+		if (M_PricingSystem_ID < 1)
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_PricingSystem_ID() 
+=======
+	public int getM_PricingSystem_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
 	}
@@ -1651,7 +2390,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("M_Product_Category_ID is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_Product_Category_ID() 
+=======
+	public int getM_Product_Category_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
 	}
@@ -1659,14 +2402,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
+<<<<<<< HEAD
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
+=======
+		if (M_Product_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_Product_ID() 
+=======
+	public int getM_Product_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
@@ -1674,14 +2427,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
+<<<<<<< HEAD
 		if (M_ShipmentSchedule_ID < 1) 
 			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
+=======
+		if (M_ShipmentSchedule_ID < 1)
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getM_ShipmentSchedule_ID() 
+=======
+	public int getM_ShipmentSchedule_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
@@ -1693,7 +2456,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getNetAmtInvoiced() 
+=======
+	public BigDecimal getNetAmtInvoiced()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_NetAmtInvoiced);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1706,7 +2473,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getNetAmtToInvoice() 
+=======
+	public BigDecimal getNetAmtToInvoice()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_NetAmtToInvoice);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1719,7 +2490,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getNote() 
+=======
+	public java.lang.String getNote()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_Note);
 	}
@@ -1730,12 +2505,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("packingmaterialname is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getpackingmaterialname() 
+=======
+	public java.lang.String getpackingmaterialname()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_packingmaterialname);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
 	 */
@@ -1769,7 +2552,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getPaymentRule() 
+=======
+	public java.lang.String getPaymentRule()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
@@ -1781,7 +2568,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getPOReference() 
+=======
+	public java.lang.String getPOReference()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}
@@ -1793,7 +2584,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.sql.Timestamp getPresetDateInvoiced() 
+=======
+	public java.sql.Timestamp getPresetDateInvoiced()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PresetDateInvoiced);
 	}
@@ -1805,7 +2600,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getPriceActual() 
+=======
+	public BigDecimal getPriceActual()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1818,7 +2617,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getPriceActual_Net_Effective() 
+=======
+	public BigDecimal getPriceActual_Net_Effective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual_Net_Effective);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1831,7 +2634,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getPriceActual_Override() 
+=======
+	public BigDecimal getPriceActual_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1844,7 +2651,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getPriceEntered() 
+=======
+	public BigDecimal getPriceEntered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEntered);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1857,7 +2668,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getPriceEntered_Override() 
+=======
+	public BigDecimal getPriceEntered_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEntered_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1866,19 +2681,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setPrice_UOM_ID (final int Price_UOM_ID)
 	{
+<<<<<<< HEAD
 		if (Price_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Price_UOM_ID, null);
 		else 
+=======
+		if (Price_UOM_ID < 1)
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getPrice_UOM_ID() 
+=======
+	public int getPrice_UOM_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Priority AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
@@ -1900,7 +2729,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getPriority() 
+=======
+	public java.lang.String getPriority()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_Priority);
 	}
@@ -1912,7 +2745,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isProcessed() 
+=======
+	public boolean isProcessed()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
@@ -1924,12 +2761,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isProcessed_Calc() 
+=======
+	public boolean isProcessed_Calc()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed_Calc);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Processed_Override AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1945,7 +2790,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getProcessed_Override() 
+=======
+	public java.lang.String getProcessed_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_Processed_Override);
 	}
@@ -1956,12 +2805,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("Processing is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean isProcessing() 
+=======
+	public boolean isProcessing()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
 	 */
@@ -1986,7 +2843,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("ProductType is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getProductType() 
+=======
+	public java.lang.String getProductType()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_ProductType);
 	}
@@ -1998,7 +2859,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyDelivered() 
+=======
+	public BigDecimal getQtyDelivered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2011,7 +2876,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyDeliveredInUOM() 
+=======
+	public BigDecimal getQtyDeliveredInUOM()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2024,7 +2893,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyEntered() 
+=======
+	public BigDecimal getQtyEntered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2037,7 +2910,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyEnteredTU() 
+=======
+	public BigDecimal getQtyEnteredTU()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredTU);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2050,7 +2927,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyInvoiced() 
+=======
+	public BigDecimal getQtyInvoiced()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoiced);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2063,7 +2944,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyInvoicedInUOM() 
+=======
+	public BigDecimal getQtyInvoicedInUOM()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoicedInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2076,7 +2961,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyOrdered() 
+=======
+	public BigDecimal getQtyOrdered()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2089,7 +2978,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyOrderedOverUnder() 
+=======
+	public BigDecimal getQtyOrderedOverUnder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrderedOverUnder);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2102,7 +2995,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyPicked() 
+=======
+	public BigDecimal getQtyPicked()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2115,7 +3012,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyPickedInUOM() 
+=======
+	public BigDecimal getQtyPickedInUOM()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2128,7 +3029,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoice() 
+=======
+	public BigDecimal getQtyToInvoice()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2141,7 +3046,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoiceBeforeDiscount() 
+=======
+	public BigDecimal getQtyToInvoiceBeforeDiscount()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceBeforeDiscount);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2154,7 +3063,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoiceInPriceUOM() 
+=======
+	public BigDecimal getQtyToInvoiceInPriceUOM()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInPriceUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2167,7 +3080,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoiceInUOM() 
+=======
+	public BigDecimal getQtyToInvoiceInUOM()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2180,7 +3097,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoiceInUOM_Calc() 
+=======
+	public BigDecimal getQtyToInvoiceInUOM_Calc()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM_Calc);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2206,7 +3127,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoice_Override() 
+=======
+	public BigDecimal getQtyToInvoice_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2219,7 +3144,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyToInvoice_OverrideFulfilled() 
+=======
+	public BigDecimal getQtyToInvoice_OverrideFulfilled()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2232,7 +3161,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyWithIssues() 
+=======
+	public BigDecimal getQtyWithIssues()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssues);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2245,7 +3178,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQtyWithIssues_Effective() 
+=======
+	public BigDecimal getQtyWithIssues_Effective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssues_Effective);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2258,7 +3195,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQualityDiscountPercent() 
+=======
+	public BigDecimal getQualityDiscountPercent()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2270,7 +3211,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("QualityDiscountPercent_Effective is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQualityDiscountPercent_Effective() 
+=======
+	public BigDecimal getQualityDiscountPercent_Effective()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_Effective);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2283,7 +3228,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQualityDiscountPercent_Override() 
+=======
+	public BigDecimal getQualityDiscountPercent_Override()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2295,13 +3244,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("QualityDiscountPercent_ReceiptSchedule is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getQualityDiscountPercent_ReceiptSchedule() 
+=======
+	public BigDecimal getQualityDiscountPercent_ReceiptSchedule()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_ReceiptSchedule);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+<<<<<<< HEAD
 	/** 
+=======
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * QualityInvoiceLineGroupType AD_Reference_ID=540617
 	 * Reference name: QualityInvoiceLineGroupType
 	 */
@@ -2327,7 +3284,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getQualityInvoiceLineGroupType() 
+=======
+	public java.lang.String getQualityInvoiceLineGroupType()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_QualityInvoiceLineGroupType);
 	}
@@ -2338,7 +3299,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("QualityNote_ReceiptSchedule is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getQualityNote_ReceiptSchedule() 
+=======
+	public java.lang.String getQualityNote_ReceiptSchedule()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_QualityNote_ReceiptSchedule);
 	}
@@ -2350,7 +3315,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getReasonDiscount() 
+=======
+	public java.lang.String getReasonDiscount()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_ReasonDiscount);
 	}
@@ -2358,14 +3327,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
+<<<<<<< HEAD
 		if (Record_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
 		else 
+=======
+		if (Record_ID < 0)
+			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
+		else
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getRecord_ID() 
+=======
+	public int getRecord_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
@@ -2377,7 +3356,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getSchedulerResult() 
+=======
+	public java.lang.String getSchedulerResult()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_SchedulerResult);
 	}
@@ -2389,7 +3372,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getSplitAmt() 
+=======
+	public BigDecimal getSplitAmt()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SplitAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2401,7 +3388,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("StockingUOM_ID is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public int getStockingUOM_ID() 
+=======
+	public int getStockingUOM_ID()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsInt(COLUMNNAME_StockingUOM_ID);
 	}
@@ -2412,7 +3403,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("TotalOfOrder is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getTotalOfOrder() 
+=======
+	public BigDecimal getTotalOfOrder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalOfOrder);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2424,7 +3419,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("TotalOfOrderExcludingDiscount is virtual column");	}
 
 	@Override
+<<<<<<< HEAD
 	public BigDecimal getTotalOfOrderExcludingDiscount() 
+=======
+	public BigDecimal getTotalOfOrderExcludingDiscount()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalOfOrderExcludingDiscount);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2437,7 +3436,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString1() 
+=======
+	public java.lang.String getUserElementString1()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
@@ -2449,7 +3452,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString2() 
+=======
+	public java.lang.String getUserElementString2()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
@@ -2461,7 +3468,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString3() 
+=======
+	public java.lang.String getUserElementString3()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
@@ -2473,7 +3484,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString4() 
+=======
+	public java.lang.String getUserElementString4()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
@@ -2485,7 +3500,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString5() 
+=======
+	public java.lang.String getUserElementString5()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
@@ -2497,7 +3516,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString6() 
+=======
+	public java.lang.String getUserElementString6()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
@@ -2509,7 +3532,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getUserElementString7() 
+=======
+	public java.lang.String getUserElementString7()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}

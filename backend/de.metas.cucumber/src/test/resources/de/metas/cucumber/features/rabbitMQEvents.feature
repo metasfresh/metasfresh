@@ -17,7 +17,11 @@ Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventB
       | Identifier | Channel.Identifier |
       | c_1        | channel_1          |
     And rabbitMQ queue is created
+<<<<<<< HEAD
       | Identifier | ExchangeNamePrefix         | Topic.Identifier |
+=======
+      | Identifier | ExchangeName         | Topic.Identifier |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | q_1        | metasfresh-cucumber-events | t_1              |
     And register consumer for queue
       | Queue.Identifier | Channel.Identifier | Consumer.Identifier |
@@ -30,8 +34,13 @@ Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventB
       | Identifier | Channel.Identifier |
       | c_2        | channel_2          |
     And serverBoot local queue is created
+<<<<<<< HEAD
       | Identifier | Configuration.Identifier | Topic.Identifier | ExchangeNamePrefix         |
       | q_2        | config_2                 | t_1              | metasfresh-cucumber-events |
+=======
+      | Identifier | Topic.Identifier | ExchangeName         |
+      | q_2        | t_1              | metasfresh-cucumber-events |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And register consumer for queue
       | Queue.Identifier | Channel.Identifier | Consumer.Identifier |
       | q_2              | channel_2          | c_2                 |
@@ -74,7 +83,11 @@ Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventB
       | Identifier | Channel.Identifier |
       | c_1        | channel_1          |
     And rabbitMQ queue is created
+<<<<<<< HEAD
       | Identifier | ExchangeNamePrefix         | Topic.Identifier |
+=======
+      | Identifier | ExchangeName         | Topic.Identifier |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | q_1        | metasfresh-cucumber-events | t_1              |
     And register consumer for queue
       | Queue.Identifier | Channel.Identifier | Consumer.Identifier |
@@ -87,7 +100,11 @@ Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventB
       | Identifier | Channel.Identifier |
       | c_2        | channel_2          |
     And serverBoot local queue is created
+<<<<<<< HEAD
       | Identifier | Topic.Identifier | ExchangeNamePrefix         |
+=======
+      | Identifier | Topic.Identifier | ExchangeName         |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | q_2        | t_1              | metasfresh-cucumber-events |
     And register consumer for queue
       | Queue.Identifier | Channel.Identifier | Consumer.Identifier |

@@ -414,6 +414,17 @@
         </dependency>
 
         <dependency>
+<<<<<<< HEAD
+=======
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
             <artifactId>de.metas.printing.base</artifactId>
             <groupId>de.metas.printing</groupId>
             <version>${metasfresh.version}</version>
@@ -525,6 +536,18 @@
             <type>zip</type>
         </dependency>
 
+<<<<<<< HEAD
+=======
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>

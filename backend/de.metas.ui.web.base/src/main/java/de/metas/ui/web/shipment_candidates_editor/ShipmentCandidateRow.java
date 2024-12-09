@@ -1,5 +1,6 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -16,6 +17,10 @@ import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest.ShipmentScheduleUserChangeRequestBuilder;
@@ -37,6 +42,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

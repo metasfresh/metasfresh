@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,7 +50,10 @@ public class C_CommissionSettingsLine_StepDef
 {
 	private final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable;
 	private final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public C_CommissionSettingsLine_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable,
 			@NonNull final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable)

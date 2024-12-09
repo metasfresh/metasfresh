@@ -33,36 +33,68 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.remote.RabbitMQDestinationResolver;
+<<<<<<< HEAD
+=======
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.compiere.SpringContextHolder;
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.springframework.amqp.core.AmqpTemplate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
+<<<<<<< HEAD
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+=======
+import org.springframework.amqp.core.NamingStrategy;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueInformation;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.Connection;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
+=======
+import java.util.Optional;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class RabbitMQ_StepDef
 {
 	private final RabbitMQDestinationResolver rabbitMQDestinationSolver = SpringContextHolder.instance.getBean(RabbitMQDestinationResolver.class);
 	private final EventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(EventBusFactory.class);
+<<<<<<< HEAD
+=======
+	private final AmqpTemplate amqpTemplate = SpringContextHolder.instance.getBean(AmqpTemplate.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final Queue_StepDefData queueTable;
 	private final Channel_StepDefData channelTable;
@@ -90,6 +122,15 @@ public class RabbitMQ_StepDef
 		connectionFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
+<<<<<<< HEAD
+=======
+	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
+	public void wait_empty_material_queue() throws InterruptedException
+	{
+		waitEmptyMaterialQueue();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Given("rabbitMQ queue is created")
 	public void create_queue(@NonNull final DataTable dataTable)
 	{
@@ -206,6 +247,7 @@ public class RabbitMQ_StepDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
+<<<<<<< HEAD
 		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
 
 		final String fanoutExchangeName = exchangeNamePrefix + "-fanout";
@@ -213,10 +255,17 @@ public class RabbitMQ_StepDef
 
 		final Topic topic = topicTable.get(topicIdentifier);
 		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, fanoutExchangeName);
+=======
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
+
+		final Topic topic = topicTable.get(topicIdentifier);
+		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, exchangeName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final AnonymousQueue anonymousQueue = testRabbitMQConfiguration.getQueue();
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
+<<<<<<< HEAD
 		final FanoutExchange fanoutExchange = new FanoutExchange(fanoutExchangeName, false, true);
 		final DirectExchange directExchange = new DirectExchange(directExchangeName, false, true);
 
@@ -225,6 +274,13 @@ public class RabbitMQ_StepDef
 		admin.declareQueue(anonymousQueue);
 		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(fanoutExchange));
 		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(anonymousQueue.getName()));
+=======
+		final DirectExchange directExchange = new DirectExchange(exchangeName, false, true);
+
+		admin.declareExchange(directExchange);
+		admin.declareQueue(anonymousQueue);
+		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(exchangeName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		rabbitMQDestinationSolver.registerQueue(testRabbitMQConfiguration);
 
@@ -295,7 +351,11 @@ public class RabbitMQ_StepDef
 	private void createQueue(@NonNull final Map<String, String> tableRow)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
+<<<<<<< HEAD
 		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
+=======
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
 		final Topic topic = topicTable.get(topicIdentifier);
 
@@ -304,11 +364,19 @@ public class RabbitMQ_StepDef
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
+<<<<<<< HEAD
 		final FanoutExchange exchange = new FanoutExchange(exchangeNamePrefix + "-fanout", false, true);
 
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+=======
+		final DirectExchange exchange = new DirectExchange(exchangeName, false, true);
+
+		admin.declareExchange(exchange);
+		admin.declareQueue(queue);
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(exchangeName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		queueTable.put(identifier, queue);
 	}
@@ -319,10 +387,53 @@ public class RabbitMQ_StepDef
 		final String eventBody = DataTableUtil.extractStringForColumnName(tableRow, "Event.Body");
 
 		final Topic topic = topicTable.get(topicIdentifier);
+<<<<<<< HEAD
 
 		final IEventBus eventBus = eventBusFactory.getEventBus(topic);
 		eventBus.enqueueEvent(Event.builder()
 									  .withBody(eventBody)
 									  .build());
+=======
+		assertThat(topic).as("Missing topic for Topic.Identifier=%s", topicIdentifier).isNotNull();
+
+		final IEventBus eventBus = eventBusFactory.getEventBus(topic);
+		assertThat(topic).as("Missing eventBus for topic=%s; Topic.Identifier=%s", topic.getName(), topicIdentifier).isNotNull();
+
+		eventBus.enqueueEvent(Event.builder()
+				.withBody(eventBody)
+				.build());
+	}
+
+	private void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis();
+		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
+
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
+
+		long messageCount;
+		do
+		{
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
+					.orElseThrow(() -> new AdempiereException("Queue does not exist!")
+							.appendParametersToMessage()
+							.setParameter("QueueName", queueName));
+
+			messageCount = queueInformation.getMessageCount();
+		}
+		while (messageCount > 0 && deadLineMillis > System.currentTimeMillis());
+
+		if (messageCount > 0)
+		{
+			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
+					.appendParametersToMessage()
+					.setParameter("QueueName", queueName)
+					.setParameter("messageCount", messageCount);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

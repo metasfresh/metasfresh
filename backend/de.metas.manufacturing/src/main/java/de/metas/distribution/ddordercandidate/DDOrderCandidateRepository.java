@@ -144,9 +144,15 @@ public class DDOrderCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
+<<<<<<< HEAD
 				.qty(Quantitys.create(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
 				.qtyProcessed(Quantitys.create(record.getQtyProcessed(), uomId))
+=======
+				.qty(Quantitys.of(record.getQtyEntered(), uomId))
+				.qtyTUs(record.getQtyEnteredTU().intValueExact())
+				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				//

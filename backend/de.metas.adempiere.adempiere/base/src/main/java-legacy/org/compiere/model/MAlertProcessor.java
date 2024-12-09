@@ -176,7 +176,11 @@ public class MAlertProcessor extends X_AD_AlertProcessor
 		String sql = "DELETE FROM AD_AlertProcessorLog "
 			+ "WHERE AD_AlertProcessor_ID=" + getAD_AlertProcessor_ID()
 			+ " AND (Created+" + getKeepLogDays() + ") < now()";
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no;
 	}	//	deleteLog
 

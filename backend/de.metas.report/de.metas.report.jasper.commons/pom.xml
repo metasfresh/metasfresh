@@ -14,7 +14,11 @@
     <packaging>jar</packaging>
 
     <properties>
+<<<<<<< HEAD
         <batik.version>1.9</batik.version>
+=======
+        <batik.version>1.17</batik.version>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <barcode4j.version>2.1</barcode4j.version>
     </properties>
 

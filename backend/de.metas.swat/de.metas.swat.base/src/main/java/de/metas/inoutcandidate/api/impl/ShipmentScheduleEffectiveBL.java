@@ -200,7 +200,11 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule sched)
+=======
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule sched)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ZonedDateTime preparationDateOverride = TimeUtil.asZonedDateTime(sched.getPreparationDate_Override());
 		if (preparationDateOverride != null)

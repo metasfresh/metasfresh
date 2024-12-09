@@ -22,7 +22,11 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnore;
+=======
+import com.fasterxml.jackson.annotation.JsonInclude;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
@@ -39,6 +43,7 @@ public class MultiQueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")
+<<<<<<< HEAD
 	List<MultiJsonFilter> filterList;
 
 	@JsonIgnore
@@ -51,5 +56,28 @@ public class MultiQueryRequest implements Shopware6QueryRequest
 	{
 		this.filterList = filters;
 		this.isQueryByDate = isQueryByDate;
+=======
+	List<JsonQuery> filterList;
+
+	@Nullable
+	@JsonProperty("limit")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Integer limit;
+
+	@Nullable
+	@JsonProperty("page")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Integer page;
+
+	@Builder
+	public MultiQueryRequest(
+			@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> filters,
+			@Nullable @JsonProperty("limit") final Integer limit,
+			@Nullable @JsonProperty("page") final Integer page)
+	{
+		this.filterList = filters;
+		this.limit = limit;
+		this.page = page;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

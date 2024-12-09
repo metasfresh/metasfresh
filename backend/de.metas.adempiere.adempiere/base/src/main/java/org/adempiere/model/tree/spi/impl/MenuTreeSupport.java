@@ -25,11 +25,21 @@ package org.adempiere.model.tree.spi.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+=======
+import de.metas.i18n.Language;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.ElementResource;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
@@ -43,6 +53,7 @@ import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+<<<<<<< HEAD
 import de.metas.i18n.Language;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
@@ -50,6 +61,12 @@ import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.ElementResource;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @author tsa

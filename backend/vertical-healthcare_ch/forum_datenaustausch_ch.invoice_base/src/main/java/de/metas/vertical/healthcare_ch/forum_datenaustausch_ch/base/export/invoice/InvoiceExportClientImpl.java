@@ -127,10 +127,17 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	@Override
 	public boolean applies(@NonNull final InvoiceToExport invoice)
 	{
+<<<<<<< HEAD
 		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
 		if (docType == null)
 		{
 			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocSubType());
+=======
+		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocBaseAndSubType().getDocSubType().getCode());
+		if (docType == null)
+		{
+			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocBaseAndSubType().getDocSubType());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return false;
 		}
 		if (HealthCareInvoiceDocSubType.EA.equals(docType))

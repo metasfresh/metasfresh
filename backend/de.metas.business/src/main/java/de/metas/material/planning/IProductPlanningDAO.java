@@ -1,5 +1,9 @@
 package de.metas.material.planning;
 
+<<<<<<< HEAD
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
@@ -14,7 +18,10 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+<<<<<<< HEAD
 import org.compiere.model.I_S_Resource;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.eevolution.api.ProductBOMVersionsId;
 
 import javax.annotation.Nullable;
@@ -34,15 +41,28 @@ public interface IProductPlanningDAO extends ISingletonService
 		@Nullable WarehouseId warehouseId;
 		@Nullable ResourceId plantId;
 		@Nullable ProductId productId;
+<<<<<<< HEAD
+=======
+		boolean includeWithNullProductId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@Nullable MaturingConfigLineId maturingConfigLineId;
 		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
+<<<<<<< HEAD
 		 * @param orgId                  may be null which means only the * org
 		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
 		 * @param plantId                may be null which means "no plantId"
 		 * @param productId              mandatory
 		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
+=======
+		 * @param orgId                    may be null which means only the * org
+		 * @param warehouseId              may be null which means "no warehouse" (not any warehouse!)
+		 * @param plantId                  may be null which means "no plantId"
+		 * @param productId                mandatory
+		 * @param includeWithNullProductId may be null which means "true". If true we might find results that have M_ProducT_ID=null
+		 * @param attributeSetInstanceId   mandatory, but might contain the 0-ASI-Id;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		 */
 		@Builder
 		private ProductPlanningQuery(
@@ -50,6 +70,10 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
+<<<<<<< HEAD
+=======
+				@Nullable final Boolean includeWithNullProductId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				@Nullable final MaturingConfigLineId maturingConfigLineId,
 				@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 		{
@@ -57,6 +81,10 @@ public interface IProductPlanningDAO extends ISingletonService
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
+<<<<<<< HEAD
+=======
+			this.includeWithNullProductId = CoalesceUtil.coalesceNotNull(includeWithNullProductId, true);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			this.maturingConfigLineId = maturingConfigLineId;
 			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		}
@@ -71,12 +99,23 @@ public interface IProductPlanningDAO extends ISingletonService
 	 */
 	Optional<ProductPlanning> find(ProductPlanningQuery productPlanningQuery);
 
+<<<<<<< HEAD
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
 	 *
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
 	ResourceId findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+=======
+	Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query);
+
+	/**
+	 * Search product plannings to find out which is the plant for given Org/Warehouse/Product.
+	 *
+	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
+	 */
+	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	Optional<ResourceId> findPlantIfExists(
 			OrgId orgId,

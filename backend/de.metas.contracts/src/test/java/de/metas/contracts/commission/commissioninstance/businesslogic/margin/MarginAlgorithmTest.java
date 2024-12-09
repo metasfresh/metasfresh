@@ -22,6 +22,11 @@
 
 package de.metas.contracts.commission.commissioninstance.businesslogic.margin;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -56,10 +61,16 @@ import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -67,12 +78,19 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.*;
 
+=======
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class MarginAlgorithmTest
 {
 	private final OrgId orgId = OrgId.ofRepoId(200);
@@ -89,6 +107,7 @@ public class MarginAlgorithmTest
 	CustomerTradeMarginService customerTradeMarginServiceSpy;
 	MarginAlgorithm marginAlgorithm;
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void init()
 	{
@@ -100,6 +119,9 @@ public class MarginAlgorithmTest
 	{
 		validateSnapshots();
 	}
+=======
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -137,7 +159,11 @@ public class MarginAlgorithmTest
 		// then
 		assertThat(shares).hasSize(1);
 
+<<<<<<< HEAD
 		expect(shares.get(0)).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(shares.get(0));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "commissionSharesRequestBuilder")

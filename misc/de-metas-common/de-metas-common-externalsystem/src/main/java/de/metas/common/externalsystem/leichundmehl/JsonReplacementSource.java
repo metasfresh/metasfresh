@@ -30,12 +30,22 @@ import lombok.NonNull;
 import java.util.Arrays;
 
 //dev-note to be kept in sync with AD_Reference_ID=541598
+<<<<<<< HEAD
 public enum JsonReplacementSource
 {
 	Product("P"),
 	PPOrder("PP");
 
 	@Getter
+=======
+@Getter
+public enum JsonReplacementSource
+{
+	Product("P"),
+	PPOrder("PP"),
+	CustomProcessResult("CP");
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final String code;
 
 	JsonReplacementSource(@NonNull final String code)

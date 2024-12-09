@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
+<<<<<<< HEAD
 import static org.compiere.util.TimeUtil.asInstant;
 import static org.compiere.util.TimeUtil.getDay;
 
@@ -36,12 +37,28 @@ import org.eevolution.api.PPCostCollectorId;
 
 import com.google.common.annotations.VisibleForTesting;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Transaction;
+import org.eevolution.api.PPCostCollectorId;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+
+import static org.compiere.util.TimeUtil.asInstant;
+import static org.compiere.util.TimeUtil.getDay;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public final class TransactionDescriptorFactory
 {

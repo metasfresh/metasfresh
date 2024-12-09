@@ -3,6 +3,10 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;
@@ -16,6 +20,10 @@ import lombok.Value;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+<<<<<<< HEAD
+=======
+import org.compiere.model.X_C_BPartner;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -154,9 +162,16 @@ public class BPartnerOrderParamsRepository
 
 	private PaymentRule getPaymentRule(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
 	{
+<<<<<<< HEAD
 		final PaymentRule paymentRule = soTrx.isSales()
 				? PaymentRule.ofCode(bpartnerRecord.getPaymentRule())
 				: PaymentRule.ofCode(bpartnerRecord.getPaymentRulePO());
+=======
+		// note that we fall back to a default because while the column is mandatory in the DB, it might be null in unit tests
+		final PaymentRule paymentRule = soTrx.isSales()
+				? PaymentRule.ofCode(CoalesceUtil.coalesceNotNull(bpartnerRecord.getPaymentRule(), X_C_BPartner.PAYMENTRULE_OnCredit))
+				: PaymentRule.ofCode(CoalesceUtil.coalesceNotNull(bpartnerRecord.getPaymentRulePO(), X_C_BPartner.PAYMENTRULEPO_OnCredit));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (soTrx.isSales() && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
 		{

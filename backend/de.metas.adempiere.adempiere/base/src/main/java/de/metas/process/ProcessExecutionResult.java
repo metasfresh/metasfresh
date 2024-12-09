@@ -92,7 +92,11 @@ public class ProcessExecutionResult
 		Never
 	}
 
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
+=======
+	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private PInstanceId pinstanceId;
 
@@ -127,7 +131,11 @@ public class ProcessExecutionResult
 	private ReportResultData reportData;
 
 	/**
+<<<<<<< HEAD
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
+=======
+	 * If the process fails with a Throwable, the Throwable is caught and stored here
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
@@ -580,6 +588,13 @@ public class ProcessExecutionResult
 		setReportData(ReportResultData.ofFile(file));
 	}
 
+<<<<<<< HEAD
+=======
+	public void setReportData(@NonNull final File file, @NonNull final String fileName)
+	{
+		setReportData(ReportResultData.ofFile(file, fileName));
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;
@@ -755,7 +770,23 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
+<<<<<<< HEAD
 		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+=======
+		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
+	}
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.logId(Log_ID)
+				.pDate(P_Date)
+				.pNumber(P_Number)
+				.pMsg(P_Msg)
+				.warningMessages(warningMessages)
+				.build();
+		addLog(new ProcessInfoLog(request));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
@@ -962,6 +993,14 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+<<<<<<< HEAD
+=======
+
+		public static WebuiViewToOpen modalOverlay(@NonNull final String viewId)
+		{
+			return builder().viewId(viewId).target(ViewOpenTarget.ModalOverlay).build();
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)

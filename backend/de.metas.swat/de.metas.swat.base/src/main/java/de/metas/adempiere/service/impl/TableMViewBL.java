@@ -25,6 +25,7 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +40,17 @@ import java.util.Properties;
 import java.util.Set;
 
 import de.metas.common.util.time.SystemTime;
+=======
+import de.metas.adempiere.engine.MViewMetadata;
+import de.metas.adempiere.model.I_AD_Table_MView;
+import de.metas.adempiere.service.ITableMViewBL;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -55,6 +67,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.engine.MViewMetadata;
 import de.metas.adempiere.model.I_AD_Table_MView;
 import de.metas.adempiere.service.ITableMViewBL;
@@ -63,6 +76,19 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @author tsa
@@ -309,7 +335,11 @@ public class TableMViewBL implements ITableMViewBL
 					{
 						final Query query = new Query(ctx, targetTableName, sqlMviewWhere.toString(), trxName)
 								.setParameters(getKeys(mdata, po));
+<<<<<<< HEAD
 						final PO targetPO = query.firstOnly();
+=======
+						final PO targetPO = query.firstOnly(PO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						if (targetPO == null)
 						{
 							throw new AdempiereException("Target po not found for update on " + getSummary(mview) + ", " + query);

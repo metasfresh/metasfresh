@@ -210,6 +210,19 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public @NonNull Optional<I_C_UOM> getBySymbol(@NonNull final String uomSymbol)
+	{
+		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_UOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMSymbol, uomSymbol)
+				.create()
+				.firstOnlyOrNull(I_C_UOM.class));
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = getById(uomId);

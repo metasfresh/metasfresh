@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package de.metas.ui.web.view;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -15,6 +16,13 @@ import java.util.Objects;
  * metasfresh-webui-api
  * %%
  * Copyright (C) 2016 metas GmbH
+=======
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +40,23 @@ import java.util.Objects;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+package de.metas.ui.web.view;
+
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * {@link IView}s repository.
  *
@@ -43,7 +68,15 @@ public interface IViewsRepository
 
 	List<ViewProfile> getAvailableProfiles(WindowId windowId, JSONViewDataType viewDataType);
 
+<<<<<<< HEAD
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);
+=======
+	ViewLayout getViewLayout(
+			@NonNull WindowId windowId,
+			@NonNull JSONViewDataType viewDataType,
+			@Nullable ViewProfileId profileId,
+			@Nullable UserRolePermissionsKey permissionsKey);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return view or <code>null</code>

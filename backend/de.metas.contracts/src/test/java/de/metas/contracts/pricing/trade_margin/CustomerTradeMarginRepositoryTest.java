@@ -22,6 +22,7 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
+<<<<<<< HEAD
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import org.adempiere.test.AdempiereTestHelper;
@@ -39,6 +40,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CustomerTradeMarginRepositoryTest
 {
 	private CustomerTradeMarginRepository customerTradeMarginRepository;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+@ExtendWith(SnapshotExtension.class)
+public class CustomerTradeMarginRepositoryTest
+{
+	private CustomerTradeMarginRepository customerTradeMarginRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -47,6 +67,7 @@ public class CustomerTradeMarginRepositoryTest
 		customerTradeMarginRepository = new CustomerTradeMarginRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void init()
 	{
@@ -59,6 +80,8 @@ public class CustomerTradeMarginRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void getById_Test()
 	{
@@ -76,6 +99,10 @@ public class CustomerTradeMarginRepositoryTest
 
 		final CustomerTradeMargin customerTradeMargin = customerTradeMarginRepository.getById(settingsId);
 
+<<<<<<< HEAD
 		expect(customerTradeMargin).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(customerTradeMargin);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

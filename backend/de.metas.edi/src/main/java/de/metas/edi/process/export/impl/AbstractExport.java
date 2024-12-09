@@ -22,10 +22,21 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+import de.metas.edi.model.I_EDI_Document;
+import de.metas.edi.process.export.IExport;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.process.rpl.exp.CreateAttachmentRequest;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.process.rpl.exp.ExportHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.MEXPFormat;
@@ -34,11 +45,16 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_ReplicationTable;
 
+<<<<<<< HEAD
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.Check;
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *
@@ -67,12 +83,29 @@ public abstract class AbstractExport<T extends I_EDI_Document>
 		this.expClientId = expClientId;
 	}
 
+<<<<<<< HEAD
+=======
+	protected <DT> void exportEDI(final Class<DT> documentType, final String exportFormatName, final String tableName, final String columnName)
+	{
+		exportEDI(documentType, exportFormatName, tableName, columnName, null);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Sends given document to ESB/EDI bus
 	 *
 	 * @throws Exception on any error
 	 */
+<<<<<<< HEAD
 	protected <DT> void exportEDI(final Class<DT> documentType, final String exportFormatName, final String tableName, final String columnName)
+=======
+	protected <DT> void exportEDI(
+			final Class<DT> documentType,
+			final String exportFormatName,
+			final String tableName,
+			final String columnName,
+			@Nullable final CreateAttachmentRequest attachResultRequest)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String whereClause = columnName + "=?";
 
@@ -94,7 +127,12 @@ public abstract class AbstractExport<T extends I_EDI_Document>
 				exportFormat,
 				MReplicationStrategy.REPLICATION_DOCUMENT,
 				X_AD_ReplicationTable.REPLICATIONTYPE_Merge,
+<<<<<<< HEAD
 				0 // ReplicationEvent = no event
+=======
+				0, // ReplicationEvent = no event
+				attachResultRequest
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		);
 	}
 

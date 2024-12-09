@@ -22,6 +22,7 @@ package de.metas.acct.gljournal.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -30,6 +31,12 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+=======
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.gljournal.IGLJournalLineGroup;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.DBException;
@@ -39,10 +46,19 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.DB;
 
+<<<<<<< HEAD
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.gljournal.IGLJournalLineGroup;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class GLJournalLineDAO implements IGLJournalLineDAO
 {
@@ -156,4 +172,13 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 		return lastLineNo;
 
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void save(final I_GL_JournalLine glJournalLine)
+	{
+		InterfaceWrapperHelper.save(glJournalLine);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -26,6 +26,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 
 @Value
@@ -38,6 +42,16 @@ public class LeichMehlPluFileConfigGroup
 	@NonNull
 	String name;
 
+<<<<<<< HEAD
+=======
+	/**
+	 * {@code AD_Process.Value} of the optional postgREST-Process which we can instruct externalSystems to invoke via the metasfresh process-API.
+	 * Supposed to return additional {@code PP_Order} related data.
+	 */
+	@Nullable
+	String customQueryProcessValue;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigs;
 }

@@ -355,7 +355,11 @@ public class PricingBL implements IPricingBL
 			{
 				// NOTE: don't fail here because it could be a valid case and some particular pricing rules can handle it.
 				// NOTE2: also pls keep in mind that if we would fail here the whole pricing calculation would fail.
+<<<<<<< HEAD
 				logger.info("Skip setting pricing context's price list version because it was not found", e);
+=======
+				logger.debug("Skip setting pricing context's price list version because it was not found", e);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -366,7 +370,11 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
+<<<<<<< HEAD
 			logger.info("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
+=======
+			logger.debug("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			pricingCtx.setPriceListId(PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID()));
 		}
 
@@ -377,7 +385,11 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
+<<<<<<< HEAD
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
+=======
+			logger.debug("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone));
 		}
 
@@ -386,7 +398,11 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPriceListId() != null && pricingCtx.getCurrencyId() == null)
 		{
 			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
+<<<<<<< HEAD
 			logger.info("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
+=======
+			logger.debug("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
 
@@ -394,7 +410,11 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPriceListId() != null && pricingCtx.getPricingSystemId() == null)
 		{
 			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
+<<<<<<< HEAD
 			logger.info("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
+=======
+			logger.debug("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 
 		}

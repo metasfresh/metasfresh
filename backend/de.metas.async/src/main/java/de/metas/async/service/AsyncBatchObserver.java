@@ -2,7 +2,11 @@
  * #%L
  * de.metas.async
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -95,7 +99,13 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 	public void observeOn(@NonNull final AsyncBatchId id)
 	{
+<<<<<<< HEAD
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
+=======
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId()
+																+ " date: " + Instant.now() + " ; "
+																+ " threadId: " + Thread.currentThread().getId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
@@ -155,12 +165,25 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				return;
 			}
 
+<<<<<<< HEAD
 			throw AdempiereException.wrapIfNeeded(timeoutException);
+=======
+			throw AdempiereException.wrapIfNeeded(timeoutException)
+					.appendParametersToMessage()
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
+					.setParameter("AsyncBatchId", id);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
+<<<<<<< HEAD
+=======
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.setParameter("AsyncBatchId", id);
 		}
 		finally
@@ -205,7 +228,12 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (!isAsyncBatchObserved(asyncBatchId))
 		{
+<<<<<<< HEAD
 			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+=======
+			// NOTE this can be a legit case the code is running on webui
+			Loggables.withLogger(logger, Level.DEBUG).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return;
 		}
 

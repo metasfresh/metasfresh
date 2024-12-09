@@ -221,7 +221,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
+<<<<<<< HEAD
 				.qty(Quantitys.create(quickInputQty, uomId))
+=======
+				.qty(Quantitys.of(quickInputQty, uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))

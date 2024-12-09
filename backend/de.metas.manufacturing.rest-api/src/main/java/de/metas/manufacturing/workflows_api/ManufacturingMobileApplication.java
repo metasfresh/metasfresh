@@ -5,7 +5,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+<<<<<<< HEAD
 import de.metas.i18n.AdMessageKey;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
@@ -20,8 +23,13 @@ import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+=======
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -54,8 +62,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
 
+<<<<<<< HEAD
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -79,12 +90,19 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
+<<<<<<< HEAD
 	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
 	{
 		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(loggedUserId, ClientId.METASFRESH);
 		return MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
+=======
+	public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+	{
+		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(loggedUserId, ClientId.METASFRESH);
+		return applicationInfo.toBuilder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.requiresWorkstation(config.getIsScanResourceRequired().isTrue())
 				//.showFilters(true)
 				.build();
@@ -100,8 +118,13 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Nullable
 	private ResourceId getFilterByWorkstationId(final UserId userId)
 	{
+<<<<<<< HEAD
 		final MobileApplicationInfo applicationInfo = getApplicationInfo(userId);
 		return applicationInfo.isRequiresWorkstation()
+=======
+		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(userId, ClientId.METASFRESH);
+		return config.getIsScanResourceRequired().isTrue()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				? userWorkstationService.getUserWorkstationId(userId).orElse(null)
 				: null;
 	}

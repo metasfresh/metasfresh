@@ -22,13 +22,23 @@ package org.adempiere.ad.validationRule;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Properties;
 
+=======
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Evaluatee;
 
+<<<<<<< HEAD
 import de.metas.util.ISingletonService;
+=======
+import javax.annotation.Nullable;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Factory class used to create {@link IValidationRule} instances
@@ -49,7 +59,15 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * @param ctxColumnName
 	 * @return
 	 */
+<<<<<<< HEAD
 	IValidationRule create(String tableName, int adValRuleId, String ctxTableName, String ctxColumnName);
+=======
+	IValidationRule create(
+			@NonNull final String tableName,
+			@Nullable final AdValRuleId adValRuleId,
+			@Nullable final String ctxTableName,
+			@Nullable final String ctxColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause

@@ -120,7 +120,11 @@ public class BuildDepWorkFile extends JavaProcess
 			+ " AND A_Entry_Type = 'DEP'" 
 			+ clientCheck;
 		
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql,null);
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("doIt - Clear DepExpense = " + no);
 		
 		sql = null;
@@ -130,7 +134,11 @@ public class BuildDepWorkFile extends JavaProcess
 			+ " <= " + DepBuild.getA_End_Asset_ID()
 			+ clientCheck;
 		
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql,null);
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("doIt - DepExpense Reset= " + no);
 		
 		sql = null;

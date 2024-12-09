@@ -3,7 +3,11 @@ package de.metas.picking.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Config
+<<<<<<< HEAD
  *  @author metasfresh (generated) 
+=======
+ *  @author metasfresh (generated)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @SuppressWarnings("unused")
 public interface I_M_Picking_Config 
@@ -140,6 +144,30 @@ public interface I_M_Picking_Config
 	String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Forbid Aggregation of CUs for diff. orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsForbidAggCUsForDifferentOrders (boolean IsForbidAggCUsForDifferentOrders);
+
+	/**
+	 * Get Forbid Aggregation of CUs for diff. orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isForbidAggCUsForDifferentOrders();
+
+	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsForbidAggCUsForDifferentOrders = new ModelColumn<>(I_M_Picking_Config.class, "IsForbidAggCUsForDifferentOrders", null);
+	String COLUMNNAME_IsForbidAggCUsForDifferentOrders = "IsForbidAggCUsForDifferentOrders";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Picking configuration.
 	 *
 	 * <br>Type: ID

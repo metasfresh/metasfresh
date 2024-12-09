@@ -1,13 +1,25 @@
 package de.metas.acct.doc;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+=======
+import de.metas.acct.Account;
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.GLCategoryRepository;
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderFactory;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.FactAcctId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+<<<<<<< HEAD
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
@@ -22,6 +34,32 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
+=======
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.api.impl.FactAcctDAO;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
+import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
+import de.metas.acct.open_items.FAOpenItemsService;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
@@ -35,6 +73,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+<<<<<<< HEAD
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -55,16 +94,82 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+=======
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.acct.InvoiceAcctRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.location.LocationId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.costs.OrderCostService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.sales_region.SalesRegion;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.sales_region.SalesRegionService;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.acct.FactLine;
+import org.compiere.acct.PostingStatus;
+import org.compiere.model.I_C_DocType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
+<<<<<<< HEAD
 import org.compiere.model.PO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.TrxRunnable2;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.ZoneId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Optional;
 
 /*
@@ -90,6 +195,10 @@ import java.util.Optional;
  */
 
 @Service
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class AcctDocRequiredServicesFacade
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -99,6 +208,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
+<<<<<<< HEAD
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
@@ -108,10 +218,40 @@ public class AcctDocRequiredServicesFacade
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final BankAccountService bankAccountService;
+=======
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
+
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
+	@Getter
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final ElementValueService elementValueService;
+
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	@Getter private final QuantityUOMConverter uomConverter = Services.get(IUOMConversionBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+	private final GLCategoryRepository glCategoryRepository;
+	private final BankAccountService bankAccountService;
+	private final AccountProviderFactory accountProviderFactory;
+	private final InvoiceAcctRepository invoiceAcctRepository;
+	@Getter
+	private final MatchInvoiceService matchInvoiceService;
+	@Getter
+	private final OrderCostService orderCostService;
+	private final FAOpenItemsService faOpenItemsService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	//
 	// Needed for DocLine:
 	private final IProductBL productBL = Services.get(IProductBL.class);
+<<<<<<< HEAD
 	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
@@ -134,6 +274,24 @@ public class AcctDocRequiredServicesFacade
 	public void fireAfterPostEvent(@NonNull final PO po)
 	{
 		factAcctListenersService.fireAfterPost(po);
+=======
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+	private final ICostingService costingService;
+	private final DimensionService dimensionService;
+	private final SalesRegionService salesRegionService;
+	private final AcctDocLockService acctDocLockService;
+	private final FactAcctUserChangesService factAcctUserChangesService;
+
+	public void fireBeforePostEvent(@NonNull AcctDocModel docModel)
+	{
+		factAcctListenersService.fireBeforePost(docModel.unbox());
+	}
+
+	public void fireAfterPostEvent(@NonNull final AcctDocModel docModel)
+	{
+		factAcctListenersService.fireAfterPost(docModel.unbox());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void fireDocumentChanged(
@@ -142,7 +300,11 @@ public class AcctDocRequiredServicesFacade
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
+<<<<<<< HEAD
 				ModelCacheInvalidationTiming.CHANGE);
+=======
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void runInThreadInheritedTrx(@NonNull final TrxRunnable2 runnable)
@@ -150,9 +312,15 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
+<<<<<<< HEAD
 	public int deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
 	{
 		return factAcctDAO.deleteForDocumentModel(documentPO);
+=======
+	public void deleteFactAcctByDocumentModel(@NonNull final AcctDocModel docModel)
+	{
+		factAcctDAO.deleteForDocumentModel(docModel.unbox());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -173,29 +341,63 @@ public class AcctDocRequiredServicesFacade
 		return msgBL.getTranslatableMsgText(adMessage);
 	}
 
+<<<<<<< HEAD
+=======
+	public AccountProvider.AccountProviderBuilder newAccountProvider()
+	{
+		return accountProviderFactory.newAccountProvider();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
 	}
 
+<<<<<<< HEAD
 	public MAccount getAccount(@NonNull final I_Fact_Acct factAcct)
+=======
+	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return factAcctBL.getAccount(factAcct);
 	}
 
+<<<<<<< HEAD
+=======
+	public ElementValue getElementValueById(@NonNull final ElementValueId elementValueId)
+	{
+		return elementValueService.getById(elementValueId);
+	}
+
+	public ElementValueId getElementValueId(@NonNull final Account account)
+	{
+		final MAccount validCombination = accountDAO.getById(account.getAccountId());
+		return validCombination.getElementValueId();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
 	}
 
 	public final CurrencyConversionContext createCurrencyConversionContext(
+<<<<<<< HEAD
 			@Nullable final LocalDate convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+=======
+			@Nullable final LocalDateAndOrgId convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId)
+	{
+		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CurrencyRate getCurrencyRate(
@@ -211,6 +413,7 @@ public class AcctDocRequiredServicesFacade
 		return bankAccountService.getById(bpBankAccountId);
 	}
 
+<<<<<<< HEAD
 	public BankAccountAcct getBankAccountAcct(
 			final BankAccountId bankAccountId,
 			final AcctSchemaId acctSchemaId)
@@ -218,6 +421,8 @@ public class AcctDocRequiredServicesFacade
 		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void postImmediateNoFail(
 			@NonNull final TableRecordReference documentRef,
 			@NonNull final ClientId clientId)
@@ -248,6 +453,14 @@ public class AcctDocRequiredServicesFacade
 		return productBL.isStocked(product);
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isProductStocked(final ProductId productId)
+	{
+		return productBL.isStocked(productId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_C_UOM getProductStockingUOM(final ProductId productId)
 	{
 		return productBL.getStockUOM(productId);
@@ -258,6 +471,7 @@ public class AcctDocRequiredServicesFacade
 		return productBL.getStockUOMId(productId);
 	}
 
+<<<<<<< HEAD
 	public Optional<AccountId> getProductAcct(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final ProductId productId,
@@ -284,6 +498,8 @@ public class AcctDocRequiredServicesFacade
 				: Optional.empty();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public CostingMethod getCostingMethod(
 			@NonNull final ProductId productId,
 			@NonNull final AcctSchema as)
@@ -298,21 +514,51 @@ public class AcctDocRequiredServicesFacade
 		return productCostingBL.getCostingLevel(productId, as);
 	}
 
+<<<<<<< HEAD
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+=======
+	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
+	{
+		return costingService.getCostElementById(costElementId);
+	}
+
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return costingService.createCostDetail(request);
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("UnusedReturnValue")
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		return costingService.createCostDetailOrEmpty(request);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
 	}
 
+<<<<<<< HEAD
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+=======
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return costingService.createReversalCostDetails(request);
 	}
 
+<<<<<<< HEAD
+=======
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	{
+		return costingService.createReversalCostDetailsOrEmpty(request);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Optional<CostPrice> getCurrentCostPrice(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
@@ -330,4 +576,210 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+<<<<<<< HEAD
 }
+=======
+	public ZoneId getTimeZone(@NonNull final OrgId orgId)
+	{
+		return orgDAO.getTimeZone(orgId);
+	}
+
+	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceAcctRepository.getById(invoiceId);
+	}
+
+	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypeBL.getById(docTypeId);
+	}
+
+	public Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
+	{
+		return glCategoryRepository.getDefaultId(clientId);
+	}
+
+	public Optional<LocationId> getLocationId(@Nullable final BPartnerLocationId bpartnerLocationId)
+	{
+		if (bpartnerLocationId == null)
+		{
+			return Optional.empty();
+		}
+
+		final LocationId locationId = bpartnerDAO.getLocationId(bpartnerLocationId);
+		return Optional.of(locationId);
+	}
+
+	public Optional<LocationId> getLocationId(@NonNull final OrgId orgId)
+	{
+		if (!orgId.isRegular())
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerLocationId bpartnerLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
+		if (bpartnerLocationId == null)
+		{
+			return Optional.empty();
+		}
+
+		final LocationId locationId = bpartnerDAO.getLocationId(bpartnerLocationId);
+		return Optional.of(locationId);
+	}
+
+	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
+	{
+		if (locatorRepoId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return warehouseBL.getLocationIdByLocatorRepoId(locatorRepoId);
+	}
+
+	public Tax getTaxById(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId);
+	}
+
+	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
+	{
+		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
+	}
+
+	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
+	{
+		return vatCodeDAO.findVATCode(request);
+	}
+
+	public Dimension extractDimensionFromModel(final Object model)
+	{
+		return dimensionService.getFromRecord(model);
+	}
+
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomToId)
+	{
+		return uomConverter.convertQuantityTo(quantity, productId, uomToId);
+	}
+
+	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine factLine)
+	{
+		return faOpenItemsService.computeTrxInfo(factLine);
+	}
+
+	public void saveNew(@NonNull final I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
+
+	public void saveNew(@NonNull final FactLine factLine)
+	{
+		if (factLine.getIdOrNull() != null)
+		{
+			throw new AdempiereException("Already created: " + factLine);
+		}
+
+		factLine.updateBeforeSaveNew();
+
+		final I_Fact_Acct record = InterfaceWrapperHelper.newInstance(I_Fact_Acct.class);
+
+		record.setCounterpart_Fact_Acct_ID(FactAcctId.toRepoId(factLine.getCounterpart_Fact_Acct_ID()));
+		Check.assumeEquals(record.getAD_Client_ID(), factLine.getAD_Client_ID().getRepoId(), "AD_Client_ID");
+		record.setAD_Org_ID(factLine.getOrgId().getRepoId());
+		record.setDateTrx(factLine.getDateTrx());
+		record.setDateAcct(factLine.getDateAcct());
+		record.setC_Period_ID(factLine.getC_Period_ID());
+		//
+		record.setAmtAcctDr(factLine.getAmtAcctDr());
+		record.setAmtAcctCr(factLine.getAmtAcctCr());
+		record.setC_Currency_ID(factLine.getCurrencyId().getRepoId());
+		record.setAmtSourceDr(factLine.getAmtSourceDr());
+		record.setAmtSourceCr(factLine.getAmtSourceCr());
+		record.setCurrencyRate(factLine.getCurrencyRate());
+		//
+		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
+		record.setVATCode(factLine.getVatCode());
+		//
+		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
+		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());
+		record.setLine_ID(factLine.getLine_ID());
+		record.setSubLine_ID(factLine.getSubLine_ID());
+		record.setDocumentNo(factLine.getDocumentNo());
+		record.setDocBaseType(factLine.getDocBaseType().getCode());
+		record.setDocStatus(DocStatus.toCodeOrNull(factLine.getDocStatus()));
+		record.setC_DocType_ID(DocTypeId.toRepoId(factLine.getC_DocType_ID()));
+		//
+		record.setM_Product_ID(ProductId.toRepoId(factLine.getM_Product_ID()));
+		record.setM_Locator_ID(factLine.getM_Locator_ID());
+		record.setQty(factLine.getQty() != null ? factLine.getQty().toBigDecimal() : null);
+		record.setC_UOM_ID(factLine.getQty() != null ? factLine.getQty().getUomId().getRepoId() : -1);
+		//
+		record.setPostingType(factLine.getPostingType().getCode());
+		record.setC_AcctSchema_ID(factLine.getAcctSchemaId().getRepoId());
+		record.setAccount_ID(factLine.getAccountId().getRepoId());
+		record.setC_SubAcct_ID(factLine.getC_SubAcct_ID());
+		FactAcctDAO.setAccountConceptualName(record, factLine.getAccountConceptualName());
+		//
+		record.setM_CostElement_ID(CostElementId.toRepoId(factLine.getCostElementId()));
+		//
+		record.setDescription(StringUtils.trimBlankToNull(factLine.getDescription()));
+		//
+		record.setC_OrderSO_ID(OrderId.toRepoId(factLine.getC_OrderSO_ID()));
+		record.setC_LocFrom_ID(LocationId.toRepoId(factLine.getC_LocFrom_ID()));
+		record.setC_LocTo_ID(LocationId.toRepoId(factLine.getC_LocTo_ID()));
+		record.setAD_OrgTrx_ID(OrgId.toRepoId(factLine.getAD_OrgTrx_ID()));
+		record.setC_BPartner_ID(BPartnerId.toRepoId(factLine.getC_BPartner_ID()));
+		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(factLine.getC_BPartner_Location_ID()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(factLine.getC_BPartner2_ID()));
+		record.setGL_Budget_ID(factLine.getGL_Budget_ID());
+		record.setGL_Category_ID(GLCategoryId.toRepoId(factLine.getGL_Category_ID()));
+		record.setC_SalesRegion_ID(SalesRegionId.toRepoId(factLine.getC_SalesRegion_ID()));
+		record.setC_Project_ID(ProjectId.toRepoId(factLine.getC_Project_ID()));
+		record.setC_Activity_ID(ActivityId.toRepoId(factLine.getC_Activity_ID()));
+		record.setC_Campaign_ID(factLine.getC_Campaign_ID());
+		record.setUser1_ID(factLine.getUser1_ID());
+		record.setUser2_ID(factLine.getUser2_ID());
+		record.setUserElement1_ID(factLine.getUserElement1_ID());
+		record.setUserElement2_ID(factLine.getUserElement2_ID());
+		record.setUserElementString1(factLine.getUserElementString1());
+		record.setUserElementString2(factLine.getUserElementString2());
+		record.setUserElementString3(factLine.getUserElementString3());
+		record.setUserElementString4(factLine.getUserElementString4());
+		record.setUserElementString5(factLine.getUserElementString5());
+		record.setUserElementString6(factLine.getUserElementString6());
+		record.setUserElementString7(factLine.getUserElementString7());
+		record.setPOReference(StringUtils.trimBlankToNull(factLine.getPoReference()));
+
+		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
+		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
+
+		factAcctDAO.save(record);
+		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));
+	}
+
+	public Optional<SalesRegionId> getSalesRegionIdBySalesRepId(final UserId salesRepId)
+	{
+		return salesRegionService.getBySalesRepId(salesRepId).map(SalesRegion::getId);
+	}
+
+	public Optional<SalesRegionId> getSalesRegionIdByBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnerDAO.getSalesRegionIdByBPLocationId(bpartnerLocationId);
+	}
+
+	public boolean lock(@NonNull final AcctDocModel docModel, final boolean force, final boolean repost)
+	{
+		return acctDocLockService.lock(docModel, force, repost);
+	}
+
+	public boolean unlock(@NonNull final AcctDocModel docModel, @Nullable final PostingStatus newPostingStatus, @Nullable final AdIssueId postingErrorIssueId)
+	{
+		return acctDocLockService.unlock(docModel, newPostingStatus, postingErrorIssueId);
+	}
+
+	public FactAcctChangesList getFactAcctChanges(@NonNull final TableRecordReference docRecordRef)
+	{
+		return factAcctUserChangesService.getByDocRecordRef(docRecordRef);
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

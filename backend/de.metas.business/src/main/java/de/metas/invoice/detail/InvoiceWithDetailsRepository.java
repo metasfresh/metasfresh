@@ -23,8 +23,13 @@
 package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -103,6 +108,7 @@ public class InvoiceWithDetailsRepository
 
 	private void createOrUpdateDetailItem(
 			@NonNull final OrgId orgId,
+<<<<<<< HEAD
 			@NonNull final InvoiceLineId invoiceLineId,
 			@NonNull final InvoiceDetailItem invoiceDetailItem,
 			@NonNull final ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> detailRecords)
@@ -113,6 +119,18 @@ public class InvoiceWithDetailsRepository
 
 		recordToSave.setC_Invoice_ID(invoiceLineId.getInvoiceId().getRepoId());
 		recordToSave.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
+=======
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
+			@NonNull final InvoiceDetailItem invoiceDetailItem,
+			@NonNull final ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> detailRecords)
+	{
+		final I_C_Invoice_Detail existingRecordOrNull = detailRecords.get(StagingRecordKey.forItemOrNull(invoiceAndLineId, invoiceDetailItem));
+
+		final I_C_Invoice_Detail recordToSave = syncToRecord(orgId, invoiceDetailItem, existingRecordOrNull);
+
+		recordToSave.setC_Invoice_ID(invoiceAndLineId.getInvoiceId().getRepoId());
+		recordToSave.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		InterfaceWrapperHelper.saveRecord(recordToSave);
 	}
 
@@ -146,15 +164,26 @@ public class InvoiceWithDetailsRepository
 		@Nullable
 		InvoiceId invoiceId;
 		@Nullable
+<<<<<<< HEAD
 		InvoiceLineId invoiceLineId;
+=======
+		InvoiceAndLineId invoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@NonNull String label;
 
 		public static StagingRecordKey forRecordOrNull(@NonNull final I_C_Invoice_Detail detailRecord)
 		{
+<<<<<<< HEAD
 			final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID(), detailRecord.getC_InvoiceLine_ID());
 			if (invoiceLineId != null)
 			{
 				return new StagingRecordKey(null, invoiceLineId, detailRecord.getLabel());
+=======
+			final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID(), detailRecord.getC_InvoiceLine_ID());
+			if (invoiceAndLineId != null)
+			{
+				return new StagingRecordKey(null, invoiceAndLineId, detailRecord.getLabel());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID());
@@ -170,9 +199,15 @@ public class InvoiceWithDetailsRepository
 			return new StagingRecordKey(invoiceId, null, detailItem.getLabel());
 		}
 
+<<<<<<< HEAD
 		public static StagingRecordKey forItemOrNull(@NonNull final InvoiceLineId invoiceLineId, @NonNull final InvoiceDetailItem detailItem)
 		{
 			return new StagingRecordKey(null, invoiceLineId, detailItem.getLabel());
+=======
+		public static StagingRecordKey forItemOrNull(@NonNull final InvoiceAndLineId invoiceAndLineId, @NonNull final InvoiceDetailItem detailItem)
+		{
+			return new StagingRecordKey(null, invoiceAndLineId, detailItem.getLabel());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

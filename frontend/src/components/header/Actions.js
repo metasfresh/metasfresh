@@ -11,6 +11,10 @@ import {
 import { getSelection, getTableId } from '../../reducers/tables';
 
 import Loader from '../app/Loader';
+<<<<<<< HEAD
+=======
+import { findViewByViewId } from '../../reducers/viewHandler';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * @file Class based component.
@@ -66,6 +70,10 @@ class Actions extends Component {
     const {
       windowType,
       viewId,
+<<<<<<< HEAD
+=======
+      viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       childViewId,
       childViewSelectedIds,
       entity,
@@ -79,6 +87,10 @@ class Actions extends Component {
         entity,
         type: windowType,
         viewId,
+<<<<<<< HEAD
+=======
+        viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         childViewId,
         childViewSelectedIds,
         id: docId,
@@ -358,12 +370,24 @@ Actions.propTypes = {
   plugins: PropTypes.any,
 };
 
+<<<<<<< HEAD
 const mapStateToProps = (state) => {
+=======
+const mapStateToProps = (state, props) => {
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   const { includedView } = state.viewHandler;
   const result = {
     plugins: state.pluginsHandler.files,
   };
 
+<<<<<<< HEAD
+=======
+  if (props.viewId) {
+    const view = findViewByViewId(state, props.viewId);
+    result.viewOrderBy = view?.orderBy;
+  }
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   if (includedView && includedView.viewId) {
     const childViewTableId = getTableId({
       windowId: includedView.windowId,

@@ -56,6 +56,7 @@ final class PackageableViewFilters
 	private static DocumentFilterDescriptor createDefaultFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder orderParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_C_Order_ID)
+<<<<<<< HEAD
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Order.Table_Name).provideForFilter());
 
@@ -81,6 +82,33 @@ final class PackageableViewFilters
 		final DocumentFilterParamDescriptor.Builder shipperParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Shipper_ID)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
+=======
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Order.Table_Name).provideForFilter());
+
+		final DocumentFilterParamDescriptor.Builder customerParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_Customer_ID)
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_BPartner.Table_Name).provideForFilter());
+
+		final DocumentFilterParamDescriptor.Builder warehouseTypeParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_Type_ID)
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
+
+		final DocumentFilterParamDescriptor.Builder warehouseParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_ID)
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
+
+		final DocumentFilterParamDescriptor.Builder deliveryDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_DeliveryDate)
+				.displayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
+				.widgetType(DocumentFieldWidgetType.LocalDate);
+
+		final DocumentFilterParamDescriptor.Builder preparationDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_PreparationDate)
+				.widgetType(DocumentFieldWidgetType.LocalDate);
+
+		final DocumentFilterParamDescriptor.Builder shipperParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Shipper_ID)
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
@@ -99,8 +127,13 @@ final class PackageableViewFilters
 	private static Builder newParamDescriptor(final String fieldName)
 	{
 		return DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 				.setFieldName(fieldName)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(fieldName));
+=======
+				.fieldName(fieldName)
+				.displayName(Services.get(IMsgBL.class).translatable(fieldName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static PackageableViewFilterVO extractPackageableViewFilterVO(final DocumentFilterList filters)

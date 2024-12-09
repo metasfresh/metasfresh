@@ -5,25 +5,37 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
+<<<<<<< HEAD
 import de.metas.bpartner.service.impl.BPartnerBL;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
+<<<<<<< HEAD
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.invoice.interceptor.C_Invoice;
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceDocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
+<<<<<<< HEAD
 import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservationCaptureRepository;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.user.UserRepository;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -47,12 +59,20 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Optional;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -114,11 +134,25 @@ public class PaymentBLTest
 			order.setProcessed(true);
 			saveRecord(order);
 
+<<<<<<< HEAD
+=======
+			final InvoiceDocBaseType docBaseType = InvoiceDocBaseType.CustomerInvoice;
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			invoice = newInstance(I_C_Invoice.class);
 			invoice.setAD_Org_ID(1);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
 			invoice.setGrandTotal(new BigDecimal("50.0"));
+<<<<<<< HEAD
 			invoice.setIsSOTrx(true);
+=======
+			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setIsSOTrx(docType.isSOTrx());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			invoice.setProcessed(true);
 			saveRecord(invoice);
 		}
@@ -282,6 +316,10 @@ public class PaymentBLTest
 		public void noCurrencyConversionDefined()
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
+<<<<<<< HEAD
+=======
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			payment.setAD_Org_ID(1);
 			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
@@ -315,7 +353,11 @@ public class PaymentBLTest
 		}
 
 		@Test
+<<<<<<< HEAD
 		public void reveral_failIf_DocStatusIsNotReversed()
+=======
+		public void reversal_failIf_DocStatusIsNotReversed()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			// payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -325,7 +367,11 @@ public class PaymentBLTest
 		}
 
 		@Test
+<<<<<<< HEAD
 		public void reveral_failIf_ReversalIdDoesNotMatch()
+=======
+		public void reversal_failIf_ReversalIdDoesNotMatch()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -335,7 +381,11 @@ public class PaymentBLTest
 		}
 
 		@Test
+<<<<<<< HEAD
 		public void reveral()
+=======
+		public void reversal()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 
@@ -493,13 +543,17 @@ public class PaymentBLTest
 	{
 		private I_C_DocType prepayDocType;
 		private I_C_DocType salesOrderDocType;
+<<<<<<< HEAD
 		private C_Invoice c_invoiceInterceptor;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		@BeforeEach
 		void beforeEach()
 		{
 			AdempiereTestHelper.get().init();
 
+<<<<<<< HEAD
 			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
 			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
 
@@ -519,6 +573,19 @@ public class PaymentBLTest
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 			docType.setDocBaseType(baseType);
+=======
+			prepayDocType = createDocType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(DocBaseType.SalesOrder, null);
+		}
+
+		@NonNull
+		protected I_C_DocType createDocType(
+				@NonNull final DocBaseType baseType,
+				@Nullable final String subType)
+		{
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(baseType.getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			docType.setDocSubType(subType);
 			saveRecord(docType);
 			return docType;
@@ -582,7 +649,10 @@ public class PaymentBLTest
 			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
 		}
 
+<<<<<<< HEAD
 		@SuppressWarnings("ConstantConditions")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@NonNull
 		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
 		{
@@ -593,7 +663,10 @@ public class PaymentBLTest
 			return payment;
 		}
 
+<<<<<<< HEAD
 		@SuppressWarnings("ConstantConditions")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		@NonNull
 		private de.metas.adempiere.model.I_C_Order createSalesOrder(
 				@Nullable final ExternalId externalOrderId,

@@ -925,12 +925,17 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setShelfDepth (final int ShelfDepth)
+=======
+	public void setShelfDepth (final BigDecimal ShelfDepth)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_ShelfDepth, ShelfDepth);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getShelfDepth() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ShelfDepth);
@@ -938,11 +943,22 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 
 	@Override
 	public void setShelfHeight (final int ShelfHeight)
+=======
+	public BigDecimal getShelfDepth()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfDepth);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setShelfHeight (final BigDecimal ShelfHeight)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_ShelfHeight, ShelfHeight);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getShelfHeight() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ShelfHeight);
@@ -950,14 +966,31 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 
 	@Override
 	public void setShelfWidth (final int ShelfWidth)
+=======
+	public BigDecimal getShelfHeight()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfHeight);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setShelfWidth (final BigDecimal ShelfWidth)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_ShelfWidth, ShelfWidth);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getShelfWidth() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ShelfWidth);
+=======
+	public BigDecimal getShelfWidth()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfWidth);
+		return bd != null ? bd : BigDecimal.ZERO;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -1045,15 +1078,25 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setVolume (final int Volume)
+=======
+	public void setVolume (final BigDecimal Volume)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public int getVolume() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Volume);
+=======
+	public BigDecimal getVolume()
+	{
+		return get_ValueAsBigDecimal(COLUMNNAME_Volume);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

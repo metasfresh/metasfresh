@@ -64,9 +64,15 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	private final TranslatableParameterizedString sqlQuery;
 
+<<<<<<< HEAD
 	private final String TableName;
 
 	private final String KeyColumn;
+=======
+	private final String tableName;
+
+	private final String keyColumn;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private TranslatableParameterizedString displayColumnSQL = TranslatableParameterizedString.EMPTY;
 	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
@@ -154,8 +160,13 @@ public final class MLookupInfo implements Serializable, Cloneable
 			final MQuery zoomQuery)
 	{
 		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
+<<<<<<< HEAD
 		TableName = tableName;
 		KeyColumn = keyColumn;
+=======
+		this.tableName = tableName;
+		this.keyColumn = keyColumn;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.zoomSO_Window_ID = zoomSO_Window_ID;
 		this.zoomPO_Window_ID = zoomPO_Window_ID;
 		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
@@ -171,7 +182,11 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("MLookupInfo[")
+<<<<<<< HEAD
 				.append(KeyColumn)
+=======
+				.append(keyColumn)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.append("-Direct=").append(sqlQueryDirect)
 				.append("]");
 		return sb.toString();
@@ -232,7 +247,11 @@ public final class MLookupInfo implements Serializable, Cloneable
 		// FIXME: we shall get rid of any context data as userRolePermissions from our built queries
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions();
 		return _adRoleId2sqlQuery.computeIfAbsent(userRolePermissions.getRoleId(),
+<<<<<<< HEAD
 				(AD_Role_ID) -> sqlQuery.transform((sql) -> userRolePermissions.addAccessSQL(sql, TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ)));
+=======
+				(AD_Role_ID) -> sqlQuery.transform((sql) -> userRolePermissions.addAccessSQL(sql, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ)));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private final Map<RoleId, TranslatableParameterizedString> _adRoleId2sqlQuery = new ConcurrentHashMap<>();
@@ -467,21 +486,34 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	public String getTableName()
 	{
+<<<<<<< HEAD
 		return TableName;
+=======
+		return tableName;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public String getKeyColumnFQ()
 	{
+<<<<<<< HEAD
 		return KeyColumn;
+=======
+		return keyColumn;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public String getKeyColumn()
 	{
+<<<<<<< HEAD
 		if (KeyColumn == null)
+=======
+		if (keyColumn == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return null;
 		}
 
+<<<<<<< HEAD
 		final int idx = KeyColumn.lastIndexOf('.');
 		if (idx < 0)
 		{
@@ -489,6 +521,15 @@ public final class MLookupInfo implements Serializable, Cloneable
 		}
 
 		return KeyColumn.substring(idx + 1);
+=======
+		final int idx = keyColumn.lastIndexOf('.');
+		if (idx < 0)
+		{
+			return keyColumn;
+		}
+
+		return keyColumn.substring(idx + 1);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public boolean isCreadedUpdatedBy()
@@ -503,7 +544,11 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	public boolean isNumericKey()
 	{
+<<<<<<< HEAD
 		return isNumericKey(KeyColumn);
+=======
+		return isNumericKey(keyColumn);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static boolean isNumericKey(final String keyColumn)

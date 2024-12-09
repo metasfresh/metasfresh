@@ -11,6 +11,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -49,6 +53,14 @@ public class PaymentId implements RepoIdAware
 		return repoId > 0 ? new PaymentId(repoId) : null;
 	}
 
+<<<<<<< HEAD
+=======
+	public static Optional<PaymentId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static int toRepoId(final PaymentId id)
 	{
 		return id != null ? id.getRepoId() : -1;
@@ -87,4 +99,12 @@ public class PaymentId implements RepoIdAware
 	{
 		return repoId;
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

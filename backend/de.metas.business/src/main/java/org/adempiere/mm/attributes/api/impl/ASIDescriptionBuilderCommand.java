@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -7,6 +8,16 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+=======
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
@@ -23,6 +34,7 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -31,6 +43,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -92,9 +110,12 @@ final class ASIDescriptionBuilderCommand
 		final TranslatableStringBuilder descriptionBuilder = TranslatableStrings.builder();
 
 		appendInstanceAttributes(descriptionBuilder);
+<<<<<<< HEAD
 		appendSerNo(descriptionBuilder);
 		appendLot(descriptionBuilder);
 		appendGuaranteeDate(descriptionBuilder);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		appendProductAttributes(descriptionBuilder);
 
 		// NOTE: mk: if there is nothing to show then don't show ASI ID because that number will confuse the user.
@@ -304,6 +325,7 @@ final class ASIDescriptionBuilderCommand
 		description.append(SEPARATOR);
 	}
 
+<<<<<<< HEAD
 	private void appendSerNo(final TranslatableStringBuilder description)
 	{
 		final I_M_AttributeSet attributeSet = getAttributeSet();
@@ -365,6 +387,8 @@ final class ASIDescriptionBuilderCommand
 		description.append(formatDateValue(guaranteeDate));
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void appendProductAttributes(final TranslatableStringBuilder description)
 	{
 		final boolean isInstanceAttribute = false;

@@ -78,8 +78,13 @@ class PO_Record
 
 	/**	Restrict Table Names			*/
 	private static String[]	s_restrictNames = new String[]{
+<<<<<<< HEAD
 		X_R_Request.Table_Name,
 		X_CM_Chat.Table_Name
+=======
+		X_R_Request.Table_Name
+		// X_CM_Chat.Table_Name
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	//	X_Fact_Acct.Table_Name
 	};
 
@@ -105,7 +110,11 @@ class PO_Record
 				final StringBuilder sql = new StringBuilder("DELETE FROM ")
 					.append(s_cascadeNames[i])
 					.append(" WHERE AD_Table_ID=? AND Record_ID=?");
+<<<<<<< HEAD
 				int no = DB.executeUpdate(sql.toString(), params, false, trxName);
+=======
+				int no = DB.executeUpdateAndIgnoreErrorOnFail(sql.toString(), params, false, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (no > 0)
 				{
 					log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
@@ -134,7 +143,11 @@ class PO_Record
 						.append(s_parentChildNames[j]).append("_ID FROM ")
 						.append(s_parentChildNames[j]).append(" WHERE ")
 						.append(s_parentNames[j]).append("_ID=?)");
+<<<<<<< HEAD
 					int no = DB.executeUpdate(sql.toString(), params, false, trxName);
+=======
+					int no = DB.executeUpdateAndIgnoreErrorOnFail(sql.toString(), params, false, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					if (no > 0)
 					{
 						log.info(s_cascadeNames[i] + " " + s_parentNames[j]
@@ -235,7 +248,11 @@ class PO_Record
 				.append(" WHERE AD_Table_ID=").append(AD_Table_ID)
 				.append(" AND Record_ID NOT IN (SELECT ")
 				.append(TableName).append("_ID FROM ").append(TableName).append(")");
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql.toString(), null);
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no > 0)
 			{
 				log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + TableName

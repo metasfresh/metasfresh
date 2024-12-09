@@ -23,12 +23,17 @@
 package de.metas.edi.api.impl.pack;
 
 import de.metas.edi.api.EDIDesadvId;
+<<<<<<< HEAD
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvPackItemId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+=======
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.generichumodel.PackagingCodeId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,8 +41,11 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 
 @Value
@@ -50,13 +58,23 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
+<<<<<<< HEAD
 	int line;
+=======
+	@NonNull
+	Integer seqNo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	
 	@NonNull
 	String sscc18;
 
+<<<<<<< HEAD
 	/** 
 	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute. 
+=======
+	/**
+	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@NonNull
 	Boolean isManualIpaSSCC;
@@ -65,15 +83,23 @@ public class CreateEDIDesadvPackRequest
 	HuId huId;
 
 	@Nullable
+<<<<<<< HEAD
 	PackagingCodeId huPackagingCodeLUID;
 
 	@Nullable
 	String gtinLUPackingMaterial;
+=======
+	PackagingCodeId huPackagingCodeID;
+
+	@Nullable
+	String gtinPackingMaterial;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	@Singular
 	List<CreateEDIDesadvPackItemRequest> createEDIDesadvPackItemRequests;
 
+<<<<<<< HEAD
 	@Value
 	@Builder
 	public static class CreateEDIDesadvPackItemRequest
@@ -123,4 +149,6 @@ public class CreateEDIDesadvPackRequest
 		@Nullable
 		String gtinTUPackingMaterial;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

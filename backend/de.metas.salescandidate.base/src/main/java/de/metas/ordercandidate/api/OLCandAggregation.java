@@ -1,15 +1,27 @@
 package de.metas.ordercandidate.api;
 
+<<<<<<< HEAD
 import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.ordercandidate.OrderCandidate_Constants;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.swat.base
@@ -133,4 +145,16 @@ public class OLCandAggregation
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public String computeHeaderAggregationKey(@NonNull final OLCand olCand)
+	{
+		return getOrderByColumns()
+				.stream()
+				.map(olCand::getValueByColumn)
+				.map(String::valueOf)
+				.collect(Collectors.joining(OrderCandidate_Constants.HEADER_AGGREGATION_KEY_DELIMITER));
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

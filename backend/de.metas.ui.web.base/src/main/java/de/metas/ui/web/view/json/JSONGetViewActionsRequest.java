@@ -8,6 +8,10 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 @Value
@@ -17,6 +21,10 @@ import java.util.Set;
 public class JSONGetViewActionsRequest
 {
 	@Nullable String viewProfileId;
+<<<<<<< HEAD
+=======
+	@Nullable List<JSONViewOrderBy> viewOrderBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Nullable Set<String> selectedIds;
 

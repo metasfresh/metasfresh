@@ -1,5 +1,6 @@
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
   {
+<<<<<<< HEAD
     "id" : 1000000,
     "orgId" : 1000000,
     "docBaseAndSubType" : {
@@ -148,12 +149,142 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       }
     ]
+=======
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "IAH"
+    },
+    "docStatus": "DR",
+    "documentNo": "documentNo",
+    "id": 1000000,
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "asiId": 1000000,
+        "counted": false,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000000,
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "id": 1000000,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "10",
+              "uomId": 1000000
+            }
+          },
+          {
+            "huId": 200,
+            "id": 1000001,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "11",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "11",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000001,
+        "counted": false,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000001,
+        "inventoryLineHUs": [
+          {
+            "huId": 200,
+            "id": 1000002,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 2,
+        "qtyBookFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000002,
+        "counted": false,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000002,
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "id": 1000003,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "2",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "2",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11§&§12"
+      }
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
+    "orgId": 1000000
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator_preAddedHUs=[
   {
+<<<<<<< HEAD
     "id" : 1000001,
     "orgId" : 1000000,
     "docBaseAndSubType" : {
@@ -281,12 +412,121 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       }
     ]
+=======
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "IAH"
+    },
+    "docStatus": "DR",
+    "documentNo": "documentNo",
+    "id": 1000001,
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "asiId": 1000003,
+        "counted": false,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000003,
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "id": 1000004,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "10",
+              "uomId": 1000000
+            }
+          },
+          {
+            "huId": 200,
+            "id": 1000005,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "11",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "11",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000004,
+        "counted": false,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000004,
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "id": 1000006,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 1000000
+            }
+          },
+          {
+            "huId": 305,
+            "id": 1000007,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "4",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "4",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11§&§12"
+      }
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
+    "orgId": 1000000
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]
 
 
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
   {
+<<<<<<< HEAD
     "id" : 1000000,
     "orgId" : 1000000,
     "docBaseAndSubType" : {
@@ -452,5 +692,151 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       }
     ]
+=======
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
+    },
+    "docStatus": "DR",
+    "documentNo": "documentNo",
+    "id": 1000000,
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "asiId": 1000000,
+        "counted": false,
+        "huAggregationType": "SINGLE_HU",
+        "id": 1000000,
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "10",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "10",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "10",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000001,
+        "counted": false,
+        "huAggregationType": "SINGLE_HU",
+        "id": 1000001,
+        "inventoryLineHUs": [
+          {
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000002,
+        "counted": false,
+        "huAggregationType": "SINGLE_HU",
+        "id": 1000002,
+        "inventoryLineHUs": [
+          {
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 2,
+        "qtyBookFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "1",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11"
+      },
+      {
+        "asiId": 1000003,
+        "counted": false,
+        "huAggregationType": "SINGLE_HU",
+        "id": 1000003,
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 1000000
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 1000000
+            }
+          }
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 5,
+        "productId": 40,
+        "qtyBookFixed": {
+          "qty": "2",
+          "uomId": 1000000
+        },
+        "qtyCountFixed": {
+          "qty": "2",
+          "uomId": 1000000
+        },
+        "storageAttributesKey": "10§&§11§&§12"
+      }
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
+    "orgId": 1000000
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

@@ -1,9 +1,12 @@
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
+<<<<<<< HEAD
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
@@ -22,10 +25,13 @@ import de.metas.util.Services;
 import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotConfig;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import io.github.jsonSnapshot.SnapshotMatchingStrategy;
 import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -61,7 +67,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
+<<<<<<< HEAD
 import java.util.function.Function;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -101,6 +110,7 @@ public class AdempiereTestHelper
 
 	public static final String AD_LANGUAGE = "de_DE";
 
+<<<<<<< HEAD
 	/**
 	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
 	 */
@@ -119,6 +129,8 @@ public class AdempiereTestHelper
 		}
 	};
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static AdempiereTestHelper get()
 	{
 		return instance;
@@ -333,6 +345,7 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
 	 * <p>
@@ -355,6 +368,36 @@ public class AdempiereTestHelper
 				throw AdempiereException.wrapIfNeeded(e);
 			}
 		};
+=======
+	private void staticInit0()
+	{
+		Adempiere.enableUnitTestMode();
+		Language.setUseJUnitFixedFormats(false);
+		POJOLookupMap.resetToDefaultNextIdSupplier();
+
+		Check.setDefaultExClass(AdempiereException.class);
+
+		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
+
+		//
+		// Configure services; note the this is not the place to register individual services, see init() for that.
+		Services.setAutodetectServices(true);
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
+
+		//
+		// Make sure cache is empty
+		CacheMgt.get().reset();
+
+		staticInitialized = true;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
@@ -386,6 +429,7 @@ public class AdempiereTestHelper
 
 		public void run() {runnable.run();}
 	}
+<<<<<<< HEAD
 
 	private void staticInit0()
 	{
@@ -416,4 +460,6 @@ public class AdempiereTestHelper
 
 		staticInitialized = true;
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

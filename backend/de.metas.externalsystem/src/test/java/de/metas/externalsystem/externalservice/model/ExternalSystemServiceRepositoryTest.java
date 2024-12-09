@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.externalservice.model;
 
+<<<<<<< HEAD
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -29,10 +30,21 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.List;
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -41,6 +53,15 @@ import static org.assertj.core.api.Assertions.*;
 public class ExternalSystemServiceRepositoryTest
 {
 	private ExternalSystemServiceRepository externalSystemServiceRepo;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class ExternalSystemServiceRepositoryTest
+{
+	private ExternalSystemServiceRepository externalSystemServiceRepo;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -49,6 +70,7 @@ public class ExternalSystemServiceRepositoryTest
 		externalSystemServiceRepo = new ExternalSystemServiceRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -61,6 +83,8 @@ public class ExternalSystemServiceRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void givenType_whenGetAllByType_thenReturnMatchingServices()
 	{
@@ -85,7 +109,11 @@ public class ExternalSystemServiceRepositoryTest
 		//then
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -109,7 +137,11 @@ public class ExternalSystemServiceRepositoryTest
 
 		//then
 		assertThat(result).isNotEmpty();
+<<<<<<< HEAD
 		expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test

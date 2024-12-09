@@ -259,7 +259,11 @@ Feature: mobileUI Picking - Pick TUs from LU
   @from:cucumber
   Scenario: Pick TUs from LU with TUs (not-aggregated)
     When transform CU to new TUs
+<<<<<<< HEAD
       | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs                                              |
+=======
+      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                              |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       | pickFromCU | 20    | TUx4                    | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 |
     And aggregate TUs to new LU
       | sourceTUs                                                   | newLUs     |

@@ -110,8 +110,13 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set System-Element.
 	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+=======
+	 * Set System Element.
+	 * System Element enables the central maintenance of column description and help.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -120,8 +125,13 @@ public interface I_AD_Tab
 	void setAD_Element_ID (int AD_Element_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get System-Element.
 	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+=======
+	 * Get System Element.
+	 * System Element enables the central maintenance of column description and help.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -137,7 +147,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Bild.
+=======
+	 * Set Image.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -147,7 +161,11 @@ public interface I_AD_Tab
 	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Bild.
+=======
+	 * Get Image.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -235,7 +253,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Register.
+=======
+	 * Set Tab.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Tab within a Window
 	 *
 	 * <br>Type: ID
@@ -245,7 +267,11 @@ public interface I_AD_Tab
 	void setAD_Tab_ID (int AD_Tab_ID);
 
 	/**
+<<<<<<< HEAD
 	 * Get Register.
+=======
+	 * Get Tab.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Tab within a Window
 	 *
 	 * <br>Type: ID
@@ -307,7 +333,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Schnelleingabe abschalten.
+=======
+	 * Set Allow Quick Input.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -316,7 +346,11 @@ public interface I_AD_Tab
 	void setAllowQuickInput (boolean AllowQuickInput);
 
 	/**
+<<<<<<< HEAD
 	 * Get Schnelleingabe abschalten.
+=======
+	 * Get Allow Quick Input.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -328,7 +362,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
 
 	/**
+<<<<<<< HEAD
 	 * Set Speicherwarnung.
+=======
+	 * Set Commit Warning.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Warning displayed when saving
 	 *
 	 * <br>Type: Text
@@ -338,7 +376,11 @@ public interface I_AD_Tab
 	void setCommitWarning (@Nullable java.lang.String CommitWarning);
 
 	/**
+<<<<<<< HEAD
 	 * Get Speicherwarnung.
+=======
+	 * Get Commit Warning.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Warning displayed when saving
 	 *
 	 * <br>Type: Text
@@ -420,7 +462,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_Description = "Description";
 
 	/**
+<<<<<<< HEAD
 	 * Set Anzeigelogik.
+=======
+	 * Set Display Logic.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: String
@@ -430,7 +476,11 @@ public interface I_AD_Tab
 	void setDisplayLogic (@Nullable java.lang.String DisplayLogic);
 
 	/**
+<<<<<<< HEAD
 	 * Get Anzeigelogik.
+=======
+	 * Get Display Logic.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: String
@@ -443,9 +493,14 @@ public interface I_AD_Tab
 	String COLUMNNAME_DisplayLogic = "DisplayLogic";
 
 	/**
+<<<<<<< HEAD
 	 * Set Entitäts-Art.
 	 * Dictionary Entity Type;
  Determines ownership and synchronization
+=======
+	 * Set Entity Type.
+	 * Entity Type
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -454,9 +509,14 @@ public interface I_AD_Tab
 	void setEntityType (java.lang.String EntityType);
 
 	/**
+<<<<<<< HEAD
 	 * Get Entitäts-Art.
 	 * Dictionary Entity Type;
  Determines ownership and synchronization
+=======
+	 * Get Entity Type.
+	 * Entity Type
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -514,8 +574,13 @@ public interface I_AD_Tab
 	String COLUMNNAME_Help = "Help";
 
 	/**
+<<<<<<< HEAD
 	 * Set Import Fields.
 	 * Create Fields from Table Columns
+=======
+	 * Set Create Fields.
+	 * Create Field from Table Column, which do not exist in the Tab yet
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -524,8 +589,13 @@ public interface I_AD_Tab
 	void setImportFields (@Nullable java.lang.String ImportFields);
 
 	/**
+<<<<<<< HEAD
 	 * Get Import Fields.
 	 * Create Fields from Table Columns
+=======
+	 * Get Create Fields.
+	 * Create Field from Table Column, which do not exist in the Tab yet
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -538,7 +608,11 @@ public interface I_AD_Tab
 
 	/**
 	 * Set Included Tab.
+<<<<<<< HEAD
 	 * Included Tab in this Tab (Master Dateail)
+=======
+	 * Included Tab in this Tab (Master Detail)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -548,7 +622,11 @@ public interface I_AD_Tab
 
 	/**
 	 * Get Included Tab.
+<<<<<<< HEAD
 	 * Included Tab in this Tab (Master Dateail)
+=======
+	 * Included Tab in this Tab (Master Detail)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -585,6 +663,30 @@ public interface I_AD_Tab
 	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncludeFiltersStrategy (@Nullable java.lang.String IncludeFiltersStrategy);
+
+	/**
+	 * Get Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncludeFiltersStrategy();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IncludeFiltersStrategy = new ModelColumn<>(I_AD_Tab.class, "IncludeFiltersStrategy", null);
+	String COLUMNNAME_IncludeFiltersStrategy = "IncludeFiltersStrategy";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
@@ -654,6 +756,30 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsAdvancedTab = "IsAdvancedTab";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutodetectDefaultDateFilter (boolean IsAutodetectDefaultDateFilter);
+
+	/**
+	 * Get Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutodetectDefaultDateFilter();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IsAutodetectDefaultDateFilter = new ModelColumn<>(I_AD_Tab.class, "IsAutodetectDefaultDateFilter", null);
+	String COLUMNNAME_IsAutodetectDefaultDateFilter = "IsAutodetectDefaultDateFilter";
+
+	/**
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Set Check Parents Changed.
 	 * Before saving a record in this tab shall we check if the parent tabs were changed?
 	 *
@@ -767,8 +893,13 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsQueryOnLoad = "IsQueryOnLoad";
 
 	/**
+<<<<<<< HEAD
 	 * Set Schreibgeschützt.
 	 * Field is read only
+=======
+	 * Set readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -777,8 +908,13 @@ public interface I_AD_Tab
 	void setIsReadOnly (boolean IsReadOnly);
 
 	/**
+<<<<<<< HEAD
 	 * Get Schreibgeschützt.
 	 * Field is read only
+=======
+	 * Get readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -790,8 +926,13 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
+<<<<<<< HEAD
 	 * Set Refresh All On Activate.
 	 * Refresh all rows when user activates this tab, instead of refreshing only current row
+=======
+	 * Set Client.
+	 * Client/Tenant for this installation.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -800,8 +941,13 @@ public interface I_AD_Tab
 	void setIsRefreshAllOnActivate (boolean IsRefreshAllOnActivate);
 
 	/**
+<<<<<<< HEAD
 	 * Get Refresh All On Activate.
 	 * Refresh all rows when user activates this tab, instead of refreshing only current row
+=======
+	 * Get Client.
+	 * Client/Tenant for this installation.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -924,7 +1070,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsSortTab = "IsSortTab";
 
 	/**
+<<<<<<< HEAD
 	 * Set Übersetzungsregister.
+=======
+	 * Set TranslationTab.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * This Tab contains translation information
 	 *
 	 * <br>Type: YesNo
@@ -934,7 +1084,11 @@ public interface I_AD_Tab
 	void setIsTranslationTab (boolean IsTranslationTab);
 
 	/**
+<<<<<<< HEAD
 	 * Get Übersetzungsregister.
+=======
+	 * Get TranslationTab.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * This Tab contains translation information
 	 *
 	 * <br>Type: YesNo
@@ -947,8 +1101,13 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsTranslationTab = "IsTranslationTab";
 
 	/**
+<<<<<<< HEAD
 	 * Set Max. Suchergebnisse.
 	 * Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
+=======
+	 * Set Max Query Records.
+	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -957,8 +1116,13 @@ public interface I_AD_Tab
 	void setMaxQueryRecords (int MaxQueryRecords);
 
 	/**
+<<<<<<< HEAD
 	 * Get Max. Suchergebnisse.
 	 * Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
+=======
+	 * Get Max Query Records.
+	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -991,7 +1155,11 @@ public interface I_AD_Tab
 	String COLUMNNAME_Name = "Name";
 
 	/**
+<<<<<<< HEAD
 	 * Set Sql ORDER BY.
+=======
+	 * Set SQL ORDER BY.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Fully qualified ORDER BY clause
 	 *
 	 * <br>Type: String
@@ -1001,7 +1169,11 @@ public interface I_AD_Tab
 	void setOrderByClause (@Nullable java.lang.String OrderByClause);
 
 	/**
+<<<<<<< HEAD
 	 * Get Sql ORDER BY.
+=======
+	 * Get SQL ORDER BY.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Fully qualified ORDER BY clause
 	 *
 	 * <br>Type: String

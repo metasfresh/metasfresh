@@ -22,16 +22,31 @@ package de.metas.fresh.freshQtyOnHand.api;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.util.ISingletonService;
+=======
+import de.metas.fresh.freshQtyOnHand.FreshQtyOnHandId;
+import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IFreshQtyOnHandDAO extends ISingletonService
 {
 
 	List<I_Fresh_QtyOnHand_Line> retrieveLines(I_Fresh_QtyOnHand qtyOnHandHeader);
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	I_Fresh_QtyOnHand getById(@NonNull FreshQtyOnHandId freshQtyOnHandId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

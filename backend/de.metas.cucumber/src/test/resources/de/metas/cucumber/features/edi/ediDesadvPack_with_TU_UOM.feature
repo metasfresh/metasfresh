@@ -7,6 +7,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+<<<<<<< HEAD
+=======
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh initially has no EDI_Desadv_Pack_Item data
     And metasfresh initially has no EDI_Desadv_Pack data
@@ -103,8 +107,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | shipmentLine_1_S0317_010  | s_1_S0317_010         | p_1_S0317_010           | 40          | true      | ol_1_S0317_010                |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
+<<<<<<< HEAD
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
       | p_1_S0317_010                 | true                | null                   | huPackagingCode_1_S0317_010             | gtinPiItemProduct           | 10       |
+=======
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
+      | p_1_S0317_010                 | true                | null                   | huPackagingCode_1_S0317_010          | gtinPiItemProduct        | 1         |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -222,8 +231,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | huProduct_inventoryLine_S0317_020 | createdCU_S0317_020 |
 
     And transform CU to new TUs
+<<<<<<< HEAD
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020       | newCreatedCU_S0317_020    |
+=======
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
+      | createdCU_S0317_020 | 5     | huProductTU_S0317_020              | createdTU_S0317_020           | newCreatedCU_S0317_020        |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And after not more than 30s, M_HUs should have
       | M_HU_ID.Identifier  | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -281,9 +295,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | s_s_1_S0317_020                  | PD           | true                | false       |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
+<<<<<<< HEAD
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_LU_ID    | GTIN_LU_PackingMaterial |
       | p_1_S0317_020      | true                | null                | huPackagingCode_1_S0317_020 | gtinPiItemProduct       |
       | p_2_S0317_020      | true                | createdLU_S0317_020 | huPackagingCode_1_S0317_020 | bPartnerProductGTIN_LU  |
+=======
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_ID       | GTIN_PackingMaterial   |
+      | p_1_S0317_020      | true                | null                | huPackagingCode_1_S0317_020 | gtinPiItemProduct      |
+      | p_2_S0317_020      | true                | createdLU_S0317_020 | huPackagingCode_1_S0317_020 | bPartnerProductGTIN_LU |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -383,12 +403,21 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_S0317_030 | ol_1_S0317_030            | N             |
       | s_s_2_S0317_030 | ol_2_S0317_030            | N             |
+<<<<<<< HEAD
     
       ## set catch-weight values! note that they exceed the weight to be expected from the C_UOM_Conversion
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
       | s_s_1_S0317_030                  | 1.10                       |
       | s_s_2_S0317_030                  | 0.51                       |
+=======
+
+      ## set catch-weight values! note that they exceed the weight to be expected from the C_UOM_Conversion
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
+      | s_s_1_S0317_030                  | 1.10                           |
+      | s_s_2_S0317_030                  | 0.51                           |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
@@ -410,10 +439,17 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | shipmentLine_2_S0317_030  | s_1_S0317_030         | p_1_S0317_030           | 1           | true      | ol_2_S0317_030                |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
+<<<<<<< HEAD
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
       | p_1_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 10       |
       | p_2_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 20       |
       | p_3_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030             | 1234567890123               | 30       |
+=======
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
+      | p_1_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 1         |
+      | p_2_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 2         |
+      | p_3_S0317_030                 | true                | null                   | huPackagingCode_1_S0317_030          | 1234567890123            | 3         |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |

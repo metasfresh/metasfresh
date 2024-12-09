@@ -2,8 +2,15 @@ package de.metas.document;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.util.ISingletonService;
+<<<<<<< HEAD
 import org.compiere.model.I_C_DocType;
 
+=======
+import lombok.NonNull;
+import org.compiere.model.I_C_DocType;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Date;
 
 /**
@@ -14,12 +21,22 @@ import java.util.Date;
  */
 public interface IDocumentSequenceDAO extends ISingletonService
 {
+<<<<<<< HEAD
 	DocumentSequenceInfo retriveDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
 
 	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
 
 	@Deprecated
 	default DocumentSequenceInfo retriveDocumentSequenceInfo(int adSequenceRepoId)
+=======
+	DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull String sequenceName, int adClientId, int adOrgId);
+
+	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
+
+	@Nullable
+	@Deprecated
+	default DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceRepoId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final DocSequenceId adSequenceId = DocSequenceId.ofRepoIdOrNull(adSequenceRepoId);
 		return adSequenceId != null ? retriveDocumentSequenceInfo(adSequenceId) : null;

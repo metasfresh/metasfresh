@@ -1,6 +1,10 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
@@ -14,7 +18,10 @@ import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonSca
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+<<<<<<< HEAD
 import de.metas.util.Services;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -25,13 +32,21 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
 @Component
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssue");
@@ -40,6 +55,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private final ManufacturingJobService manufacturingJobService;
 	private final ProductHazardSymbolService productHazardSymbolService;
 	private final ProductAllergensService productAllergensService;
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public RawMaterialsIssueActivityHandler(
@@ -51,6 +67,9 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		this.productHazardSymbolService = productHazardSymbolService;
 		this.productAllergensService = productAllergensService;
 	}
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -112,7 +131,11 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private JsonRejectReasonsList getJsonRejectReasonsList(final @NonNull JsonOpts jsonOpts)
 	{
+<<<<<<< HEAD
 		return JsonRejectReasonsList.of(adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
+=======
+		return JsonRejectReasonsList.of(adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

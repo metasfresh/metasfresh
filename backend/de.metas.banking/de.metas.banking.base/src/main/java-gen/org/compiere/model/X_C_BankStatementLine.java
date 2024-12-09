@@ -1,10 +1,17 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Model for C_BankStatementLine
  *  @author metasfresh (generated) 
@@ -13,7 +20,11 @@ import javax.annotation.Nullable;
 public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_BankStatementLine, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = 1230132644L;
+=======
+	private static final long serialVersionUID = 1048549002L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_C_BankStatementLine (final Properties ctx, final int C_BankStatementLine_ID, @Nullable final String trxName)
@@ -500,6 +511,21 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setIsUpdateAmountsFromInvoice (final boolean IsUpdateAmountsFromInvoice)
+	{
+		set_Value (COLUMNNAME_IsUpdateAmountsFromInvoice, IsUpdateAmountsFromInvoice);
+	}
+
+	@Override
+	public boolean isUpdateAmountsFromInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateAmountsFromInvoice);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);

@@ -1,12 +1,18 @@
 package de.metas.material.event.receiptschedule;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
@@ -16,6 +22,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-material-event
@@ -71,6 +82,10 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+<<<<<<< HEAD
+=======
+				null, // no old record
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				receiptScheduleId);

@@ -46,6 +46,7 @@ import java.util.Optional;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DocumentFilterParamDescriptor
 {
+<<<<<<< HEAD
 	public static Builder builder()
 	{
 		return new Builder();
@@ -67,11 +68,30 @@ public class DocumentFilterParamDescriptor
 
 	boolean mandatory;
 	Optional<LookupDescriptor> lookupDescriptor;
+=======
+	private static final Logger logger = LogManager.getLogger(DocumentFilterParamDescriptor.class);
+
+	boolean joinAnd;
+	@NonNull String parameterName;
+	@NonNull String fieldName;
+	@NonNull DocumentFieldWidgetType widgetType;
+	@NonNull Class<?> valueClass;
+	@NonNull ITranslatableString displayName;
+	boolean showIncrementDecrementButtons;
+
+	Operator operator;
+	@Nullable Object defaultValue;
+	@Nullable Object defaultValueTo;
+
+	boolean mandatory;
+	@NonNull Optional<LookupDescriptor> lookupDescriptor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
 	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER = new String("@#AD_User_ID@");
+<<<<<<< HEAD
 	Object autoFilterInitialValue;
 
 	BarcodeScannerType barcodeScannerType;
@@ -107,6 +127,48 @@ public class DocumentFilterParamDescriptor
 		autoFilterInitialValue = builder.autoFilterInitialValue;
 
 		barcodeScannerType = builder.barcodeScannerType;
+=======
+	@Nullable Object autoFilterInitialValue;
+
+	@Nullable BarcodeScannerType barcodeScannerType;
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@lombok.Builder(toBuilder = true, builderClassName = "Builder")
+	private DocumentFilterParamDescriptor(
+			final boolean joinAnd,
+			@NonNull final String parameterName,
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final ITranslatableString displayName,
+			final boolean showIncrementDecrementButtons,
+			final Operator operator,
+			@Nullable final Object defaultValue,
+			@Nullable final Object defaultValueTo,
+			final boolean mandatory,
+			@Nullable final Optional<LookupDescriptor> lookupDescriptor,
+			@Nullable final Object autoFilterInitialValue,
+			@Nullable final BarcodeScannerType barcodeScannerType)
+	{
+		Check.assumeNotEmpty(parameterName, "parameterName is not empty");
+		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
+		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
+
+		this.joinAnd = joinAnd;
+		this.parameterName = parameterName;
+		this.fieldName = fieldName;
+		this.widgetType = widgetType;
+		this.displayName = displayName;
+		this.showIncrementDecrementButtons = showIncrementDecrementButtons;
+		this.operator = operator;
+		this.defaultValue = defaultValue;
+		this.defaultValueTo = defaultValueTo;
+		this.mandatory = mandatory;
+		this.lookupDescriptor = lookupDescriptor != null ? lookupDescriptor : Optional.empty();
+		this.autoFilterInitialValue = autoFilterInitialValue;
+		this.barcodeScannerType = barcodeScannerType;
+
+		valueClass = DescriptorsFactoryHelper.getValueClass(this.widgetType, this.lookupDescriptor);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public String getDisplayName(final String adLanguage)
@@ -178,6 +240,7 @@ public class DocumentFilterParamDescriptor
 		return widgetType.isLookup() && AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equals(autoFilterInitialValue);
 	}
 
+<<<<<<< HEAD
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Builder
 	{
@@ -217,11 +280,19 @@ public class DocumentFilterParamDescriptor
 			return this;
 		}
 
+=======
+	public Operator getOperatorOrEqualsIfNull() {return operator != null ? operator : Operator.EQUAL;}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static final class Builder
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public String getFieldName()
 		{
 			return fieldName;
 		}
 
+<<<<<<< HEAD
 		void setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
@@ -233,11 +304,14 @@ public class DocumentFilterParamDescriptor
 			return this;
 		}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
 		}
 
+<<<<<<< HEAD
 		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
 		{
 			this.barcodeScannerType = barcodeScannerType;
@@ -245,20 +319,33 @@ public class DocumentFilterParamDescriptor
 		}
 
 		public Builder setDisplayName(final ITranslatableString displayName)
+=======
+		public Builder displayName(@NonNull final ITranslatableString displayName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.displayName = TranslatableStrings.copyOf(displayName);
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setDisplayName(final String displayName)
+=======
+		public Builder displayName(final String displayName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.displayName = TranslatableStrings.constant(displayName);
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setDisplayName(final AdMessageKey displayName)
 		{
 			return setDisplayName(TranslatableStrings.adMessage(displayName));
+=======
+		public Builder displayName(final AdMessageKey displayName)
+		{
+			return displayName(TranslatableStrings.adMessage(displayName));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		public ITranslatableString getDisplayName()
@@ -266,6 +353,7 @@ public class DocumentFilterParamDescriptor
 			return displayName;
 		}
 
+<<<<<<< HEAD
 		public Builder setOperator(final Operator operator)
 		{
 			Check.assumeNotNull(operator, "Parameter operator is not null");
@@ -286,11 +374,15 @@ public class DocumentFilterParamDescriptor
 		}
 
 		public Builder setLookupDescriptor(@NonNull final Optional<LookupDescriptor> lookupDescriptor)
+=======
+		public Builder lookupDescriptor(@NonNull final Optional<LookupDescriptor> lookupDescriptor)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			this.lookupDescriptor = lookupDescriptor;
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setLookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
 		{
 			return setLookupDescriptor(Optional.ofNullable(lookupDescriptor));
@@ -312,6 +404,11 @@ public class DocumentFilterParamDescriptor
 		{
 			this.autoFilterInitialValue = autoFilterInitialValue;
 			return this;
+=======
+		public Builder lookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
+		{
+			return lookupDescriptor(Optional.ofNullable(lookupDescriptor));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

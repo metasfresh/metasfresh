@@ -8,6 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
  * Other than common (column-)callouts implementers are not called if a specific field is changed, but rather on general
  * user events such as "new record", "delete" etc.
  * <p>
+<<<<<<< HEAD
  *
  * Note:
  * <ul>
@@ -17,11 +18,20 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
  * </ul>
  *
  *
+=======
+ * <p>
+ * Note:
+ * <ul>
+ * <li>there is a method for each type defined in {@link org.compiere.model.StateChangeEvent}.
+ * <li>each new {@link ICalloutRecord} will get a new instance of {@link ITabCallout} so it's safe to have fields in your implementations.
+ * </ul>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public interface ITabCallout
 {
 	ITabCallout NULL = NullTabCallout.instance;
 
+<<<<<<< HEAD
 	void onIgnore(ICalloutRecord calloutRecord);
 
 	/** Note that this method is <b>not</b> fired if a record is cloned. To do something on a record clone, you can register an {@link Interceptor} or a {@code IOnRecordCopiedListener} */
@@ -41,4 +51,39 @@ public interface ITabCallout
 	 * @param calloutRecord
 	 */
 	void onAfterQuery(ICalloutRecord calloutRecord);
+=======
+	default void onIgnore(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	/**
+	 * Note that this method is <b>not</b> fired if a record is cloned. To do something on a record clone, you can register an {@link Interceptor} or a {@code IOnRecordCopiedListener}
+	 */
+	default void onNew(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	default void onSave(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	default void onDelete(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	default void onRefresh(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	default void onRefreshAll(final ICalloutRecord calloutRecord)
+	{
+	}
+
+	/**
+	 * Called after {@link ICalloutRecord} was queried.
+	 */
+	default void onAfterQuery(final ICalloutRecord calloutRecord)
+	{
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

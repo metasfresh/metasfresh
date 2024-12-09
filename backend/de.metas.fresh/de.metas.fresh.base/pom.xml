@@ -210,12 +210,23 @@
 			<artifactId>de.metas.payment.paypal</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		<dependency>
 			<groupId>de.metas.payment.revolut</groupId>
 			<artifactId>de.metas.payment.revolut</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+<<<<<<< HEAD
+=======
+		<dependency>
+			<groupId>de.metas.payment.sumup</groupId>
+			<artifactId>de.metas.payment.sumup</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
@@ -353,6 +364,15 @@
 		</dependency>
 
 		<dependency>
+<<<<<<< HEAD
+=======
+			<groupId>de.metas.pos</groupId>
+			<artifactId>de.metas.pos.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

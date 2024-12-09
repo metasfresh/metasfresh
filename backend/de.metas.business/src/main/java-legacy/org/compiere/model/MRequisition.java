@@ -16,6 +16,29 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.Msg;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.requisition.RequisitionRepository;
+import de.metas.requisition.RequisitionService;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.util.TimeUtil;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -24,6 +47,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import de.metas.common.util.time.SystemTime;
 import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,6 +68,8 @@ import de.metas.requisition.RequisitionService;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Requisition Model
  *
@@ -208,7 +234,11 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		}
 
 		// Std Period open?
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), X_C_DocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), DocBaseType.PurchaseRequisition, getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Add up Amounts
 		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(getM_PriceList_ID()));

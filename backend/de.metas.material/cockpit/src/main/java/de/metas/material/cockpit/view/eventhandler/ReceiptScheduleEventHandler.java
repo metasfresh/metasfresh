@@ -18,6 +18,10 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.receiptschedule.OldReceiptScheduleData;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -30,6 +34,10 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.ZoneId;
 import java.util.Collection;
 
@@ -97,6 +105,7 @@ public class ReceiptScheduleEventHandler
 		
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, timeZone);
+<<<<<<< HEAD
 
 		createAndHandleMainDataEvent(event, identifier);
 
@@ -114,6 +123,27 @@ public class ReceiptScheduleEventHandler
 					"Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
+=======
+		
+		createAndHandleMainDataEvent(event, identifier, timeZone);
+		createAndHandleDetailRequest(event, identifier);
+	}
+	
+	private void createAndHandleMainDataEvent(
+			@NonNull final AbstractReceiptScheduleEvent event,
+			@NonNull final MainDataRecordIdentifier identifier,
+			@NonNull final ZoneId timeZone)
+	{
+		if ((event instanceof ReceiptScheduleUpdatedEvent) 
+				&& event.getOrderedQuantityDelta().signum() == 0
+				&& event.getReservedQuantityDelta().signum() == 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Skipping this ReceiptScheduleUpdatedEvent because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
+			return;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedPurchaseQty(event.getOrderedQuantityDelta())
@@ -121,6 +151,17 @@ public class ReceiptScheduleEventHandler
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+<<<<<<< HEAD
+=======
+
+		final OldReceiptScheduleData oldReceiptScheduleData = event.getOldReceiptScheduleData();
+		if (oldReceiptScheduleData != null)
+		{
+			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldReceiptScheduleData.getOldMaterialDescriptor(), timeZone);
+
+			createAndHandleMainDataRequestForOldValues(oldReceiptScheduleData, oldIdentifier);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void createAndHandleDetailRequest(
@@ -174,4 +215,30 @@ public class ReceiptScheduleEventHandler
 
 		detailRequestHandler.handleInsertDetailRequest(addDetailsRequest.build());
 	}
+<<<<<<< HEAD
+=======
+
+	private void createAndHandleMainDataRequestForOldValues(
+			@NonNull final OldReceiptScheduleData oldReceiptScheduleData,
+			@NonNull final MainDataRecordIdentifier identifier)
+	{
+		final BigDecimal oldOrderedQuantity = oldReceiptScheduleData.getOldOrderedQuantity();
+		final BigDecimal oldReservedQuantity = oldReceiptScheduleData.getOldReservedQuantity();
+
+		if (oldOrderedQuantity.signum() == 0
+				&& oldReservedQuantity.signum() == 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has both oldOrderedQuantityDelta and oldReservedQuantityDelta = zero");
+			return;
+		}
+
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.orderedPurchaseQty(oldOrderedQuantity.negate())
+				.qtySupplyPurchaseOrder(oldReservedQuantity.negate())
+				.build();
+
+		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

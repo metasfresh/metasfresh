@@ -229,6 +229,11 @@ public class AttachmentEntryRepository
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
 	{
+<<<<<<< HEAD
+=======
+		tableAttachmentListenerService.fireBeforeRecordLinked(attachmentEntry);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Set<TableRecordReference> attachmentReferences = new HashSet<>(attachmentEntry.getLinkedRecords());
 
 		// delete superflous

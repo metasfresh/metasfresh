@@ -123,7 +123,11 @@ public class Main
 		}
 
 		throw new RuntimeException("Property '" + name + "' was not set. "
+<<<<<<< HEAD
 										   + "\n Please start JVM with '-D" + name + "=...'" 
+=======
+										   + "\n Please start JVM with '-D" + name + "=...'"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 										   + " OR set environment-variable '" + name + "=...'.");
 	}
 

@@ -1,6 +1,10 @@
 package de.metas.async.model.validator;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.Profiles;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
@@ -16,7 +20,10 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.MFSession;
@@ -26,6 +33,10 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -51,12 +62,19 @@ import java.util.List;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
+<<<<<<< HEAD
  *
+=======
+ * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * NOTE: to prevent data corruption, this validator shall be started as last one because it will also start the queue processors (if running on server).
  * Also to make sure this case does not happen we are using a inital delay (see {@link #getInitDelayMillis()}).
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -73,15 +91,31 @@ public class Main extends AbstractModuleInterceptor
 	{
 		startQueueProcessors();
 
+<<<<<<< HEAD
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage.Table_Name);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Log.Table_Name);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Data import (async support)
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				I_C_Queue_WorkPackage.Table_Name,
+				I_C_Queue_WorkPackage_Log.Table_Name,
+				I_C_Queue_WorkPackage_Param.Table_Name
+		);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void startQueueProcessors()
 	{
 		// task 04585: start queue processors only if we are running on the backend server.
@@ -107,7 +141,11 @@ public class Main extends AbstractModuleInterceptor
 
 	/**
 	 * Gets how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * Mainly we use this delay to make sure everything else is started before the queue processors will start to process.
 	 *
 	 * @return how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
@@ -120,7 +158,11 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected void registerInterceptors(@NonNull final  IModelValidationEngine engine)
+=======
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		engine.addModelValidator(new C_Queue_PackageProcessor());
 		engine.addModelValidator(new C_Queue_Processor());
@@ -128,7 +170,10 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Async_Batch());
 	}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Init the async queue processor service on user login.
 	 */

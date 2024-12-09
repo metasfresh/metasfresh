@@ -200,6 +200,10 @@ class PPOrderIssueServiceProductCommand
 		return bomLineAttributes;
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Quantity getQtyToIssueForOneFinishedGood()
 	{
 		return _qtyToIssueForOneFinishedGood == null
@@ -207,6 +211,10 @@ class PPOrderIssueServiceProductCommand
 				: _qtyToIssueForOneFinishedGood;
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private Quantity computeQtyToIssueForOneFinishedGood()
 	{
 		return ppOrderBOMBL.getQtyCalculationsBOM(getPPOrderRecord())

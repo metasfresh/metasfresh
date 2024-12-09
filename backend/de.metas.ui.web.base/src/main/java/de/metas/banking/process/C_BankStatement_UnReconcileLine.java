@@ -1,12 +1,21 @@
 package de.metas.banking.process;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.banking.BankStatementLineId;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.BankStatementLineId;
@@ -14,6 +23,9 @@ import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+=======
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -25,12 +37,20 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +66,11 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 				.and(() -> checkSingleLineSelectedWhichIsReconciled(context));
 	}
 
+<<<<<<< HEAD
 	private final ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
+=======
+	private ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// there should be a single line selected
 		final Set<TableRecordReference> bankStatemementLineRefs = context.getSelectedIncludedRecords();
@@ -70,6 +94,7 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 	protected String doIt()
 	{
 		final I_C_BankStatement bankStatement = getSelectedBankStatement();
+<<<<<<< HEAD
 		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (!docStatus.isDraftedInProgressOrCompleted())
 		{
@@ -78,6 +103,12 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
 		bankStatementBL.unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
+=======
+		bankStatementBL.assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
+
+		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
+		bankStatementBL.unreconcile(ImmutableList.of(bankStatementLine));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		bankStatementBL.unpost(bankStatement);
 
 		return MSG_OK;

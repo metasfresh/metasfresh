@@ -22,10 +22,21 @@ package de.metas.util;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public interface IColorRepository extends ISingletonService
 {
 	MFColor getColorById(int adColorId);
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	MFColor getColorById(@Nullable ColorId colorId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	ColorId saveFlatColorAndReturnId(String flatColorHexString);
 
 	ColorId getColorIdByName(String name);

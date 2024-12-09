@@ -600,7 +600,11 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 					+ " AND trl.AD_PrintFormatItem_ID = " + get_ID() + ")"
 				+ " AND EXISTS (SELECT * FROM AD_Client "
 					+ "WHERE AD_Client_ID=trl.AD_Client_ID AND IsMultiLingualDocument='Y')";
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql, get_TrxName());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("translations updated #" + no);
 		}
 		

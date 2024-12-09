@@ -1084,7 +1084,11 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("25", "25", "0", "0"));
 		
 		// when
+<<<<<<< HEAD
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.create(10, helper.uomKgId));
+=======
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.of(10, helper.uomKgId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// when
 		assertTradingUnitsWeightExpectations(
@@ -1111,7 +1115,11 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("7", "7", "0", "0"));
 
 		// when
+<<<<<<< HEAD
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.create(5, helper.uomKgId));
+=======
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.of(5, helper.uomKgId));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// when
 		assertTradingUnitsWeightExpectations(

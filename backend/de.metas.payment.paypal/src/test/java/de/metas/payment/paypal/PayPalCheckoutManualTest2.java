@@ -1,5 +1,6 @@
 package de.metas.payment.paypal;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -16,15 +17,22 @@ import org.compiere.model.I_R_MailText;
 
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
+<<<<<<< HEAD
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
+=======
+import de.metas.email.templates.MailTemplateId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -48,6 +56,22 @@ import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_R_MailText;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -129,9 +153,13 @@ public class PayPalCheckoutManualTest2
 		final MoneyService moneyService = new MoneyService(
 				new CurrencyRepository());
 
+<<<<<<< HEAD
 		final MailService mailService = new MailService(
 				new MailboxRepository(),
 				new MailTemplateRepository());
+=======
+		final MailService mailService = MailService.newInstanceForUnitTesting();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final PaymentReservationRepository paymentReservationRepo = new PaymentReservationRepository();
 		final PaymentReservationCaptureRepository paymentReservationCaptureRepo = new PaymentReservationCaptureRepository();
@@ -194,7 +222,11 @@ public class PayPalCheckoutManualTest2
 					.orgId(orgId)
 					.amount(money(100))
 					.payerContactId(createPayerBPartnerContact())
+<<<<<<< HEAD
 					.payerEmail(EMailAddress.ofNullableString("from@example.com"))
+=======
+					.payerEmail(EMailAddress.ofString("from@example.com"))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.salesOrderId(salesOrderId)
 					.dateTrx(LocalDate.now())
 					.paymentRule(PaymentRule.PayPal)

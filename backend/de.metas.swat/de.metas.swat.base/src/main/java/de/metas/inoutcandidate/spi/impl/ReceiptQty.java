@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -31,6 +32,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -40,6 +43,16 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Quantity and Quality, i.e.
@@ -138,7 +151,11 @@ public final class ReceiptQty
 				.divide(Env.ONEHUNDRED, INTERNAL_PRECISION, QtyWithIssues_RoundingMode);
 
 		final StockQtyAndUOMQty qtyWithIssuesToAdd = StockQtyAndUOMQtys.createConvert(
+<<<<<<< HEAD
 				Quantitys.create(stockQtyWithIssuesToAdd, qty.getUomId()),
+=======
+				Quantitys.of(stockQtyWithIssuesToAdd, qty.getUomId()),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				productId,
 				(Quantity)null/* uomQty */
 		);

@@ -2,6 +2,7 @@ package de.metas.ordercandidate.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.async.AsyncBatchId;
@@ -14,11 +15,27 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+=======
+import com.google.common.collect.ListMultimap;
+import de.metas.async.AsyncBatchId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
+import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
+import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
+import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.process.PInstanceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+<<<<<<< HEAD
 import de.metas.util.Services;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,39 +88,63 @@ public class OLCandsProcessorExecutor
 
 	private final IOLCandListener olCandListeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
+<<<<<<< HEAD
+=======
+	private final OLCandProcessingHelper olCandProcessingHelper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final int olCandProcessorId;
 	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
+<<<<<<< HEAD
 	private final InputDataSourceId processorDataDestinationId;
 	private final AsyncBatchId asyncBatchId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 
 	private final OLCandSource candidatesSource;
+=======
+	private final PInstanceId selectionId;
+	private final AsyncBatchId asyncBatchId;
+	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private OLCandsProcessorExecutor(
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
+<<<<<<< HEAD
 			@NonNull final OLCandSource candidatesSource,
+=======
+			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
+			@NonNull final PInstanceId selectionId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
+<<<<<<< HEAD
+=======
+		this.olCandProcessingHelper = olCandProcessingHelper;
+
+		this.selectionId = selectionId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.asyncBatchId = asyncBatchId;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
+<<<<<<< HEAD
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		this.candidatesSource = candidatesSource;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void process()
@@ -114,11 +155,16 @@ public class OLCandsProcessorExecutor
 
 		//
 		// Get the ol-candidates to process
+<<<<<<< HEAD
 		final List<OLCand> candidates = candidatesSource.streamOLCands()
 				.filter(this::isEligibleOrLog)
 				.map(this::prepareOLCandBeforeProcessing)
 				.sorted(aggregationInfo.getOrderingComparator())
 				.collect(ImmutableList.toImmutableList());
+=======
+		final List<OLCand> candidates = getEligibleOLCand();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		loggable.addLog("Processing {} order line candidates", candidates.size());
 		if (candidates.isEmpty())
 		{
@@ -178,7 +224,11 @@ public class OLCandsProcessorExecutor
 				final ArrayKey groupingKey = toProcess.get(olCandId);
 				for (final OLCand candOfGroup : grouping.get(groupingKey))
 				{
+<<<<<<< HEAD
 					if (currentOrder != null && isOrderSplit(candOfGroup, previousCandidate))
+=======
+					if (currentOrder != null && OLCandProcessingHelper.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					{
 						currentOrder.completeOrDelete();
 						currentOrder = null;
@@ -211,9 +261,15 @@ public class OLCandsProcessorExecutor
 
 	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate)
 	{
+<<<<<<< HEAD
 		if (candidate.getDateDoc() == null)
 		{
 			candidate.setDateDoc(defaultDateDoc);
+=======
+		if (candidate.getDateOrdered() == null)
+		{
+			candidate.setDateOrdered(defaultDateOrdered);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return candidate;
@@ -245,7 +301,11 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
 				//
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
+<<<<<<< HEAD
 				|| !Objects.equals(previousCandidate.getDateDoc(), candidate.getDateDoc())
+=======
+				|| !Objects.equals(previousCandidate.getDateOrdered(), candidate.getDateOrdered())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
@@ -333,6 +393,7 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
+<<<<<<< HEAD
 	private boolean isEligibleOrLog(final OLCand cand)
 	{
 		if (cand.isProcessed())
@@ -375,5 +436,18 @@ public class OLCandsProcessorExecutor
 		}
 
 		return true;
+=======
+	@NonNull
+	private List<OLCand> getEligibleOLCand()
+	{
+		final GetEligibleOLCandRequest request = GetEligibleOLCandRequest.builder()
+				.aggregationInfo(aggregationInfo)
+				.orderDefaults(orderDefaults)
+				.selection(selectionId)
+				.asyncBatchId(asyncBatchId)
+				.build();
+
+		return olCandProcessingHelper.getOLCandsForProcessing(request);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

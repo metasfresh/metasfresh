@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.eevolution.process;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -40,12 +41,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Query;
+import org.eevolution.model.I_PP_Product_BOMLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,6 +68,9 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 
 /**
@@ -88,12 +103,21 @@ public class ComponentChange extends JavaProcess
 	{
 		int morepara = 0;
 		
+<<<<<<< HEAD
 		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 
 			if (para.getParameter() == null)
 				;
+=======
+		for (final ProcessInfoParameter para : getParametersAsArray())
+		{
+			final String name = para.getParameterName();
+
+			if (para.getParameter() == null)
+				return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			else if (name.equals("M_Product_ID") && morepara == 0)
 			{    
 				p_M_Product_ID = para.getParameterAsInt();
@@ -124,8 +148,13 @@ public class ComponentChange extends JavaProcess
 			throw new FillMandatoryException("Action");
 		}
 		
+<<<<<<< HEAD
 		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
+=======
+		final List<Object> params = new ArrayList<>();
+		final StringBuffer whereClause = new StringBuffer();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		
 		whereClause.append(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID+"=?");
 		params.add(p_M_Product_ID);
@@ -141,10 +170,17 @@ public class ComponentChange extends JavaProcess
 			params.add(p_ValidFrom);
 		}
 
+<<<<<<< HEAD
 		List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
 													.setParameters(params)
 													.list(I_PP_Product_BOMLine.class);
 		for(I_PP_Product_BOMLine bomline : components) 
+=======
+		final List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
+													.setParameters(params)
+													.list(I_PP_Product_BOMLine.class);
+		for(final I_PP_Product_BOMLine bomline : components)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{		
 			if (p_Action.equals(ACTION_Add))
 			{
@@ -172,14 +208,24 @@ public class ComponentChange extends JavaProcess
 			{
 				throw new LiberoException("Action not supported - "+p_Action);
 			}
+<<<<<<< HEAD
 			addLog(Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
+=======
+			addLog(ADReferenceService.get().retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}                    
 		return "@OK@";
 	}	//	doIt
 
+<<<<<<< HEAD
 	protected void actionAdd(I_PP_Product_BOMLine bomline, int line)
 	{
 		I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
+=======
+	protected void actionAdd(final I_PP_Product_BOMLine bomline, final int line)
+	{
+		final I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.setFrom(bomline)
 				.copyToNew(I_PP_Product_BOMLine.class);
 		newbomline.setIsActive(true);
@@ -195,14 +241,22 @@ public class ComponentChange extends JavaProcess
 		saveRecord(newbomline);
 	}
 	
+<<<<<<< HEAD
 	protected void actionDeactivate(I_PP_Product_BOMLine bomline)
+=======
+	protected void actionDeactivate(final I_PP_Product_BOMLine bomline)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		bomline.setIsActive(false);
 		bomline.setM_ChangeNotice_ID(p_M_ChangeNotice_ID);
 		saveRecord(bomline);
 	}
 
+<<<<<<< HEAD
 	protected void actionExpire(I_PP_Product_BOMLine bomline)
+=======
+	protected void actionExpire(final I_PP_Product_BOMLine bomline)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		bomline.setIsActive(true);
 		bomline.setValidTo(bomline.getUpdated());

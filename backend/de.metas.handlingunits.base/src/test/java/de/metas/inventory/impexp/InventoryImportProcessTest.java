@@ -1,7 +1,15 @@
 package de.metas.inventory.impexp;
 
+<<<<<<< HEAD
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+=======
+import de.metas.acct.GLCategoryId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -9,7 +17,10 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+<<<<<<< HEAD
 import de.metas.inventory.InventoryDocSubType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -32,7 +43,10 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -49,7 +63,11 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -259,9 +277,16 @@ public class InventoryImportProcessTest
 			return docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 					.ctx(Env.getCtx())
 					.name("Inventory DocType for " + orgId)
+<<<<<<< HEAD
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
 					.adOrgId(orgId.getRepoId())
+=======
+					.docBaseType(DocBaseType.MaterialPhysicalInventory)
+					.docSubType(DocSubType.AggregatedHUInventory)
+					.adOrgId(orgId.getRepoId())
+					.glCategoryId(GLCategoryId.ofRepoId(123))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					.build());
 		}
 

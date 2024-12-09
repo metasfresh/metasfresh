@@ -1,5 +1,9 @@
 import React from 'react';
+<<<<<<< HEAD
 import { shallow, mount } from 'enzyme';
+=======
+import { shallow } from 'enzyme';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
@@ -15,7 +19,11 @@ import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
+<<<<<<< HEAD
   const res = merge(
+=======
+  return merge(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     {
       appHandler: {
         ...appHandlerState,
@@ -26,8 +34,11 @@ const createStore = function(state = {}) {
     },
     state
   );
+<<<<<<< HEAD
 
   return res;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 };
 
 const props = {

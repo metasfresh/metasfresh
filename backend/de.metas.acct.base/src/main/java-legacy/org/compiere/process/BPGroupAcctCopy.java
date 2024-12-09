@@ -67,7 +67,11 @@ public class BPGroupAcctCopy extends JavaProcess
 					+ "), Updated=now(), UpdatedBy=0 "
 					+ "WHERE ca.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
 					+ " AND EXISTS (SELECT 1 FROM C_BPartner p WHERE p.C_BPartner_ID=ca.C_BPartner_ID AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId() + ")");
+<<<<<<< HEAD
 			final int updated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			final int updated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, BigDecimal.valueOf(updated), "@Updated@ @C_BPartner_ID@ @IsCustomer@");
 			updatedTotal += updated;
 		}
@@ -90,7 +94,11 @@ public class BPGroupAcctCopy extends JavaProcess
 					+ " WHERE 1=1"
 					+ " AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId()
 					+ " AND NOT EXISTS (SELECT 1 FROM C_BP_Customer_Acct ca WHERE ca.C_BPartner_ID=p.C_BPartner_ID AND ca.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
+<<<<<<< HEAD
 			final int created = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			final int created = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, BigDecimal.valueOf(created), "@Created@ @C_BPartner_ID@ @IsCustomer@");
 			createdTotal += created;
 		}
@@ -107,7 +115,11 @@ public class BPGroupAcctCopy extends JavaProcess
 					+ "), Updated=now(), UpdatedBy=0 "
 					+ " WHERE va.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
 					+ " AND EXISTS (SELECT 1 FROM C_BPartner p WHERE p.C_BPartner_ID=va.C_BPartner_ID AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId() + ")");
+<<<<<<< HEAD
 			final int updated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			final int updated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, BigDecimal.valueOf(updated), "@Updated@ @C_BPartner_ID@ @IsVendor@");
 			updatedTotal += updated;
 		}
@@ -130,7 +142,11 @@ public class BPGroupAcctCopy extends JavaProcess
 					+ " WHERE 1=1"
 					+ " AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId()
 					+ " AND NOT EXISTS (SELECT 1 FROM C_BP_Vendor_Acct va WHERE va.C_BPartner_ID=p.C_BPartner_ID AND va.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
+<<<<<<< HEAD
 			final int created = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+=======
+			final int created = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			addLog(0, null, BigDecimal.valueOf(created), "@Created@ @C_BPartner_ID@ @IsVendor@");
 			createdTotal += created;
 		}

@@ -49,18 +49,31 @@ import java.math.BigDecimal;
 @UtilityClass
 public class Quantitys
 {
+<<<<<<< HEAD
 	public Quantity create(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
+=======
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		return Quantity.of(qty, uomDao.getByX12DE355(x12DE355));
 	}
 
+<<<<<<< HEAD
 	public Quantity create(@NonNull final String qty, @NonNull final UomId uomId)
 	{
 		return create(new BigDecimal(qty), uomId);
 	}
 
 	public Quantity create(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
+=======
+	public Quantity of(@NonNull final String qty, @NonNull final UomId uomId)
+	{
+		return of(new BigDecimal(qty), uomId);
+	}
+
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
@@ -68,16 +81,28 @@ public class Quantitys
 		return Quantity.of(qty, uomRecord);
 	}
 
+<<<<<<< HEAD
 	public Quantity create(
 			@NonNull final String qty, @NonNull final UomId uomId,
 			@NonNull final String sourceQty, @NonNull final UomId sourceUomId)
 	{
 		return create(
+=======
+	public Quantity of(
+			@NonNull final String qty, @NonNull final UomId uomId,
+			@NonNull final String sourceQty, @NonNull final UomId sourceUomId)
+	{
+		return of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new BigDecimal(qty), uomId,
 				new BigDecimal(sourceQty), sourceUomId);
 	}
 
+<<<<<<< HEAD
 	public Quantity create(
+=======
+	public Quantity of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final BigDecimal qty, @NonNull final UomId uomId,
 			@NonNull final BigDecimal sourceQty, @NonNull final UomId sourceUomId)
 	{
@@ -88,7 +113,11 @@ public class Quantitys
 		return new Quantity(qty, uomRecord, sourceQty, sourceUomRecord);
 	}
 
+<<<<<<< HEAD
 	public Quantity createZero(@NonNull final UomId uomId)
+=======
+	public Quantity zero(@NonNull final UomId uomId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
@@ -104,7 +133,11 @@ public class Quantitys
 		return Quantity.of(1, uomRecord);
 	}
 
+<<<<<<< HEAD
 	public Quantity createZero(@NonNull final ProductId productId)
+=======
+	public Quantity zero(@NonNull final ProductId productId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM stockUomRecord = productBL.getStockUOM(productId);
@@ -112,15 +145,25 @@ public class Quantitys
 		return Quantity.zero(stockUomRecord);
 	}
 
+<<<<<<< HEAD
 	public Quantity create(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId)
 	{
 		return create(qtyInStockUOM, null/* nonStockUomId */, productId);
+=======
+	public Quantity of(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId)
+	{
+		return of(qtyInStockUOM, null/* nonStockUomId */, productId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * @param nonStockUomId optional; if not {@code null}, then {@code qtyInUOM} is also converted to the product's stock UOM.
 	 */
+<<<<<<< HEAD
 	public Quantity create(
+=======
+	public Quantity of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final BigDecimal qty,
 			@Nullable final UomId nonStockUomId,
 			@NonNull final ProductId productId)
@@ -182,12 +225,20 @@ public class Quantitys
 			@NonNull final Quantity minuend,
 			@NonNull final Quantity subtrahend)
 	{
+<<<<<<< HEAD
 		final Quantity subtrahendConverted = create(subtrahend, conversionCtx, minuend.getUomId());
+=======
+		final Quantity subtrahendConverted = of(subtrahend, conversionCtx, minuend.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return minuend.subtract(subtrahendConverted);
 	}
 
+<<<<<<< HEAD
 	public Quantity create(
+=======
+	public Quantity of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final Quantity qty,
 			@NonNull final UOMConversionContext conversionCtx,
 			@NonNull final UomId targetUomId)
@@ -197,9 +248,15 @@ public class Quantitys
 		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
+<<<<<<< HEAD
 	public Quantity create(final int qty, @NonNull final UomId repoId)
 	{
 		return create(BigDecimal.valueOf(qty), repoId);
+=======
+	public Quantity of(final int qty, @NonNull final UomId repoId)
+	{
+		return of(BigDecimal.valueOf(qty), repoId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Nullable
@@ -240,7 +297,11 @@ public class Quantitys
 				sourceQtyStr = qtyStr;
 				sourceUomRepoId = uomRepoId;
 			}
+<<<<<<< HEAD
 			return Quantitys.create(
+=======
+			return Quantitys.of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					new BigDecimal(qtyStr), UomId.ofRepoId(uomRepoId),
 					new BigDecimal(sourceQtyStr), UomId.ofRepoId(sourceUomRepoId));
 		}

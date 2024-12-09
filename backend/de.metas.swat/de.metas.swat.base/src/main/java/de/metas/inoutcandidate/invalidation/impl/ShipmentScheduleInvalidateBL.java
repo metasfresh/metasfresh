@@ -206,7 +206,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
 		notifySegmentChangedForShipmentSchedule(shipmentSchedule);
 	}

@@ -47,6 +47,10 @@ public class AddQtyToHURequest
 	ImmutableList<HuId> sourceHUIds;
 
 	boolean allowOverDelivery;
+<<<<<<< HEAD
+=======
+	boolean isForbidAggCUsForDifferentOrders;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private AddQtyToHURequest(
@@ -55,7 +59,12 @@ public class AddQtyToHURequest
 			@NonNull final PickingSlotId pickingSlotId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final ImmutableList<HuId> sourceHUIds,
+<<<<<<< HEAD
 			final boolean allowOverDelivery)
+=======
+			final boolean allowOverDelivery,
+			final boolean isForbidAggCUsForDifferentOrders)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (qtyToPack.signum() <= 0)
 		{
@@ -67,6 +76,10 @@ public class AddQtyToHURequest
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.allowOverDelivery = allowOverDelivery;
+<<<<<<< HEAD
+=======
+		this.isForbidAggCUsForDifferentOrders = isForbidAggCUsForDifferentOrders;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.sourceHUIds = sourceHUIds;
 	}
 

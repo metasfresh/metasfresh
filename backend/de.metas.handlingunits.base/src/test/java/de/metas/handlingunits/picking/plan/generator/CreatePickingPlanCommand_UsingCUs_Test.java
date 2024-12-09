@@ -1,5 +1,10 @@
 package de.metas.handlingunits.picking.plan.generator;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
@@ -23,30 +28,43 @@ import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+<<<<<<< HEAD
 import de.metas.test.SnapshotFunctionFactory;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+<<<<<<< HEAD
 import org.adempiere.test.AdempiereTestHelper;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+<<<<<<< HEAD
 import org.junit.jupiter.api.BeforeAll;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
 @ExtendWith(AdempiereTestWatcher.class)
+=======
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class CreatePickingPlanCommand_UsingCUs_Test
 {
 	//
@@ -65,8 +83,12 @@ class CreatePickingPlanCommand_UsingCUs_Test
 	private final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(2);
 	private final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(300, 301);
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+=======
+	@SuppressWarnings("unused") private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -163,6 +185,10 @@ class CreatePickingPlanCommand_UsingCUs_Test
 		System.out.println("PLAN:\n" + Joiner.on("\n").join(plan.getLines()));
 		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 
+<<<<<<< HEAD
 		expect(plan).toMatchSnapshot();
+=======
+		expect.toMatchSnapshot(plan);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

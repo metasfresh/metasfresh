@@ -20,6 +20,10 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -326,7 +330,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final String sql = "UPDATE C_AllocationHdr SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_AllocationHdr_ID=" + getC_AllocationHdr_ID();
+<<<<<<< HEAD
 		final int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		log.debug(processed + " - #" + no);
 	}	// setProcessed
@@ -364,7 +372,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 		if (isPosted())
 		{
+<<<<<<< HEAD
 			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+=======
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		}
@@ -441,7 +453,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Std Period open?
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.PaymentAllocation, getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		MAllocationLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
@@ -880,7 +896,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Can we delete posting
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// Set Inactive
 		setIsActive(false);

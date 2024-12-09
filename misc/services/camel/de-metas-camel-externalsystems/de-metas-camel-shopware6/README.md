@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Current data mapping
 
 ****
@@ -7,6 +8,9 @@
 * `Order` - pulled via the search endpoint `api/v3/search/order/`
 
 ## Values computed in metasfresh
+=======
+## Values computed in metasfresh when pulling data from Shopware6
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 computed from the following parameters set on window `541116 - ExternalSystem_Config_Shopware6`
 
@@ -14,8 +18,51 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
 * `JsonExternalSystemRequest.parameters.ClientSecret`
 * `JsonExternalSystemRequest.parameters.BasePath`
 * `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID`
+<<<<<<< HEAD
 * `JsonExternalSystemRequest.parameters.JSONPathEmail`
 * `JsonExternalSystemRequest.parameters.JSONPathConstantSalesRepID`
+=======
+  * when importing Shopware documents that contain an `address`, the system will look under the `address` object at the given JSON path to identify the value for the Shopware's address identifier as `shopwareLocationIdentifier`
+  * currently, there are two documents pulled from shopware that contain `addresses`:
+    * `orders`
+      * `shippingAddress` - pulled from `api/order/{{Order.id}}/deliveries`
+        * in this case, the `shopwareLocationIdentifier` info is located at path `data/shippingOrderAddress/customFields/originalAddressId` 
+      * `billingAddress` - pulled from `api/order-address/{{Order.billingAddressId}}`      
+        * in this case, the `shopwareLocationIdentifier` info is located at path `data/customFields/originalAddressId`
+    * `customers`
+      * `defaultShippingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultShippingAddressId}}`
+      * `defaultBillingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultBillingAddressId}}`
+        * for this scenario, currently there is no `shopwareLocationIdentifier` provided
+  * even though the `address` data is located at different paths, the system is able to use the same `JSONPathConstantBPartnerLocationID` for locating the `shopwareLocationIdentifier` as it searches within the Address info. See example:
+    * Given `shopwareLocationIdentifier` is located at `data/shippingOrderAddress/customFields/originalAddressId` on `GET` `api/order/{{Order.id}}/deliveries` response
+    * And `shopwareLocationIdentifier` is located at `data/customFields/originalAddressId` on `GET` `api/order-address/{{Order.billingAddressId}}` response
+    * Then a valid `JSONPathConstantBPartnerLocationID` would be `customFields/originalAddressId`
+* `JsonExternalSystemRequest.parameters.JSONPathEmail`
+  * when importing Shopware documents that contains an `address`, the system will look under the `address` object at the given JSON path to identify the value for the Shopware's address email as `shopwareLocationEmail`
+  * currently, there are two documents pulled from shopware that contain `addresses`:
+    * `orders`
+      * `shippingAddress` - pulled from `api/order/{{Order.id}}/deliveries`
+        * in this case, the `shopwareLocationEmail` info is located at path `data/shippingOrderAddress/customFields/deliveryNotificationEmailAddress`
+      * `billingAddress` - pulled from `api/order-address/{{Order.billingAddressId}}`
+        * in this case, the `shopwareLocationEmail` info is located at path `data/customFields/deliveryNotificationEmailAddress`
+    * `customers`
+      * `defaultShippingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultShippingAddressId}}`
+      * `defaultBillingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultBillingAddressId}}`
+        * for this scenario, currently there is no `shopwareLocationEmail` provided
+  * even though, the `address` data is located at different paths, the system is able to use the same `JSONPathEmail` for locating the `shopwareLocationEmail` as it searches within the Address info. see example:
+    * Given `shopwareLocationEmail` is located at `data/shippingOrderAddress/customFields/deliveryNotificationEmailAddress` on `GET` `api/order/{{Order.id}}/deliveries` response
+    * And `shopwareLocationEmail` is located at `data/customFields/deliveryNotificationEmailAddress` on `GET` `api/order-address/{{Order.billingAddressId}}` response
+    * Then a valid `JSONPathEmail` would be `customFields/deliveryNotificationEmailAddress`
+* `JsonExternalSystemRequest.parameters.JSONPathSalesRepID` 
+  * when importing Shopware documents that at the given JSON path contains a `salesPartnerCode` for a given `C_BPartner` from metasfresh
+  * currently, there one document pulled from shopware that contain `salesPartnerCode`:
+    * `orders`
+      * pulled from `api/search/order/`
+      * in this case, the `salesPartnerCode` info is located at path `data/customFields/mykey_partner`
+  * see example:
+    * Given `salesPartnerCode` is located at `data/customFields/mykey_partner` on `POST` `api/search/order/` response
+    * Then a valid `JSONPathSalesRepID` would be `customFields/mykey_partner`
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 * `JsonExternalSystemRequest.parameters.UpdatedAfterOverride`
 * `JsonExternalSystemRequest.parameters.UpdatedAfter`
 * `JsonExternalSystemRequest.parameters.M_FreightCost_NormalVAT_Product_ID`
@@ -25,6 +72,37 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
 * `JsonExternalSystemRequest.parameters.TargetPriceListId`
 * `JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded`
 * `JsonExternalSystemRequest.parameters.PriceListCurrencyCode`
+<<<<<<< HEAD
+=======
+* `JsonExternalSystemRequest.parameters.JSONPathMetasfreshID`
+  * when importing Shopware documents that contains a `customer`, the system will look under the `customer` object at the given JSON path to identify the value for metasfresh ID (C_BPartner_ID)
+  * currently, there are two documents pulled from shopware that contain customers:
+    * `orders`
+      * pulled from `api/search/order/`
+      * in this case, the `customer` info is located at path `data/orderCustomer`
+    * `customers`
+      * pulled from `api/search/customer`
+      * in this case, the `customer` info is located directly at path `data`
+  * even though, the customer data is located at different paths, the system is able to use the same `JSONPathMetasfreshID` for locating the `metasfreshId` as it searches within the customer info. see example:
+    * Given `metasfreshId` is located at `data/orderCustomer/customFields/metasfreshId` on `POST` `api/search/order/` response
+    * And `metasfreshId` is located at `data/customFields/metasfreshId` on `POST` `api/search/customer` response
+    * Then a valid `JSONPathMetasfreshID` would be `customFields/metasfreshId`
+  
+* `JsonExternalSystemRequest.parameters.JSONPathShopwareID`
+  * when importing Shopware documents that contains a `customer`, the system will look under the `customer` object at the given JSON path to identify the Shopware's identifier
+  * currently, there are two documents pulled from shopware that contain customers:
+    * `orders`
+      * pulled from `api/search/order/`
+      * in this case, the `customer` info is located at path `data/orderCustomer`
+    * `customers`
+      * pulled from `api/search/customer`
+      * in this case, the `customer` info is located directly at path `data`
+  * even though, the customer data is located at different paths, the system is able to use the same `JSONPathShopwareID` for locating the `shopwareId` as it searches within the customer info. see example:
+    * Given `shopwareId` is located at `data/orderCustomer/customFields/someCustomId` on `POST` `api/search/order/` response
+    * And `shopwareId` is located at `data/customFields/someCustomId` on `POST` `api/search/customer` response
+    * Then a valid `JSONPathShopwareID` would be `customFields/someCustomId`
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 * `JsonExternalSystemRequest.parameters.JsonExternalSystemShopware6ConfigMappings`
     * `JsonExternalSystemShopware6ConfigMappings.seqNo`
     * `JsonExternalSystemShopware6ConfigMappings.docTypeOrder`
@@ -39,12 +117,29 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
     * `JsonExternalSystemShopware6ConfigMappings.bpartnerIdJSONPath`
     * `JsonExternalSystemShopware6ConfigMappings.bpartnerLookup`
 
+<<<<<<< HEAD
 ## Shopware6 => metasfresh BPartners
+=======
+## Workflows implemented to pull values from Shopware6
+
+* `Order` - pulled via the search endpoint `api/search/order/`
+* `Product` - pulled via the search endpoint `api/search/product`
+* `Customer` - pulled via the search endpoint `api/search/customer`
+
+# Current data mapping
+
+---
+
+## `Order` workflow - pulled via the search endpoint `api/search/order/`
+
+### Shopware6 => metasfresh BPartners
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 we need to invoke the endpoint `api/v2/bpartner`
 
 #### 1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
 
+<<<<<<< HEAD
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 Order.OrderCustomer.FirstName + " " + Order.OrderCustomer.LastName | `Name` | N | JsonRequestBPartner.Name | |
@@ -55,6 +150,26 @@ JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | Y
 JsonExternalSystemRequest.orgCode | `ad_org_id` | N | JsonRequestComposite.orgCode | orgId computed from orgCode |
 Order.effectiveCustomerId | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId |
 --- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | JsonExternalSystemShopware6ConfigMappings.bpartnerSyncAdvice if available, else CREATE_OR_MERGE |
+=======
+1.1. All the data from `Order.OrderCustomer` is mapped to `JsonOrderCustomer`
+
+1.1. `JsonCustomerGroup` - the information is pulled via `api/customer/{{JsonOrderCustomer.customerId}}/group`
+1.2. `computedCustomerId` - computed from `JsonExternalSystemRequest.parameters.JSONPathMetasfreshID`, if not present it will look for `JsonExternalSystemRequest.parameters.JSONPathShopwareID`, if not present it will return `JsonOrderCustomer.customerId`
+
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonOrderCustomer.FirstName + " " + JsonOrderCustomer.LastName | `Name` | N | JsonRequestBPartner.Name | |
+JsonOrderCustomer.company | `CompanyName` | N | JsonRequestBPartner.companyName | |
+JsonOrderCustomer.customerNumber | `Value` | N | JsonRequestBPartner.code | Code of the bPartner in question "ext-Shopware6-{{customerNumber}}" |
+---- | `isCustomer` | N | JsonRequestBPartner.customer | always true |
+JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | Y | JsonRequestBPartner.syncAdvise | |
+JsonExternalSystemRequest.orgCode | `ad_org_id` | N | JsonRequestComposite.orgCode | orgId computed from orgCode |
+JsonOrderCustomer.customerId | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | `computedCustomerId` |
+---- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | JsonExternalSystemShopware6ConfigMappings.bpartnerSyncAdvice if available, else CREATE_OR_MERGE |
+JsonExternalSystemRequest.parameters.TargetPriceListId | `M_PricingSystem_ID` | N | JsonRequestBPartner.priceListId | `M_PricingSystem_ID` is computed from the given `JsonRequestBPartner.priceListId` as `M_PriceList.M_PricingSystem_ID` |
+---- | `C_BP_Group_ID` | N | JsonRequestBPartner.group | JsonCustomerGroup.name (see 1.1). The system looks for an existing `C_BP_Group` having `C_BP_Group.Name` the same as `JsonRequestBPartner.group` otherwise a new `C_BP_Group` is created. Then the `C_BP_Group_ID` is set on `C_BPartner`|
+JsonOrderCustomer.vatIds | `VATaxID` | N | JsonRequestBPartner.vatId | |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 ---
 
@@ -64,24 +179,39 @@ Note that an order-contact is not send to metasfresh in every case (depends on c
 
 | Shopware                                                                      | metasfresh-column         | mandatory in mf | metasfresh-json                                | note                                                                   |
 |-------------------------------------------------------------------------------|---------------------------|-----------------|------------------------------------------------|------------------------------------------------------------------------|
+<<<<<<< HEAD
 | Order.firstName                                                               | `firstName`               | N               | JsonRequestContact.firstName                   |                                                                        |
 | Order.lastName                                                                | `lastName`                | N               | JsonRequestContact.lastName                    |                                                                        |
 | Order.email                                                                   | `email`                   | N               | JsonRequestContact.email                       |                                                                        |
+=======
+| JsonOrderCustomer.firstName                                                               | `firstName`               | N               | JsonRequestContact.firstName                   |                                                                        |
+| JsonOrderCustomer.lastName                                                                | `lastName`                | N               | JsonRequestContact.lastName                    |                                                                        |
+| JsonOrderCustomer.email                                                                   | `email`                   | N               | JsonRequestContact.email                       |                                                                        |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 | ----                                                                          | `isbilltocontact_default` | Y               | JsonRequestContact.billToDefault               | always true                                                            | 
 | ----                                                                          | `isshiptocontact_default` | Y               | JsonRequestContact.shipToDefault               | always true                                                            | 
 | JsonExternalSystemShopware6ConfigMappings.mappings.invoiceEmailEnabled        | `IsInvoiceEmailEnabled`   | N               | JsonRequestContact.invoiceEmailEnabled         |                                                                        |
 | JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ----                      | N               | JsonRequestContactUpsert.syncAdvise            |                                                                        |
+<<<<<<< HEAD
 | Order.effectiveCustomerId                                                     | `AD_User_ID`              | Y               | JsonRequestContactUpsertItem.contactIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId |
+=======
+| JsonOrderCustomer.customerId                                                | `AD_User_ID`              | Y               | JsonRequestContactUpsertItem.contactIdentifier | computed from `JsonExternalSystemRequest.parameters.JSONPathShopwareID` or else from `JsonOrderCustomer.CustomerId`|
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 ---
 
 #### 3. BPartnerLocation
 
+<<<<<<< HEAD
 3.1. For *delivery*, the information is pulled via the deliveries endpoint `api/v3/order/{{Order.id}}/deliveries`
+=======
+3.1. For *delivery*, the information is pulled via the deliveries endpoint `api/order/{{Order.id}}/deliveries`
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 * if more than one delivery is returned, the address is pulled from the last one, and a warning message is sent in metas
 * note: path to shipping address: `data/shippingOrderAddress`
 
+<<<<<<< HEAD
 3.2. For *billing*, the information is pulled from the endpoint: `api/v3/order-address/{{Order.billingAddressId}}` using the `Order.billingAddressId`
 
 3.3 `OrderAddressDetails` - computed for both delivery and shipping address and mapped to metas POJOs
@@ -89,6 +219,16 @@ Note that an order-contact is not send to metasfresh in every case (depends on c
 * `JsonOrderAddress` mapping for a shopware address (billing or shipping)
 * `customId` custom identifier of the shopware address
 * `customEmail` custom email of the shopware address
+=======
+3.2. For *billing*, the information is pulled from the endpoint: `api/order-address/{{Order.billingAddressId}}` using the `Order.billingAddressId`
+
+3.3 `AddressDetail` - computed for both delivery and shipping address and mapped to metas POJOs
+
+* `JsonAddress` mapping for a shopware address (billing or shipping)
+* `customShopwareId` shopware identifier found at given path `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID`
+* `customMetasfreshId` metasfresh id found at given path `/customFields/metasfreshLocationId`
+* `customEmail` custom email of the shopware address computed from `JsonExternalSystemRequest.parameters.JSONPathEmail`
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 3.4 `JsonSalutation` - the information is pulled via the salutation endpoint `api/v3/salutation`
 
@@ -104,6 +244,7 @@ where JsonSalutation.JsonSalutationItem is the record with JsonSalutationItem.id
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
+<<<<<<< HEAD
 JsonOrderAddress.countryId |` c_location.c_country_id` | Y | JsonRequestLocation.countryCode | return country isoCode for countryId |
 JsonOrderAddress.street | `c_location.address1` | N | JsonRequestLocation.address1 | |
 JsonOrderAddress.additionalAddressLine1 | `c_location.address2` | N | JsonRequestLocation.address2 | |
@@ -120,19 +261,55 @@ JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | 
 
 
 ## **Shopware6 => metasfresh orderCandidate**
+=======
+JsonAddress.countryId |` c_location.c_country_id` | Y | JsonRequestLocation.countryCode | return country isoCode for countryId |
+JsonAddress.street | `c_location.address1` | N | JsonRequestLocation.address1 | |
+JsonAddress.additionalAddressLine1 | `c_location.address2` | N | JsonRequestLocation.address2 | |
+JsonAddress.additionalAddressLine2 | `c_location.address3` | N | JsonRequestLocation.address3 | |
+JsonAddress.city |` c_location.c_city_id` | N | JsonRequestLocation.city | |
+JsonAddress.zipcode | `c_location.postal` | N | JsonRequestLocation.postal | |
+--- | `C_BPartner_Location.isshipto` | N | JsonRequestLocation.shipTo | true when Order.billingAddressId is not equal to shippingAddress.JsonAddress.id |
+--- | `C_BPartner_Location.isbillto` | N | JsonRequestLocation.billTo | false when Order.billingAddressId is not equal to shippingAddress.JsonAddress.id |
+BPartnerName | `C_BPartner_Location.BPartnerName` | N | JsonRequestLocation.bpartnerName | see 3.5 |
+JsonAddress.phoneNumber | `C_BPartner_Location.phone` | N | JsonRequestLocation.phone | |
+AddressDetail.customEmail | `C_BPartner_Location.email` | N | JsonRequestLocation.email | `customEmail` |
+--- | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonRequestLocationUpsertItem.locationIdentifier | `ext-Shopware6-{{locationIdentifier}}-{{suffix}}` where `suffix` can be [`-billTo`, `-shipTo`]; `locationIdentifier` is computed from `customMetasfreshId` if not present `customShopwareId` is returned, otherwise `computedCustomerId` |
+JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | Y | JsonRequestLocationUpsert.syncAdvise | |
+
+### Shopware6 => metasfresh orderCandidate
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 we need to invoke the endpoint `api/v2/orders/sales/candidates/bulk`
 
 #### 1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
 
+<<<<<<< HEAD
+=======
+1.1 `PaymentMethodType` - used to check if order is ready for import, otherwise the order is skipped. 
+Based on `PaymentMethodType`, order transaction must be:
+* `debit_payment` - `SEPA` -> `open` or in `progress` (`debit-payments` are automatically set to "inProgress" in the shop)
+* `pre_payment` - `Vorkasse` -> `open`
+* `invoice_payment` - `Rechnung` -> `open`
+* `pay_pal_payment_handler` - `PayPal` -> `paid`
+* `a_c_d_c_handler` - `Kredit- oder Debitkarte` -> `open` or in `progress`
+* the following types will always result in skipping the order
+  * `pay_pal_pui_payment_handler` - `Rechnungskauf Paypal`
+  * `cash_payment` - `Nachnahme`
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 Shopware | metasfresh-column        | mandatory in mf | metasfresh-json | note |
 ---- |--------------------------| ---- | ---- | ---- |
 JsonExternalSystemRequest.orgCode | `ad_org_id`              | Y | JsonOLCandCreateRequest.orgCode | |
 Order.OrderCustomer.currencyId | `c_currency_id`          | Y | JsonOLCandCreateRequest.currencyCode | returns currency isoCode  by currencyId, shall come from pricingSystem/priceList|
 Order.OrderCustomer.id | `externalHeaderId`       | Y | JsonOLCandCreateRequest.externalHeaderId | |
 Order.OrderCustomer.orderNumber | `poreference`            | Y | JsonOLCandCreateRequest.poReference | |
+<<<<<<< HEAD
 JsonOrderAddress.email | `email`                  | Y | JsonOLCandCreateRequest.email | |
 JsonOrderAddress.phoneNumber | `phone`                  | N | JsonRequestLocation.phone | |
+=======
+JsonAddress.email | `email`                  | Y | JsonOLCandCreateRequest.email | |
+JsonAddress.phoneNumber | `phone`                  | N | JsonRequestLocation.phone | |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ---- | `C_BPartner_ID`          | Y | JsonOLCandCreateRequest.bpartner | bpartner details computed from shippingBPartnerLocationExternalId based on address customId for a bpartner location |
 ---- | `Bill_BPartner_ID`       | Y | JsonOLCandCreateRequest.billBPartner | bpartner details computed from billingBPLocationExternalId based on address customId from `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID` |
 Order.OrderCustomer.orderDate | `DateOrdered`            | N | JsonOLCandCreateRequest.dateOrdered | |
@@ -153,7 +330,11 @@ JsonExternalSystemShopware6ConfigMappings.mappings.paymentTermValue | `c_payment
 
 #### 2. JsonOrderLine
 
+<<<<<<< HEAD
 * represents a shopware order line, pulled via `api/v3/order/{Order.Id}/line-items`
+=======
+* represents a shopware order line, pulled via `api/order/{Order.Id}/line-items`
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 * all `metasfresh-column` values refer to `C_OLCand` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
@@ -167,6 +348,10 @@ JsonOrderLine.position |  `line` | N | JsonOLCandCreateRequest.line | |
 JsonOrderLine.JsonOrderLinePayload.isBundle |  `compensationgroupkey`,  `isgroupcompensationline` | N | JsonOLCandCreateRequest.orderLineGroup | it is set only if JsonOrderLine.JsonOrderLinePayload is defined and JsonOrderLine.JsonOrderLinePayload.isBundle is true|
 
 #### 3. JsonTax
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     * shopware resource found at path: `delivery/shippingCosts/calculatedTaxes`
     * all `metasfresh-column` values refer to `C_OLCand` columns
 
@@ -185,8 +370,12 @@ JsonTax.taxRate |  `externalLineId` | Y | JsonOLCandCreateRequest.externalLineId
 JsonTax.price |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | |
 ---- | `qtyentered` | Y | JsonOLCandCreateRequest.qty | default value `1` |
 
+<<<<<<< HEAD
 
 ## **Shopware6 => metasfresh payment**
+=======
+### Shopware6 => metasfresh payment
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 we need to invoke the endpoint `api/v2/orders/sales/payment`
 
@@ -194,7 +383,11 @@ PaymentRequestProcessor
 
 #### 1. `JsonOrderTransaction` - OrderPayment
 
+<<<<<<< HEAD
 * pulled via endpoint: `api/v3/order/{{Order.Id}}/transactions`
+=======
+* pulled via endpoint: `api/order/{{Order.Id}}/transactions`
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 * all `metasfresh-column` values refer to `C_Payment` columns except from `C_Order_ID.c_payment_id`
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
@@ -207,36 +400,174 @@ Order.OrderCustomer.currencyId |  `c_currency_id` | Y | JsonOrderPaymentCreateRe
 Order.OrderCustomer.id | `C_Order_ID.c_payment_id` | Y | JsonOrderPaymentCreateRequest.orderIdentifier | |
 JsonOrderTransaction.createdAt |  `datetrx` | N | JsonOrderPaymentCreateRequest.transactionDate | |
 
+<<<<<<< HEAD
 ***
 **Shopware6 => metasfresh product**
 
 * `Product` - pulled via the search endpoint `api/v3/search/product`
+=======
+---
+
+## `Product` workflow - pulled via the search endpoint `api/search/product`
+
+### Shopware6 => metasfresh product
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 we need to invoke the endpoint `api/v2/products`
 
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
+<<<<<<< HEAD
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 JsonProduct.productNumber | `value` | Y | JsonRequestProduct.code | |
 JsonProduct.ean | `upc` | N | JsonRequestProduct.ean | |
 JsonProduct.name | `name` | Y | JsonRequestProduct.name | |
 JsonProduct.unitId | `c_uom_id` | Y | JsonRequestProduct.uomCode | set based on UOMMappings param, default UOM is PCE, if no JsonUOMMappings.JsonUOMMapping.JsonUOM.code is found for the shopware code |
+=======
+`JsonProductParents`
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProductParents.productParentNumber | `value` | Y | JsonRequestProduct.code | |
+JsonProductParents.parentEan | `upc` | N | JsonRequestProduct.ean | |
+JsonProductParents.parentName | `name` | Y | JsonRequestProduct.name | |
+JsonProductParents.productParentId | `c_uom_id` | Y | JsonRequestProduct.uomCode | set based on UOMMappings param, default UOM is PCE, if no JsonUOMMappings.JsonUOMMapping.JsonUOM.code is found for the shopware code |
+---- | `producttype` | Y | JsonRequestProduct.Type.ITEM | |
+--- | ---- | N | JsonRequestProductUpsert.syncAdvise | default value CREATE_OR_MERGE |
+
+`JsonProductsWithVariants`
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProductsWithVariants.productVariantNumber | `value` | Y | JsonRequestProduct.code | |
+JsonProductsWithVariants.variantEan | `upc` | N | JsonRequestProduct.ean | |
+JsonProductsWithVariants.variantName | `name` | Y | JsonRequestProduct.name | |
+JsonProductsWithVariants.productVariantId | `c_uom_id` | Y | JsonRequestProduct.uomCode | set based on UOMMappings param, default UOM is PCE, if no JsonUOMMappings.JsonUOMMapping.JsonUOM.code is found for the shopware code |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 ---- | `producttype` | Y | JsonRequestProduct.Type.ITEM | |
 --- | ---- | N | JsonRequestProductUpsert.syncAdvise | default value CREATE_OR_MERGE |
 
 2. Price - all `metasfresh-column` values refer to `M_ProductPrice` columns
 
 we need to invoke the endpoint '/api/v2/prices'
+<<<<<<< HEAD
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 JsonProduct.id | `m_product_id` | Y | JsonRequestProductPrice.productIdentifier | "ext-Shopware6-{{productId}}" |
+=======
+`ProductParents`
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProduct.id | `m_product_id` | Y | JsonRequestProductPrice.productIdentifier | "ext-Shopware6-{{productParentId}}" |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 JsonExternalSystemRequest.orgCode | `ad_org_id` | Y | JsonRequestProductPrice.orgCode | |
 JsonProduct.tax.taxRate | `c_taxcategory_id` | Y | JsonRequestProductPrice.taxCategory | set based on NormalVAT_Rates and Reduced_VAT_Rates params |
 ---- | `m_pricelist_version_id` | Y | UpsertProductPriceList.priceListIdentifier | set based on JsonExternalSystemRequest.parameters.TargetPriceListId, always set to the newest active price list version |
 ---- | `pricestd` | Y | JsonRequestProductPrice.priceStd | 0 if: <br /> - JsonExternalSystemRequest.parameters<br />.PriceListCurrencyCode is not equal to JsonCurrency.isoCode of JsonProduct.JsonPrice.currencyId, <br /><br /> - JsonProduct.JsonPrice is null or empty, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is true and JsonProduct.JsonPrice.gross is null, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is false and JsonProduct.JsonPrice.net is null|
 JsonProduct.price.net | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is false |
 JsonProduct.price.gross | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is true |
+<<<<<<< HEAD
 JsonProduct.id | ---- | Y | JsonRequestProductPriceUpsertItem.productPriceIdentifier | "ext-Shopware6-{{productId}}" |
 --- | ---- | N | JsonRequestProductPriceUpsert.syncAdvise | default value CREATE_OR_MERGE |
+=======
+JsonProduct.id | ---- | Y | JsonRequestProductPriceUpsertItem.productPriceIdentifier | "ext-Shopware6-{{productParentId}}" |
+--- | ---- | N | JsonRequestProductPriceUpsert.syncAdvise | default value CREATE_OR_MERGE |`
+
+`ProductsWithVariants`
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProduct.id | `m_product_id` | Y | JsonRequestProductPrice.productIdentifier | "ext-Shopware6-{{productVariantId}}" |
+JsonExternalSystemRequest.orgCode | `ad_org_id` | Y | JsonRequestProductPrice.orgCode | |
+JsonProduct.tax.taxRate | `c_taxcategory_id` | Y | JsonRequestProductPrice.taxCategory | set based on NormalVAT_Rates and Reduced_VAT_Rates params |
+---- | `m_pricelist_version_id` | Y | UpsertProductPriceList.priceListIdentifier | set based on JsonExternalSystemRequest.parameters.TargetPriceListId, always set to the newest active price list version |
+---- | `pricestd` | Y | JsonRequestProductPrice.priceStd | 0 if: <br /> - JsonExternalSystemRequest.parameters<br />.PriceListCurrencyCode is not equal to JsonCurrency.isoCode of JsonProduct.JsonPrice.currencyId, <br /><br /> - JsonProduct.JsonPrice is null or empty, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is true and JsonProduct.JsonPrice.gross is null, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is false and JsonProduct.JsonPrice.net is null|
+JsonProduct.price.net | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is false |
+JsonProduct.price.gross | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is true |
+JsonProduct.id | ---- | Y | JsonRequestProductPriceUpsertItem.productPriceIdentifier | "ext-Shopware6-{{productVariantId}}" |
+--- | ---- | N | JsonRequestProductPriceUpsert.syncAdvise | default value CREATE_OR_MERGE |`
+
+## `Customer` workflow - pulled via the search endpoint `api/search/customer`
+
+#### Shopware6 => metasfresh BPartners
+
+we need to invoke the endpoint `api/v2/bpartner`
+
+#### 1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
+
+1.1. `JsonCustomerGroup` - the information is pulled via `api/customer-group/{{JsonCustomer.groupId}}`
+
+1.2. `computedId` - computed from `JsonExternalSystemRequest.parameters.JSONPathMetasfreshID`, if not present it will look for `JsonExternalSystemRequest.parameters.JSONPathShopwareID`, if not present it will return `JsonCustomer.id`
+
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonCustomer.FirstName + " " + JsonCustomer.LastName | `Name` | N | JsonRequestBPartner.Name | |
+JsonCustomer.company | `CompanyName` | N | JsonRequestBPartner.companyName | |
+JsonCustomer.customerNumber | `Value` | N | JsonRequestBPartner.code | Code of the bPartner in question "ext-Shopware6-{{customerNumber}}" |
+---- | `isCustomer` | N | JsonRequestBPartner.customer | `true` |
+JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | Y | JsonRequestBPartner.syncAdvise | |
+JsonExternalSystemRequest.orgCode | `ad_org_id` | N | JsonRequestComposite.orgCode | orgId computed from orgCode |
+JsonCustomer.id | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | `computedId` |
+---- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | JsonExternalSystemShopware6ConfigMappings.bpartnerSyncAdvice if available, else `CREATE_OR_MERGE` |
+JsonExternalSystemRequest.parameters.TargetPriceListId | `M_PricingSystem_ID` | N | JsonRequestBPartner.priceListId | `M_PricingSystem_ID` is computed from the given `JsonRequestBPartner.priceListId` as `M_PriceList.M_PricingSystem_ID` |
+---- | `C_BP_Group_ID` | N | JsonRequestBPartner.group | JsonCustomerGroup.name (see 1.1). The system looks for an existing `C_BP_Group` having `C_BP_Group.Name` the same as `JsonRequestBPartner.group` otherwise a new `C_BP_Group` is created. Then the `C_BP_Group_ID` is set on `C_BPartner`|
+JsonCustomer.vatIds | `VATaxID` | N | JsonRequestBPartner.vatId | |
+
+#### 2. Contact - all `metasfresh-column` values refer to `AD_User` columns
+
+| Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+| ---- | ---- | ---- | ---- | ---- |
+| JsonCustomer.firstName | `firstName` | N | JsonRequestContact.firstName | |
+| JsonCustomer.lastName  | `lastName` | N | JsonRequestContact.lastName | |
+| JsonCustomer.email | `email` | N | JsonRequestContact.email | |
+| ---- | `IsBillToContact_Default` | Y | JsonRequestContact.billToDefault | always true | 
+| ---- | `IsShipToContact_Default` | Y | JsonRequestContact.shipToDefault | always true | 
+| JsonExternalSystemShopware6ConfigMappings.mappings.invoiceEmailEnabled | `IsInvoiceEmailEnabled` | N | JsonRequestContact.invoiceEmailEnabled | |
+| JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | N | JsonRequestContactUpsert.syncAdvise | |
+| JsonCustomer.id | `AD_User_ID` | Y | JsonRequestContactUpsertItem.contactIdentifier | computed from `JsonExternalSystemRequest.parameters.JSONPathShopwareID` order else `JsonCustomer.id` |
+
+#### 3. BPartnerLocation
+
+3.1. *shipping* address details for customer are pulled from endpoint `/api/customer-address/{{JsonCustomer.defaultShippingAddressId}}` and mapped to `AddressDetail`
+
+3.2. *billing* address details for customer are pulled from endpoint `/api/customer-address/{{JsonCustomer.defaultBillingAddressId}}` and mapped to `AddressDetail`
+
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+AddressDetail.countryId |` c_location.c_country_id` | Y | JsonRequestLocation.countryCode | return country isoCode for countryId |
+AddressDetail.street | `c_location.address1` | N | JsonRequestLocation.address1 | |
+AddressDetail.additionalAddressLine1 | `c_location.address2` | N | JsonRequestLocation.address2 | |
+AddressDetail.additionalAddressLine2 | `c_location.address3` | N | JsonRequestLocation.address3 | |
+AddressDetail.city |` c_location.c_city_id` | N | JsonRequestLocation.city | |
+AddressDetail.zipcode | `c_location.postal` | N | JsonRequestLocation.postal | |
+--- | `C_BPartner_Location.isshipto` | N | JsonRequestLocation.shipTo | `true` when `JsonCustomer.defaultBillingAddressId` is equal to `JsonCustomer.defaultShippingAddressId` |
+--- | `C_BPartner_Location.isbillto` | N | JsonRequestLocation.billTo | `false` when `JsonCustomer.defaultBillingAddressId` is not equal to `JsonCustomer.defaultShippingAddressId` |
+--- | `C_BPartner_Location.IsShipToDefault` | N | JsonRequestLocation.shipToDefault | `true` when `JsonCustomer.defaultBillingAddressId` is equal to `JsonCustomer.defaultShippingAddressId` |
+--- | `C_BPartner_Location.IsBillToDefault` | N | JsonRequestLocation.billToDefault | `false` when `JsonCustomer.defaultBillingAddressId` is not equal to `JsonCustomer.defaultShippingAddressId` |
+BPartnerName | `C_BPartner_Location.BPartnerName` | N | JsonRequestLocation.bpartnerName | String concatenation of `JsonCustomer.company` + `JsonCustomer.firstName` + `JsonCustomer.lastName` |
+AddressDetail.phoneNumber | `C_BPartner_Location.phone` | N | JsonRequestLocation.phone | |
+AddressDetail.customEmail | `C_BPartner_Location.email` | N | JsonRequestLocation.email | |
+--- | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonRequestLocationUpsertItem.locationIdentifier | `ext-Shopware6-{{locationIdentifier}}-{{suffix}}` where `suffix` can be [`-billTo`, `-shipTo`]; `locationIdentifier = computedId`
+JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | Y | JsonRequestLocationUpsert.syncAdvise | |
+
+## Workflows for pushing data to Shopware6
+
+* `Stock` - pushed via the endpoint `api/product/{id}`
+
+Pushed if the following parameter is set on window `541116 - ExternalSystem_Config_Shopware6`
+
+* `IsSyncAvailableForSalesToShopware6`
+  * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
+
+Client can set the percentage that is subtracted from the actual available for sales before it is transferred to Shopware,
+by setting the following parameter on the same window, by default it is 0:
+
+* `PercentageOfAvailableForSalesToSync`
+
+Shopware | metasfresh-column |
+---- | ---- |
+stock | *availableForSales|
+
+* `availableForSales = (MD_Available_For_Sales.QtyOnHandStock - MD_Available_For_Sales.QtyToBeShipped) * 
+(100 - ExternalSystem_Config_Shopware6.PercentageOfAvailableForSalesToSync) / 100`
+  * `MD_Available_For_Sales` counts for all records found for the exported product within the config's organisation
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

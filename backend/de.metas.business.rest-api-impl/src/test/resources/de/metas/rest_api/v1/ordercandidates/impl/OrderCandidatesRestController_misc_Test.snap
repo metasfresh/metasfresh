@@ -1,10 +1,19 @@
 de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestController_misc_Test.toJsonAttachment_Type_URL=[
   {
+<<<<<<< HEAD
     "externalReference" : "externalReference",
     "dataSourceName" : "dataSourceName",
     "attachmentId" : "10",
     "type" : "URL",
     "filename" : "?",
     "url" : "https://metasfresh.com"
+=======
+    "attachmentId": "10",
+    "dataSourceName": "dataSourceName",
+    "externalReference": "externalReference",
+    "filename": "?",
+    "type": "URL",
+    "url": "https://metasfresh.com"
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

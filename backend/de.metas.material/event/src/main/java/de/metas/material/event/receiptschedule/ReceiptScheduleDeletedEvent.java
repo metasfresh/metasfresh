@@ -62,6 +62,10 @@ public class ReceiptScheduleDeletedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+<<<<<<< HEAD
+=======
+				null, // we don't care about it, we're going to delete it anyway
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				minMaxDescriptor,
 				reservedQuantity,
 				receiptScheduleId);

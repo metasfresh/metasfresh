@@ -133,7 +133,11 @@ public class InvoiceToExportFactory
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
 				.id(id)
+<<<<<<< HEAD
 				.docSubType(docBaseAndSubType.getDocSubType()) // might be null
+=======
+				.docBaseAndSubType(docBaseAndSubType) // might be null
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.alreadyPaidAmount(allocatedMoney)
 				.amount(grandTotal)
 				.biller(createBiller(invoiceRecord))

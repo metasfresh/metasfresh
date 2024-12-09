@@ -198,9 +198,15 @@ public class HUPricing extends AttributePricing
 		//
 		// Get the default product price attribute, if any
 		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
+<<<<<<< HEAD
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
 						.onlyValidPrices(true)
+=======
+				.setProductId(pricingCtx.getProductId())
+				.onlyAttributePricing()
+				.onlyValidPrices(true)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
@@ -264,9 +270,15 @@ public class HUPricing extends AttributePricing
 		return null;
 	}
 
+<<<<<<< HEAD
 	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
 	{
 		if (packingMaterialId == null)
+=======
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(@Nullable final HUPIItemProductId packingMaterialId)
+	{
+		if (packingMaterialId == null || !packingMaterialId.isRegular())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return HUPIItemProductMatcher_None;
 		}

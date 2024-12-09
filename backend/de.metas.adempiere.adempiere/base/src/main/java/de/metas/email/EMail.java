@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.sun.mail.smtp.SMTPMessage;
 import de.metas.common.util.EmptyUtil;
 import de.metas.email.mailboxes.Mailbox;
@@ -66,42 +67,107 @@ import java.util.Properties;
  *
  * To send the message, please use {@link #send()}.
  *
+=======
+import de.metas.common.util.EmptyUtil;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.sender.MailSender;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.Setter;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.io.File;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * EMail builder and sender.
+ * <p>
+ * To create a new email, please use {@link MailService}'s createMail methods.
+ * <p>
+ * To send the message, please use {@link #send()}.
+ * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+<<<<<<< HEAD
 @SuppressWarnings("serial")
 @JsonAutoDetect(getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class EMail implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(EMail.class);
+=======
+@JsonAutoDetect(getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class EMail implements Serializable
+{
+
+	private static final Logger logger = LogManager.getLogger(EMail.class);
+	@Nullable @Setter private MailSender mailSender;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@JsonProperty("mailbox")
 	private final Mailbox _mailbox;
 	@JsonIgnore
 	private transient EMailAddress _from;
 
+<<<<<<< HEAD
 	/** To Address */
+=======
+	/**
+	 * To Address
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("to")
 	private final List<EMailAddress> _to = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _toAddresses = new ArrayList<>();
+<<<<<<< HEAD
 	/** CC Addresses */
+=======
+	/**
+	 * CC Addresses
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("cc")
 	private final List<EMailAddress> _cc = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _ccAddresses = new ArrayList<>();
+<<<<<<< HEAD
 	/** BCC Addresses */
+=======
+	/**
+	 * BCC Addresses
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("bcc")
 	private final List<EMailAddress> _bcc = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _bccAddresses = new ArrayList<>();
+<<<<<<< HEAD
 	/** Reply To Address */
+=======
+	/**
+	 * Reply To Address
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("replyTo")
 	private EMailAddress _replyTo;
 	@JsonIgnore
 	private InternetAddress _replyToAddress;
 
+<<<<<<< HEAD
 	@JsonIgnore
 	private InternetAddress _debugMailToAddress;
 
@@ -115,6 +181,36 @@ public final class EMail implements Serializable
 	@JsonProperty("messageHTML")
 	private String _messageHTML;
 	/** Attachments */
+=======
+	private boolean _debugMode = false;
+
+	@JsonIgnore
+	@Nullable
+	private InternetAddress _debugMailToAddress;
+
+	@JsonIgnore
+	@Nullable
+	private ILoggable _debugLoggable;
+
+	/**
+	 * Mail Subject
+	 */
+	@JsonProperty("subject")
+	private String _subject;
+	/**
+	 * Mail Plain Message
+	 */
+	@JsonProperty("messageText")
+	private String _messageText;
+	/**
+	 * Mail HTML Message
+	 */
+	@JsonProperty("messageHTML")
+	private String _messageHTML;
+	/**
+	 * Attachments
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonProperty("attachments")
 	private final List<EMailAttachment> _attachments = new ArrayList<>();
 
@@ -123,7 +219,11 @@ public final class EMail implements Serializable
 	@JsonIgnore
 	private transient boolean _valid = false;
 	@JsonIgnore
+<<<<<<< HEAD
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
+=======
+	private transient EMailSentStatus _sentStatus = EMailSentStatus.NOT_SENT;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	EMail(
 			@NonNull final Mailbox mailbox,
@@ -138,7 +238,11 @@ public final class EMail implements Serializable
 
 		if (Check.isEmpty(subject, true))
 		{
+<<<<<<< HEAD
 			setSubject(".");	// pass validation
+=======
+			setSubject(".");    // pass validation
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -157,6 +261,7 @@ public final class EMail implements Serializable
 			}
 		}
 
+<<<<<<< HEAD
 		if (checkValid())
 		{
 			markValid();
@@ -165,10 +270,14 @@ public final class EMail implements Serializable
 		{
 			markInvalid();
 		}
+=======
+		updateValidStatus();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@JsonCreator
 	private EMail(
+<<<<<<< HEAD
 			@JsonProperty("mailbox") final Mailbox mailbox //
 			, @JsonProperty("to") final List<EMailAddress> to //
 			, @JsonProperty("cc") final List<EMailAddress> cc //
@@ -178,12 +287,24 @@ public final class EMail implements Serializable
 			, @JsonProperty("messageText") final String messageText //
 			, @JsonProperty("messageHTML") final String messageHTML //
 			, @JsonProperty("attachments") final List<EMailAttachment> attachments //
+=======
+			@JsonProperty("mailbox") final Mailbox mailbox,
+			@JsonProperty("to") final List<EMailAddress> to,
+			@JsonProperty("cc") final List<EMailAddress> cc,
+			@JsonProperty("bcc") final List<EMailAddress> bcc,
+			@JsonProperty("replyTo") final EMailAddress replyTo,
+			@JsonProperty("subject") final String subject,
+			@JsonProperty("messageText") final String messageText,
+			@JsonProperty("messageHTML") final String messageHTML,
+			@JsonProperty("attachments") final List<EMailAttachment> attachments
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	)
 	{
 		this(mailbox);
 
 		if (to != null && !to.isEmpty())
 		{
+<<<<<<< HEAD
 			to.stream().forEach(this::addTo);
 		}
 		if (cc != null && !cc.isEmpty())
@@ -193,6 +314,17 @@ public final class EMail implements Serializable
 		if (bcc != null && !bcc.isEmpty())
 		{
 			bcc.stream().forEach(this::addBcc);
+=======
+			to.forEach(this::addTo);
+		}
+		if (cc != null && !cc.isEmpty())
+		{
+			cc.forEach(this::addCc);
+		}
+		if (bcc != null && !bcc.isEmpty())
+		{
+			bcc.forEach(this::addBcc);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (replyTo != null)
@@ -206,6 +338,7 @@ public final class EMail implements Serializable
 
 		if (attachments != null && !attachments.isEmpty())
 		{
+<<<<<<< HEAD
 			attachments.stream().forEach(this::addAttachment);
 		}
 
@@ -220,12 +353,24 @@ public final class EMail implements Serializable
 	}
 
 	/** Base constructor */
+=======
+			attachments.forEach(this::addAttachment);
+		}
+
+		updateValidStatus();
+	}
+
+	/**
+	 * Base constructor
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private EMail(@NonNull final Mailbox mailbox)
 	{
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
 	}
 
+<<<<<<< HEAD
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress)
 	{
 		this._debugMailToAddress = debugMailToAddress;
@@ -241,10 +386,31 @@ public final class EMail implements Serializable
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("Sending email from={}, tos={} mailbox={}", getFrom(), getTos(), getMailbox());
+=======
+	public void setDebugMode(final boolean debugMode) {this._debugMode = debugMode;}
+
+	public boolean isDebugMode() {return _debugMode;}
+
+	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress) {this._debugMailToAddress = debugMailToAddress;}
+
+	public InternetAddress getDebugMailToAddress() {return _debugMailToAddress;}
+
+	public void setDebugLoggable(final ILoggable loggable) {this._debugLoggable = loggable;}
+
+	public ILoggable getDebugLoggable() {return _debugLoggable;}
+
+	public EMailSentStatus send()
+	{
+		final ILoggable debugLoggable = getDebugLoggable();
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Sending {}", this);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
 		// Reset status
+<<<<<<< HEAD
 		resetSentStatus();
 
 		//
@@ -258,10 +424,21 @@ public final class EMail implements Serializable
 			}
 
 			markValid();
+=======
+		setSentStatus(EMailSentStatus.NOT_SENT);
+
+		//
+		// Validate email fields
+		final BooleanWithReason valid = updateValidStatus();
+		if (valid.isFalse())
+		{
+			return setSentStatus(EMailSentStatus.invalid(valid.getReason()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
 		// Send the email now
+<<<<<<< HEAD
 		final EMailSentStatus sentStatus = sendNow();
 		return setStatus(sentStatus);
 	}	// send
@@ -435,10 +612,36 @@ public final class EMail implements Serializable
 	}
 
 	private Mailbox getMailbox()
+=======
+		final MailSender mailSender = Check.assumeNotNull(this.mailSender, "mail sender is set");
+		final EMailSentStatus sentStatus = mailSender.send(this);
+		return setSentStatus(sentStatus);
+	}    // send
+
+	private EMailSentStatus setSentStatus(@NonNull final EMailSentStatus status)
+	{
+		final ILoggable debugLoggable = getDebugLoggable();
+		if (debugLoggable != null)
+		{
+			debugLoggable.addLog("Got sent status {}", status);
+		}
+
+		_sentStatus = status;
+		return status;
+	}
+
+	public EMailSentStatus getLastSentStatus()
+	{
+		return _sentStatus;
+	}
+
+	public Mailbox getMailbox()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _mailbox;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Dump Message Info
 	 */
@@ -479,11 +682,22 @@ public final class EMail implements Serializable
 	 * @param from Sender's email address
 	 */
 	private void setFrom(final EMailAddress from)
+=======
+	public EMailAddress getFrom()
+	{
+		return _from;
+	}
+
+	private void setFrom(@Nullable final EMailAddress from)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (from == null)
 		{
 			markInvalid();
+<<<<<<< HEAD
 			return;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -491,6 +705,7 @@ public final class EMail implements Serializable
 		}
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Add To Recipient
 	 *
@@ -503,6 +718,19 @@ public final class EMail implements Serializable
 		{
 			markInvalid();
 			return false;
+=======
+	public void addTo(@Nullable final EMailAddress to)
+	{
+		if (to == null)
+		{
+			return;
+		}
+
+		// Skip address if already added
+		if (_to.contains(to))
+		{
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final InternetAddress ia;
@@ -514,11 +742,16 @@ public final class EMail implements Serializable
 		{
 			logger.warn("Invalid To address: {}", to, e);
 			markInvalid();
+<<<<<<< HEAD
 			return false;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		_to.add(to);
 		_toAddresses.add(ia);
+<<<<<<< HEAD
 		return true;
 	}   // addTo
 
@@ -557,6 +790,26 @@ public final class EMail implements Serializable
 		if (cc == null)
 		{
 			return false;
+=======
+	}
+
+	@Nullable
+	public EMailAddress getTo()
+	{
+		return _to.isEmpty() ? null : _to.get(0);
+	}
+
+	public List<InternetAddress> getTos()
+	{
+		return ImmutableList.copyOf(_toAddresses);
+	}
+
+	public void addCc(@Nullable final EMailAddress cc)
+	{
+		if (cc == null)
+		{
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final InternetAddress ia;
@@ -567,11 +820,16 @@ public final class EMail implements Serializable
 		catch (final Exception e)
 		{
 			logger.warn("Invalid CC address: {}", cc, e);
+<<<<<<< HEAD
 			return false;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		_cc.add(cc);
 		_ccAddresses.add(ia);
+<<<<<<< HEAD
 		return true;
 	}	// addCc
 
@@ -596,6 +854,20 @@ public final class EMail implements Serializable
 		if (bcc == null)
 		{
 			return false;
+=======
+	}
+
+	public List<InternetAddress> getCcs()
+	{
+		return ImmutableList.copyOf(_ccAddresses);
+	}
+
+	public void addBcc(@Nullable final EMailAddress bcc)
+	{
+		if (bcc == null)
+		{
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		final InternetAddress ia;
 		try
@@ -605,11 +877,16 @@ public final class EMail implements Serializable
 		catch (final Exception e)
 		{
 			logger.warn("Invalid BCC address: {}", bcc, e);
+<<<<<<< HEAD
 			return false;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		_bcc.add(bcc);
 		_bccAddresses.add(ia);
+<<<<<<< HEAD
 		return true;
 	}	// addBcc
 
@@ -634,6 +911,20 @@ public final class EMail implements Serializable
 		if (replyTo == null)
 		{
 			return false;
+=======
+	}
+
+	public List<InternetAddress> getBccs()
+	{
+		return ImmutableList.copyOf(_bccAddresses);
+	}
+
+	public void setReplyTo(@Nullable final EMailAddress replyTo)
+	{
+		if (replyTo == null)
+		{
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		final InternetAddress ia;
 		try
@@ -643,11 +934,16 @@ public final class EMail implements Serializable
 		catch (final Exception e)
 		{
 			logger.warn("Invalid ReplyTo address: {}", replyTo, e);
+<<<<<<< HEAD
 			return false;
+=======
+			return;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		_replyTo = replyTo;
 		_replyToAddress = ia;
+<<<<<<< HEAD
 		return true;
 	}   // setReplyTo
 
@@ -669,11 +965,25 @@ public final class EMail implements Serializable
 	public void setSubject(final String subject)
 	{
 		if (Check.isEmpty(subject, true))
+=======
+	}
+
+	public InternetAddress getReplyTo()
+	{
+		return _replyToAddress;
+	}
+
+	public void setSubject(@Nullable final String subject)
+	{
+		final String subjectNorm = StringUtils.trimBlankToNull(subject);
+		if (subjectNorm == null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			markInvalid();
 		}
 		else
 		{
+<<<<<<< HEAD
 			_subject = subject.trim();
 		}
 	}   // setSubject
@@ -696,6 +1006,20 @@ public final class EMail implements Serializable
 	public void setMessageText(final String messageText)
 	{
 		if (Check.isEmpty(messageText, true))
+=======
+			_subject = subjectNorm;
+		}
+	}
+
+	public String getSubject()
+	{
+		return _subject;
+	}
+
+	public void setMessageText(final String messageText)
+	{
+		if (Check.isBlank(messageText))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			markInvalid();
 		}
@@ -746,11 +1070,14 @@ public final class EMail implements Serializable
 		return sb.toString();
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Set HTML Message
 	 *
 	 * @param messageHtml message (HTML)
 	 */
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setMessageHTML(final String messageHtml)
 	{
 		if (Check.isEmpty(messageHtml, true))
@@ -767,6 +1094,7 @@ public final class EMail implements Serializable
 		}
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Set HTML Message
 	 *
@@ -796,16 +1124,26 @@ public final class EMail implements Serializable
 	 *
 	 * @return message
 	 */
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public String getMessageHTML()
 	{
 		return _messageHTML;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Add file Attachment
 	 *
 	 * @param file file to attach
 	 */
+=======
+	public boolean isHtmlMessage()
+	{
+		return !Check.isBlank(getMessageHTML());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void addAttachment(final File file)
 	{
 		if (file == null)
@@ -816,6 +1154,7 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(file));
 	}
 
+<<<<<<< HEAD
 	public void addAttachment(@NonNull final Resource resource)
 	{
 		addAttachment(EMailAttachment.of(resource));
@@ -843,6 +1182,8 @@ public final class EMail implements Serializable
 	 *
 	 * @param uri URL content to attach
 	 */
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void addAttachment(final URI uri)
 	{
 		if (uri == null)
@@ -853,6 +1194,7 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(uri));
 	}
 
+<<<<<<< HEAD
 	public boolean addAttachment(final String filename, final byte[] content)
 	{
 		if (content == null || content.length == 0)
@@ -866,6 +1208,19 @@ public final class EMail implements Serializable
 		addAttachment(attachment);
 
 		return true;
+=======
+	public void addAttachment(final String filename, final byte[] content)
+	{
+		final EMailAttachment attachment = EMailAttachment.ofNullable(filename, content);
+		if (attachment == null)
+		{
+			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
+			return;
+		}
+
+		addAttachment(attachment);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public void addAttachment(@NonNull final EMailAttachment emailAttachment)
@@ -873,6 +1228,7 @@ public final class EMail implements Serializable
 		_attachments.add(emailAttachment);
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Set the message content and attachments.
 	 *
@@ -928,16 +1284,24 @@ public final class EMail implements Serializable
 	}
 
 	private String getCharsetName()
+=======
+	public String getCharsetName()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// Local Character Set
 		String charSetName = Ini.getCharset().name();
 		if (EmptyUtil.isBlank(charSetName))
 		{
+<<<<<<< HEAD
 			charSetName = "iso-8859-1";	// WebEnv.ENCODING - alternative iso-8859-1
+=======
+			charSetName = "iso-8859-1";    // WebEnv.ENCODING - alternative iso-8859-1
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return charSetName;
 	}
 
+<<<<<<< HEAD
 	private void setMessageContent(final MimePart part) throws MessagingException
 	{
 		final String charSetName = getCharsetName();
@@ -952,6 +1316,8 @@ public final class EMail implements Serializable
 		}
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * @return true if email is valid and can be sent
 	 */
@@ -970,6 +1336,7 @@ public final class EMail implements Serializable
 		_valid = true;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Checks if the email is valid and can be sent.
 	 *
@@ -987,10 +1354,27 @@ public final class EMail implements Serializable
 		}
 
 		return true;
+=======
+	public BooleanWithReason updateValidStatus()
+	{
+		final BooleanWithReason valid = checkValid();
+		if (valid.isTrue())
+		{
+			markValid();
+		}
+		else
+		{
+			logger.warn("Invalid mail data: {}", valid.getReason().getDefaultValue());
+			markInvalid();
+		}
+
+		return valid;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
 	 * Checks if the email is valid and can be sent.
+<<<<<<< HEAD
 	 *
 	 * NOTE: this method is NOT setting the {@link #isValid()} flag.
 	 *
@@ -1000,6 +1384,15 @@ public final class EMail implements Serializable
 	private boolean checkValid(final StringBuilder notValidReasonCollector)
 	{
 		boolean valid = true;
+=======
+	 * <p>
+	 * NOTE: this method is NOT setting the {@link #isValid()} flag.
+	 */
+	private BooleanWithReason checkValid()
+	{
+		boolean valid = true;
+		final StringBuilder notValidReasonCollector = new StringBuilder();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		// From
 		final EMailAddress from = getFrom();
@@ -1043,6 +1436,7 @@ public final class EMail implements Serializable
 			}
 		}
 
+<<<<<<< HEAD
 		// Host
 		final Mailbox mailbox = getMailbox();
 		final String smtpHost = mailbox.getSmtpHost();
@@ -1057,6 +1451,8 @@ public final class EMail implements Serializable
 			valid = false;
 		}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Subject
 		final String subject = getSubject();
 		if (Check.isEmpty(subject, true))
@@ -1070,7 +1466,11 @@ public final class EMail implements Serializable
 			valid = false;
 		}
 
+<<<<<<< HEAD
 		return valid;
+=======
+		return valid ? BooleanWithReason.TRUE : BooleanWithReason.falseBecause(notValidReasonCollector.toString());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static boolean isValidAddress(final EMailAddress emailAddress)
@@ -1084,7 +1484,11 @@ public final class EMail implements Serializable
 		{
 			return isValidAddress(emailAddress.toInternetAddress());
 		}
+<<<<<<< HEAD
 		catch (AddressException e)
+=======
+		catch (final AddressException e)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return false;
 		}
@@ -1099,7 +1503,11 @@ public final class EMail implements Serializable
 
 		final String addressStr = emailAddress.getAddress();
 		return addressStr != null
+<<<<<<< HEAD
 				&& addressStr.length() > 0
+=======
+				&& !addressStr.isEmpty()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				&& addressStr.indexOf(' ') < 0;
 	}
 
@@ -1125,4 +1533,8 @@ public final class EMail implements Serializable
 				.add("mailbox", _mailbox)
 				.toString();
 	}
+<<<<<<< HEAD
 }	// EMail
+=======
+}    // EMail
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

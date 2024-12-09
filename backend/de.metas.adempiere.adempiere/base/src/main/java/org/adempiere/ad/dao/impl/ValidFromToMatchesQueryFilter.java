@@ -22,19 +22,32 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 
 class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+=======
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+public class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	private final String validFromColumnName;
 	private final String validToColumnName;

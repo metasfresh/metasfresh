@@ -22,7 +22,11 @@
 
 package de.metas.serviceprovider.issue;
 
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,15 +37,24 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static de.metas.serviceprovider.issue.IssueServiceTest.prepareDataContext;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.junit.Assert.assertEquals;
 
 public class IssueRepositoryTest
 {
+<<<<<<< HEAD
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+=======
+	private IQueryBL queryBL;
+	private IssueRepository issueRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private IssueEntity MOCK_ISSUE_ENTITY;
 
@@ -51,6 +64,11 @@ public class IssueRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
+<<<<<<< HEAD
+=======
+		queryBL = Services.get(IQueryBL.class);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
 	}
 

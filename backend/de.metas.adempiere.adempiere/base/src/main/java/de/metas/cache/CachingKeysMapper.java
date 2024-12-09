@@ -1,10 +1,17 @@
 package de.metas.cache;
 
+<<<<<<< HEAD
 import java.util.Collection;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.cache.model.CacheInvalidateRequest;
+=======
+import de.metas.cache.model.CacheInvalidateRequest;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

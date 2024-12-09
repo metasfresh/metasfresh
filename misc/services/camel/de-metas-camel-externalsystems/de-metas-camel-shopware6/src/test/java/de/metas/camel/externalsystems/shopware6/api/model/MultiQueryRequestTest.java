@@ -42,17 +42,31 @@ public class MultiQueryRequestTest
 	@Test
 	public void test() throws Exception
 	{
+<<<<<<< HEAD
 		final Shopware6QueryRequest queryRequest = MultiQueryRequest.builder()
 				.filter(MultiJsonFilter.builder()
 								.operatorType(MultiJsonFilter.OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field("field_1")
 												   .queryType(JsonQuery.QueryType.EQUALS)
+=======
+		final MultiQueryRequest queryRequest = MultiQueryRequest.builder()
+				.filter(JsonQuery.builder()
+								.queryType(QueryType.MULTI)
+								.operatorType(OperatorType.OR)
+								.jsonQuery(JsonQuery.builder()
+												   .field("field_1")
+												   .queryType(QueryType.EQUALS)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 												   .value("value_1")
 												   .build())
 								.jsonQuery(JsonQuery.builder()
 												   .field("field_2")
+<<<<<<< HEAD
 												   .queryType(JsonQuery.QueryType.EQUALS)
+=======
+												   .queryType(QueryType.EQUALS)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 												   .value("value_2")
 												   .build())
 								.build())

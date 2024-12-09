@@ -48,7 +48,11 @@ public enum SequenceRestartFrequencyEnum implements ReferenceListAwareEnum
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	public static SequenceRestartFrequencyEnum ofNullableCode(final String code)
+=======
+	public static SequenceRestartFrequencyEnum ofNullableCode(@Nullable final String code)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return code != null ? ofCode(code) : null;
 	}

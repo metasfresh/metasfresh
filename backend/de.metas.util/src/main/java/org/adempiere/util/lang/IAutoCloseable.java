@@ -22,19 +22,33 @@ package org.adempiere.util.lang;
  * #L%
  */
 
+<<<<<<< HEAD
 
 /**
  * Exactly the same as {@link AutoCloseable} but {@link #close()} method is not declared to throw exceptions.
  *
+=======
+/**
+ * Exactly the same as {@link AutoCloseable} but {@link #close()} method is not declared to throw exceptions.
+ * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * The main benefit of this interface is that allows you to quickly create annonymous inner {@link AutoCloseable} instances,
  * which you can use in your try-with-resources block without having to declare an "catch" block.
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @FunctionalInterface
 public interface IAutoCloseable extends AutoCloseable
 {
+<<<<<<< HEAD
+=======
+	IAutoCloseable NOOP = NullAutoCloseable.instance;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	void close();
 }

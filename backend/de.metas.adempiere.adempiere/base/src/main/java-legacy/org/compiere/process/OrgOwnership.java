@@ -119,7 +119,11 @@ public class OrgOwnership extends JavaProcess
 			.append(" WHERE M_Warehouse_ID=").append(p_M_Warehouse_ID)
 			.append(" AND AD_Client_ID=").append(getAD_Client_ID())
 			.append(" AND AD_Org_ID<>").append(p_AD_Org_ID);
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "M_Warehouse_ID"));
 		
 		//	Set Accounts
@@ -129,7 +133,11 @@ public class OrgOwnership extends JavaProcess
 			.append(" WHERE M_Warehouse_ID=").append(p_M_Warehouse_ID)
 			.append(" AND AD_Client_ID=").append(getAD_Client_ID())
 			.append(" AND AD_Org_ID<>").append(p_AD_Org_ID);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
 
 		//	Set Locators
@@ -139,7 +147,11 @@ public class OrgOwnership extends JavaProcess
 			.append(" WHERE M_Warehouse_ID=").append(p_M_Warehouse_ID)
 			.append(" AND AD_Client_ID=").append(getAD_Client_ID())
 			.append(" AND AD_Org_ID<>").append(p_AD_Org_ID);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "M_Locator_ID"));
 	
 		//	Set Storage
@@ -151,7 +163,11 @@ public class OrgOwnership extends JavaProcess
 				+ " AND l.M_Warehouse_ID=").append(p_M_Warehouse_ID)
 			.append(") AND AD_Client_ID=").append(getAD_Client_ID())
 			.append(" AND AD_Org_ID<>").append(p_AD_Org_ID);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "Storage"));
 			
 		return "";
@@ -178,27 +194,47 @@ public class OrgOwnership extends JavaProcess
 		
 		//	Product
 		String sql = "UPDATE M_Product x " + set;
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "M_Product_ID"));
 		
 		//	Acct
 		sql = "UPDATE M_Product_Acct x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
 		
 		//	BOM
 		sql = "UPDATE M_Product_BOM x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "M_Product_BOM_ID"));
 		
 		//	PO
 		sql = "UPDATE M_Product_PO x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "PO"));
 
 		//	Trl
 		sql = "UPDATE M_Product_Trl x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "AD_Language"));
 
 		return "";
@@ -223,11 +259,16 @@ public class OrgOwnership extends JavaProcess
 
 		//	BPartner
 		String sql = "UPDATE C_BPartner x " + set;
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_BPartner_ID"));
 		
 		//	Acct xxx
 		sql = "UPDATE C_BP_Customer_Acct x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
 		sql = "UPDATE C_BP_Employee_Acct x " + set;
@@ -235,21 +276,42 @@ public class OrgOwnership extends JavaProcess
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
 		sql = "UPDATE C_BP_Vendor_Acct x " + set;
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
+		sql = "UPDATE C_BP_Employee_Acct x " + set;
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
+		sql = "UPDATE C_BP_Vendor_Acct x " + set;
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_AcctSchema_ID"));
 		
 		//	Location
 		sql = "UPDATE C_BPartner_Location x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_BPartner_Location_ID"));
 
 		//	Contcat/User
 		sql = "UPDATE AD_User x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "AD_User_ID"));
 		
 		//	BankAcct
 		sql = "UPDATE C_BP_BankAccount x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog (0,null, new BigDecimal(no), Msg.translate(getCtx(), "C_BP_BankAccount_ID"));
 
 		return "";
@@ -266,31 +328,51 @@ public class OrgOwnership extends JavaProcess
 			
 		//	R_ContactInterest
 		String sql = "UPDATE R_ContactInterest " + set;
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.debug("generalOwnership - R_ContactInterest=" + no);
 
 		//	AD_User_Roles
 		sql = "UPDATE AD_User_Roles " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.debug("generalOwnership - AD_User_Roles=" + no);
 		
 		//	C_BPartner_Product
 		sql = "UPDATE C_BPartner_Product " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.debug("generalOwnership - C_BPartner_Product=" + no);
 
 		//	Withholding
 		sql = "UPDATE C_BP_Withholding x " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.debug("generalOwnership - C_BP_Withholding=" + no);
 
 		//	Replenish
 		sql = "UPDATE M_Replenish " + set;
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql, get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.debug("generalOwnership - M_Replenish=" + no);
 	

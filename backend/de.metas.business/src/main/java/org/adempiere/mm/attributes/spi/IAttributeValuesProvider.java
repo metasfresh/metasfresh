@@ -22,9 +22,14 @@ package org.adempiere.mm.attributes.spi;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCacheStats;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -33,9 +38,14 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache.CCacheStats;
+=======
+import java.util.List;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Implementations of this interface are providing a fixed set of values for a given attribute.
@@ -54,7 +64,11 @@ public interface IAttributeValuesProvider
 	/**
 	 * Checks if any value is allowed.
 	 *
+<<<<<<< HEAD
 	 * In case any value is allowed, system won't try to check if a given value is found in {@link #getAvailableValues(IAttributeSet, I_M_Attribute)}.
+=======
+	 * In case any value is allowed, system won't try to check if a given value is found in {@link #getAvailableValues(Evaluatee)}.
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *
 	 * @return true if any value is allowed
 	 */

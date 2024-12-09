@@ -1,5 +1,6 @@
 de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContactTest.serializeDeserialize=[
   {
+<<<<<<< HEAD
     "gender" : "gender",
     "genderSet" : true,
     "title" : "title",
@@ -9,5 +10,13 @@ de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContactTest.serializeDese
       "nanos" : 0
     },
     "timestampSet" : true
+=======
+    "gender": "gender",
+    "genderSet": true,
+    "timestamp": "2019-11-22T00:00:00Z",
+    "timestampSet": true,
+    "title": "title",
+    "titleSet": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

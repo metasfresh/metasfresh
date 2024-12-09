@@ -11,6 +11,10 @@ import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -210,7 +214,11 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						orgId,
 						commissionProductId,
 						bPartnerId,
+<<<<<<< HEAD
 						Quantitys.create(ONE, commissionProductId),
+=======
+						Quantitys.of(ONE, commissionProductId),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						soTrx)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
@@ -397,7 +405,11 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
 						.docBaseType(commissionDocType.getDocBaseType())
+<<<<<<< HEAD
 						.docSubType(commissionDocType.getDocSubType())
+=======
+						.docSubType(DocSubType.ofCode(commissionDocType.getDocSubType()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
 						.build());

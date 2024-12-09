@@ -3,12 +3,21 @@ package de.metas.costing.methods;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+<<<<<<< HEAD
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+<<<<<<< HEAD
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostPrice;
+=======
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -22,7 +31,10 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+<<<<<<< HEAD
 import de.metas.organization.OrgId;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -31,12 +43,23 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
+=======
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -95,6 +118,7 @@ public class CostingMethodHandlerUtils
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public CostPrice convertToUOM(
 			@NonNull final CostPrice costPrice,
 			@NonNull final UomId targetUomId,
@@ -113,6 +137,8 @@ public class CostingMethodHandlerUtils
 	}
 
 	@NonNull
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Quantity convertToUOM(
 			@NonNull final Quantity qty,
 			@NonNull final UomId targetUomId,
@@ -122,6 +148,18 @@ public class CostingMethodHandlerUtils
 		return uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public UnaryOperator<Quantity> convertQuantityToUOM(
+			@NonNull final UomId targetUomId,
+			@NonNull final ProductId productId
+	)
+	{
+		return qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemaRepo.getById(acctSchemaId);
@@ -161,9 +199,27 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
+<<<<<<< HEAD
 	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetail(request);
+=======
+	public CostDetailCreateResultsList toCostDetailCreateResultsList(final Collection<CostDetail> costDetails)
+	{
+		return costDetailsService.toCostDetailCreateResultsList(costDetails);
+	}
+
+	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
+	{
+		return costDetailsService.getExistingCostDetails(request);
+	}
+
+	public List<CostDetail> updateDateAcct(@NonNull final Collection<CostDetail> costDetails, @NonNull final Instant newDateAcct)
+	{
+		return costDetails.stream()
+				.map(costDetail -> costDetailsService.updateDateAcct(costDetail, newDateAcct))
+				.collect(Collectors.toList());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -183,11 +239,14 @@ public class CostingMethodHandlerUtils
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
+<<<<<<< HEAD
 	public final CostPrice getCurrentCostPrice(final CostDetailCreateRequest request)
 	{
 		return getCurrentCost(request).getCostPrice();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final void saveCurrentCost(final CurrentCost currentCost)
 	{
 		currentCostsRepo.save(currentCost);
@@ -197,14 +256,35 @@ public class CostingMethodHandlerUtils
 			final CostAmount amt,
 			final CostDetailCreateRequest request)
 	{
+<<<<<<< HEAD
 		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+=======
+		final AcctSchemaId acctSchemaId = request.getAcctSchemaId();
+
+		return convertToAcctSchemaCurrency(
+				amt,
+				() -> getCurrencyConversionContext(request),
+				acctSchemaId);
+	}
+
+	public CostAmount convertToAcctSchemaCurrency(
+			@NonNull final CostAmount amt,
+			@NonNull final Supplier<CurrencyConversionContext> conversionCtxSupplier,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		if (CurrencyId.equals(amt.getCurrencyId(), acctCurrencyId))
 		{
 			return amt;
 		}
 
+<<<<<<< HEAD
 		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request)
+=======
+		final CurrencyConversionContext conversionCtx = conversionCtxSupplier.get()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult result = convert(
@@ -212,7 +292,11 @@ public class CostingMethodHandlerUtils
 				amt.toMoney(),
 				acctCurrencyId);
 
+<<<<<<< HEAD
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
+=======
+		return CostAmount.of(result.getAmount(), acctCurrencyId, result.getSourceAmount(), result.getSourceCurrencyId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
@@ -224,6 +308,7 @@ public class CostingMethodHandlerUtils
 		return currencyBL.convert(conversionCtx, price, acctCurrencyId);
 	}
 
+<<<<<<< HEAD
 	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
 		return createCurrencyConversionContext(
@@ -249,5 +334,17 @@ public class CostingMethodHandlerUtils
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
 	{
 		return costDetailsService.streamAllCostDetailsAfter(costDetail);
+=======
+	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
+	{
+		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> currencyConversionContext,
+				() -> currencyBL.createCurrencyConversionContext(
+						request.getDate(),
+						(CurrencyConversionTypeId)null,
+						request.getClientId(),
+						request.getOrgId()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -1,9 +1,15 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info.names;
 
 import de.metas.ad_reference.ADRefListId;
+<<<<<<< HEAD
 import de.metas.i18n.AdMessageId;
 import de.metas.process.AdProcessId;
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.AdMessageId;
+import de.metas.process.AdProcessId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;

@@ -48,6 +48,21 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+<<<<<<< HEAD
+=======
+		<dependency>
+			<groupId>de.metas.payment.sumup</groupId>
+			<artifactId>de.metas.payment.sumup.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		<!-- logging -->
 		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
 		<dependency>

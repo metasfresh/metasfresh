@@ -29,6 +29,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class TableName
 {
@@ -52,6 +58,18 @@ public final class TableName
 		return interner.intern(new TableName(string));
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+	public static TableName ofNullableString(@Nullable final String string)
+	{
+		final String stringNorm = StringUtils.trimBlankToNull(string);
+		return stringNorm != null
+				? ofString(stringNorm)
+				: null;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	@Deprecated
 	public String toString()
@@ -63,4 +81,17 @@ public final class TableName
 	{
 		return tableName;
 	}
+<<<<<<< HEAD
+=======
+
+	public boolean equalsIgnoreCase(@Nullable final String otherTableName)
+	{
+		return tableName.equalsIgnoreCase(otherTableName);
+	}
+
+	public static boolean equals(@Nullable TableName tableName1, @Nullable TableName tableName2)
+	{
+		return Objects.equals(tableName1, tableName2);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

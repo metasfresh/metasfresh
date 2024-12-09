@@ -1,5 +1,6 @@
 package de.metas.banking.service;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,10 +12,26 @@ import de.metas.costing.ChargeId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.common.util.CoalesceUtil;
+=======
+import de.metas.banking.BankStatementId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * de.metas.banking.base
@@ -56,6 +73,12 @@ public class BankStatementLineCreateRequest
 	String lineDescription;
 	String memo;
 
+<<<<<<< HEAD
+=======
+	boolean updateAmountsFromInvoice;
+	boolean multiPayment;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	LocalDate statementLineDate;
 	@NonNull
@@ -76,8 +99,18 @@ public class BankStatementLineCreateRequest
 
 	ChargeId chargeId;
 
+<<<<<<< HEAD
 	@Nullable
 	int debitorOrCreditorId;
+=======
+	int debtorOrCreditorId;
+	
+	@Nullable
+	BigDecimal currencyRate;
+	
+	@Nullable 
+	InvoiceId invoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private BankStatementLineCreateRequest(
@@ -103,8 +136,17 @@ public class BankStatementLineCreateRequest
 			@Nullable final Money chargeAmt,
 			@Nullable final Money interestAmt,
 			@Nullable final ChargeId chargeId,
+<<<<<<< HEAD
 			final int debitorOrCreditorId,
 			//
+=======
+			final int debtorOrCreditorId,
+			@Nullable final BigDecimal currencyRate,
+			@Nullable final InvoiceId invoiceId,
+			@Nullable final Boolean updateAmountsFromInvoice,
+			@Nullable final Boolean multiPayment,
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final ElectronicFundsTransfer eft)
 	{
 		this.bankStatementId = bankStatementId;
@@ -120,8 +162,13 @@ public class BankStatementLineCreateRequest
 		this.memo = memo;
 		//
 		this.statementLineDate = statementLineDate;
+<<<<<<< HEAD
 		this.dateAcct = CoalesceUtil.coalesce(dateAcct, statementLineDate);
 		this.valutaDate = CoalesceUtil.coalesce(valutaDate, statementLineDate);
+=======
+		this.dateAcct = CoalesceUtil.coalesceNotNull(dateAcct, statementLineDate);
+		this.valutaDate = CoalesceUtil.coalesceNotNull(valutaDate, statementLineDate);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		this.statementAmt = statementAmt;
 		this.trxAmt = trxAmt != null ? trxAmt : statementAmt.toZero();
@@ -129,9 +176,20 @@ public class BankStatementLineCreateRequest
 		this.chargeAmt = chargeAmt != null ? chargeAmt : statementAmt.toZero();
 		this.interestAmt = interestAmt != null ? interestAmt : statementAmt.toZero();
 		this.chargeId = chargeId;
+<<<<<<< HEAD
 		this.debitorOrCreditorId = debitorOrCreditorId;
 		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
 		//
+=======
+		this.debtorOrCreditorId = debtorOrCreditorId;
+		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
+		this.currencyRate = currencyRate;
+		this.invoiceId = invoiceId;
+		
+		this.updateAmountsFromInvoice = CoalesceUtil.coalesceNotNull(updateAmountsFromInvoice, true); // true for backwards compatibility
+		this.multiPayment = CoalesceUtil.coalesceNotNull(multiPayment, false); // false for backwards compatibility
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.eft = eft;
 	}
 

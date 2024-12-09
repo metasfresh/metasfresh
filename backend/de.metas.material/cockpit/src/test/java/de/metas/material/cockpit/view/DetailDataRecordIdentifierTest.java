@@ -1,10 +1,24 @@
 package de.metas.material.cockpit.view;
 
+<<<<<<< HEAD
+=======
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
+import de.metas.material.event.commons.ProductDescriptor;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -17,6 +31,9 @@ import org.junit.jupiter.api.Test;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.material.event.commons.ProductDescriptor;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

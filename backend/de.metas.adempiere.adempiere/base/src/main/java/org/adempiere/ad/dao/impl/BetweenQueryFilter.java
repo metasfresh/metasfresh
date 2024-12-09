@@ -22,17 +22,27 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 import java.util.Properties;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 
+<<<<<<< HEAD
 /* package */class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+=======
+import java.util.List;
+import java.util.Properties;
+
+public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	private final CompositeQueryFilter<T> filter;
 

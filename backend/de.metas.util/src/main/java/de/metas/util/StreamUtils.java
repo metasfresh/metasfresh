@@ -22,6 +22,14 @@
 
 package de.metas.util;
 
+<<<<<<< HEAD
+=======
+import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +39,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+<<<<<<< HEAD
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @UtilityClass
 public final class StreamUtils
 {
@@ -52,7 +63,12 @@ public final class StreamUtils
 		return IteratorUtils.stream(() -> readChunkOrNull(streamIterator, chunkSize));
 	}
 
+<<<<<<< HEAD
 	private static final <T> List<T> readChunkOrNull(final Iterator<T> iterator, final int chunkSize)
+=======
+	@Nullable
+	private static <T> List<T> readChunkOrNull(final Iterator<T> iterator, final int chunkSize)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<T> list = new ArrayList<>(chunkSize);
 		while (iterator.hasNext() && list.size() < chunkSize)
@@ -64,7 +80,11 @@ public final class StreamUtils
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Thanks to https://stackoverflow.com/a/27872852/1012103
+=======
+	 * Thanks to <a href="https://stackoverflow.com/a/27872852/1012103">https://stackoverflow.com/a/27872852/1012103</a>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public static <T> Predicate<T> distinctByKey(@NonNull final Function<? super T, Object> keyExtractor)
 	{

@@ -22,6 +22,7 @@
 
 package de.metas.audit.apirequest.response;
 
+<<<<<<< HEAD
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.organization.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -39,6 +40,24 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class ApiResponseAuditRepositoryTest
 {
 	private ApiResponseAuditRepository apiResponseAuditRepository;
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
+import de.metas.organization.OrgId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.time.Instant;
+
+@ExtendWith(SnapshotExtension.class)
+public class ApiResponseAuditRepositoryTest
+{
+	private ApiResponseAuditRepository apiResponseAuditRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -47,6 +66,7 @@ public class ApiResponseAuditRepositoryTest
 		apiResponseAuditRepository = new ApiResponseAuditRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -59,6 +79,8 @@ public class ApiResponseAuditRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save()
 	{
@@ -75,6 +97,10 @@ public class ApiResponseAuditRepositoryTest
 		final ApiResponseAudit responseAudit = apiResponseAuditRepository.save(apiResponseAudit);
 
 		//then
+<<<<<<< HEAD
 		expect(responseAudit).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(responseAudit);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

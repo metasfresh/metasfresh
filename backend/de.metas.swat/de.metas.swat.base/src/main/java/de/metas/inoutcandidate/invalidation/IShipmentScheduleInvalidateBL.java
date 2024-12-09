@@ -70,10 +70,17 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 
 	/**
 	 * Like {@link #notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule)}, but always also include the given sched, even if it has delivery-rule "force"
+<<<<<<< HEAD
 	 * 
 	 */
 	void notifySegmentChangedForShipmentScheduleInclSched(I_M_ShipmentSchedule schedule);
 	
+=======
+	 *
+	 */
+	void notifySegmentChangedForShipmentScheduleInclSched(I_M_ShipmentSchedule schedule);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * For the given <code>orderLine</code>, invalidate all shipment schedules that have the same product and warehouse and a matching ASI.
 	 * and <b>that that do not have "force" as delivery rule</b>.<br>

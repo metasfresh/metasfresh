@@ -25,6 +25,10 @@ package de.metas.workflow.rest_api.model;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
 import de.metas.global_qrcodes.GlobalQRCode;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.MobileApplicationId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;

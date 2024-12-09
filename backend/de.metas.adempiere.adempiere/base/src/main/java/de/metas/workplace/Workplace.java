@@ -22,6 +22,10 @@
 
 package de.metas.workplace;
 
+<<<<<<< HEAD
+=======
+import de.metas.picking.api.PickingSlotId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,5 +39,10 @@ public class Workplace
 {
 	@NonNull WorkplaceId id;
 	@NonNull String name;
+<<<<<<< HEAD
 	@Nullable WarehouseId warehouseId;
+=======
+	@NonNull WarehouseId warehouseId;
+	@Nullable PickingSlotId pickingSlotId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -1,6 +1,7 @@
 de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsByOrgId=[
   [
     {
+<<<<<<< HEAD
       "apiAuditConfigId" : 100001,
       "active" : true,
       "orgId" : 1,
@@ -18,6 +19,25 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsBy
       "userGroupInChargeId" : 1,
       "performAuditAsync" : false,
       "wrapApiResponse" : true
+=======
+      "active": true,
+      "apiAuditConfigId": 100001,
+      "forceProcessedAsync": true,
+      "isBypassAudit": false,
+      "keepErroredRequestDays": 104,
+      "keepRequestBodyDays": 100,
+      "keepRequestDays": 101,
+      "keepResponseBodyDays": 102,
+      "keepResponseDays": 103,
+      "method": "PUT",
+      "notifyUserInCharge": "ALWAYS",
+      "orgId": 1,
+      "pathPrefix": "pathPrefix",
+      "performAuditAsync": false,
+      "seqNo": 10,
+      "userGroupInChargeId": 1,
+      "wrapApiResponse": true
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     }
   ]
 ]

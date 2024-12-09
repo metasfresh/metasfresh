@@ -17,6 +17,10 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -48,7 +52,11 @@ import java.util.stream.Stream;
 
 /**
  * An {@link JavaProcess} implementation template to be used by processes which are called from views.
+<<<<<<< HEAD
  * !! Does not work when a record is displayed in the detail view !! 
+=======
+ * !! Does not work when a record is displayed in the detail view !!
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * <p>
  * Important: to check for preconditions, please implement {@link IProcessPrecondition} <b>and</b> override {@link #checkPreconditionsApplicable()}.
  */
@@ -67,6 +75,13 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	@Param(parameterName = PARAM_ViewSelectedIds, mandatory = true)
 	private String p_WebuiViewSelectedIdsStr;
 	//
+<<<<<<< HEAD
+=======
+	static final String PARAM_ViewOrderBys = "$WEBUI_ViewOrderBys";
+	@Param(parameterName = PARAM_ViewOrderBys)
+	private String p_WebuiViewOrderBysStr;
+	//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	static final String PARAM_ParentViewId = "$WEBUI_ParentViewId";
 	@Param(parameterName = PARAM_ParentViewId)
 	private String p_WebuiParentViewId;
@@ -85,15 +100,27 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	private IView _view;
 	private ViewProfileId _viewProfileId;
+<<<<<<< HEAD
 	private ViewRowIdsSelection _viewRowIdsSelection;
 	private ViewRowIdsSelection _parentViewRowIdsSelection;
 	private ViewRowIdsSelection _childViewRowIdsSelection;
 	
+=======
+	private DocumentQueryOrderByList _viewOrderBys;
+	private ViewRowIdsSelection _viewRowIdsSelection;
+	private ViewRowIdsSelection _parentViewRowIdsSelection;
+	private ViewRowIdsSelection _childViewRowIdsSelection;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected ViewBasedProcessTemplate()
 	{
 		SpringContextHolder.instance.autowire(this);
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected final IViewsRepository getViewsRepo()
 	{
 		return viewsRepo;
@@ -134,12 +161,20 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		Check.assumeNotEmpty(p_WebuiViewId, "Process parameter {} is set", PARAM_ViewId); // shall not happen
 		final IView view = viewsRepo.getView(p_WebuiViewId);
 
+<<<<<<< HEAD
+=======
+		final DocumentQueryOrderByList viewOrderBys = DocumentQueryOrderByList.parse(p_WebuiViewOrderBysStr);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(view.getViewId(), DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr));
 		final ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiParentViewId, p_WebuiParentViewSelectedIdsStr);
 		final ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiChildViewId, p_WebuiChildViewSelectedIdsStr);
 
 		setViewInfos(ViewAsPreconditionsContext.builder()
 				.view(view)
+<<<<<<< HEAD
+=======
+				.viewOrderBys(viewOrderBys)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -156,10 +191,22 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _viewProfileId;
 	}
 
+<<<<<<< HEAD
+=======
+	protected final DocumentQueryOrderByList getViewOrderBys()
+	{
+		return _viewOrderBys != null ? _viewOrderBys : DocumentQueryOrderByList.EMPTY;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void setViewInfos(@NonNull final ViewAsPreconditionsContext viewContext)
 	{
 		_view = viewContext.getView();
 		_viewProfileId = viewContext.getViewProfileId();
+<<<<<<< HEAD
+=======
+		_viewOrderBys = viewContext.getViewOrderBys();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		_viewRowIdsSelection = viewContext.getViewRowIdsSelection();
 		_parentViewRowIdsSelection = viewContext.getParentViewRowIdsSelection();
 		_childViewRowIdsSelection = viewContext.getChildViewRowIdsSelection();

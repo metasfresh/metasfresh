@@ -223,6 +223,15 @@ public final class StringUtils
 		{
 			return null;
 		}
+<<<<<<< HEAD
+=======
+		return ofBooleanNonNull(value);
+	}
+
+	@NonNull
+	public static String ofBooleanNonNull(@NonNull final Boolean value)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return value ? "Y" : "N";
 	}
 

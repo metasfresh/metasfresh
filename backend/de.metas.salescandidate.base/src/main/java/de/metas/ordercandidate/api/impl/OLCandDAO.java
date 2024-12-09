@@ -170,7 +170,11 @@ public class OLCandDAO implements IOLCandDAO
 		if (searchingTimeWindow != null)
 		{
 			olCandsQBuilder.addBetweenFilter(I_C_OLCand.COLUMNNAME_Created, TimeUtil.asTimestamp(searchingTimeWindow.getStartDate()),
+<<<<<<< HEAD
 											 TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
+=======
+					TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final List<I_C_OLCand> olCands = olCandsQBuilder.create().list();
@@ -228,6 +232,14 @@ public class OLCandDAO implements IOLCandDAO
 	@NonNull
 	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
 	{
+<<<<<<< HEAD
+=======
+		if (olCandIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
@@ -238,7 +250,11 @@ public class OLCandDAO implements IOLCandDAO
 				));
 	}
 
+<<<<<<< HEAD
 	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds,@NonNull final AsyncBatchId asyncBatchId)
+=======
+	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId asyncBatchId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
 				.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());

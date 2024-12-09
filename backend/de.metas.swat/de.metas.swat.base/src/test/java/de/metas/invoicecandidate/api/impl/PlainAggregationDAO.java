@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 
@@ -29,6 +30,14 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+=======
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class PlainAggregationDAO extends AggregationDAO
 {
@@ -37,7 +46,11 @@ public class PlainAggregationDAO extends AggregationDAO
 	private I_C_Invoice_Candidate_Agg defaultAgg = null;
 
 	@Override
+<<<<<<< HEAD
 	public I_C_Invoice_Candidate_Agg retrieveAggregate(I_C_Invoice_Candidate ic)
+=======
+	public I_C_Invoice_Candidate_Agg retrieveAggregate(@NonNull I_C_Invoice_Candidate ic)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (defaultAgg != null)
 		{

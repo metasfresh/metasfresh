@@ -25,6 +25,10 @@ package de.metas.handlingunits.receiptschedule.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -109,6 +113,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
+<<<<<<< HEAD
 				new DDOrderMoveScheduleService(ddOrderLowLevelDAO,
 											   new DDOrderMoveScheduleRepository(),
 											   huReservationService,
@@ -117,6 +122,18 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 																				  new PPOrderIssueScheduleRepository(),
 																				  new HUQtyService(InventoryService.newInstanceForUnitTesting())
 																		  ))));
+=======
+				new DDOrderMoveScheduleService(
+						ddOrderLowLevelDAO,
+						new DDOrderMoveScheduleRepository(),
+						ADReferenceService.newMocked(),
+						huReservationService,
+						new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+								new PPOrderIssueScheduleService(
+										new PPOrderIssueScheduleRepository(),
+										new HUQtyService(InventoryService.newInstanceForUnitTesting())
+								))));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 

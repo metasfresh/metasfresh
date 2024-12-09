@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 import lombok.NonNull;
@@ -12,6 +13,20 @@ import org.compiere.model.MAccount;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Getter;
 import lombok.Setter;
+=======
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import lombok.Getter;
+import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_GL_JournalLine;
+
+import java.math.BigDecimal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -43,12 +58,28 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 	@Getter
 	@Setter
 	private AcctSchemaId acctSchemaId;
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Getter
 	@Setter
 	private BigDecimal fixedCurrencyRate;
 
+<<<<<<< HEAD
 	private MAccount m_account = null;
+=======
+	private Account account = null;
+
+	@Getter
+	@Setter
+	private ProductId productId;
+
+	@Getter
+	@Setter
+	private OrderId orderId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
 	{
@@ -56,6 +87,7 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 		groupNo = glJournalLine.getGL_JournalLine_Group();
 		fixedCurrencyRate = glJournalLine.getCurrencyRate();
 	}
+<<<<<<< HEAD
 	
 	public final void setAccount(final I_C_ValidCombination acct)
 	{
@@ -66,4 +98,17 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 	{
 		return m_account;
 	}   // getAccount
+=======
+
+	public final void setAccount(final I_C_ValidCombination acct)
+	{
+		account = Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID()));
+	}
+
+	public final Account getAccount()
+	{
+		return account;
+	}   // getAccount
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

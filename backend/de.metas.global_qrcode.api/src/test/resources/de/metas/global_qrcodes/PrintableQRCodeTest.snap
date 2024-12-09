@@ -1,5 +1,15 @@
+<<<<<<< HEAD
 de.metas.global_qrcodes.PrintableQRCodeTest.checkJsonFormatIsNotChanging=[ {
   "bottomText" : "bottom text",
   "qrCode" : "qr code line 1\nline 2\nline 3",
   "topText" : "top text"
 } ]
+=======
+de.metas.global_qrcodes.PrintableQRCodeTest.checkJsonFormatIsNotChanging=[
+  {
+    "bottomText": "bottom text",
+    "qrCode": "qr code line 1\nline 2\nline 3",
+    "topText": "top text"
+  }
+]
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

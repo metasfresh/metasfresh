@@ -22,6 +22,11 @@
 
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.CreatedUpdatedInfo;
@@ -31,15 +36,22 @@ import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.MimeType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+=======
+import org.compiere.util.MimeType;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.net.URI;
 import java.time.ZonedDateTime;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -58,6 +70,14 @@ public class OrderCandidatesRestController_misc_Test
 	{
 		validateSnapshots();
 	}
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class OrderCandidatesRestController_misc_Test
+{
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Asserts that every {@link AttachmentEntryType} has a matching {@link JsonAttachmentType} and vice versa
@@ -97,7 +117,11 @@ public class OrderCandidatesRestController_misc_Test
 
 		assertThat(jsonAttachment.getType().name()).isEqualTo(AttachmentEntryType.URL.name());
 
+<<<<<<< HEAD
 		expect(jsonAttachment).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(jsonAttachment);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test

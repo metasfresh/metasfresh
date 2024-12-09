@@ -80,7 +80,11 @@ import java.util.Optional;
  * #L%
  */
 
+<<<<<<< HEAD
 final class MasterdataProvider
+=======
+public final class MasterdataProvider
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);

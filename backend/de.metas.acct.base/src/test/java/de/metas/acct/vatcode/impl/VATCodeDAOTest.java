@@ -1,10 +1,17 @@
 package de.metas.acct.vatcode.impl;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.Properties;
 
+=======
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,10 +23,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+<<<<<<< HEAD
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.util.Services;
+=======
+import java.util.Date;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -81,9 +95,15 @@ public class VATCodeDAOTest
 	{
 		// CLogMgt.getLogger(VATCodeDAO.class).setLevel(Level.FINEST);
 
+<<<<<<< HEAD
 		final VATCode code1 = VATCode.of("VATCode1");
 		final VATCode code2 = VATCode.of("VATCode2");
 		final VATCode code3 = VATCode.of("VATCode3");
+=======
+		final VATCode code1 = VATCode.of("VATCode1", 1);
+		final VATCode code2 = VATCode.of("VATCode2", 2);
+		final VATCode code3 = VATCode.of("VATCode3", 3);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(null).setValidFrom(date_1970_01_01).setVATCode(code1).build();
 		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(false).setValidFrom(date_1970_01_01).setVATCode(code2).build();
@@ -97,12 +117,20 @@ public class VATCodeDAOTest
 		assertVATCode(code1, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax1.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
 
 		// Test not matching
+<<<<<<< HEAD
 		assertVATCode(VATCode.NULL, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
+=======
+		assertVATCode(null, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
 	{
+<<<<<<< HEAD
 		final VATCode actualVATCode = vatCodeDAO.findVATCode(request);
+=======
+		final VATCode actualVATCode = vatCodeDAO.findVATCode(request).orElse(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		assertThat(actualVATCode)
 				.as("request=" + request)
 				.withFailMessage("Invalid VATCode for " + request)

@@ -21,6 +21,7 @@
  */
 package org.compiere.model;
 
+<<<<<<< HEAD
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.io.File;
@@ -44,6 +45,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -54,7 +57,13 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+<<<<<<< HEAD
 import de.metas.currency.ICurrencyBL;
+=======
+import de.metas.cache.CacheMgt;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -72,11 +81,37 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+<<<<<<< HEAD
 import de.metas.payment.api.IPaymentDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -1137,7 +1172,11 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
+<<<<<<< HEAD
 				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+=======
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1758,7 +1797,11 @@ public final class MPayment extends X_C_Payment
 					+ "SET C_Payment_ID = NULL "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
+<<<<<<< HEAD
 						int no = DB.executeUpdate(sql, get_TrxName());
+=======
+						int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 0)
 			{
 				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
@@ -1770,7 +1813,11 @@ public final class MPayment extends X_C_Payment
 					+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + getC_Invoice_ID() + ")"
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
+<<<<<<< HEAD
 			no = DB.executeUpdate(sql, get_TrxName());
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no != 0)
 			{
 				log.debug("Unlink Order #" + no);
@@ -1884,7 +1931,11 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
+<<<<<<< HEAD
 				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+=======
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment, getAD_Org_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}

@@ -12,6 +12,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+<<<<<<< HEAD
+=======
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;

@@ -13,17 +13,28 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
+<<<<<<< HEAD
 import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
+=======
+import org.compiere.acct.FactLine;
+import org.compiere.acct.PostingStatus;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Exception thrown by accounting engine on any document posting error.
  *
  * @author tsa
  */
+<<<<<<< HEAD
 @SuppressWarnings("serial")
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public final class PostingException extends AdempiereException
 {
 	@Nullable
@@ -32,7 +43,11 @@ public final class PostingException extends AdempiereException
 	private PostingStatus _postingStatus;
 	private AcctSchema _acctSchema;
 	private Fact _fact;
+<<<<<<< HEAD
 	private I_Fact_Acct _factLine;
+=======
+	private FactLine _factLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private ITranslatableString _detailMessage = TranslatableStrings.empty();
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
@@ -77,12 +92,21 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Posting Status
+<<<<<<< HEAD
 		final PostingStatus postingStatus = getPostingStatus();
 		if (postingStatus != null)
 		{
 			message.append("\n ").appendADElement("Posted").append(": ")
 					.appendADMessage(postingStatus.getAD_Message())
 					.append(" (").append(postingStatus.toString()).append(")");
+=======
+		final PostingStatus postingStatus = _postingStatus;
+		if (postingStatus != null)
+		{
+			message.append("\n ").appendADElement("Posted").append(": ")
+					.appendADMessage(postingStatus.getAdMessage())
+					.append(" (").append(postingStatus.name()).append(")");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		// Document
@@ -104,7 +128,11 @@ public final class PostingException extends AdempiereException
 			message.append("\n Fact: ").append(fact.toString());
 		}
 
+<<<<<<< HEAD
 		final I_Fact_Acct factLine = getFactLine();
+=======
+		final FactLine factLine = getFactLine();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (factLine != null)
 		{
 			message.append("\n @Fact_Acct_ID@: ").append(factLine.toString());
@@ -143,6 +171,7 @@ public final class PostingException extends AdempiereException
 		return _document;
 	}
 
+<<<<<<< HEAD
 	public PostingStatus getPostingStatus()
 	{
 		return _postingStatus;
@@ -158,6 +187,11 @@ public final class PostingException extends AdempiereException
 	}
 
 	public PostingException setPostingStatus(final PostingStatus postingStatus)
+=======
+	public Optional<PostingStatus> getPostingStatus() {return Optional.ofNullable(_postingStatus);}
+
+	public PostingException setPostingStatus(@Nullable final PostingStatus postingStatus)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		_postingStatus = postingStatus;
 		resetMessageBuilt();
@@ -251,12 +285,20 @@ public final class PostingException extends AdempiereException
 		return _fact;
 	}
 
+<<<<<<< HEAD
 	public I_Fact_Acct getFactLine()
+=======
+	private FactLine getFactLine()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return _factLine;
 	}
 
+<<<<<<< HEAD
 	public PostingException setFactLine(final I_Fact_Acct factLine)
+=======
+	public PostingException setFactLine(final FactLine factLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this._factLine = factLine;
 		resetMessageBuilt();
@@ -293,6 +335,10 @@ public final class PostingException extends AdempiereException
 		return _docLine;
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("unused")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public PostingException setLogLevel(@NonNull final Level logLevel)
 	{
 		this._logLevel = logLevel;

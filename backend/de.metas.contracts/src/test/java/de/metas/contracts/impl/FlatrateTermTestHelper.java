@@ -1,5 +1,9 @@
 package de.metas.contracts.impl;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -23,9 +27,13 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
+<<<<<<< HEAD
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
+=======
+import de.metas.pricing.rules.Discount;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -213,7 +221,12 @@ public class FlatrateTermTestHelper
 				documentLocationBL,
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
+<<<<<<< HEAD
 				new CallOrderContractService());
+=======
+				new CallOrderContractService(),
+				new GLCategoryRepository());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

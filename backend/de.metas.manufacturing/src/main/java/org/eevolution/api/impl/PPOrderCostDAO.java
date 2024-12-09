@@ -170,6 +170,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
 		final CostPrice price = from.getPrice();
+<<<<<<< HEAD
 		record.setCurrentCostPrice(price.getOwnCostPrice().getValue());
 		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
 
@@ -177,6 +178,15 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setC_UOM_ID(from.getAccumulatedQty().getUomId().getRepoId());
 		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
 		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
+=======
+		record.setCurrentCostPrice(price.getOwnCostPrice().toBigDecimal());
+		record.setCurrentCostPriceLL(price.getComponentsCostPrice().toBigDecimal());
+
+		record.setCumulatedAmt(from.getAccumulatedAmount().toBigDecimal());
+		record.setC_UOM_ID(from.getAccumulatedQty().getUomId().getRepoId());
+		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
+		record.setPostCalculationAmt(from.getPostCalculationAmount().toBigDecimal());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (from.getTrxType().isCoProduct() && from.getCoProductCostDistributionPercent() != null)
 		{

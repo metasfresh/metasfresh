@@ -1,12 +1,22 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import org.compiere.model.I_M_Product;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_M_Product;
+
+import java.util.Map;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -41,12 +51,17 @@ public interface IProductCostingBL extends ISingletonService
 	@NonNull
 	CostingLevel getCostingLevel(I_M_Product product, AcctSchema acctSchema);
 
+<<<<<<< HEAD
 	/**
 	 * Get Product Costing Method
 	 *
 	 * @param C_AcctSchema_ID accounting schema ID
 	 * @return product costing method
 	 */
+=======
+	@NonNull Map<ProductId, CostingLevel> getCostingLevels(Set<ProductId> productIds, AcctSchema acctSchema);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	CostingMethod getCostingMethod(I_M_Product product, AcctSchema acctSchema);
 

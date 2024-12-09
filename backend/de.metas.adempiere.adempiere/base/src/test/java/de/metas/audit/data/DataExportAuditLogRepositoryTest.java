@@ -22,12 +22,18 @@
 
 package de.metas.audit.data;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.audit.data.model.CreateDataExportAuditLogRequest;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +46,17 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 public class DataExportAuditLogRepositoryTest
 {
 	private DataExportAuditLogRepository dataExportAuditLogRepository;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SnapshotExtension.class)
+public class DataExportAuditLogRepositoryTest
+{
+	private DataExportAuditLogRepository dataExportAuditLogRepository;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -48,6 +65,7 @@ public class DataExportAuditLogRepositoryTest
 		dataExportAuditLogRepository = new DataExportAuditLogRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -60,6 +78,8 @@ public class DataExportAuditLogRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void save()
 	{
@@ -75,6 +95,10 @@ public class DataExportAuditLogRepositoryTest
 		final DataExportAuditLog result = dataExportAuditLogRepository.createNew(dataAuditLogRequest);
 
 		// then
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

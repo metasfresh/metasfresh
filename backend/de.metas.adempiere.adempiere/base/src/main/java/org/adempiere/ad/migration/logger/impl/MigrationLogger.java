@@ -22,6 +22,7 @@ package org.adempiere.ad.migration.logger.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
@@ -30,6 +31,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
+import org.adempiere.ad.migration.logger.TableNamesSkipList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.model.I_AD_MigrationData;
 import org.adempiere.ad.migration.model.I_AD_MigrationStep;
@@ -40,6 +52,7 @@ import org.adempiere.ad.migration.util.IDataConverter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -55,10 +68,18 @@ import org.compiere.model.I_AD_Preference;
 import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
+=======
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Process_Para;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
+<<<<<<< HEAD
 import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task_Access;
 import org.compiere.model.I_AD_Window_Access;
@@ -66,6 +87,8 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -75,6 +98,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -229,6 +253,37 @@ public class MigrationLogger implements IMigrationLogger
 		{
 			return _tablesIgnoreClientRO;
 		}
+=======
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
+public class MigrationLogger implements IMigrationLogger
+{
+	private static final Logger logger = LogManager.getLogger(MigrationLogger.class);
+
+	private final IDataConverter converter = new DefaultDataConverter();
+
+	private final TableNamesSkipList tableNamesSkipList = new TableNamesSkipList();
+
+
+	@Override
+	public boolean isLogTableName(final String tableName, final ClientId clientId)
+	{
+		return tableNamesSkipList.isLogTableName(tableName, clientId);
+	}
+
+	@Override
+	public void addTablesToIgnoreList(final String... tableNames) {tableNamesSkipList.addTablesToIgnoreList(tableNames);}
+
+	@Override
+	public void addTablesToIgnoreList(final Collection<String> tableNames) {tableNamesSkipList.addTablesToIgnoreList(tableNames);}
+
+	@Override
+	public ImmutableSet<String> getTablesToIgnoreUC(@NonNull final ClientId clientId)
+	{
+		return tableNamesSkipList.getTablesToIgnoreUC(clientId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -245,7 +300,11 @@ public class MigrationLogger implements IMigrationLogger
 		{
 			return;
 		}
+<<<<<<< HEAD
 		if (!isLogTableName(po.get_TableName()))
+=======
+		if (!isLogTableName(po.get_TableName(), ClientId.ofRepoId(po.getAD_Client_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
@@ -317,7 +376,11 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
+<<<<<<< HEAD
 		data.setAD_Column_ID(infoColumn.getAD_Column_ID());
+=======
+		data.setAD_Column_ID(AdColumnId.toRepoId(infoColumn.getAD_Column_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		boolean create = false;
 
 		//

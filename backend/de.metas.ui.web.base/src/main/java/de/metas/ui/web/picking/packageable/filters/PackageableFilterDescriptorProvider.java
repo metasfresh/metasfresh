@@ -78,10 +78,17 @@ public class PackageableFilterDescriptorProvider implements DocumentFilterDescri
 				.setFrequentUsed(true)
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 									  .setFieldName(PARAM_Barcode)
 									  .setDisplayName(msgBL.translatable("Barcode"))
 									  .setMandatory(true)
 									  .setWidgetType(DocumentFieldWidgetType.Text)
+=======
+									  .fieldName(PARAM_Barcode)
+									  .displayName(msgBL.translatable("Barcode"))
+									  .mandatory(true)
+									  .widgetType(DocumentFieldWidgetType.Text)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							  // .barcodeScannerType(BarcodeScannerType.QRCode)
 				)
 				.build();

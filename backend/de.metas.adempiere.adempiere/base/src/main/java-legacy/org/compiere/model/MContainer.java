@@ -438,7 +438,11 @@ public class MContainer extends X_CM_Container
 					",0, 'Y', now(), 0, now(), 0,").append (
 					getAD_Tree_ID ()).append (",").append (get_ID ()).append (
 					", 0, 999)");
+<<<<<<< HEAD
 			int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (no > 0)
 				log.debug("#" + no + " - TreeType=CMC");
 			else
@@ -482,7 +486,11 @@ public class MContainer extends X_CM_Container
 		StringBuffer sb = new StringBuffer ("DELETE FROM AD_TreeNodeCMC ")
 			.append (" WHERE Node_ID=").append (get_ID ()).append (
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
+<<<<<<< HEAD
 		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no > 0)
 			log.debug("#" + no + " - TreeType=CMC");
 		else
@@ -505,7 +513,11 @@ public class MContainer extends X_CM_Container
 		StringBuffer sb = new StringBuffer ("DELETE FROM AD_TreeNodeCMC ")
 			.append (" WHERE Node_ID=").append (get_IDOld ()).append (
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
+<<<<<<< HEAD
 		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// If 0 than there is nothing to delete which is okay.
 		if (no > 0)
 			log.debug("#" + no + " - TreeType=CMC");

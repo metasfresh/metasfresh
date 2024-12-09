@@ -25,6 +25,16 @@ public class Topic
 		return builder().name(name).type(Type.DISTRIBUTED).build();
 	}
 
+<<<<<<< HEAD
+=======
+	public static Topic distributedAndAsync(final String name)
+	{
+		final Topic topic = distributed(name);
+		EventBusConfig.alwaysConsiderAsync(topic);
+		return topic;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static Topic local(final String name)
 	{
 		return builder().name(name).type(Type.LOCAL).build();

@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
@@ -88,7 +92,10 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -138,7 +145,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
@@ -1276,7 +1286,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@NonNull
 	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{
+<<<<<<< HEAD
 		return adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		return adReferenceService.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private boolean isWholeHierarchyCleared(@NonNull final I_M_HU hu)

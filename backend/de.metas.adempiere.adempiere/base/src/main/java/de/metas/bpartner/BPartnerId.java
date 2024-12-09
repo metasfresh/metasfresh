@@ -38,6 +38,11 @@ import java.util.Optional;
 @Value
 public class BPartnerId implements RepoIdAware
 {
+<<<<<<< HEAD
+=======
+	public final static BPartnerId NONE = BPartnerId.ofRepoId(Integer.MAX_VALUE);
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	int repoId;
 
 	@JsonCreator

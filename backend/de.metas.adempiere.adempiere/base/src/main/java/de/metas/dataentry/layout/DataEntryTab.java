@@ -1,20 +1,32 @@
 package de.metas.dataentry.layout;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.DataEntryTabId;
+=======
+import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
+import de.metas.dataentry.model.I_DataEntry_Record;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+=======
+
+import java.util.List;
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -55,7 +67,11 @@ public class DataEntryTab
 
 	ImmutableList<DataEntrySubTab> subTabs;
 
+<<<<<<< HEAD
 	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record_Assignment}s are linked. */
+=======
+	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record}s are linked. */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	DocumentLinkColumnName documentLinkColumnName;
 
 	@Builder
@@ -82,6 +98,7 @@ public class DataEntryTab
 		return subTabs.stream().map(DataEntrySubTab::getId);
 	}
 
+<<<<<<< HEAD
 	public static Set<DataEntrySubTabId> getSubTabIds(final Collection<DataEntryTab> tabs)
 	{
 		return tabs.stream()
@@ -95,6 +112,8 @@ public class DataEntryTab
 				.orElseThrow(() -> new AdempiereException("@NotFound@ " + subTabId + " in " + this));
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	Optional<DataEntrySubTab> getSubTabByIdIfPresent(@NonNull final DataEntrySubTabId subTabId)
 	{
 		return getFirstSubTabMatching(subTab -> DataEntrySubTabId.equals(subTab.getId(), subTabId));

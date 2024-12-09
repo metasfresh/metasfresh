@@ -98,11 +98,19 @@ public final class ASIEditingInfo
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
 	private ImmutableList<I_M_Attribute> _availableAttributes;
+<<<<<<< HEAD
 	private I_M_AttributeSetInstance _attributeSetInstance;
 	private final boolean _allowSelectExistingASI;
 	private final boolean isLotEnabled;
 	private final boolean isSerNoEnabled;
 	private final boolean isGuaranteeDateEnabled;
+=======
+
+	@Nullable
+	private final I_M_AttributeSetInstance _attributeSetInstance;
+
+	private final boolean _allowSelectExistingASI;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder
 	private ASIEditingInfo(
@@ -136,6 +144,7 @@ public final class ASIEditingInfo
 		// Flags
 		_allowSelectExistingASI = _type == WindowType.Regular;
 
+<<<<<<< HEAD
 		isLotEnabled = _type == WindowType.Regular
 				&& _attributeSet != null && _attributeSet.isLot();
 		isSerNoEnabled = _type == WindowType.Regular
@@ -150,6 +159,11 @@ public final class ASIEditingInfo
 	}
 
 	private static WindowType extractType(String callerTableName, final int callerColumnId)
+=======
+	}
+
+	private static WindowType extractType(final String callerTableName, final int callerColumnId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (I_M_Product.Table_Name.equals(callerTableName)) // FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID's AD_Column_ID = 8418
 		{
@@ -189,6 +203,10 @@ public final class ASIEditingInfo
 		return _attributeSetInstanceId;
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return _attributeSetInstance;
@@ -294,6 +312,10 @@ public final class ASIEditingInfo
 		return attributeSet;
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private I_M_AttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
 	{
 		if (asi == null)
@@ -305,6 +327,10 @@ public final class ASIEditingInfo
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private I_M_AttributeSet retrieveProductAttributeSetOrNull()
 	{
 		final ProductId productId = getProductId();
@@ -317,6 +343,10 @@ public final class ASIEditingInfo
 	}
 
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private I_M_AttributeSet retrieveProductMasterDataSchema()
 	{
 		final ProductId productId = getProductId();
@@ -328,6 +358,7 @@ public final class ASIEditingInfo
 		return productBL.getProductMasterDataSchemaOrNull(productId);
 	}
 
+<<<<<<< HEAD
 	public boolean isLotEnabled()
 	{
 		return isLotEnabled;
@@ -343,6 +374,8 @@ public final class ASIEditingInfo
 		return isGuaranteeDateEnabled;
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isExcludedAttributeSet()
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId();
@@ -441,7 +474,11 @@ public final class ASIEditingInfo
 						.stream()
 						.sorted(Comparator.comparing(I_M_Attribute::getName)
 								.thenComparing(I_M_Attribute::getM_Attribute_ID))
+<<<<<<< HEAD
 						.filter(attribute -> isPricingRelevantAttribute(attribute));
+=======
+						.filter(this::isPricingRelevantAttribute);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				break;
 			}
 			case StrictASIAttributes:

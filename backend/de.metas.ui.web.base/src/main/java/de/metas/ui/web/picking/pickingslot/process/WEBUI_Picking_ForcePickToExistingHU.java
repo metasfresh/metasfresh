@@ -22,10 +22,15 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
+<<<<<<< HEAD
 import de.metas.handlingunits.HuId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+=======
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionsResolution;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Optional;
 
@@ -52,6 +57,7 @@ public class WEBUI_Picking_ForcePickToExistingHU extends WEBUI_Picking_PickQtyTo
 
 	protected String doIt() throws Exception
 	{
+<<<<<<< HEAD
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
 		final HuId packToHuId = pickingSlotRow.getHuId();
@@ -59,6 +65,11 @@ public class WEBUI_Picking_ForcePickToExistingHU extends WEBUI_Picking_PickQtyTo
 		validatePickingToHU();
 
 		forcePick(getQtyToPack(), packToHuId);
+=======
+		validatePickingToHU();
+
+		forcePick(getQtyToPack(), getPackToHuId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		invalidateView();
 		invalidateParentView();

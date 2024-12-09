@@ -22,12 +22,21 @@ package org.adempiere.ad.service;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.Properties;
 
 import org.compiere.model.I_AD_Sequence;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.ISingletonService;
+=======
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_AD_Sequence;
+
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Service to access the actual {@link I_AD_Sequence} table. To get actual sequence numbers, use {@link IDocumentNoBuilderFactory}.
@@ -45,4 +54,10 @@ public interface ISequenceDAO extends ISingletonService
 	 * Rename the sequence name when a given table name was changed
 	 */
 	void renameTableSequence(Properties ctx, String tableNameOld, String tableNameNew);
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	I_AD_Sequence retrieveSequenceByName(@NonNull String sequenceName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

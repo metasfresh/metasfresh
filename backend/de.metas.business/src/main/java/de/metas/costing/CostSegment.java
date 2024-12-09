@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
@@ -11,6 +12,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+=======
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -37,6 +48,7 @@ import lombok.Value;
 @Value
 public class CostSegment
 {
+<<<<<<< HEAD
 	@Getter(AccessLevel.NONE)
 	CostingLevel costingLevel; // we have it here only for toString()
 
@@ -47,6 +59,17 @@ public class CostSegment
 	OrgId orgId;
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
+=======
+	@NonNull CostingLevel costingLevel;
+
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostTypeId costTypeId;
+
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder(toBuilder = true)
 	private CostSegment(
@@ -80,4 +103,13 @@ public class CostSegment
 	{
 		return CostSegmentAndElement.of(this, costElementId);
 	}
+<<<<<<< HEAD
+=======
+
+	public boolean isMatching(@NonNull final OrgId orgId)
+	{
+		final OrgId orgIdEffective = costingLevel.effectiveValue(orgId);
+		return OrgId.equals(this.orgId, orgIdEffective);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

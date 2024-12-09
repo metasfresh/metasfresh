@@ -1,6 +1,10 @@
 package de.metas.common.rest_api.v2.authentication;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonProperty;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.v2.i18n.JsonMessages;
@@ -27,6 +31,13 @@ public class JsonAuthResponse
  	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Integer userId;
 
+<<<<<<< HEAD
+=======
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String userFullname;
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String error;
 

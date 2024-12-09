@@ -106,4 +106,9 @@ public interface IAllocationDAO extends ISingletonService
 	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
 
 	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
+<<<<<<< HEAD
+=======
+
+	@NonNull I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

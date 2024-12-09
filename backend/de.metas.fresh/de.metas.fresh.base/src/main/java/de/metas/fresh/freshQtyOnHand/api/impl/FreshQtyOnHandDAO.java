@@ -22,15 +22,28 @@ package de.metas.fresh.freshQtyOnHand.api.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 
+=======
+import de.metas.fresh.freshQtyOnHand.FreshQtyOnHandId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class FreshQtyOnHandDAO implements IFreshQtyOnHandDAO
 {
@@ -51,4 +64,19 @@ public class FreshQtyOnHandDAO implements IFreshQtyOnHandDAO
 
 		return result;
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	public I_Fresh_QtyOnHand getById(@NonNull final FreshQtyOnHandId freshQtyOnHandId)
+	{
+		final I_Fresh_QtyOnHand freshQtyOnHandRecord = InterfaceWrapperHelper.load(freshQtyOnHandId, I_Fresh_QtyOnHand.class);
+		if (freshQtyOnHandRecord == null)
+		{
+			throw new AdempiereException("@NotFound@: " + freshQtyOnHandId);
+		}
+
+		return freshQtyOnHandRecord;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

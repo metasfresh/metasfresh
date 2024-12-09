@@ -24,6 +24,11 @@ package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -32,16 +37,24 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+<<<<<<< HEAD
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+=======
+import de.metas.banking.service.ReconcileAsBankTransferRequest;
+import de.metas.currency.Amount;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+<<<<<<< HEAD
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
@@ -51,10 +64,23 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+=======
+import de.metas.payment.PaymentCurrencyContext;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -62,6 +88,13 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
+=======
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -73,8 +106,12 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+<<<<<<< HEAD
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+=======
+	private final IPostingService postingService = Services.get(IPostingService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
 
@@ -130,6 +167,7 @@ public class BankStatementBL implements IBankStatementBL
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
 		// Make sure the period is open
+<<<<<<< HEAD
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
@@ -137,6 +175,32 @@ public class BankStatementBL implements IBankStatementBL
 
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
+=======
+		if (bankStatement.isPosted())
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
+			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+
+			factAcctDAO.deleteForDocumentModel(bankStatement);
+
+			bankStatement.setPosted(false);
+			InterfaceWrapperHelper.save(bankStatement);
+		}
+
+		postIt(bankStatement);
+	}
+
+	private void postIt(final I_C_BankStatement bankStatement)
+	{
+		postingService.newPostingRequest()
+				.setClientId(ClientId.ofRepoId(bankStatement.getAD_Client_ID()))
+				.setDocumentRef(TableRecordReference.of(bankStatement))
+				.setFailOnError(false)
+				.onErrorNotifyUser(UserId.ofRepoId(bankStatement.getUpdatedBy()))
+				.setPostImmediate(IPostingRequestBuilder.PostImmediate.No)
+				.postIt();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -171,7 +235,68 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+=======
+	public void reconcileAsBankTransfer(@NonNull final ReconcileAsBankTransferRequest request)
+	{
+		if (BankStatementId.equals(request.getBankStatementId(), request.getCounterpartBankStatementId()))
+		{
+			throw new AdempiereException("Matching same bank statement is not allowed");
+		}
+		if (BankStatementLineId.equals(request.getBankStatementLineId(), request.getCounterpartBankStatementLineId()))
+		{
+			throw new AdempiereException("Matching same bank statement line is not allowed");
+		}
+
+		final I_C_BankStatement bankStatement = getById(request.getBankStatementId());
+		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
+		final I_C_BankStatementLine line = getLineById(request.getBankStatementLineId());
+		if (line.isReconciled())
+		{
+			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
+		}
+
+		final I_C_BankStatement counterpartBankStatement = getById(request.getCounterpartBankStatementId());
+		assertBankStatementIsDraftOrInProcessOrCompleted(counterpartBankStatement);
+		final I_C_BankStatementLine counterpartLine = getLineById(request.getCounterpartBankStatementLineId());
+		if (counterpartLine.isReconciled())
+		{
+			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
+		}
+
+		final boolean sameCurrency = line.getC_Currency_ID() == counterpartLine.getC_Currency_ID();
+		if (sameCurrency && line.getTrxAmt().negate().compareTo(counterpartLine.getTrxAmt()) != 0)
+		{
+			throw new AdempiereException("Transfer amount differs"); // TODO: translate
+		}
+
+		line.setC_BP_BankAccountTo_ID(counterpartBankStatement.getC_BP_BankAccount_ID());
+		line.setLink_BankStatementLine_ID(counterpartLine.getC_BankStatementLine_ID());
+		line.setIsReconciled(true);
+		InterfaceWrapperHelper.save(line);
+
+		counterpartLine.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
+		counterpartLine.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
+		counterpartLine.setIsReconciled(true);
+		InterfaceWrapperHelper.save(counterpartLine);
+
+		unpost(bankStatement);
+		unpost(counterpartBankStatement);
+	}
+
+	@Override
+	public void assertBankStatementIsDraftOrInProcessOrCompleted(final I_C_BankStatement bankStatement)
+	{
+		if (!DocStatus.ofCode(bankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
+		}
+	}
+
+	@Override
+	public void unreconcile(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (bankStatementLines.isEmpty())
 		{
@@ -193,6 +318,7 @@ public class BankStatementBL implements IBankStatementBL
 				paymentIdsToUnReconcile.add(paymentId);
 			}
 
+<<<<<<< HEAD
 			bankStatementLine.setIsReconciled(false);
 			bankStatementLine.setIsMultiplePaymentOrInvoice(false);
 			bankStatementLine.setIsMultiplePayment(false);
@@ -200,6 +326,16 @@ public class BankStatementBL implements IBankStatementBL
 			bankStatementLine.setC_Payment_ID(-1);
 
 			bankStatementDAO.save(bankStatementLine);
+=======
+			final BankStatementLineId linkBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bankStatementLine.getLink_BankStatementLine_ID());
+			if (linkBankStatementLineId != null)
+			{
+				final I_C_BankStatementLine linkBankStatementLine = getLineById(linkBankStatementLineId);
+				markAsNotReconciledAndSave(linkBankStatementLine);
+			}
+
+			markAsNotReconciledAndSave(bankStatementLine);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -212,6 +348,22 @@ public class BankStatementBL implements IBankStatementBL
 		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
 	}
 
+<<<<<<< HEAD
+=======
+	private void markAsNotReconciledAndSave(final I_C_BankStatementLine bankStatementLine)
+	{
+		bankStatementLine.setIsReconciled(false);
+
+		bankStatementLine.setLink_BankStatementLine_ID(-1);
+
+		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
+		bankStatementLine.setIsMultiplePayment(false);
+		bankStatementLine.setC_Payment_ID(-1);
+
+		bankStatementDAO.save(bankStatementLine);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public void deleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
 	{
@@ -245,17 +397,37 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public BankStatementLineReferenceList getLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	{
+		return bankStatementDAO.getLineReferences(bankStatementLineIds);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+<<<<<<< HEAD
 
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+=======
+		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
+
+		if (bankStatementLine.isUpdateAmountsFromInvoice())
+		{
+			bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+			bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
+			bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -269,6 +441,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = getPaymentCurrencyContext(bankStatementLine);
@@ -296,6 +469,12 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
 				.currencyConversionTypeId(currencyConversionBL.getCurrencyConversionTypeId(ConversionTypeMethod.Spot));
+=======
+	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
+				.currencyConversionTypeId(null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
@@ -313,4 +492,41 @@ public class BankStatementBL implements IBankStatementBL
 		return result.build();
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public void changeCurrencyRate(@NonNull final BankStatementLineId bankStatementLineId, @NonNull final BigDecimal currencyRate)
+	{
+		if (currencyRate.signum() == 0)
+		{
+			throw new AdempiereException("Invalid currency rate: " + currencyRate);
+		}
+
+		final I_C_BankStatementLine line = getLineById(bankStatementLineId);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(line.getC_BankStatement_ID());
+
+		final I_C_BankStatement bankStatement = getById(bankStatementId);
+		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
+		final CurrencyId baseCurrencyId = getBaseCurrencyId(line);
+		if (CurrencyId.equals(currencyId, baseCurrencyId))
+		{
+			throw new AdempiereException("line is not in foreign currency");
+		}
+
+		line.setCurrencyRate(currencyRate);
+		InterfaceWrapperHelper.save(line);
+
+		unpost(bankStatement);
+	}
+
+	@Override
+	public CurrencyId getBaseCurrencyId(final I_C_BankStatementLine line)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID());
+		return moneyService.getBaseCurrencyId(clientAndOrgId);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

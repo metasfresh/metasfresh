@@ -1,5 +1,9 @@
 package de.metas.acct.api;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.Account;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +35,7 @@ import lombok.Value;
 public class AcctSchemaDefaultAccounts
 {
 	@NonNull
+<<<<<<< HEAD
 	AccountId realizedGainAcctId;
 	@NonNull
 	AccountId realizedLossAcctId;
@@ -39,4 +44,14 @@ public class AcctSchemaDefaultAccounts
 	AccountId unrealizedGainAcctId;
 	@NonNull
 	AccountId unrealizedLossAcctId;
+=======
+	Account realizedGainAcct;
+	@NonNull
+	Account realizedLossAcct;
+
+	@NonNull
+	Account unrealizedGainAcct;
+	@NonNull
+	Account unrealizedLossAcct;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

@@ -36,10 +36,22 @@ BEGIN
 
     UPDATE ad_user SET password =public.hash_column_value_if_needed(valueplain := p_target_metasfresh_pw) WHERE name = 'metasfresh';
 
+<<<<<<< HEAD
+=======
+    -- not included in mini dumps
+    CREATE SCHEMA IF NOT EXISTS backup;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     IF p_target_has_reports_service
     THEN
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/ReportServlet' WHERE name ILIKE 'de.metas.adempiere.report.jasper.JRServerServlet';
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/BarcodeServlet' WHERE name ILIKE 'de.metas.adempiere.report.barcode.BarcodeServlet';
+<<<<<<< HEAD
+=======
+    ELSE
+        PERFORM set_sysconfig_value('de.metas.adempiere.report.jasper.JRServerServlet','http://app:8282/adempiereJasper/ReportServlet');
+        PERFORM set_sysconfig_value('de.metas.adempiere.report.barcode.BarcodeServlet','http://app:8282/adempiereJasper/BarcodeServlet');
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     END IF;
 
     UPDATE externalsystem_config SET isactive = 'N' WHERE TRUE;

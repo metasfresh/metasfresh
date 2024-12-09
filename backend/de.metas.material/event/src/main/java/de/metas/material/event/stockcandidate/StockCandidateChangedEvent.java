@@ -44,7 +44,10 @@ public class StockCandidateChangedEvent implements MaterialEvent
 	MaterialDescriptor materialDescriptor;
 
 	@JsonCreator
+<<<<<<< HEAD
 	@Builder
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public StockCandidateChangedEvent(
 			@JsonProperty("eventDescriptor") final @NonNull EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final @NonNull MaterialDescriptor materialDescriptor)

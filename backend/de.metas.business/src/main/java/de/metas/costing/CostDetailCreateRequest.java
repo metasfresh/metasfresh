@@ -2,7 +2,12 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
+<<<<<<< HEAD
 import de.metas.money.CurrencyConversionTypeId;
+=======
+import de.metas.costing.methods.CostAmountType;
+import de.metas.currency.CurrencyConversionContext;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -16,7 +21,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+import java.time.Instant;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Objects;
 
 /*
@@ -46,6 +55,7 @@ import java.util.Objects;
 @EqualsAndHashCode(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
+<<<<<<< HEAD
 	AcctSchemaId acctSchemaId;
 	ClientId clientId;
 	OrgId orgId;
@@ -64,6 +74,27 @@ public class CostDetailCreateRequest
 	String description;
 
 	CostAmount explicitCostPrice;
+=======
+	@Nullable AcctSchemaId acctSchemaId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull CostingDocumentRef documentRef;
+	/**
+	 * Initial document reference (in case of reversal)
+	 */
+	@Nullable CostingDocumentRef initialDocumentRef;
+	@Nullable CostElement costElement;
+	@NonNull CostAmountType amtType;
+	@NonNull CostAmount amt;
+	@NonNull Quantity qty;
+	@Nullable CurrencyConversionContext currencyConversionContext;
+	@NonNull Instant date;
+	@Nullable String description;
+
+	@Nullable CostAmount explicitCostPrice;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -75,10 +106,18 @@ public class CostDetailCreateRequest
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final CostingDocumentRef initialDocumentRef,
 			@Nullable final CostElement costElement,
+<<<<<<< HEAD
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
 			@NonNull final LocalDate date,
+=======
+			@Nullable final CostAmountType amtType,
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty,
+			@Nullable final CurrencyConversionContext currencyConversionContext,
+			@NonNull final Instant date,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final String description,
 			@Nullable final CostAmount explicitCostPrice)
 	{
@@ -90,9 +129,16 @@ public class CostDetailCreateRequest
 		this.documentRef = documentRef;
 		this.costElement = costElement;
 		this.initialDocumentRef = initialDocumentRef;
+<<<<<<< HEAD
 		this.amt = amt;
 		this.qty = qty;
 		this.currencyConversionTypeId = currencyConversionTypeId;
+=======
+		this.amtType = amtType != null ? amtType : CostAmountType.MAIN;
+		this.amt = amt;
+		this.qty = qty;
+		this.currencyConversionContext = currencyConversionContext;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
@@ -120,9 +166,15 @@ public class CostDetailCreateRequest
 		return getCostElement().getId();
 	}
 
+<<<<<<< HEAD
 	public boolean isAllCostElements()
 	{
 		return costElement == null;
+=======
+	public boolean isExplicitCostElement()
+	{
+		return costElement != null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public boolean isReversal()
@@ -130,6 +182,14 @@ public class CostDetailCreateRequest
 		return getInitialDocumentRef() != null;
 	}
 
+<<<<<<< HEAD
+=======
+	public boolean isOutbound()
+	{
+		return getQty().signum() < 0 && !isReversal();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		if (AcctSchemaId.equals(this.acctSchemaId, acctSchemaId))
@@ -152,12 +212,43 @@ public class CostDetailCreateRequest
 
 	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
 	{
+<<<<<<< HEAD
 		if (Objects.equals(this.amt, amt))
+=======
+		return withAmountAndType(amt, this.amtType);
+	}
+
+	public CostDetailCreateRequest withAmountAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType amtType)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.amtType, amtType))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return this;
 		}
 
+<<<<<<< HEAD
 		return toBuilder().amt(amt).build();
+=======
+		return toBuilder().amt(amt).amtType(amtType).build();
+	}
+
+	public CostDetailCreateRequest withAmountAndTypeAndQty(@NonNull final CostAmount amt, @NonNull final CostAmountType amtType, @NonNull final Quantity qty)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.amtType, amtType)
+				&& Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().amt(amt).amtType(amtType).qty(qty).build();
+	}
+
+	public CostDetailCreateRequest withAmountAndTypeAndQty(@NonNull final CostAmountAndQty amtAndQty, @NonNull final CostAmountType amtType)
+	{
+		return withAmountAndTypeAndQty(amtAndQty.getAmt(), amtType, amtAndQty.getQty());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public CostDetailCreateRequest withAmountAndQty(
@@ -206,6 +297,14 @@ public class CostDetailCreateRequest
 		return toBuilder().qty(qty).build();
 	}
 
+<<<<<<< HEAD
+=======
+	public CostDetailCreateRequest withQtyZero()
+	{
+		return withQty(qty.toZero());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public CostDetailBuilder toCostDetailBuilder()
 	{
 		final CostDetailBuilder costDetail = CostDetail.builder()
@@ -215,13 +314,24 @@ public class CostDetailCreateRequest
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				//
+<<<<<<< HEAD
+=======
+				.amtType(getAmtType())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.amt(getAmt())
 				.qty(getQty())
 				//
 				.documentRef(getDocumentRef())
+<<<<<<< HEAD
 				.description(getDescription());
 
 		if (!isAllCostElements())
+=======
+				.description(getDescription())
+				.dateAcct(getDate());
+
+		if (isExplicitCostElement())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			costDetail.costElementId(getCostElementId());
 		}

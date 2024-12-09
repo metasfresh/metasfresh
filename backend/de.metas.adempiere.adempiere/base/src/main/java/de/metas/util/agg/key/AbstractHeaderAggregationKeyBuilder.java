@@ -22,13 +22,21 @@
 
 package de.metas.util.agg.key;
 
+<<<<<<< HEAD
 import java.util.List;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.util.agg.key.AbstractAggregationKeyBuilder;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+<<<<<<< HEAD
+=======
+import java.util.List;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * Base class for header aggregation key builders that uses {@link IAggregationKeyRegistry#getValuesForModel(String, Object)} to for the aggregation keys' components.
  */
@@ -55,7 +63,11 @@ public class AbstractHeaderAggregationKeyBuilder<T> extends AbstractAggregationK
 		return aggregationKey1.equals(aggregationKey2);
 	}
 
+<<<<<<< HEAD
 	private final ArrayKey buildArrayKey(final T item)
+=======
+	private ArrayKey buildArrayKey(final T item)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final List<Object> keyValues = aggregationKeyRegistry.getValuesForModel(registrationKey, item);
 		return Util.mkKey(keyValues.toArray());

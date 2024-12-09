@@ -1,5 +1,37 @@
 package org.adempiere.ad.ui.api.impl;
 
+<<<<<<< HEAD
+=======
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.table.api.TableName;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.ad.ui.spi.IStatefulTabCallout;
+import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.ad.ui.spi.TabCallout;
+import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.I_AD_Tab_Callout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -7,6 +39,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -33,11 +66,50 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class TabCalloutFactory implements ITabCalloutFactory
 {
 	private static final transient Logger logger = LogManager.getLogger(TabCalloutFactory.class);
 
 	private final SetMultimap<String, Class<? extends ITabCallout>> tableName2tabCalloutClasses = LinkedHashMultimap.create();
+<<<<<<< HEAD
+=======
+	private final ImmutableSetMultimap<TableName, ITabCallout> springBeansByTableName;
+
+	public TabCalloutFactory()
+	{
+		this.springBeansByTableName = computeSpringBeansByTableName();
+		logger.info("Registered spring beans tab callouts: {}", this.springBeansByTableName);
+	}
+
+	private static ImmutableSetMultimap<TableName, ITabCallout> computeSpringBeansByTableName()
+	{
+		if (Adempiere.isUnitTestMode() && !SpringContextHolder.instance.isApplicationContextSet())
+		{
+			logger.info("Skip fetching tab callouts from spring context because context is not set");
+			return ImmutableSetMultimap.of();
+		}
+
+		final ImmutableSetMultimap.Builder<TableName, ITabCallout> result = ImmutableSetMultimap.builder();
+		for (final ITabCallout tabCallout : SpringContextHolder.instance.getBeansOfType(ITabCallout.class))
+		{
+			final TabCallout annotation = tabCallout.getClass().getAnnotation(TabCallout.class);
+			if (annotation == null)
+			{
+				logger.warn("Ignore {} because it has no {} anotation", tabCallout, TabCallout.class);
+				continue;
+			}
+
+			final Class<?> modelClass = annotation.value();
+			final TableName tableName = TableName.ofString(InterfaceWrapperHelper.getTableName(modelClass));
+
+			result.put(tableName, tabCallout);
+		}
+
+		return result.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public ITabCallout createAndInitialize(final ICalloutRecord calloutRecord)
@@ -66,6 +138,17 @@ public class TabCalloutFactory implements ITabCalloutFactory
 		final Set<String> classnamesConsidered = new HashSet<>();
 
 		//
+<<<<<<< HEAD
+=======
+		// Spring Beans
+		for (final ITabCallout tabCallout : springBeansByTableName.get(TableName.ofString(tableName)))
+		{
+			tabCalloutsList.add(tabCallout);
+			classnamesConsidered.add(tabCallout.getClass().getName());
+		}
+
+		//
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Retrieve and instantiate tab callouts registered in application dictionary
 		final List<I_AD_Tab_Callout> calloutsDefinition = Services.get(IADWindowDAO.class).retrieveTabCallouts(AdTabId.ofRepoId(adTabId));
 		for (final I_AD_Tab_Callout def : calloutsDefinition)

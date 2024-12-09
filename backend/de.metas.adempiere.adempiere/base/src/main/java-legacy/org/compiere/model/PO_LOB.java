@@ -121,7 +121,11 @@ class PO_LOB implements Serializable
 				.append(m_tableName)
 				.append(" SET ").append(m_columnName)
 				.append("=null WHERE ").append(m_whereClause);
+<<<<<<< HEAD
 			int no = DB.executeUpdate(sql.toString(), trxName);
+=======
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.debug("save [" + trxName + "] #" + no + " - no data - set to null - " + m_value);
 			if (no == 0)
 				log.warn("[" + trxName + "] - not updated - " + sql);

@@ -1,5 +1,6 @@
 package org.eevolution.costing;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -8,6 +9,15 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.costing.CostElementId;
 import lombok.experimental.UtilityClass;
+=======
+import de.metas.costing.CostElementId;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -45,7 +55,11 @@ final class BOMAssertUtils
 		}
 		else
 		{
+<<<<<<< HEAD
 			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().getValue();
+=======
+			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().toBigDecimal();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		assertThat(ownCostPrice)
@@ -67,7 +81,11 @@ final class BOMAssertUtils
 		}
 		else
 		{
+<<<<<<< HEAD
 			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().getValue();
+=======
+			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().toBigDecimal();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		assertThat(componentsCostPrice)

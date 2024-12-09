@@ -65,7 +65,13 @@ public interface ITaxBL extends ISingletonService
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
 	 * @return tax amount
 	 */
+<<<<<<< HEAD
 	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+=======
+	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+
+	BigDecimal calculateTaxAmt(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Calculate base amount, excluding tax

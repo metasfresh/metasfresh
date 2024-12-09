@@ -20,6 +20,13 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
+<<<<<<< HEAD
+=======
+  @Id:S0124_130
+  @Id:S0222_100
+  @Id:S0223_300
+  @Id:S0264_1400
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased;
   No stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -51,10 +58,21 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsPurchased |
       | ppln_1     | p_1                     |                                          | true         | Y               |
+<<<<<<< HEAD
     And metasfresh contains C_BPartners:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_1 | N            | Y              | ps_1                          |                                     |
       | endvendor_1   | EndVendor_01042022_1   | Y            | N              | ps_1                          | ds_1                                |
+=======
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
+      | endcustomer_1 | EndCustomer_01042022_1 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_01042022_1   | Y            | N              | ps_1                          | ds_1                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | endvendor_location_1   | 2311202200000 | endvendor_1              | EndVendor_01042022_1 | Y                   | Y                   |
+      | endcustomer_location_1 | 2311202200001 | endcustomer_1            | EndVendor_01042022_1 | Y                   | Y                   |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
@@ -69,6 +87,16 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
+<<<<<<< HEAD
+=======
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And M_HU are disposed:
       | M_HU_ID.Identifier | MovementDate         |
       | hu_1               | 2021-04-16T21:00:00Z |
@@ -78,6 +106,15 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 0                              | 0                          | 0                                  |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
@@ -100,8 +137,62 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -10                    |                                 |
       | c_4        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |                                 |
 
+<<<<<<< HEAD
 
   @from:cucumber
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                                  |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+    And the following C_PurchaseCandidates are enqueued for generating C_Orders
+      | C_PurchaseCandidate_ID.Identifier |
+      | pc_1                              |
+
+    And after not more than 60s, C_PurchaseCandidate_Alloc are found
+      | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pc_1                              | pca_1                                   |
+
+    And load C_OrderLines from C_PurchaseCandidate_Alloc
+      | C_OrderLinePO_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pol_1                       | pca_1                                   |
+
+    And load C_Order from C_OrderLine
+      | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
+      | po_1                  | pol_1                     |
+
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
+      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 10         | 0            | 0           | 10    | 0        | EUR          | true      |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                                 |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+      | cp_dd_2                                 | cp_1                     | pol_1                     | 10             | 10              |
+
+
+  @from:cucumber
+  @Id:S0124_130
+  @Id:S0222_200
+  @Id:S0264_1500
+  @Id:S0223_700
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Partial stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -133,10 +224,21 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsPurchased |
       | ppln_1     | p_1                     |                                          | true         | Y               |
+<<<<<<< HEAD
     And metasfresh contains C_BPartners:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_2 | N            | Y              | ps_1                          |                                     |
       | endvendor_1   | EndVendor_01042022_2   | Y            | N              | ps_1                          | ds_1                                |
+=======
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
+      | endcustomer_1 | EndCustomer_01042022_2 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_01042022_2   | Y            | N              | ps_1                          | ds_1                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | endvendor_location_1   | 2311202200002 | endvendor_1              | EndVendor_01042022_2 | Y                   | Y                   |
+      | endcustomer_location_1 | 2311202200003 | endcustomer_1            | EndVendor_01042022_2 | Y                   | Y                   |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
@@ -151,6 +253,15 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
@@ -165,6 +276,15 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 5                            | 5                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 5                              | 5                          | 0                                  |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
@@ -188,8 +308,60 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
 
+<<<<<<< HEAD
 
   @from:cucumber
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 5                            | -10                           | 5                              | 0                              | 0                          | 0                                  |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+    And the following C_PurchaseCandidates are enqueued for generating C_Orders
+      | C_PurchaseCandidate_ID.Identifier |
+      | pc_1                              |
+
+    And after not more than 60s, C_PurchaseCandidate_Alloc are found
+      | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pc_1                              | pca_1                                   |
+
+    And load C_OrderLines from C_PurchaseCandidate_Alloc
+      | C_OrderLinePO_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pol_1                       | pca_1                                   |
+
+    And load C_Order from C_OrderLine
+      | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
+      | po_1                  | pol_1                     |
+
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
+      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 5                       | 5                            | -5                            | 0                              | 0                              | 0                          | 5                                  |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+      | cp_dd_2                                 | cp_1                     | pol_1                     | 5              | 5               |
+
+  @Id:S0222_300
+  @Id:S0264_1600
+  @from:cucumber
+  @Id:S0124_130
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Stock available at demand time, no supply needed
     Given metasfresh contains M_Products:
@@ -240,6 +412,15 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |               | 10  | 10                     | 2021-04-16T00:00:00             |
 
+<<<<<<< HEAD
+=======
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
@@ -251,4 +432,9 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+<<<<<<< HEAD
       | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
+=======
+      | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

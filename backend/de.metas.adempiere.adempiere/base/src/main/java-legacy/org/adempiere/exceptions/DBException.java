@@ -109,7 +109,11 @@ public class DBException extends AdempiereException
 		}
 	}
 
+<<<<<<< HEAD
 	public DBException(final Exception e, final CharSequence sql)
+=======
+	public DBException(final Exception e,  @Nullable final CharSequence sql)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -189,7 +193,11 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
+<<<<<<< HEAD
 	public int getErrorCode()
+=======
+	public int getSQLErrorCode()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;

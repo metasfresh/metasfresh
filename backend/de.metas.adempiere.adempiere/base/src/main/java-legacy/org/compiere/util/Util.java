@@ -19,10 +19,18 @@ package org.compiere.util;
 import com.google.common.io.BaseEncoding;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+<<<<<<< HEAD
+=======
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
+<<<<<<< HEAD
+=======
+import org.springframework.core.io.Resource;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -481,6 +489,21 @@ public class Util
 		return out.toByteArray();
 	}
 
+<<<<<<< HEAD
+=======
+	public static byte[] readBytes(@NonNull final Resource resource)
+	{
+		try
+		{
+			return readBytes(resource.getInputStream());
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Error reading stream", e);
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	// metas: 03749
 	public static String encodeBase64(final byte[] b)
 	{

@@ -116,6 +116,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_1023358_1611220554035_expected_output.xml");
 	}
 
+<<<<<<< HEAD
 	@Test
 	void noPacks_desadv() throws Exception
 	{
@@ -131,6 +132,8 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 				"/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs.xml",
 				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs_expected_output.xml");
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private void testAndValidateResult(
 			@NonNull final String inputStrPath,

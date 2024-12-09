@@ -15,4 +15,13 @@ public class C_Flatrate_Term
 	{
 		Services.get(IFlatrateBL.class).updateFromConditions(term);
 	}
+<<<<<<< HEAD
+=======
+
+	@CalloutMethod(columnNames=I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID)
+	public void updateBillBPartner(final I_C_Flatrate_Term term)
+	{
+		term.setBill_BPartner_ID(term.getC_Flatrate_Data().getC_BPartner_ID());
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

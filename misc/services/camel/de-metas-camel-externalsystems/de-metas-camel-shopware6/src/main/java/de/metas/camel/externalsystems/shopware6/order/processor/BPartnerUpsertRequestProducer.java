@@ -24,11 +24,22 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+<<<<<<< HEAD
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderCustomer;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
+=======
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.order.AddressDetail;
+import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonCustomerBasicInfo;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -80,6 +91,7 @@ public class BPartnerUpsertRequestProducer
 	ShopwareClient shopwareClient;
 
 	@NonNull
+<<<<<<< HEAD
 	JsonOrderCustomer orderCustomer;
 
 	@NonNull
@@ -89,11 +101,23 @@ public class BPartnerUpsertRequestProducer
 	OrderAddressDetails billingAddress;
 
 	@NonNull
+=======
+	Customer customerCandidate;
+
+	@NonNull
+	AddressDetail shippingAddress;
+
+	@NonNull
+	AddressDetail billingAddress;
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	SalutationInfoProvider salutationInfoProvider;
 
 	@NonNull
 	Map<String, String> countryIdToISOCode;
 
+<<<<<<< HEAD
 	@Nullable
 	String bPartnerLocationIdentifierCustomShopwarePath;
 
@@ -103,21 +127,35 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	String emailCustomPath;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
 
 	@Nullable
 	JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping;
 
+<<<<<<< HEAD
 	/**
 	 * @param bPartnerLocationIdentifierCustomShopwarePath   if given, try to get a custom (permanent) shopware6-ID
 	 *                                                       from the shopware-address JSON. Fail if there is no such C_BPartner_Location_ID
 	 * @param bPartnerLocationIdentifierCustomMetasfreshPath if given, try to get the metasfresh C_BPartner_Location_ID
 	 */
+=======
+	@Nullable
+	PriceListBasicInfo priceListBasicInfo;
+
+	@Nullable
+	JsonCustomerGroup jsonCustomerGroup;
+
+	boolean isDefaultAddress;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Builder
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
 			@NonNull final ShopwareClient shopwareClient,
+<<<<<<< HEAD
 			@NonNull final JsonOrderCustomer orderCustomer,
 			@NonNull final OrderAddressDetails shippingAddress,
 			@NonNull final String billingAddressId,
@@ -136,13 +174,39 @@ public class BPartnerUpsertRequestProducer
 		this.bPartnerLocationIdentifierCustomShopwarePath = bPartnerLocationIdentifierCustomShopwarePath;
 		this.bPartnerLocationIdentifierCustomMetasfreshPath = bPartnerLocationIdentifierCustomMetasfreshPath;
 		this.emailCustomPath = emailCustomPath;
+=======
+			@NonNull final Customer customerCandidate,
+			@NonNull final AddressDetail shippingAddress,
+			@NonNull final AddressDetail billingAddress,
+			@Nullable final SalutationInfoProvider salutationInfoProvider,
+			@Nullable final ExternalIdentifier metasfreshId,
+			@NonNull final ExternalIdentifier userId,
+			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping,
+			@Nullable final PriceListBasicInfo priceListBasicInfo,
+			@Nullable final JsonCustomerGroup jsonCustomerGroup,
+			final boolean isDefaultAddress)
+	{
+		this.orgCode = orgCode;
+		this.shopwareClient = shopwareClient;
+		this.customerCandidate = customerCandidate;
+		this.shippingAddress = shippingAddress;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.metasfreshId = metasfreshId;
 		this.userId = userId;
 		this.matchingShopware6Mapping = matchingShopware6Mapping;
 		this.salutationInfoProvider = salutationInfoProvider;
+<<<<<<< HEAD
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 		this.billingAddress = retrieveBillingAddress(billingAddressId);
+=======
+		this.isDefaultAddress = isDefaultAddress;
+		this.countryIdToISOCode = new HashMap<>();
+		this.resultBuilder = BPartnerRequestProducerResult.builder();
+		this.billingAddress = billingAddress;
+		this.priceListBasicInfo = priceListBasicInfo;
+		this.jsonCustomerGroup = jsonCustomerGroup;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public BPartnerRequestProducerResult run()
@@ -159,9 +223,15 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		resultBuilder.jsonRequestBPartnerUpsert(JsonRequestBPartnerUpsert.builder()
+<<<<<<< HEAD
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.requestItem(bPartnerUpsertItem)
 				.build());
+=======
+														.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+														.requestItem(bPartnerUpsertItem)
+														.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return resultBuilder.build();
 	}
@@ -175,17 +245,46 @@ public class BPartnerUpsertRequestProducer
 	@NonNull
 	private JsonRequestBPartner getCustomerBPartnerRequest()
 	{
+<<<<<<< HEAD
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(orderCustomer.getFirstName() + " " + orderCustomer.getLastName());
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
 		jsonRequestBPartner.setCode(ExternalIdentifierFormat.formatExternalId(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
 
+=======
+		final JsonCustomerBasicInfo customer = customerCandidate.getCustomerBasicInfo();
+
+		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
+		jsonRequestBPartner.setName(customer.getFirstName() + " " + customer.getLastName());
+		jsonRequestBPartner.setCompanyName(customer.getCompany());
+		jsonRequestBPartner.setCode(ExternalIdentifierFormat.formatExternalId(customer.getCustomerNumber()));
+		jsonRequestBPartner.setCustomer(true);
+
+		if (priceListBasicInfo != null)
+		{
+			jsonRequestBPartner.setPriceListId(priceListBasicInfo.getPriceListId());
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (matchingShopware6Mapping != null)
 		{
 			jsonRequestBPartner.setSyncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
 		}
 
+<<<<<<< HEAD
+=======
+		if (jsonCustomerGroup != null)
+		{
+			jsonRequestBPartner.setGroup(jsonCustomerGroup.getName());
+		}
+
+		if (customer.getVatIdOrNull() != null)
+		{
+			jsonRequestBPartner.setVatId(customer.getVatIdOrNull());
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return jsonRequestBPartner;
 	}
 
@@ -210,11 +309,19 @@ public class BPartnerUpsertRequestProducer
 
 	@NonNull
 	private JsonRequestLocationUpsertItem getUpsertLocationItemRequest(
+<<<<<<< HEAD
 			@NonNull final OrderAddressDetails orderAddressWithCustomId,
 			final boolean isBillingAddress,
 			final boolean isShippingAddress)
 	{
 		final String bpLocationExternalId = getBpLocationIdentifier(orderAddressWithCustomId, isBillingAddress);
+=======
+			@NonNull final AddressDetail addressWithCustomId,
+			final boolean isBillingAddress,
+			final boolean isShippingAddress)
+	{
+		final String bpLocationExternalId = getBpLocationIdentifier(addressWithCustomId, isBillingAddress);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (isBillingAddress)
 		{
@@ -225,7 +332,11 @@ public class BPartnerUpsertRequestProducer
 			resultBuilder.shippingBPartnerLocationExternalId(bpLocationExternalId);
 		}
 
+<<<<<<< HEAD
 		final JsonOrderAddress orderAddress = orderAddressWithCustomId.getJsonOrderAddress();
+=======
+		final JsonAddress orderAddress = addressWithCustomId.getJsonAddress();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final JsonRequestLocation jsonRequestLocation = new JsonRequestLocation();
 		jsonRequestLocation.setCountryCode(getCountryCodeById(orderAddress.getCountryId()));
@@ -238,7 +349,17 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestLocation.setBillTo(isBillingAddress);
 		jsonRequestLocation.setBpartnerName(computeBPartnerName());
 		jsonRequestLocation.setPhone(orderAddress.getPhoneNumber());
+<<<<<<< HEAD
 		jsonRequestLocation.setEmail(orderAddressWithCustomId.getCustomEmail());
+=======
+		jsonRequestLocation.setEmail(addressWithCustomId.getCustomEmail());
+
+		if (isDefaultAddress)
+		{
+			jsonRequestLocation.setShipToDefault(isShippingAddress);
+			jsonRequestLocation.setBillToDefault(isBillingAddress);
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(bpLocationExternalId)
@@ -250,6 +371,7 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
 		final JsonRequestContactUpsertBuilder upsertContactRequestBuilder = JsonRequestContactUpsert.builder();
+<<<<<<< HEAD
 		upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
 
 		if (matchingShopware6Mapping != null)
@@ -257,6 +379,21 @@ public class BPartnerUpsertRequestProducer
 			upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerLocationSyncAdvice());
 		}
 
+=======
+
+		// Only add the contact if there is no mapping OR if the mapping doesn't forbid to change the contact
+		// Note that we use the bpartner's sync-advice because logically the contact and bpartner are one in the show, whereas there can be many addresses per bpartner
+		final boolean addContactItem = matchingShopware6Mapping == null || !matchingShopware6Mapping.getBPartnerSyncAdvice().isLoadReadOnly();
+		if (addContactItem)
+		{
+			upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
+
+			if (matchingShopware6Mapping != null)
+			{
+				upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
+			}
+		}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return upsertContactRequestBuilder.build();
 	}
 
@@ -267,10 +404,19 @@ public class BPartnerUpsertRequestProducer
 				? matchingShopware6Mapping.getInvoiceEmailEnabled()
 				: null;
 
+<<<<<<< HEAD
 		final JsonRequestContact contactRequest = new JsonRequestContact();
 		contactRequest.setFirstName(orderCustomer.getFirstName());
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
+=======
+		final JsonCustomerBasicInfo customer = customerCandidate.getCustomerBasicInfo();
+
+		final JsonRequestContact contactRequest = new JsonRequestContact();
+		contactRequest.setFirstName(customer.getFirstName());
+		contactRequest.setLastName(customer.getLastName());
+		contactRequest.setEmail(customer.getEmail());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		contactRequest.setBillToDefault(true);
 		contactRequest.setShipToDefault(true);
@@ -287,7 +433,11 @@ public class BPartnerUpsertRequestProducer
 	 */
 	@NonNull
 	private String getBpLocationIdentifier(
+<<<<<<< HEAD
 			@NonNull final OrderAddressDetails orderAddressWithCustomId,
+=======
+			@NonNull final AddressDetail orderAddressWithCustomId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final boolean isBillingAddress)
 	{
 
@@ -332,6 +482,7 @@ public class BPartnerUpsertRequestProducer
 				isBillingAddressSameAsShippingAddress());
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	private OrderAddressDetails retrieveBillingAddress(@NonNull final String billingAddressId)
 	{
@@ -347,6 +498,11 @@ public class BPartnerUpsertRequestProducer
 	private boolean isBillingAddressSameAsShippingAddress()
 	{
 		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(), billingAddress.getJsonOrderAddress().getId())
+=======
+	private boolean isBillingAddressSameAsShippingAddress()
+	{
+		return Objects.equals(shippingAddress.getJsonAddress().getId(), billingAddress.getJsonAddress().getId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				|| (shippingAddress.getCustomMetasfreshId() != null && Objects.equals(shippingAddress.getCustomMetasfreshId(), billingAddress.getCustomMetasfreshId()));
 	}
 
@@ -358,9 +514,17 @@ public class BPartnerUpsertRequestProducer
 				.map(s -> s + separator)
 				.orElse("");
 
+<<<<<<< HEAD
 		return prepareNameSegment.apply(orderCustomer.getCompany(), ", ")
 				+ prepareNameSegment.apply(orderCustomer.getFirstName(), " ")
 				+ prepareNameSegment.apply(orderCustomer.getLastName(), "");
+=======
+		final JsonCustomerBasicInfo customer = customerCandidate.getCustomerBasicInfo();
+
+		return prepareNameSegment.apply(customer.getCompany(), ", ")
+				+ prepareNameSegment.apply(customer.getFirstName(), " ")
+				+ prepareNameSegment.apply(customer.getLastName(), "");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }
 

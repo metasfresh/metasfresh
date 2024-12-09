@@ -38,6 +38,7 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 {
 	/**
 	 * Retrieves those {@link I_M_ReceiptSchedule_Alloc} which have M_HU_ID set.
+<<<<<<< HEAD
 	 *
 	 * @param schedule
 	 * @param trxName
@@ -50,40 +51,59 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 	 *
 	 * @param schedule
 	 * @param trxName
+=======
+	 */
+	List<I_M_ReceiptSchedule_Alloc> retrieveAllHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, String trxName);
+
+	/**
+	 * Delete all handling units allocations
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	void deleteHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, String trxName);
 
 	/**
 	 * Delete all handling units allocations which are about any of the given HUs.
+<<<<<<< HEAD
 	 *
 	 * @param receiptSchedule
 	 * @param husToUnassign
 	 * @param trxName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	void deleteHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule, Collection<I_M_HU> husToUnassign, String trxName);
 
 	/**
 	 * Delete all Trading Unit Allocations for any of the given HUs.
+<<<<<<< HEAD
 	 *
 	 * @param receiptSchedule
 	 * @param tusToUnassign
 	 * @param trxName
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	void deleteTradingUnitAllocations(I_M_ReceiptSchedule receiptSchedule, Collection<I_M_HU> tusToUnassign, String trxName);
 
 	/**
 	 * Sum-up all {@link I_M_ReceiptSchedule_Alloc#COLUMNNAME_HU_QtyAllocated} values.
+<<<<<<< HEAD
 	 *
 	 * @param schedule
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	BigDecimal getQtyAllocatedOnHUs(I_M_ReceiptSchedule schedule);
 
 	/**
 	 * Retrieve NOT processed packing material receipt schedules for given <code>headerAggregationKey</code> and given product.
 	 *
+<<<<<<< HEAD
 	 * @param ctx
 	 * @param headerAggregationKey
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @param packingMaterialProductId packing material's M_Product_ID
 	 * @return packing material receipt schedules
 	 */
@@ -94,7 +114,10 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 	/**
 	 * 
 	 * @param vhu may not be {@code null} and has to be a virtual HU according to {@link IHandlingUnitsBL#isVirtual(I_M_HU)}
+<<<<<<< HEAD
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	I_M_ReceiptSchedule retrieveReceiptScheduleForVHU(I_M_HU vhu);
 }

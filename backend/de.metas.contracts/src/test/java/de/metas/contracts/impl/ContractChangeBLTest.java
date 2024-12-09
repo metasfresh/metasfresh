@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -36,6 +37,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Test;
 
+=======
+import de.metas.acct.GLCategoryRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -50,9 +56,26 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
+<<<<<<< HEAD
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.process.PInstanceId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
@@ -73,7 +96,11 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Override
 	public void initialize()
 	{
+<<<<<<< HEAD
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+=======
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())), new GLCategoryRepository()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SystemTime.setTimeSource(today);
 	}
 

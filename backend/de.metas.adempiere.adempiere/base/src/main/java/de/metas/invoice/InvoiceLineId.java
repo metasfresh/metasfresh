@@ -22,6 +22,11 @@
 
 package de.metas.invoice;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -29,10 +34,15 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public class InvoiceLineId implements RepoIdAware
 {
+<<<<<<< HEAD
 	int repoId;
 
 	@NonNull
@@ -76,10 +86,45 @@ public class InvoiceLineId implements RepoIdAware
 	}
 
 	public static int toRepoId(final InvoiceLineId invoiceLineId)
+=======
+	@JsonCreator
+	public static InvoiceLineId ofRepoId(final int repoId)
+	{
+		return new InvoiceLineId(repoId);
+	}
+
+	public static InvoiceLineId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InvoiceLineId(repoId) : null;
+	}
+
+	@NonNull
+	public static Optional<InvoiceLineId> ofRepoIdOptional(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	int repoId;
+
+	private InvoiceLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InvoiceLine_ID");
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final InvoiceLineId invoiceLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return toRepoIdOr(invoiceLineId, -1);
 	}
 
+<<<<<<< HEAD
 	public static int toRepoIdOr(final InvoiceLineId bpLocationId, final int defaultValue)
 	{
 		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
@@ -89,4 +134,12 @@ public class InvoiceLineId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+=======
+	public static int toRepoIdOr(@Nullable final InvoiceLineId invoiceLineId, final int defaultValue)
+	{
+		return invoiceLineId != null ? invoiceLineId.getRepoId() : defaultValue;
+	}
+
+	public static boolean equals(@Nullable final InvoiceLineId id1, @Nullable final InvoiceLineId id2) {return Objects.equals(id1, id2);}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

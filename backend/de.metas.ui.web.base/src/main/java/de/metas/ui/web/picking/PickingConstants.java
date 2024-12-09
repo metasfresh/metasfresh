@@ -58,6 +58,10 @@ public final class PickingConstants
 
 	public static final AdMessageKey MSG_WEBUI_PICKING_PICK_SOMETHING = AdMessageKey.of("WEBUI_Picking_PickSomething");
 	public static final AdMessageKey MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS = AdMessageKey.of("WEBUI_Picking_No_Unprocessed_Records");
+<<<<<<< HEAD
+=======
+	public static final AdMessageKey MSG_WEBUI_PICKING_AGGREGATING_CUS_TO_DIFF_ORDER_IS_FORBIDDEN = AdMessageKey.of("WEBUI_Picking_AggregatingCUsToDiffOrdersIsForbidden");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static final AdMessageKey MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU = AdMessageKey.of("WEBUI_Picking_Not_TopLevelHU");
 	public static final AdMessageKey MSG_WEBUI_PICKING_DIVERGING_LOCATIONS = AdMessageKey.of("WEBUI_Picking_Diverging_Locations");
 	public static final AdMessageKey MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P = AdMessageKey.of("WEBUI_Picking_Too_Many_Packageables");

@@ -27,6 +27,10 @@ import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.picking.rest_api.json.JsonHUIdList;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.service.MobileApplicationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
 import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
@@ -58,12 +62,29 @@ import javax.annotation.Nullable;
 @RequiredArgsConstructor
 public class PickingRestController
 {
+<<<<<<< HEAD
 	@NonNull private final PickingMobileApplication pickingMobileApplication;
 	@NonNull private final WorkflowRestController workflowRestController;
 
 	@GetMapping("/job/{wfProcessId}/target/available")
 	public JsonPickingJobAvailableTargets getAvailableTargets(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
+=======
+	@NonNull private final MobileApplicationService mobileApplicationService;
+	@NonNull private final PickingMobileApplication pickingMobileApplication;
+	@NonNull private final WorkflowRestController workflowRestController;
+
+	private void assertApplicationAccess()
+	{
+		mobileApplicationService.assertAccess(pickingMobileApplication.getApplicationId(), Env.getUserRolePermissions());
+	}
+
+	@GetMapping("/job/{wfProcessId}/target/available")
+	public JsonPickingJobAvailableTargets getAvailableTargets(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		return pickingMobileApplication.getAvailableTargets(wfProcessId, Env.getLoggedUserId());
 	}
@@ -84,6 +105,11 @@ public class PickingRestController
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestBody(required = false) @Nullable final JsonTUPickingTarget jsonTarget)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
 		final WFProcess wfProcess = pickingMobileApplication.setPickTarget(wfProcessId, target, Env.getLoggedUserId());
@@ -94,6 +120,11 @@ public class PickingRestController
 	public JsonWFProcess closeTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final WFProcess wfProcess = pickingMobileApplication.closeLUPickTarget(wfProcessId, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
@@ -112,6 +143,11 @@ public class PickingRestController
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		pickingMobileApplication.processStepEvents(eventsList, Env.getLoggedUserId());
 	}
 
@@ -119,6 +155,11 @@ public class PickingRestController
 	public JsonWFProcess postEvent(
 			@RequestBody @NonNull final JsonPickingStepEvent event)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcess wfProcess = pickingMobileApplication.processStepEvent(event, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -126,6 +167,11 @@ public class PickingRestController
 	@PostMapping("/closeLine")
 	public JsonWFProcess closeLine(@RequestBody @NonNull JsonPickingLineCloseRequest request)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcess wfProcess = pickingMobileApplication.closeLine(request, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -133,6 +179,11 @@ public class PickingRestController
 	@PostMapping("/openLine")
 	public JsonWFProcess openLine(@RequestBody @NonNull JsonPickingLineOpenRequest request)
 	{
+<<<<<<< HEAD
+=======
+		assertApplicationAccess();
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final WFProcess wfProcess = pickingMobileApplication.openLine(request, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}

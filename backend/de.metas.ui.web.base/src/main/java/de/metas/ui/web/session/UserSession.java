@@ -249,6 +249,15 @@ public class UserSession
 			throw new NotLoggedInAsSysAdminException();
 		}
 	}
+<<<<<<< HEAD
+=======
+	
+	public boolean isLoggedInAsSysAdmin()
+	{
+		final InternalUserSessionData data = getData();
+		return data.isLoggedIn() && data.getLoggedRoleId().isSystem();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public void assertNotLoggedIn()
 	{

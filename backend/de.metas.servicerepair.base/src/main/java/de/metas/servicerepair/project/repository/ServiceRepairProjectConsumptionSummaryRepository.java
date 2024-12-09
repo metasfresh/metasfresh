@@ -22,7 +22,10 @@
 
 package de.metas.servicerepair.project.repository;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.Maps;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -61,7 +64,11 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		{
 			record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Consumption_Summary.class);
 
+<<<<<<< HEAD
 			final Quantity zero = Quantitys.createZero(groupingKey.getUomId());
+=======
+			final Quantity zero = Quantitys.zero(groupingKey.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			summary = ServiceRepairProjectConsumptionSummary.builder()
 					.groupingKey(groupingKey)
 					.qtyReserved(zero)
@@ -88,8 +95,13 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		final ServiceRepairProjectConsumptionSummary.GroupingKey groupingKey = extractGroupingKey(record);
 		return ServiceRepairProjectConsumptionSummary.builder()
 				.groupingKey(groupingKey)
+<<<<<<< HEAD
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), groupingKey.getUomId()))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), groupingKey.getUomId()))
+=======
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), groupingKey.getUomId()))
+				.qtyConsumed(Quantitys.of(record.getQtyConsumed(), groupingKey.getUomId()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

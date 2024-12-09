@@ -1,10 +1,17 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
+<<<<<<< HEAD
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+=======
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -13,6 +20,11 @@ import de.metas.fresh.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 {
@@ -30,8 +42,13 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 
 		final DocTypeId freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeId(
 				DocTypeQuery.builder()
+<<<<<<< HEAD
 				.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
 				.docSubType(X_C_DocType.DOCSUBTYPE_VendorInvoice)
+=======
+				.docBaseType(DocBaseType.PurchaseInvoice)
+				.docSubType(DocSubType.VendorInvoice)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(candidate.getAD_Client_ID())
 				.adOrgId(candidate.getAD_Org_ID())
 				.build());

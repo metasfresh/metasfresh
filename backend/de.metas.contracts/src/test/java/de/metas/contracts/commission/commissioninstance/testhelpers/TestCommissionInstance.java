@@ -7,7 +7,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
@@ -77,7 +81,11 @@ public class TestCommissionInstance
 	InvoiceCandidateId invoiceCandidateId;
 
 	@Nullable
+<<<<<<< HEAD
 	InvoiceLineId invoiceLineId;
+=======
+	InvoiceAndLineId invoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@NonNull
 	CommissionTriggerType triggerType;
@@ -132,10 +140,17 @@ public class TestCommissionInstance
 		{
 			instanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		}
+<<<<<<< HEAD
 		if (invoiceLineId != null)
 		{
 			instanceRecord.setC_Invoice_ID(invoiceLineId.getInvoiceId().getRepoId());
 			instanceRecord.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
+=======
+		if (invoiceAndLineId != null)
+		{
+			instanceRecord.setC_Invoice_ID(invoiceAndLineId.getInvoiceId().getRepoId());
+			instanceRecord.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		instanceRecord.setAD_Org_ID(orgId.getRepoId());

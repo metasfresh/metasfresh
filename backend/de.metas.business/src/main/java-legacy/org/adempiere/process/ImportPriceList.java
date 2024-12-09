@@ -104,7 +104,11 @@ public class ImportPriceList extends JavaProcess
 		{
 			sql = new StringBuffer("DELETE FROM I_PriceList "
 					+ "WHERE I_IsImported='Y'").append(clientCheck);
+<<<<<<< HEAD
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.info("Deleted Old Imported =" + no);
 		}
 
@@ -124,7 +128,11 @@ public class ImportPriceList extends JavaProcess
 						+ " I_ErrorMsg = ' ',"
 						+ " I_IsImported = 'N' "
 						+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("Reset=" + no);
 
 		// Set Optional BPartner
@@ -133,14 +141,22 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE I_PriceList.BPartner_Value=p.Value AND I_PriceList.AD_Client_ID=p.AD_Client_ID) "
 				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("BPartner=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_PriceList "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid BPartner,' "
 				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid BPartner=" + no);
 
@@ -150,13 +166,21 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE I_PriceList.ProductValue=p.Value AND I_PriceList.AD_Client_ID=p.AD_Client_ID) "
 				+ "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer("UPDATE I_PriceList "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
 				+ "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL)"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid Product=" + no);
 
@@ -167,7 +191,11 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE I_PriceList.Name=p.Name AND I_PriceList.AD_Client_ID=p.AD_Client_ID) "
 				+ "WHERE M_PriceList_ID IS NULL"
 				+ " AND I_IsImported='N'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("Price List Existing Value=" + no);
 
 		// **** Find Price List Version
@@ -177,7 +205,11 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE I_PriceList.ValidFrom=p.ValidFrom AND I_PriceList.M_PriceList_ID=p.M_PriceList_ID) "
 				+ "WHERE M_PriceList_ID IS NOT NULL AND M_PriceList_Version_ID IS NULL"
 				+ " AND I_IsImported='N'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("Price List Version Existing Value=" + no);
 
 		/*
@@ -215,7 +247,11 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE ci.AD_Client_ID=I_PriceList.AD_Client_ID) "
 				+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.debug("Set Currency Default=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_PriceList "
@@ -223,14 +259,22 @@ public class ImportPriceList extends JavaProcess
 				+ " WHERE I_PriceList.ISO_Code=c.ISO_Code AND c.AD_Client_ID IN (0,I_PriceList.AD_Client_ID)) "
 				+ "WHERE C_Currency_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		log.info("doIt- Set Currency=" + no);
 		//
 		sql = new StringBuffer("UPDATE I_PriceList "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Currency,' "
 				+ "WHERE C_Currency_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("Invalid Currency=" + no);
 
@@ -239,7 +283,11 @@ public class ImportPriceList extends JavaProcess
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Mandatory Name,' "
 				+ "WHERE Name IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("No Mandatory Name=" + no);
 
@@ -248,7 +296,11 @@ public class ImportPriceList extends JavaProcess
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Mandatory ValidFrom,' "
 				+ "WHERE ValidFrom IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("No Mandatory ValidFrom=" + no);
 
@@ -257,7 +309,11 @@ public class ImportPriceList extends JavaProcess
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Mandatory BreakValue,' "
 				+ "WHERE BreakValue IS NULL AND (C_BPartner_ID IS NOT NULL OR BPartner_Value IS NOT NULL)"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 0)
 			log.warn("No Mandatory BreakValue=" + no);
 
@@ -319,7 +375,11 @@ public class ImportPriceList extends JavaProcess
 						StringBuffer sql0 = new StringBuffer("UPDATE I_PriceList i "
 								+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert Price List failed"))
 								.append("WHERE I_PriceList_ID=").append(I_PriceList_ID);
+<<<<<<< HEAD
 						DB.executeUpdate(sql0.toString(), get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(sql0.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						continue;
 					}
 				}
@@ -361,7 +421,11 @@ public class ImportPriceList extends JavaProcess
 						StringBuffer sql0 = new StringBuffer("UPDATE I_PriceList i "
 								+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert Price List Version failed"))
 								.append("WHERE I_PriceList_ID=").append(I_PriceList_ID);
+<<<<<<< HEAD
 						DB.executeUpdate(sql0.toString(), get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(sql0.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						continue;
 					}
 				}
@@ -413,7 +477,11 @@ public class ImportPriceList extends JavaProcess
 						StringBuffer sql0 = new StringBuffer("UPDATE I_PriceList i "
 								+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert/Update Product Price Vendor Break Version failed"))
 										.append("WHERE I_PriceList_ID=").append(I_PriceList_ID);
+<<<<<<< HEAD
 						DB.executeUpdate(sql0.toString(), get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(sql0.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						continue;
 					}
 				}
@@ -451,7 +519,11 @@ public class ImportPriceList extends JavaProcess
 						StringBuffer sql0 = new StringBuffer("UPDATE I_PriceList i "
 								+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert/Update Product Price failed: " + e.getLocalizedMessage()))
 										.append("WHERE I_PriceList_ID=").append(I_PriceList_ID);
+<<<<<<< HEAD
 						DB.executeUpdate(sql0.toString(), get_TrxName());
+=======
+						DB.executeUpdateAndSaveErrorOnFail(sql0.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						continue;
 					}
 				}
@@ -481,7 +553,11 @@ public class ImportPriceList extends JavaProcess
 		sql = new StringBuffer("UPDATE I_PriceList "
 				+ "SET I_IsImported='N', Updated=now() "
 				+ "WHERE I_IsImported<>'Y'").append(clientCheck);
+<<<<<<< HEAD
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
+=======
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		addLog(0, null, new BigDecimal(no), "@Errors@");
 		addLog(0, null, new BigDecimal(noInsertpl), "@M_PriceList_ID@: @Inserted@");
 		addLog(0, null, new BigDecimal(noInsertplv), "@M_PriceList_Version_ID@: @Inserted@");

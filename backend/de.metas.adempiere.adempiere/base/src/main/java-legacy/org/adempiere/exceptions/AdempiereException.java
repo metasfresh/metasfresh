@@ -6,11 +6,19 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
+<<<<<<< HEAD
+=======
+import de.metas.i18n.IMsgBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -18,6 +26,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+<<<<<<< HEAD
+=======
+import org.jetbrains.annotations.Contract;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -48,6 +60,11 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
+<<<<<<< HEAD
+=======
+	@Nullable
+	@Contract("!null -> !null")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
@@ -229,6 +246,16 @@ public class AdempiereException extends RuntimeException
 
 	private static boolean captureLanguageOnConstructionTime = false;
 
+<<<<<<< HEAD
+=======
+	/**
+	 * In future this might become a "real" aphanumerical error-code.
+	 * But right now, I'm actually starting it so that we can verify in a language-independent way whether particular exceptions were thrown.
+	 */
+	@Getter
+	private final String errorCode;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final ITranslatableString messageTrl;
 	/**
 	 * Build message but not translated
@@ -252,6 +279,10 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = TranslatableStrings.parse(message);
 		this.userValidationError = TranslatableStrings.isPossibleTranslatableString(message);
 		this.mdcContextMap = captureMDCContextMap();
+<<<<<<< HEAD
+=======
+		this.errorCode = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message)
@@ -267,11 +298,28 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 		this.userValidationError = userValidationError;
 		this.mdcContextMap = captureMDCContextMap();
+<<<<<<< HEAD
+=======
+
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this.userValidationError = true;
+
+		this.errorCode = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
+<<<<<<< HEAD
 		this(TranslatableStrings.adMessage(messageKey), true);
+=======
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.mdcContextMap = captureMDCContextMap();
+
+		this.errorCode = messageKey.toAD_Message();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
@@ -283,6 +331,11 @@ public class AdempiereException extends RuntimeException
 
 		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
+<<<<<<< HEAD
+=======
+
+		this.errorCode = adMessage.toAD_Message();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(final AdMessageKey adMessage, final Object... params)
@@ -297,6 +350,11 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = TranslatableStrings.empty();
 		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
+<<<<<<< HEAD
+=======
+
+		this.errorCode = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(final String plainMessage, @Nullable final Throwable cause)
@@ -306,6 +364,11 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = TranslatableStrings.constant(plainMessage);
 		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
+<<<<<<< HEAD
+=======
+
+		this.errorCode = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final Throwable cause)
@@ -315,6 +378,11 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
+<<<<<<< HEAD
+=======
+
+		this.errorCode = null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
@@ -419,6 +487,10 @@ public class AdempiereException extends RuntimeException
 		return message.build();
 	}
 
+<<<<<<< HEAD
+=======
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);

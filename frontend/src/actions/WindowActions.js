@@ -7,6 +7,7 @@ import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
+<<<<<<< HEAD
   ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
@@ -20,16 +21,42 @@ import {
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+=======
+  ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
+  CHANGE_INDICATOR_STATE,
+  CLEAR_MASTER_DATA,
+  CLOSE_FILTER_BOX,
+  CLOSE_MODAL,
+  CLOSE_PROCESS_MODAL,
+  CLOSE_RAW_MODAL,
+  DISABLE_OUTSIDE_CLICK,
+  DISABLE_SHORTCUT,
+  INIT_DATA_SUCCESS,
+  INIT_LAYOUT_SUCCESS,
+  INIT_WINDOW,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
+<<<<<<< HEAD
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
   SORT_TAB,
   TOGGLE_OVERLAY,
+=======
+  RESET_PRINTING_OPTIONS,
+  SET_PRINTING_OPTIONS,
+  SET_RAW_MODAL_DESCRIPTION,
+  SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
+  SORT_TAB,
+  TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -40,6 +67,7 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+<<<<<<< HEAD
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
@@ -59,12 +87,34 @@ import {
   startProcess,
   formatParentUrl,
   getTabLayoutRequest,
+=======
+} from '../constants/ActionTypes';
+import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
+import { PROCESS_NAME } from '../constants/Constants';
+import { preFormatPostDATA, toggleFullScreen } from '../utils';
+import {
+  getScope,
+  parseItemToDisplay,
+  parseToDisplay,
+} from '../utils/documentListHelper';
+
+import {
+  formatParentUrl,
+  getData,
+  getLayout,
+  getProcessData,
+  getTabLayoutRequest,
+  getTabRequest,
+  patchRequest,
+  startProcess,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
 import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
+<<<<<<< HEAD
   setNotificationProgress,
   setProcessPending,
   setProcessSaved,
@@ -83,6 +133,26 @@ import {
   updateTabTable,
   updateTableSelection,
   updateTableRowProperty,
+=======
+  deleteNotification,
+  setNotificationProgress,
+  setProcessPending,
+  setProcessSaved,
+} from './AppActions';
+import { openFile } from './GenericActions';
+import { getWindowBreadcrumb } from './MenuActions';
+import {
+  updateCommentsPanel,
+  updateCommentsPanelOpenFlag,
+  updateCommentsPanelTextInput,
+} from './CommentsPanelActions';
+import {
+  createTabTable,
+  partialUpdateGridTableRows,
+  updateTableRowProperty,
+  updateTableSelection,
+  updateTabTable,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
@@ -278,10 +348,19 @@ export function clearMasterData() {
   };
 }
 
+<<<<<<< HEAD
 export function sortTab(scope, tabId, field, asc) {
   return {
     type: SORT_TAB,
     scope,
+=======
+export function sortTab({ scope, windowId, docId, tabId, field, asc }) {
+  return {
+    type: SORT_TAB,
+    scope,
+    windowId,
+    docId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     tabId,
     field,
     asc,
@@ -420,6 +499,7 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
     const tableId = getTableId({ windowId, tabId, docId });
     dispatch(updateTabTable({ tableId, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
+<<<<<<< HEAD
       .then((response) => {
         const tableData = { result: response };
 
@@ -428,6 +508,18 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
         );
 
         return Promise.resolve(response);
+=======
+      .then(({ rows, orderBys }) => {
+        dispatch(
+          updateTabTable({
+            tableId,
+            tableResponse: { result: rows, orderBys },
+            pending: false,
+          })
+        );
+
+        return rows;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       })
       .catch((error) => {
         //show error message ?
@@ -1063,6 +1155,7 @@ function updateData(doc, scope) {
 }
 
 function mapDataToState({ data, isModal, rowId, disconnected }) {
+<<<<<<< HEAD
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -1083,6 +1176,53 @@ function mapDataToState({ data, isModal, rowId, disconnected }) {
         disconnected !== 'inlineTab' &&
           dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
+=======
+  const isNewRow = rowId === 'NEW';
+
+  return (dispatch) => {
+    if (disconnected === 'inlineTab') {
+      // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+      // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+      return;
+    }
+
+    const dataArray = typeof data.splice === 'function' ? data : [data];
+    const rowsToUpdateByTableId = {};
+
+    dataArray.forEach((item, index) => {
+      const isFirstItem = index === 0;
+      const isRow = !!item.rowId;
+
+      if (isNewRow && isFirstItem) {
+        //
+      } else if (!isRow || (isModal && isRow)) {
+        const parsedItem = parseItemToDisplay({ item });
+        dispatch(updateData(parsedItem, getScope(isModal && isFirstItem)));
+      }
+
+      if (isRow) {
+        const tableId = getTableId({
+          windowId: item.windowId,
+          docId: item.id,
+          tabId: item.tabId,
+        });
+
+        if (!rowsToUpdateByTableId[tableId]) {
+          rowsToUpdateByTableId[tableId] = [];
+        }
+
+        rowsToUpdateByTableId[tableId].push(item);
+      }
+    });
+
+    Object.keys(rowsToUpdateByTableId).forEach((tableId) => {
+      dispatch(
+        partialUpdateGridTableRows({
+          tableId,
+          rowsToUpdate: rowsToUpdateByTableId[tableId],
+        })
+      );
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     });
   };
 }
@@ -1249,6 +1389,10 @@ export function createProcess({
   tabId,
   documentType,
   viewId,
+<<<<<<< HEAD
+=======
+  viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   selectedTab,
   childViewId,
   childViewSelectedIds,
@@ -1277,6 +1421,10 @@ export function createProcess({
         tabId,
         documentType,
         viewId,
+<<<<<<< HEAD
+=======
+        viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         selectedTab,
         childViewId,
         childViewSelectedIds,

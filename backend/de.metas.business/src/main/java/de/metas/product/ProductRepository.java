@@ -14,6 +14,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.compiere.Adempiere;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -58,6 +62,15 @@ public class ProductRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+<<<<<<< HEAD
+=======
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
 	{
@@ -328,6 +341,10 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+<<<<<<< HEAD
+=======
+				.procurementStatus(productRecord.getProcurementStatus())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -367,7 +384,11 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+<<<<<<< HEAD
 
+=======
+		record.setProcurementStatus(product.getProcurementStatus());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return record;
 	}
 

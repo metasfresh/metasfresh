@@ -1,5 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -14,11 +19,18 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.settlement
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+<<<<<<< HEAD
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance.CreateCommissionInstanceResult;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
+<<<<<<< HEAD
+=======
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -28,16 +40,25 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -47,10 +68,17 @@ import java.util.Map.Entry;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -74,6 +102,10 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class CommissionSettlementShareRepositoryTest
 {
 	private CommissionSettlementShareRepository commissionSettlementShareRepository;
@@ -86,7 +118,12 @@ class CommissionSettlementShareRepositoryTest
 	private BPartnerId payerId;
 	private OrgId orgId;
 
+<<<<<<< HEAD
 	final I_C_UOM uom = BusinessTestHelper.createUOM("uom");
+=======
+	private I_C_UOM uom;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -94,7 +131,11 @@ class CommissionSettlementShareRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone();
+<<<<<<< HEAD
 
+=======
+		uom = BusinessTestHelper.createUOM("uom");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final I_M_Product commissionProductRecord = newInstance(I_M_Product.class);
 		commissionProductRecord.setAD_Org_ID(0); /* set it to org * */
 		saveRecord(commissionProductRecord);
@@ -104,6 +145,7 @@ class CommissionSettlementShareRepositoryTest
 		commissionSettlementShareRepository = new CommissionSettlementShareRepository();
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -118,6 +160,8 @@ class CommissionSettlementShareRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void getByInvoiceCandidateId()
 	{
@@ -189,7 +233,11 @@ class CommissionSettlementShareRepositoryTest
 		// invoke the method under test
 		final CommissionSettlementShare result = commissionSettlementShareRepository.getByInvoiceCandidateId(settlementInvoiceCandidateId);
 
+<<<<<<< HEAD
 		SnapshotMatcher.expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test

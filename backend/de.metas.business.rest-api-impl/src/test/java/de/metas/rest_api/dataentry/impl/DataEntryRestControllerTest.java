@@ -1,5 +1,6 @@
 package de.metas.rest_api.dataentry.impl;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -23,6 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
@@ -39,7 +44,30 @@ import de.metas.dataentry.model.X_DataEntry_Field;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntryResponse;
 import de.metas.user.UserId;
 import lombok.NonNull;
+<<<<<<< HEAD
 
+=======
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.HttpStatus;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class DataEntryRestControllerTest
 {
 
@@ -49,6 +77,7 @@ class DataEntryRestControllerTest
 	private DataEntryRestController dataEntryRestController;
 	private DataEntryRecordRepository dataEntryRecordRepository;
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -60,6 +89,9 @@ class DataEntryRestControllerTest
 	{
 		validateSnapshots();
 	}
+=======
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void init()
@@ -81,7 +113,11 @@ class DataEntryRestControllerTest
 
 		final JsonDataEntryResponse g0002 = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(BPARTNER_WINDOW_ID), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
 		System.out.println(g0002);
+<<<<<<< HEAD
 		expect(g0002).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(g0002);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -114,7 +150,11 @@ class DataEntryRestControllerTest
 		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentRecordId)).contains(String.valueOf(BPARTNER_WINDOW_ID));
 		assertThat(shouldBeEmpty.getResult()).isNull();
+<<<<<<< HEAD
 		expect(shouldBeEmpty).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(shouldBeEmpty);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private I_DataEntry_Tab createRecords()

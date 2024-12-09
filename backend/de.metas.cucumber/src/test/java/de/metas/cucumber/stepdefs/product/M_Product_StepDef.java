@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2020 metas GmbH
+=======
+ * Copyright (C) 2023 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -11,7 +15,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<<<<<<< HEAD
  * MERCHANTABILITY or FITNEcleanupSS FOR A PARTICULAR PURPOSE. See the
+=======
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
@@ -155,7 +163,10 @@ public class M_Product_StepDef
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
 			bPartnerProduct.setC_BPartner_ID(bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
+<<<<<<< HEAD
 			bPartnerProduct.setIsCurrentVendor(true);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			bPartnerProduct.setUsedForVendor(true);
 			bPartnerProduct.setUsedForCustomer(true);
 			bPartnerProduct.setShelfLifeMinPct(0);
@@ -163,6 +174,12 @@ public class M_Product_StepDef
 			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
 			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
 
+<<<<<<< HEAD
+=======
+			final Boolean isCurrentVendor = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
+			bPartnerProduct.setIsCurrentVendor(isCurrentVendor);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (Check.isNotBlank(exclusionFromSaleReason))
 			{
 				bPartnerProduct.setExclusionFromSaleReason(exclusionFromSaleReason);

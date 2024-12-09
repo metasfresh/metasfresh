@@ -17,6 +17,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -25,10 +26,21 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
+=======
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.MOrder;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
+<<<<<<< HEAD
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *	Order Batch Processing
@@ -112,9 +124,15 @@ public class OrderBatchProcess extends JavaProcess
 		if (p_C_BPartner_ID != 0)
 			sql.append(" AND o.C_BPartner_ID=").append(p_C_BPartner_ID);
 		if (p_DateOrdered_From != null)
+<<<<<<< HEAD
 			sql.append(" AND TRUNC(o.DateOrdered) >= ").append(DB.TO_DATE(p_DateOrdered_From, true));
 		if (p_DateOrdered_To != null)
 			sql.append(" AND TRUNC(o.DateOrdered) <= ").append(DB.TO_DATE(p_DateOrdered_To, true));
+=======
+			sql.append(" AND TRUNC(o.DateOrdered) >= ").append(DB.TO_DATE(p_DateOrdered_From));
+		if (p_DateOrdered_To != null)
+			sql.append(" AND TRUNC(o.DateOrdered) <= ").append(DB.TO_DATE(p_DateOrdered_To));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if ("Y".equals(p_IsDelivered))
 			sql.append(" AND NOT EXISTS (SELECT l.C_OrderLine_ID FROM C_OrderLine l ")
 			.append(" WHERE l.C_Order_ID=o.C_Order_ID AND l.QtyOrdered>l.QtyDelivered) ");

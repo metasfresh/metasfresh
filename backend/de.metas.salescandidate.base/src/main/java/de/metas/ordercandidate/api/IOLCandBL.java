@@ -37,9 +37,17 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+<<<<<<< HEAD
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+=======
+import de.metas.process.PInstanceId;
+import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -56,7 +64,11 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
+<<<<<<< HEAD
 	void process(OLCandProcessorDescriptor processor, @Nullable AsyncBatchId asyncBatchId);
+=======
+	void process(OLCandProcessorDescriptor processor, @NonNull PInstanceId selectionId, @Nullable AsyncBatchId asyncBatchId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -72,14 +84,21 @@ public interface IOLCandBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param olCand                  the order line candidate for which we compute the priceActual
+<<<<<<< HEAD
 	 * @param qtyOverride             if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQtyEntered()} and {@link I_C_OLCand#getQtyEntered_Override()} 
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
 	 * @param date to be used in retrieving the actual price
+=======
+	 * @param qtyOverride             if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQtyEntered()} and {@link I_C_OLCand#getQtyEntered_Override()}
+	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
+	 * @param date                    to be used in retrieving the actual price
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, @Nullable BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
 	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 
+<<<<<<< HEAD
 	DeliveryRule getDeliveryRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
 
 	DeliveryViaRule getDeliveryViaRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
@@ -91,6 +110,19 @@ public interface IOLCandBL extends ISingletonService
 	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
 	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
+=======
+	DeliveryRule getDeliveryRule(@NonNull I_C_OLCand record, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
+
+	DeliveryViaRule getDeliveryViaRule(@NonNull I_C_OLCand record, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
+
+	FreightCostRule getFreightCostRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults);
+
+	InvoiceRule getInvoiceRule(final I_C_OLCand olCandRecord, BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+
+	PaymentRule getPaymentRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
+
+	PaymentTermId getPaymentTermId(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Return the pricing system to use for the given {@code olCand}.
@@ -100,6 +132,7 @@ public interface IOLCandBL extends ISingletonService
 	 * <li>else, if the processor has a pricing system set, then return that</li>
 	 * </ul>
 	 */
+<<<<<<< HEAD
 	PricingSystemId getPricingSystemId(I_C_OLCand olCand, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
 
 	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
@@ -107,8 +140,22 @@ public interface IOLCandBL extends ISingletonService
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
 
 	DocTypeId getOrderDocTypeId(OLCandOrderDefaults orderDefaults, I_C_OLCand orderCandidateRecord);
+=======
+	PricingSystemId getPricingSystemId(@NonNull I_C_OLCand olCand, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
+
+	ShipperId getShipperId(@Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
+
+	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
+	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	void markAsProcessed(final OLCand olCand);
 
 	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
+<<<<<<< HEAD
+=======
+
+	void saveCandidate(@NonNull final OLCand cand);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

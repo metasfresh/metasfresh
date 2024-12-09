@@ -319,7 +319,11 @@ public class InvoiceCandidate
 
 		result.qtysEffective(qtysEffective);
 
+<<<<<<< HEAD
 		final Quantity qtyInPriceUom = Quantitys.create(
+=======
+		final Quantity qtyInPriceUom = Quantitys.of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				qtysEffective.getUOMQtyNotNull(),
 				UOMConversionContext.of(product.getId()),
 				priceUomId);
@@ -397,7 +401,11 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
+<<<<<<< HEAD
 				if (product.isStocked())
+=======
+				if (product.isItemType())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();
 				}

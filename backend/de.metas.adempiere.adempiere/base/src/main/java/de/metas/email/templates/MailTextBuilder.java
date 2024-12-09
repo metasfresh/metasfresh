@@ -1,5 +1,6 @@
 package de.metas.email.templates;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,9 @@ import org.compiere.model.I_C_BPartner;
 
 import com.google.common.base.Joiner;
 
+=======
+import com.google.common.base.Joiner;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.service.IVariableParserBL;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -22,7 +26,19 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import lombok.NonNull;
+=======
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -87,15 +103,33 @@ public final class MailTextBuilder
 	{
 		return _mailTemplate;
 	}
+<<<<<<< HEAD
+=======
+	
+	public MailText build()
+	{
+		return MailText.builder()
+				.adLanguage(getAdLanguage())
+				.mailHeader(getMailHeader())
+				.fullMailText(getFullMailText())
+				.html(isHtml())
+				.build();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * @return true if the mail texts are HTMLs; false if they are plain text.
 	 */
+<<<<<<< HEAD
 	public boolean isHtml()
+=======
+	private boolean isHtml()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return getMailTemplate().isHtml();
 	}
 
+<<<<<<< HEAD
 	public MailTemplateId getMailTemplateId()
 	{
 		return getMailTemplate().getId();
@@ -105,6 +139,12 @@ public final class MailTextBuilder
 	 * @return parsed/translated mail header
 	 */
 	public String getMailHeader()
+=======
+	/**
+	 * @return parsed/translated mail header
+	 */
+	private String getMailHeader()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final String mailHeader = getMailTemplate()
 				.getMailHeader()
@@ -115,7 +155,11 @@ public final class MailTextBuilder
 	/**
 	 * @return parsed/translated mail full content
 	 */
+<<<<<<< HEAD
 	public String getFullMailText()
+=======
+	private String getFullMailText()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final MailTemplate mailTemplate = getMailTemplate();
 		final String adLanguage = getAdLanguage();
@@ -170,6 +214,7 @@ public final class MailTextBuilder
 		return textParsed;
 	}	// parse
 
+<<<<<<< HEAD
 	/**
 	 * Parse text
 	 *
@@ -177,6 +222,8 @@ public final class MailTextBuilder
 	 * @param context
 	 * @return parsed text
 	 */
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private String parseTextUsingContext(@NonNull final String text, @Nullable final Object context)
 	{
 		if (context == null)
@@ -219,8 +266,11 @@ public final class MailTextBuilder
 	/**
 	 * Parse Variable
 	 *
+<<<<<<< HEAD
 	 * @param variable variable
 	 * @param context
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return translated variable or if not found the original tag
 	 */
 	private String parseVariable(
@@ -281,7 +331,11 @@ public final class MailTextBuilder
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public String getAdLanguage()
+=======
+	private String getAdLanguage()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		String adLanguageEffective = _adLanguageEffective;
 		if (adLanguageEffective == null)
@@ -304,8 +358,13 @@ public final class MailTextBuilder
 		final I_AD_User user = getBPartnerContact();
 		if (user != null && !Check.isEmpty(user.getAD_Language(), true))
 		{
+<<<<<<< HEAD
 			final String userAdLanguage = user.getAD_Language();
 			if (!Check.isEmpty(userAdLanguage, true))
+=======
+			final String userAdLanguage = StringUtils.trimBlankToNull(user.getAD_Language());
+			if (userAdLanguage != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return userAdLanguage;
 			}
@@ -316,8 +375,13 @@ public final class MailTextBuilder
 		final I_C_BPartner bpartner = getBPartner();
 		if (bpartner != null)
 		{
+<<<<<<< HEAD
 			final String bpAdLanguage = bpartner.getAD_Language();
 			if (!Check.isEmpty(bpAdLanguage, true))
+=======
+			final String bpAdLanguage = StringUtils.trimBlankToNull(bpartner.getAD_Language());
+			if (bpAdLanguage != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				return bpAdLanguage;
 			}
@@ -385,7 +449,11 @@ public final class MailTextBuilder
 			return null;
 		}
 
+<<<<<<< HEAD
 		final int bpartnerRepoId = ((Integer)bpartnerIdObj).intValue();
+=======
+		final int bpartnerRepoId = (Integer)bpartnerIdObj;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return BPartnerId.ofRepoIdOrNull(bpartnerRepoId);
 	}
 

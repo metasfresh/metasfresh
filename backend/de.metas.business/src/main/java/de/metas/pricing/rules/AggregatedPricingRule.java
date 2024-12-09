@@ -21,7 +21,10 @@ import java.util.stream.Stream;
  * Helper class which aggregates multiple {@link IPricingRule}s.
  *
  * @author tsa
+<<<<<<< HEAD
  *
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 @ToString
 public final class AggregatedPricingRule implements IPricingRule

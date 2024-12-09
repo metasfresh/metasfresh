@@ -2,6 +2,10 @@ package de.metas.ui.web.document.filter.provider.userQuery;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -16,10 +20,15 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+<<<<<<< HEAD
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.apps.search.IUserQuery;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
@@ -59,7 +68,11 @@ import java.util.function.Supplier;
 class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
+<<<<<<< HEAD
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final UserQueryRepository repository;
 
 	private final Supplier<ImmutableMap<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
@@ -146,6 +159,7 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 				final Optional<LookupDescriptor> lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 											.setJoinAnd(join == Join.AND)
 											.setDisplayName(computeParameterDisplayName(queryRestriction))
 											.setFieldName(fieldName)
@@ -155,6 +169,17 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 											.setDefaultValueTo(valueTo)
 											.setMandatory(queryRestriction.isMandatory())
 											.setLookupDescriptor(lookupDescriptor));
+=======
+											.joinAnd(join == Join.AND)
+											.displayName(computeParameterDisplayName(queryRestriction))
+											.fieldName(fieldName)
+											.widgetType(widgetType)
+											.operator(operator)
+											.defaultValue(value)
+											.defaultValueTo(valueTo)
+											.mandatory(queryRestriction.isMandatory())
+											.lookupDescriptor(lookupDescriptor));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 			else
 			{

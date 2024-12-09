@@ -56,4 +56,9 @@ public class Bank
 	//
 	// ESR specific settings:
 	boolean esrPostBank;
+<<<<<<< HEAD
+=======
+
+	boolean importAsSingleSummaryLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

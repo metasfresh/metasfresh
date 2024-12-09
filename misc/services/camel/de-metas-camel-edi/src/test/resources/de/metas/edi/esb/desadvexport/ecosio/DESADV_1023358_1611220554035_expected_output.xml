@@ -16,9 +16,15 @@
     <MovementDate>2021-01-20+01:00</MovementDate>
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
+<<<<<<< HEAD
         <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
         <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+=======
+        <GTIN_PackingMaterial>EURO</GTIN_PackingMaterial>
+        <IPA_SSCC18>123456789012345678</IPA_SSCC18>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <LotNumber>19</LotNumber>
@@ -45,7 +51,14 @@
                 <ProductNo>ProductNo</ProductNo>
                 <QtyEntered>1.00</QtyEntered>
                 <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+<<<<<<< HEAD
                 <GTIN>1234567890125</GTIN>
+=======
+                <EAN_CU>3234567890125</EAN_CU>
+                <GTIN_CU>1234567890125</GTIN_CU>
+                <EAN_TU>4234567890125</EAN_TU>
+                <GTIN_TU>2234567890125</GTIN_TU>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
                 <PriceActual>19.900</PriceActual>
                 <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
                 <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>

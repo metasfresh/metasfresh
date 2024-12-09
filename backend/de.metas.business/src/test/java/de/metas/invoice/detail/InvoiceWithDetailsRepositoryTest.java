@@ -22,8 +22,13 @@
 
 package de.metas.invoice.detail;
 
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -64,12 +69,20 @@ public class InvoiceWithDetailsRepositoryTest
 				.detailItem(InvoiceDetailItem.builder().label("i10_d1_descr").description("descr1").build())
 				.detailItem(InvoiceDetailItem.builder().label("i10_d2_date").date(localDate).build())
 				.line(InvoiceLineWithDetails.builder()
+<<<<<<< HEAD
 						.id(InvoiceLineId.ofRepoId(10, 10))
+=======
+						.id(InvoiceAndLineId.ofRepoId(10, 10))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.detailItem(InvoiceDetailItem.builder().label("i10_l10_d1_descr").description("descr1").build())
 						.detailItem(InvoiceDetailItem.builder().label("i10_l10_d1_date").date(localDate).build())
 						.build())
 				.line(InvoiceLineWithDetails.builder()
+<<<<<<< HEAD
 						.id(InvoiceLineId.ofRepoId(10, 20))
+=======
+						.id(InvoiceAndLineId.ofRepoId(10, 20))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.detailItem(InvoiceDetailItem.builder().label("i10_l20_d1_descr").description("descr1").build())
 						.detailItem(InvoiceDetailItem.builder().label("i10_l20_d1_date").date(localDate).build())
 						.build())

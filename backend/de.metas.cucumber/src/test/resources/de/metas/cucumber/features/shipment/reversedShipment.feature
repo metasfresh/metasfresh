@@ -5,7 +5,10 @@ Feature: reversed shipment
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+<<<<<<< HEAD
     And all the hu data is reset
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
   @from:cucumber
   Scenario: we can create and complete a shipment, then reserve/correct it and check the hu's status
@@ -38,9 +41,15 @@ Feature: reversed shipment
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
     When the inventory identified by inv_1 is completed
+<<<<<<< HEAD
     And after not more than 60s, M_HU are found:
       | Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | HUStatus | IsActive |
       | hu_1       | null                     | null                              | A        | Y        |
+=======
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |

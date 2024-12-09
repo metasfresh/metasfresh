@@ -38,6 +38,10 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+<<<<<<< HEAD
+=======
+import de.metas.sales_region.SalesRegionId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -333,6 +337,11 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
+<<<<<<< HEAD
+=======
+	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Value
 	@Builder
 	class BPartnerLocationQuery

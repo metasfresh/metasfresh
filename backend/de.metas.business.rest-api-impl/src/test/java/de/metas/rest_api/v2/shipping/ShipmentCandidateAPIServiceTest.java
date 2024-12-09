@@ -27,6 +27,10 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+<<<<<<< HEAD
+=======
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
@@ -81,7 +85,12 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @ExtendWith(AdempiereTestWatcher.class)
 class ShipmentCandidateAPIServiceTest
@@ -131,7 +140,11 @@ class ShipmentCandidateAPIServiceTest
 
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
+<<<<<<< HEAD
 				new ShipmentScheduleRepository(),
+=======
+				new ShipmentScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider,

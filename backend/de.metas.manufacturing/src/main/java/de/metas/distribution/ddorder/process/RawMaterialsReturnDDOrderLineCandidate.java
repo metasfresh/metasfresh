@@ -145,7 +145,11 @@ import java.util.Set;
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
 		final I_M_Warehouse warehouse = locator.getM_Warehouse();
+<<<<<<< HEAD
 		final ResourceId warehousePlantId = productPlanningDAO.findPlant(warehouse.getAD_Org_ID(),
+=======
+		final ResourceId warehousePlantId = productPlanningDAO.findPlantId(warehouse.getAD_Org_ID(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				warehouse,
 				attributeSetInstanceAware.getM_Product_ID(),
 				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
@@ -206,7 +210,11 @@ import java.util.Set;
 		// Retrive Raw materials Plant
 		try
 		{
+<<<<<<< HEAD
 			rawMaterialsPlantId = productPlanningDAO.findPlant(
+=======
+			rawMaterialsPlantId = productPlanningDAO.findPlantId(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					rawMaterialsWarehouse.getAD_Org_ID(),
 					warehouse,
 					attributeSetInstanceAware.getM_Product_ID(),

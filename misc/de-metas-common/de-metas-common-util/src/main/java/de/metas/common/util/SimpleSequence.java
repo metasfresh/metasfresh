@@ -22,6 +22,10 @@
 
 package de.metas.common.util;
 
+<<<<<<< HEAD
+=======
+import lombok.Builder;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Data;
 
 @Data
@@ -50,10 +54,19 @@ public class SimpleSequence
 		return new SimpleSequence(initial, 10);
 	}
 
+<<<<<<< HEAD
+=======
+	@Builder
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private SimpleSequence(final int initial, final int increment)
 	{
 
 		this.initial = initial;
+<<<<<<< HEAD
+=======
+
+		Check.errorIf(increment == 0, "The given increment may not be zero");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.increment = increment;
 
 		current = initial;

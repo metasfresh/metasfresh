@@ -2,14 +2,24 @@ package de.metas.i18n;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
 import de.metas.currency.Amount;
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.currency.Amount;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -19,6 +29,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+<<<<<<< HEAD
+=======
+import java.time.temporal.Temporal;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -229,9 +243,17 @@ public class TranslatableStrings
 		return trl != null ? trl : empty();
 	}
 
+<<<<<<< HEAD
 	public ITranslatableString amount(@NonNull final Amount amount)
 	{
 		return builder().append(amount).build();
+=======
+	public ITranslatableString amount(@Nullable final Amount amount)
+	{
+		return amount != null
+				? builder().append(amount).build()
+				: empty();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public ITranslatableString number(final BigDecimal valueBD, final int displayType)
@@ -283,6 +305,14 @@ public class TranslatableStrings
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
+<<<<<<< HEAD
+=======
+	public DateTimeTranslatableString temporal(@NonNull final Temporal date)
+	{
+		return DateTimeTranslatableString.ofObject(date);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ITranslatableString ofMap(final Map<String, String> trlMap)
 	{
 		if (trlMap == null || trlMap.isEmpty())
@@ -291,7 +321,11 @@ public class TranslatableStrings
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+=======
+			return ImmutableTranslatableString.ofMap(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -303,7 +337,11 @@ public class TranslatableStrings
 		}
 		else
 		{
+<<<<<<< HEAD
 			return new ImmutableTranslatableString(trlMap, defaultValue);
+=======
+			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 
@@ -432,11 +470,19 @@ public class TranslatableStrings
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)
 	{
+<<<<<<< HEAD
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		return adReferenceDAO.getRefListById(adReferenceId)
 				.getItemByValue(value)
 				.map(IADReferenceDAO.ADRefListItem::getName)
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		return adReferenceService.getRefListById(adReferenceId)
+				.getItemByValue(value)
+				.map(ADRefListItem::getName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.orElseGet(() -> anyLanguage(value));
 	}
 

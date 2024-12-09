@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
+=======
+import de.metas.acct.Account;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
@@ -57,6 +61,11 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+<<<<<<< HEAD
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -120,7 +129,11 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return acctSchemaId;
 	}
 
+<<<<<<< HEAD
 	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+=======
+	public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}
@@ -153,6 +166,65 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return getAcctSchemasMap().getByChartOfAccountsId(chartOfAccountsId);
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	@NonNull
+	public AcctSchema getByClientAndName(
+			@NonNull final ClientId clientId,
+			@NonNull final String name)
+	{
+		final ImmutableList<AcctSchema> schemas = getAllByClient(clientId)
+				.stream()
+				.filter(schema -> name.equals(schema.getName()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (schemas.isEmpty())
+		{
+			throw new AdempiereException("No AcctSchema record found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		if (schemas.size() > 1)
+		{
+			throw new AdempiereException("Multiple AcctSchema records found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		return schemas.get(0);
+	}
+
+	@Override
+	public void saveAcctSchemaElement(@NonNull final AcctSchemaElement acctSchemaElement)
+	{
+		final I_C_AcctSchema_Element record;
+		if (acctSchemaElement.getId() == null)
+		{
+			record = newInstance(I_C_AcctSchema_Element.class);
+		}
+		else
+		{
+			record = load(acctSchemaElement.getId(), I_C_AcctSchema_Element.class);
+		}
+		final ChartOfAccountsId chartOfAccountsId = acctSchemaElement.getChartOfAccountsId();
+
+		record.setName(acctSchemaElement.getName());
+		record.setC_AcctSchema_ID(acctSchemaElement.getAcctSchemaId().getRepoId());
+		record.setC_Element_ID(chartOfAccountsId !=null ? chartOfAccountsId.getRepoId() : -1);
+		record.setElementType(acctSchemaElement.getElementType().getCode());
+		record.setIsBalanced(acctSchemaElement.isBalanced());
+		record.setIsDisplayInEditor(acctSchemaElement.isDisplayedInEditor());
+		record.setSeqNo(acctSchemaElement.getSeqNo());
+		record.setOrg_ID(acctSchemaElement.getOrgId().getRepoId());
+		saveRecord(record);
+
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private AcctSchemasMap getAcctSchemasMap()
 	{
 		return acctSchemasCache.getOrLoad(0, this::retrieveAcctSchemasMap);
@@ -233,7 +305,11 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)
 				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
+<<<<<<< HEAD
 				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
+=======
+				.costingLevel(CostingLevel.ofCode(acctSchemaRecord.getCostingLevel()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
 				.postOnlyCostElementIds(postOnlyCostElementIds)
 				.build();
@@ -270,6 +346,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private AcctSchemaGeneralLedger toAcctSchemaGeneralLedger(final I_C_AcctSchema_GL acctSchemaGL)
 	{
 		final boolean suspenseBalancing = acctSchemaGL.isUseSuspenseBalancing() && acctSchemaGL.getSuspenseBalancing_Acct() > 0;
+<<<<<<< HEAD
 		final AccountId suspenseBalancingAcctId = suspenseBalancing ? AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()) : null;
 
 		final boolean useCurrencyBalancing = acctSchemaGL.isUseCurrencyBalancing();
@@ -289,6 +366,33 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.retainedEarningAcctId(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()))
 				//
 				.purchasePriceVarianceOffsetAcctId(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()))
+=======
+		final Account suspenseBalancingAcct = suspenseBalancing
+				? Account.of(AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_SuspenseBalancing_Acct)
+				: null;
+
+		final boolean useCurrencyBalancing = acctSchemaGL.isUseCurrencyBalancing();
+		final Account currencyBalancingAcct = useCurrencyBalancing
+				? Account.of(AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CurrencyBalancing_Acct)
+				: null;
+
+		return AcctSchemaGeneralLedger.builder()
+				.suspenseBalancing(suspenseBalancing)
+				.suspenseBalancingAcct(suspenseBalancingAcct)
+				//
+				.currencyBalancing(useCurrencyBalancing)
+				.currencyBalancingAcct(currencyBalancingAcct)
+				//
+				.intercompanyDueToAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueTo_Acct))
+				.intercompanyDueFromAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueFrom_Acct))
+				//
+				.incomeSummaryAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IncomeSummary_Acct))
+				.retainedEarningAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()), I_C_AcctSchema_GL.COLUMNNAME_RetainedEarning_Acct))
+				//
+				.purchasePriceVarianceOffsetAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()), I_C_AcctSchema_GL.COLUMNNAME_PPVOffset_Acct))
+				//
+				.cashRoundingAcct(acctSchemaGL.getCashRounding_Acct() > 0 ? Account.of(AccountId.ofRepoId(acctSchemaGL.getCashRounding_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CashRounding_Acct) : null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.build();
 	}
@@ -317,10 +421,17 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private static AcctSchemaDefaultAccounts toAcctSchemaDefaults(@NonNull final I_C_AcctSchema_Default record)
 	{
 		return AcctSchemaDefaultAccounts.builder()
+<<<<<<< HEAD
 				.realizedGainAcctId(AccountId.ofRepoId(record.getRealizedGain_Acct()))
 				.realizedLossAcctId(AccountId.ofRepoId(record.getRealizedLoss_Acct()))
 				.unrealizedGainAcctId(AccountId.ofRepoId(record.getUnrealizedGain_Acct()))
 				.unrealizedLossAcctId(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()))
+=======
+				.realizedGainAcct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedGain_Acct))
+				.realizedLossAcct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedLoss_Acct))
+				.unrealizedGainAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedGain_Acct))
+				.unrealizedLossAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedLoss_Acct))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -350,6 +461,10 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	{
 		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
 		final AcctSchemaElement element = AcctSchemaElement.builder()
+<<<<<<< HEAD
+=======
+				.id(AcctSchemaElementId.ofRepoId(record.getC_AcctSchema_Element_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.elementType(elementType)
 				.name(record.getName())
 				.seqNo(record.getSeqNo())
@@ -363,6 +478,11 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.displayedInEditor(record.isDisplayInEditor())
 				.balanced(record.isBalanced())
 				//
+<<<<<<< HEAD
+=======
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
+				.OrgId(OrgId.ofRepoId(record.getOrg_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{

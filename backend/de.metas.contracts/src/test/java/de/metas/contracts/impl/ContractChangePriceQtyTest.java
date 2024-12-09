@@ -1,5 +1,9 @@
 package de.metas.contracts.impl;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
@@ -50,7 +54,11 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
+<<<<<<< HEAD
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+=======
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 
@@ -61,7 +69,11 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
 		final IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+<<<<<<< HEAD
 		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+=======
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL, new GLCategoryRepository()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);

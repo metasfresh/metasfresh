@@ -24,12 +24,22 @@ package de.metas.banking;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.Collection;
+import java.util.Set;
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Value
 public class BankStatementId implements RepoIdAware
@@ -49,6 +59,24 @@ public class BankStatementId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+<<<<<<< HEAD
+=======
+	public static Set<Integer> toIntSet(final Collection<BankStatementId> bankStatementIds)
+	{
+		if (bankStatementIds == null || bankStatementIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else
+		{
+			return bankStatementIds
+					.stream()
+					.map(BankStatementId::getRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private BankStatementId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_ID");
@@ -60,4 +88,12 @@ public class BankStatementId implements RepoIdAware
 	{
 		return repoId;
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable BankStatementId id1, @Nullable BankStatementId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

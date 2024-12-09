@@ -218,7 +218,11 @@ public class DocumentEntityDescriptor
 				.add("tableName", tableName.orElse(null))
 				.add("fields.count", fields.size()) // only fields count because else it's too long
 				// .add("entityDataBinding", dataBinding) // skip it because it's too long
+<<<<<<< HEAD
 				.add("includedEntitites.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
+=======
+				.add("includedEntities.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.toString();
 	}
 
@@ -254,6 +258,20 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public DetailId getDetailIdNotNull()
+	{
+		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
+	}
+
+	public boolean hasIdFields()
+	{
+		return !idFields.isEmpty();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -350,7 +368,11 @@ public class DocumentEntityDescriptor
 				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
+<<<<<<< HEAD
 	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> ignoredBindingType)
+=======
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> bindingType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
@@ -411,7 +433,11 @@ public class DocumentEntityDescriptor
 	{
 		if (printProcessId == null)
 		{
+<<<<<<< HEAD
 			new AdempiereException("No print process configured for " + this);
+=======
+			throw new AdempiereException("No print process configured for " + this);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return printProcessId;
 	}
@@ -459,7 +485,11 @@ public class DocumentEntityDescriptor
 		@Getter
 		private QuickInputSupportDescriptor quickInputSupport = null;
 
+<<<<<<< HEAD
 		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+=======
+		@Getter private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		private boolean _refreshViewOnChangeEvents = false;
 
@@ -749,7 +779,16 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+<<<<<<< HEAD
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> ignoredBuilderType)
+=======
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
+		}
+
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> builderType)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
@@ -836,11 +875,31 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+<<<<<<< HEAD
+=======
+		public Builder setTableName(@Nullable final Optional<String> tableName)
+		{
+			//noinspection OptionalAssignedToNull
+			_tableName = tableName != null ? tableName : Optional.empty();
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public Optional<String> getTableName()
 		{
 			return _tableName;
 		}
 
+<<<<<<< HEAD
+=======
+		@NonNull
+		public String getTableNameNotNull()
+		{
+			return _tableName.orElseThrow(() -> new AdempiereException("No main tablename determined"));
+		}
+
+		@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);
@@ -900,8 +959,14 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
 		{
+=======
+		public Builder setIsSOTrx(@Nullable final Optional<SOTrx> soTrx)
+		{
+			//noinspection OptionalAssignedToNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
@@ -981,6 +1046,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+<<<<<<< HEAD
 		public IncludedTabNewRecordInputMode getIncludedTabNewRecordInputMode()
 		{
 			return includedTabNewRecordInputMode;
@@ -990,6 +1056,12 @@ public class DocumentEntityDescriptor
 		{
 			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
             return this;
+=======
+		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
+		{
+			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
+			return this;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		/**
@@ -1080,6 +1152,7 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
+<<<<<<< HEAD
 			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
 					.adTabId(adTabId)
 					.tableName(tableName)
@@ -1087,6 +1160,17 @@ public class DocumentEntityDescriptor
 					.build();
 
 			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
+=======
+			return filterDescriptorsProvidersService.createFiltersProvider(
+					CreateFiltersProviderContext.builder()
+							.adTabId(adTabId)
+							.tableName(tableName)
+							.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+							.fields(ImmutableList.copyOf(fields))
+							.includedEntities(ImmutableList.copyOf(_includedEntitiesByDetailId.values()))
+							.build()
+			);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)

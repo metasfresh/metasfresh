@@ -21,7 +21,10 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+<<<<<<< HEAD
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -163,14 +166,22 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
+<<<<<<< HEAD
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+=======
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
+<<<<<<< HEAD
 				.findEntities(ctx)
 				.getValues();
+=======
+				.findEntities(ctx);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -293,7 +304,11 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		if (!Objects.equals(getViewId(), selection.getViewId()))
 		{
 			throw new AdempiereException("Selection has invalid viewId: " + selection
+<<<<<<< HEAD
 												 + "\nExpected viewId: " + getViewId());
+=======
+					+ "\nExpected viewId: " + getViewId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return streamByIds(selection.getRowIds());
 	}

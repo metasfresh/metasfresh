@@ -1,19 +1,33 @@
 package de.metas.process;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
+=======
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -78,6 +92,14 @@ public interface IProcessPreconditionsContext
 	 */
 	int getSingleSelectedRecordId();
 
+<<<<<<< HEAD
+=======
+	default <T extends RepoIdAware> T getSingleSelectedRecordId(final Class<T> type)
+	{
+		return RepoIdAwares.ofRepoId(getSingleSelectedRecordId(), type);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
@@ -109,5 +131,30 @@ public interface IProcessPreconditionsContext
 		return ImmutableSet.of();
 	}
 
+<<<<<<< HEAD
 	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);
+=======
+	default boolean isSingleIncludedRecordSelected()
+	{
+		return getSelectedIncludedRecords().size() == 1;
+	}
+
+	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);
+
+	default ProcessPreconditionsResolution acceptIfSingleSelection()
+	{
+		if (isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		else if (isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		else
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

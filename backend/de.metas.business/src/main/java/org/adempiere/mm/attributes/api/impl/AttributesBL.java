@@ -116,6 +116,16 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public IAttributeValuesProvider createAttributeValuesProvider(final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		return createAttributeValuesProvider(attribute);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
 	{
 		final IAttributeValueHandler attributeHandler = getAttributeValueHandlerOrNull(attribute);
@@ -250,7 +260,11 @@ public class AttributesBL implements IAttributesBL
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnPicking(productId,
+<<<<<<< HEAD
 														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+=======
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnPicking;
@@ -263,7 +277,11 @@ public class AttributesBL implements IAttributesBL
 
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnShipment(productId,
+<<<<<<< HEAD
 														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+=======
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnShipment;
@@ -339,11 +357,23 @@ public class AttributesBL implements IAttributesBL
 	@Override
 	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
 	{
+<<<<<<< HEAD
 		return attribute.getC_UOM_ID() == UomId.EACH.getRepoId()
+=======
+		return isInteger(UomId.ofRepoIdOrNull(attribute.getC_UOM_ID()))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				? DisplayType.Integer
 				: DisplayType.Number;
 	}
 
+<<<<<<< HEAD
+=======
+	public static boolean isInteger(@Nullable final UomId uomId)
+	{
+		return uomId != null && UomId.equals(uomId, UomId.EACH);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public boolean isStorageRelevant(@NonNull final AttributeId attributeId)
 	{

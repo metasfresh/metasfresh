@@ -4,7 +4,11 @@
 # %L
 # master
 # %%
+<<<<<<< HEAD
 # Copyright (C) 2023 metas GmbH
+=======
+# Copyright (C) 2024 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # %%
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as

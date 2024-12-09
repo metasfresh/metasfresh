@@ -215,7 +215,11 @@ public class MAlertRule extends X_AD_AlertRule
 			+" "+MAlert.COLUMNNAME_IsValid+"=(CASE WHEN ("+sql_count+") > 0 THEN 'N' ELSE 'Y' END)"
 			+" WHERE a."+MAlert.COLUMNNAME_AD_Alert_ID+"=?"
 		;
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, getAD_Alert_ID(), get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, getAD_Alert_ID(), get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no == 1;
 	}
 

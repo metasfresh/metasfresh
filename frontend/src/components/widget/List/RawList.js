@@ -480,12 +480,21 @@ export class RawList extends PureComponent {
   };
 
   renderMultiSelectDropdown = () => {
+<<<<<<< HEAD
     const { listHash } = this.props;
+=======
+    const { listHash, loading, hasMoreResults } = this.props;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
+<<<<<<< HEAD
+=======
+        hasMoreResults={hasMoreResults}
+        loading={loading}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
         isToggled={this.props.isToggled}
@@ -547,6 +556,10 @@ RawList.propTypes = {
   clearable: PropTypes.bool,
   list: PropTypes.array,
   listHash: PropTypes.string,
+<<<<<<< HEAD
+=======
+  hasMoreResults: PropTypes.bool,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,

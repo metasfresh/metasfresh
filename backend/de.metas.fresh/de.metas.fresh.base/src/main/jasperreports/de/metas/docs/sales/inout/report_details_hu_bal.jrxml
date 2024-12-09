@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
 <!-- 2017-03-28T12:40:28 -->
+=======
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -53,14 +57,22 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
+<<<<<<< HEAD
 					<font size="9" fontName="Arial" isBold="true" />
+=======
+					<font fontName="Arial" size="9" isBold="true"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUReturns}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="349" y="0" width="54" height="12" forecolor="#000000" uuid="f2805df3-fac3-4b9d-86b8-582327e2627e"/>
 				<textElement textAlignment="Right" markup="none">
+<<<<<<< HEAD
 					<font size="9" fontName="Arial" isBold="true" />
+=======
+					<font fontName="Arial" size="9" isBold="true"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -83,6 +95,7 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 				</graphicElement>
 			</line>
 		</band>
+<<<<<<< HEAD
 		<band height="69">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
@@ -134,6 +147,8 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 				<textFieldExpression><![CDATA[$R{bottomnote}]]></textFieldExpression>
 			</textField>
 		</band>
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	</detail>
 	<summary>
 		<band splitType="Stretch"/>

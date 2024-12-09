@@ -96,7 +96,11 @@ public class T_InventoryValue_Create extends JavaProcess
 		       + "SELECT AD_Client_ID,AD_Org_ID," + getPinstanceId().getRepoId() + "," + p_M_Warehouse_ID + ",M_Product_ID "
 		       + "FROM M_Product "
 		       + "WHERE IsStocked='Y'";
+<<<<<<< HEAD
 		cnti = DB.executeUpdate(sqlins, get_TrxName());
+=======
+		cnti = DB.executeUpdateAndSaveErrorOnFail(sqlins, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cnti == 0) {
 			return "@Created@ = 0";
 		}
@@ -131,7 +135,11 @@ public class T_InventoryValue_Create extends JavaProcess
 	           + "AND l.M_Locator_ID=s.M_Locator_ID "
 	           + "AND l.M_Warehouse_ID=T_InventoryValue.M_Warehouse_ID) "
 	           + "WHERE T_InventoryValue.M_Warehouse_ID = " + p_M_Warehouse_ID;		
+<<<<<<< HEAD
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
+=======
+		cntu = DB.executeUpdateAndSaveErrorOnFail(sqlupd, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cntu < 0) {
 			raiseError("GetQtyOnHand:ERROR", sqlupd);
 		}
@@ -147,7 +155,11 @@ public class T_InventoryValue_Create extends JavaProcess
 	           + "AND t.M_Locator_ID=l.M_Locator_ID "
 	           + "AND l.M_Warehouse_ID=T_InventoryValue.M_Warehouse_ID) "
 	           + "WHERE	T_InventoryValue.M_Warehouse_ID = " + p_M_Warehouse_ID;		
+<<<<<<< HEAD
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
+=======
+		cntu = DB.executeUpdateAndSaveErrorOnFail(sqlupd, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cntu < 0) {
 			raiseError("AdjustQtyOnHand:ERROR", sqlupd);
 		}
@@ -156,7 +168,11 @@ public class T_InventoryValue_Create extends JavaProcess
 		sqlupd = "DELETE FROM T_InventoryValue " 
 	           + "WHERE QtyOnHand=0 "
 	           + "OR QtyOnHand IS NULL";		
+<<<<<<< HEAD
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
+=======
+		cntu = DB.executeUpdateAndSaveErrorOnFail(sqlupd, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cntu < 0) {
 			raiseError("DeleteZeroQtyOnHand:ERROR", sqlupd);
 		}
@@ -187,7 +203,11 @@ public class T_InventoryValue_Create extends JavaProcess
 	           + "AND plv.M_PriceList_ID=pl.M_PriceList_ID), "
 	           + "CostStandard = 0 " // here it was the OLD product costing, now we replaced it with ZERO 
 	           + " WHERE T_InventoryValue.M_Warehouse_ID = " + p_M_Warehouse_ID;		
+<<<<<<< HEAD
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
+=======
+		cntu = DB.executeUpdateAndSaveErrorOnFail(sqlupd, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cntu < 0) {
 			raiseError("GetPrices:ERROR", sqlupd);
 		}
@@ -200,7 +220,11 @@ public class T_InventoryValue_Create extends JavaProcess
 	           + "PriceLimitAmt = QtyOnHand * PriceLimit, " 
 	           + "CostStandardAmt = QtyOnHand * CostStandard "
 	           + "WHERE	M_Warehouse_ID = " + p_M_Warehouse_ID;
+<<<<<<< HEAD
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
+=======
+		cntu = DB.executeUpdateAndSaveErrorOnFail(sqlupd, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (cntu < 0) {
 			raiseError("UpdateValue:ERROR", sqlupd);
 		}

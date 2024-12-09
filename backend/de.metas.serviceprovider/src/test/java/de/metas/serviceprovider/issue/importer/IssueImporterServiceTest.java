@@ -23,7 +23,12 @@
 package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.cache.model.IModelCacheInvalidationService;
+=======
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.cache.model.ModelCacheInvalidationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -49,7 +54,10 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -77,11 +85,18 @@ class IssueImporterServiceTest
 		AdempiereTestHelper.get().init();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+=======
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ADReferenceService adReferenceService = ADReferenceService.newMocked();
+
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ExternalSystems externalSystems = new ExternalSystems();
 		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
@@ -97,7 +112,11 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
+<<<<<<< HEAD
 				adReferenceDAO,
+=======
+				adReferenceService,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				new IssueLabelRepository(queryBL)
 		);
 	}

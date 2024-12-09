@@ -31,6 +31,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
@@ -163,6 +168,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean globalIdset;
 
+<<<<<<< HEAD
+=======
+	@ApiModelProperty(position = 155, //
+			value = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
+	private JsonMetasfreshId priceListId;
+
+	private boolean priceListIdSet;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@ApiModelProperty(position = 160, //
 			value = "Translates to `C_BPartner.VATaxId`")
 	private String vatId;
@@ -309,4 +323,16 @@ public class JsonRequestBPartner
 		this.memo = memo;
 		this.memoIsSet = true;
 	}
+<<<<<<< HEAD
+=======
+
+	public void setPriceListId(@Nullable final JsonMetasfreshId priceListId)
+	{
+		if (JsonMetasfreshId.toValue(priceListId) != null)
+		{
+			this.priceListId = priceListId;
+			this.priceListIdSet = true;
+		}
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

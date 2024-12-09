@@ -1,5 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -36,8 +41,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -50,6 +58,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /*
  * #%L
  * metasfresh-webui-api
@@ -80,7 +93,11 @@ import java.util.Set;
 public class WebuiHUTransformParametersFiller
 {
 	// services
+<<<<<<< HEAD
 	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+=======
+	private final ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
@@ -93,12 +110,24 @@ public class WebuiHUTransformParametersFiller
 	private final boolean _isMoveToDifferentWarehouseEnabled;
 
 	@Builder
+<<<<<<< HEAD
 	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
 											 @NonNull final HUEditorRow selectedRow,
 											 @Nullable final ActionType actionType,
 											 final boolean checkExistingHUsInsideView,
 											 final boolean isMoveToDifferentWarehouseEnabled)
 	{
+=======
+	private WebuiHUTransformParametersFiller(
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final HUEditorView view,
+			@NonNull final HUEditorRow selectedRow,
+			@Nullable final ActionType actionType,
+			final boolean checkExistingHUsInsideView,
+			final boolean isMoveToDifferentWarehouseEnabled)
+	{
+		this.adReferenceService = adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this._view = view;
 		this._selectedRow = selectedRow;
 		this._actionType = actionType;
@@ -186,7 +215,11 @@ public class WebuiHUTransformParametersFiller
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final I_AD_Process_Para processParameter = adProcessDAO.retrieveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
 		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
+<<<<<<< HEAD
 		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
+=======
+		final Collection<ADRefListItem> allActiveActionItems = adReferenceService.retrieveListItems(actionsReferenceId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String adLanguage = Env.getAD_Language();
 

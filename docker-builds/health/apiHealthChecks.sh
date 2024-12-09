@@ -2,7 +2,11 @@
 
 #
 # %L
+<<<<<<< HEAD
 # work-javaupdate
+=======
+# metas
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 # %%
 # Copyright (C) 2024 metas GmbH
 # %%
@@ -159,4 +163,9 @@ fi
   echo " success"
   echo "========================================================="
   echo "*********************************************************"
+<<<<<<< HEAD
 exit 0
+=======
+exit 0
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

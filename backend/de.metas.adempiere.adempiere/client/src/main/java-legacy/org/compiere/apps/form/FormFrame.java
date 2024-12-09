@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
+<<<<<<< HEAD
 import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.Image;
@@ -29,6 +30,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.KeyStroke;
 
+=======
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
@@ -47,11 +55,20 @@ import org.compiere.util.SwingUtils;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 
 /**
@@ -185,7 +202,10 @@ public class FormFrame extends CFrame
 		menuBar.add(mHelp);
 		AEnv.addMenuItem("Help", null, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),	mHelp, this);
 		AEnv.addMenuItem("Online", null, null, mHelp, this);
+<<<<<<< HEAD
 		AEnv.addMenuItem("EMailSupport", null, null, mHelp, this);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		AEnv.addMenuItem("About", null, null, mHelp, this);
 	}   //  createMenu
 

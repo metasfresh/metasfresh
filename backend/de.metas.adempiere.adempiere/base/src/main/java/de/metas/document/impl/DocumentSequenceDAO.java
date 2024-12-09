@@ -14,14 +14,20 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.ad.dao.IQueryBuilder;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
@@ -30,9 +36,15 @@ import org.compiere.model.I_AD_Sequence_No;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
+<<<<<<< HEAD
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+=======
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -73,6 +85,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
+<<<<<<< HEAD
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
 	{
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
@@ -98,6 +111,35 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(adSequence);
 	}
 
+=======
+	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final String sequenceName, final int adClientId, final int adOrgId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Sequence.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, false)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, sequenceName)
+				.addInArrayFilter(I_AD_Sequence.COLUMNNAME_AD_Org_ID, adOrgId, 0)
+				.orderBy().addColumn(I_AD_Sequence.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last).endOrderBy() // make sure we get for our particular org first
+				.create()
+				.firstOptional(I_AD_Sequence.class)
+				.map(DocumentSequenceDAO::toDocumentSequenceInfo)
+				.orElseGet(() -> createDocumentSequence(ClientId.ofRepoId(adClientId), sequenceName));
+	}
+
+	private DocumentSequenceInfo createDocumentSequence(final ClientId adClientId, final String sequenceName)
+	{
+		final I_AD_Sequence record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Sequence.class);
+		InterfaceWrapperHelper.setValue(record, I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId()); // Client Ownership
+		record.setName(sequenceName);
+		InterfaceWrapperHelper.save(record);
+		return toDocumentSequenceInfo(record);
+	}    // MSequence;
+
+	@Nullable
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
@@ -117,7 +159,11 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(adSequence);
 	}
 
+<<<<<<< HEAD
 	private DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
+=======
+	private static DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return DocumentSequenceInfo.builder()
 				.adSequenceId(record.getAD_Sequence_ID())
@@ -136,20 +182,33 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.build();
 	}
 
+<<<<<<< HEAD
 	private IStringExpression compileStringExpressionOrUseItAsIs(final String expr)
+=======
+	private static IStringExpression compileStringExpressionOrUseItAsIs(final String expr)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		try
 		{
 			return StringExpressionCompiler.instance.compile(expr);
 		}
+<<<<<<< HEAD
 		catch (Exception ex)
+=======
+		catch (final Exception ex)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
 			return ConstantStringExpression.ofNullable(expr);
 		}
 	}
 
+<<<<<<< HEAD
 	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+=======
+	@Nullable
+	private static CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
 		{

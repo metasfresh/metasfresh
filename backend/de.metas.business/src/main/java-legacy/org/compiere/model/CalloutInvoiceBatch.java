@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +26,14 @@ import java.util.Date;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+=======
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.common.util.time.SystemTime;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -32,11 +41,20 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+<<<<<<< HEAD
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
+=======
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *	Callouts for Invoice Batch
@@ -415,7 +433,11 @@ public class CalloutInvoiceBatch extends CalloutEngine
 			{
 				final int C_Tax_ID = taxID.intValue();
 				final MTax tax = new MTax (ctx, C_Tax_ID, null);
+<<<<<<< HEAD
 				TaxAmt = tax.calculateTax(LineNetAmt, IsTaxIncluded, StdPrecision);
+=======
+				TaxAmt = Services.get(ITaxBL.class).calculateTaxAmt(tax, LineNetAmt, IsTaxIncluded, StdPrecision);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				mTab.setValue("TaxAmt", TaxAmt);
 			}
 		}

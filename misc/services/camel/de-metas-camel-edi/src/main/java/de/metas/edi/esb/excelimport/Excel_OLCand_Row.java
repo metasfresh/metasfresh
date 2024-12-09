@@ -27,11 +27,17 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+=======
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Map;
 
 /**

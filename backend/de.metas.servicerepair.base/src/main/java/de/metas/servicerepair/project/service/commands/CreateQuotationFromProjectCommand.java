@@ -24,6 +24,11 @@ package de.metas.servicerepair.project.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+<<<<<<< HEAD
+=======
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -51,7 +56,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
+<<<<<<< HEAD
 import org.compiere.model.X_C_DocType;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
@@ -121,8 +129,13 @@ public class CreateQuotationFromProjectCommand
 	private DocTypeId getQuotationDocTypeId(@NonNull final ServiceRepairProjectInfo project)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+<<<<<<< HEAD
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_CostEstimate)
+=======
+				.docBaseType(DocBaseType.SalesOrder)
+				.docSubType(DocSubType.CostEstimate)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.adClientId(project.getClientAndOrgId().getClientId().getRepoId())
 				.adOrgId(project.getClientAndOrgId().getOrgId().getRepoId())
 				.build());

@@ -32,6 +32,10 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
+<<<<<<< HEAD
+=======
+import java.util.ArrayList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -73,12 +77,30 @@ public class PasswordGenerator implements IComponentGenerator
 			.parameter(PARAM_GROUP_SIZE, "4")
 			.build();
 
+<<<<<<< HEAD
+=======
+	private static final String NO_PASSWORD = null;
+
+	@VisibleForTesting
+	static final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
+			AttributeConstants.RouterPassword,
+			AttributeConstants.RouterPassword2,
+			AttributeConstants.RouterPassword3,
+			AttributeConstants.RouterPassword4,
+			AttributeConstants.RouterPassword5,
+			AttributeConstants.RouterPassword6,
+			AttributeConstants.RouterPassword7,
+			AttributeConstants.RouterPassword8
+	);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final Random random = new Random();
 
 	@Override
 	public ImmutableAttributeSet generate(@NonNull final ComponentGeneratorContext context)
 	{
 		final int qty = context.getQty();
+<<<<<<< HEAD
 		Check.errorIf(qty != 1, "Only 1 Router Password Attribute exists, so 1 password should be generated. Requested qty: {}", qty);
 
 		final ImmutableList<AttributeCode> attributesToGenerate = context.computeRemainingAttributesToGenerate(AttributeConstants.RouterPassword);
@@ -89,6 +111,80 @@ public class PasswordGenerator implements IComponentGenerator
 
 		final ComponentGeneratorParams parameters = context.getParameters();
 		final String password = generatePassword(
+=======
+		Check.errorIf(qty < 1 || qty > supportedAttributes.size(),
+				"Qty of Password attributes should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
+
+		//
+		// Count how many attributes were already generated.
+		// Identify which are the attributes which are not already generated (the free slots).
+		int countAlreadyGenerated = 0;
+		final ArrayList<AttributeCode> attributesAvailableToGenerate = new ArrayList<>();
+		final ImmutableAttributeSet existingAttributes = context.getExistingAttributes();
+		for (final AttributeCode attributeCode : supportedAttributes)
+		{
+			if (!existingAttributes.hasAttribute(attributeCode))
+			{
+				continue;
+			}
+
+			final boolean alreadyGenerated = !context.isOverrideExistingValues()
+					&& Check.isNotBlank(existingAttributes.getValueAsString(attributeCode));
+			if (alreadyGenerated)
+			{
+				countAlreadyGenerated++;
+			}
+			else
+			{
+				attributesAvailableToGenerate.add(attributeCode);
+			}
+		}
+
+		//
+		// Compute how much we still have to generate.
+		final int countRemainingToGenerate = qty - countAlreadyGenerated;
+		if (countRemainingToGenerate <= 0)
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+		final int availableSize = attributesAvailableToGenerate.size();
+		if (countRemainingToGenerate > availableSize)
+		{
+			throw new AdempiereException("We still have to generate " + countRemainingToGenerate + " but only " + attributesAvailableToGenerate + " are available and not already generated");
+		}
+
+		//
+		// Generate the remaining ones
+		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
+		for (int i = 0; i < countRemainingToGenerate; i++)
+		{
+			final AttributeCode attributeCode = attributesAvailableToGenerate.get(i);
+			final String password = generatePassword(context);
+
+			result.attributeValue(attributeCode, password);
+		}
+
+		for (int i = countRemainingToGenerate; i < availableSize; i++)
+		{
+			final AttributeCode attributeCode = attributesAvailableToGenerate.get(i);
+			result.attributeValue(attributeCode, NO_PASSWORD);
+		}
+
+		return result.build();
+	}
+
+	@Override
+	public ComponentGeneratorParams getDefaultParameters()
+	{
+		return DEFAULT_PARAMETERS;
+	}
+
+	private String generatePassword(@NonNull final ComponentGeneratorContext context)
+	{
+		final ComponentGeneratorParams parameters = context.getParameters();
+
+		return generatePassword(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_TOTAL_LENGTH)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_LOWERCASE)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_UPPERCASE)),
@@ -96,6 +192,7 @@ public class PasswordGenerator implements IComponentGenerator
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_PUNCTUATION)),
 				parameters.getValue(PARAM_GROUP_SEPARATOR),
 				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_GROUP_SIZE)));
+<<<<<<< HEAD
 
 		return ImmutableAttributeSet.builder()
 				.attributeValue(AttributeConstants.RouterPassword, password)
@@ -106,6 +203,8 @@ public class PasswordGenerator implements IComponentGenerator
 	public ComponentGeneratorParams getDefaultParameters()
 	{
 		return DEFAULT_PARAMETERS;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull

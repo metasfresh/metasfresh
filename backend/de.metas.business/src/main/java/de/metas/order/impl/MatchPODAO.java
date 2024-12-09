@@ -1,11 +1,22 @@
 package de.metas.order.impl;
 
+<<<<<<< HEAD
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -14,6 +25,7 @@ import org.compiere.model.MMatchPO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoice.InvoiceId;
@@ -22,6 +34,14 @@ import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -50,6 +70,7 @@ public class MatchPODAO implements IMatchPODAO
 	@Override
 	public List<I_M_MatchPO> getByOrderLineAndInvoiceLine(
 			@NonNull final OrderLineId orderLineId,
+<<<<<<< HEAD
 			final int C_InvoiceLine_ID)
 	{
 		Check.assumeGreaterThanZero(C_InvoiceLine_ID, "C_InvoiceLine_ID");
@@ -58,11 +79,20 @@ public class MatchPODAO implements IMatchPODAO
 				.createQueryBuilder(I_M_MatchPO.class)
 				.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, orderLineId)
 				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, C_InvoiceLine_ID)
+=======
+			@NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_MatchPO.class)
+				.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, orderLineId)
+				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, invoiceAndLineId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.create()
 				.listImmutable(I_M_MatchPO.class);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public List<I_M_MatchPO> getByReceiptId(final int inOutId)
 	{
 		if (inOutId <= 0)
@@ -74,13 +104,24 @@ public class MatchPODAO implements IMatchPODAO
 				+ " INNER JOIN M_InOutLine l ON (m.M_InOutLine_ID=l.M_InOutLine_ID) "
 				+ "WHERE l.M_InOut_ID=?";
 		final List<Object> sqlParams = Arrays.asList(inOutId);
+=======
+	public List<I_M_MatchPO> getByReceiptId(final InOutId inOutId)
+	{
+		final String sql = "SELECT * FROM M_MatchPO m"
+				+ " INNER JOIN M_InOutLine l ON (m.M_InOutLine_ID=l.M_InOutLine_ID) "
+				+ "WHERE l.M_InOut_ID=?";
+		final List<Object> sqlParams = Collections.singletonList(inOutId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
+<<<<<<< HEAD
 			pstmt.setInt(1, inOutId);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			rs = pstmt.executeQuery();
 
 			final List<I_M_MatchPO> result = new ArrayList<>();
@@ -98,8 +139,11 @@ public class MatchPODAO implements IMatchPODAO
 		finally
 		{
 			DB.close(rs, pstmt);
+<<<<<<< HEAD
 			rs = null;
 			pstmt = null;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}	// getInOut
 

@@ -28,6 +28,12 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+import java.util.Objects;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 @Value
 public class AdColumnId implements RepoIdAware
 {
@@ -60,4 +66,12 @@ public class AdColumnId implements RepoIdAware
 	{
 		return repoId;
 	}
+<<<<<<< HEAD
+=======
+
+	public static boolean equals(@Nullable final AdColumnId id1, @Nullable final AdColumnId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

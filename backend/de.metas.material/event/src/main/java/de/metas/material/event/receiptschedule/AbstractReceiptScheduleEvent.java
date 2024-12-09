@@ -50,6 +50,11 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+<<<<<<< HEAD
+=======
+	private final OldReceiptScheduleData oldReceiptScheduleData;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final BigDecimal reservedQuantity;
 
 	@JsonInclude(NON_NULL)
@@ -60,6 +65,10 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
+<<<<<<< HEAD
+=======
+			@Nullable final OldReceiptScheduleData oldReceiptScheduleData,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
@@ -68,6 +77,10 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
+<<<<<<< HEAD
+=======
+		this.oldReceiptScheduleData = oldReceiptScheduleData;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.reservedQuantity = reservedQuantity;
 	}
 

@@ -22,6 +22,11 @@
 
 package de.metas.rest_api.v2.product;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
@@ -29,15 +34,25 @@ import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
 import de.metas.rest_api.v2.product.response.JsonProductCategory;
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import io.github.jsonSnapshot.SnapshotMatcher;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product_Category;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -47,17 +62,28 @@ import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
 
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class ProductCategoriesRestControllerTest
 {
 	private ProductCategoriesRestController restController;
 
 	private JsonCreatedUpdatedInfo createdUpdatedInfo;
+<<<<<<< HEAD
+=======
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeAll
 	static void initStatic()
 	{
+<<<<<<< HEAD
 		SnapshotMatcher.start(
 				AdempiereTestHelper.SNAPSHOT_CONFIG,
 				AdempiereTestHelper.createSnapshotJsonFunction());
@@ -71,6 +97,11 @@ public class ProductCategoriesRestControllerTest
 		SnapshotMatcher.validateSnapshots();
 	}
 
+=======
+		LogManager.setLoggerLevel(ProductCategoriesRestController.class, Level.ALL);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@BeforeEach
 	public void init()
 	{
@@ -147,7 +178,11 @@ public class ProductCategoriesRestControllerTest
 						.build());
 
 		//
+<<<<<<< HEAD
 		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Builder(builderMethodName = "prepareProductCategory", builderClassName = "prepareProductCategoryBuilder")

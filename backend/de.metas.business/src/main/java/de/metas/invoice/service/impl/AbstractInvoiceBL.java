@@ -1,6 +1,11 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -23,8 +28,15 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
+<<<<<<< HEAD
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+=======
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -43,9 +55,17 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -55,6 +75,10 @@ import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.money.CurrencyConversionTypeId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -87,11 +111,19 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.trx.api.ITrxManager;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
@@ -125,7 +157,11 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+<<<<<<< HEAD
 import java.util.Collections;
+=======
+import java.util.Collection;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -165,6 +201,12 @@ import static de.metas.util.Check.assumeNotNull;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
+<<<<<<< HEAD
+=======
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -190,6 +232,27 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+
+	@Override
+	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveLines(invoiceId);
+	}
+
+	@Override
+	public List<InvoiceTax> getTaxes(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveTaxes(invoiceId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
@@ -201,35 +264,52 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotBePaid,
+<<<<<<< HEAD
 						new Object[] {
 								invoice.getDocumentNo()
 						});
+=======
+						invoice.getDocumentNo());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
+<<<<<<< HEAD
 																						  false); // creditMemoAdjusted = false
+=======
+					false); // creditMemoAdjusted = false
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotHaveOpenAmtZero,
+<<<<<<< HEAD
 						new Object[] {
 								invoice.getDocumentNo()
 						});
+=======
+						invoice.getDocumentNo());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
+<<<<<<< HEAD
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
+=======
+		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
 				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
+<<<<<<< HEAD
 						 targetDocTypeId.getRepoId(),
 						 invoice.isSOTrx(),
 						 false, // counter == false
@@ -237,11 +317,24 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						 creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
 						 true, // copyLines == true
 						 new CreditMemoInvoiceCopyHandler(creditCtx)),
+=======
+						targetDocTypeId.getRepoId(),
+						invoice.isSOTrx(),
+						false, // counter == false
+						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						true, // copyLines == true
+						new CreditMemoInvoiceCopyHandler(creditCtx)),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				I_C_Invoice.class);
 		return creditMemo;
 	}
 
+<<<<<<< HEAD
 	private DocTypeId getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final DocTypeId docTypeId)
+=======
+	private DocTypeId getTarget_DocType_ID(final I_C_Invoice invoice, final DocTypeId docTypeId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (docTypeId != null)
 		{
@@ -285,7 +378,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
 	}
 
+<<<<<<< HEAD
 	private final org.compiere.model.I_C_Invoice copyFrom(
+=======
+	private org.compiere.model.I_C_Invoice copyFrom(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final org.compiere.model.I_C_Invoice from,
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
@@ -456,6 +553,33 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void scheduleUpdateIsPaid(@NonNull final InvoiceId invoiceId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"invoiceBL.scheduleUpdateIsPaid",
+				ImmutableSet.of(invoiceId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<InvoiceId> invoiceIds)
+	{
+		invoiceDAO.getByIdsInTrx(invoiceIds)
+				.forEach(invoice -> {
+					testAllocation(invoice, false);
+					invoiceDAO.save(invoice);
+				});
+	}
+
+	@Override
+	public void testAllocated(@NonNull final InvoiceId invoiceId)
+	{
+		testAllocated(ImmutableList.of(invoiceId));
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
 		boolean change = false;
@@ -503,9 +627,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	/**
 	 * Gets Invoice Grand Total (absolute value).
+<<<<<<< HEAD
 	 *
 	 * @param invoice
 	 * @return
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
 	{
@@ -693,12 +820,21 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
 		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
+<<<<<<< HEAD
 																		  .onlyActive(true)
 																		  .contactType(ContactType.BILL_TO_DEFAULT)
 																		  .bpartnerId(billBPartnerLocationId.getBpartnerId())
 																		  .bPartnerLocationId(billBPartnerLocationId)
 																		  .ifNotFound(IfNotFound.RETURN_NULL)
 																		  .build());
+=======
+				.onlyActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billBPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(billBPartnerLocationId)
+				.ifNotFound(IfNotFound.RETURN_NULL)
+				.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
 				: Optional.empty();
@@ -798,7 +934,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
+<<<<<<< HEAD
 			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
+=======
+			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}
@@ -817,7 +957,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
+=======
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
 		updateDescriptionFromDocTypeTargetId(invoice, null, null);
@@ -835,10 +979,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+<<<<<<< HEAD
 		if (docType == null)
 		{
 			return;
 		}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		if (!docType.isCopyDescriptionToDocument())
 		{
@@ -1005,10 +1152,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
 
+<<<<<<< HEAD
 		Collections.sort(lines, cmp);
 	}
 
 	private final Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+=======
+		lines.sort(cmp);
+	}
+
+	private Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -1019,7 +1173,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean sortILsByShipmentLineOrders = sysConfigBL.getBooleanValue(SYSCONFIG_SortILsByShipmentLineOrders, false); // fallback false (if not configured)
 		if (sortILsByShipmentLineOrders)
 		{
+<<<<<<< HEAD
 			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator(lines);
+=======
+			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			ilComparator.addComparator(orderLineComparator);
 		}
 
@@ -1039,9 +1197,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * Set M_InOut_ID for comment lines: The Invoice Lines are initially ordered by their M_InOut_ID, so that there is a "Block" of invoice lines for each InOut. There are 2 comment lines in front of
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
+<<<<<<< HEAD
 	 *
 	 * @param lines
 	 * @return comparator
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
@@ -1119,6 +1280,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final int line1No = line1.getLine();
 			final int line2No = line2.getLine();
 
+<<<<<<< HEAD
 			if (line1No > line2No)
 			{
 				return 1;
@@ -1129,11 +1291,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 
 			return 0;
+=======
+			return Integer.compare(line1No, line2No);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		};
 		return cmp;
 	}
 
+<<<<<<< HEAD
 	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
+=======
+	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
 
@@ -1299,13 +1469,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				log.debug("stdTax rate is " + stdTax.getRate());
 				log.debug("invoiceTax rate is " + invoiceTax.getRate());
 
+<<<<<<< HEAD
 				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
 				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+=======
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxThisAmt.add(taxBL.calculateTaxAmt(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
 				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
+<<<<<<< HEAD
 								  + taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+=======
+						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		}
 
@@ -1337,7 +1516,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
+<<<<<<< HEAD
 		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+=======
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1408,7 +1591,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
 
+<<<<<<< HEAD
 			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+=======
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -1430,7 +1617,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+=======
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.I_C_InvoiceLine invoiceLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1455,7 +1646,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
 
+<<<<<<< HEAD
 			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+=======
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
@@ -1565,6 +1760,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public boolean isReversal(@NonNull final InvoiceId invoiceId)
+	{
+		return isReversal(getById(invoiceId));
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public boolean isReversal(final org.compiere.model.I_C_Invoice invoice)
 	{
 		if (invoice == null)
@@ -1642,11 +1846,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+<<<<<<< HEAD
 																							   .docBaseType(docBaseAndSubType.getDocBaseType())
 																							   .docSubType(docBaseAndSubType.getDocSubType())
 																							   .adClientId(invoice.getAD_Client_ID())
 																							   .adOrgId(invoice.getAD_Org_ID())
 																							   .build());
+=======
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
 						invoice,
@@ -1660,7 +1872,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
+<<<<<<< HEAD
 												+ invoice.getDescription());
+=======
+				+ invoice.getDescription());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
@@ -1779,6 +1995,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return pricingResult.getTaxCategoryId();
 	}
 
+<<<<<<< HEAD
+=======
+	// Note: C_Invoice_Line_Allocations are handled in InvoiceCandBL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
@@ -1912,7 +2132,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+<<<<<<< HEAD
 		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
+=======
+		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -1932,7 +2156,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoiceContactRecord.getC_BPartner_Location_ID());
 		if (contactLocationId != null)
 		{
+<<<<<<< HEAD
 			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
+=======
+			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdEvenInactive(contactLocationId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (contactLocationRecord == null)
 			{
 				return null;
@@ -1947,4 +2175,38 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		return null;
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+				invoice.getDateAcct().toInstant(),
+				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+				ClientId.ofRepoId(invoice.getAD_Client_ID()),
+				OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
+		return conversionCtx;
+	}
+
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		return Services.get(IInvoiceLineBL.class).getQtyInvoicedStockUOM(invoiceLine);
+	}
+
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getPOReference();
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceAndLineId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

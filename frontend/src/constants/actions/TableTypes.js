@@ -28,6 +28,11 @@ export const DELETE_TABLE = 'DELETE_TABLE';
  */
 export const UPDATE_TABLE_DATA = 'UPDATE_TABLE_DATA';
 
+<<<<<<< HEAD
+=======
+export const PARTIAL_UPDATE_TABLE_DATA = 'PARTIAL_UPDATE_TABLE_DATA';
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @constant
  * @type {string} update table selection

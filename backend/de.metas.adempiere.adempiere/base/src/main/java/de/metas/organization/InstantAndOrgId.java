@@ -5,6 +5,10 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import java.time.Instant;
+<<<<<<< HEAD
+=======
+import java.time.LocalDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
@@ -47,6 +51,13 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 
 	public java.sql.Timestamp toTimestamp() {return java.sql.Timestamp.from(instant);}
 
+<<<<<<< HEAD
+=======
+	public LocalDate toLocalDate(@NonNull final Function<OrgId, ZoneId> orgMapper) {return toZonedDateTime(orgMapper).toLocalDate();}
+
+	public LocalDateAndOrgId toLocalDateAndOrgId(@NonNull final Function<OrgId, ZoneId> orgMapper) {return LocalDateAndOrgId.ofLocalDate(toLocalDate(orgMapper), orgId);}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	public int compareTo(@NonNull final InstantAndOrgId other) {return this.instant.compareTo(other.instant);}
 }

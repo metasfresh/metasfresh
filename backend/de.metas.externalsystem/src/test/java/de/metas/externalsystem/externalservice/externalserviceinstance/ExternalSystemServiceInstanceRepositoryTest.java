@@ -22,6 +22,11 @@
 
 package de.metas.externalsystem.externalservice.externalserviceinstance;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
@@ -31,15 +36,22 @@ import de.metas.externalsystem.externalservice.model.ExternalSystemServiceReposi
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Status;
 import org.adempiere.test.AdempiereTestHelper;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+=======
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -48,6 +60,15 @@ import static org.assertj.core.api.Assertions.*;
 public class ExternalSystemServiceInstanceRepositoryTest
 {
 	private ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepo;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SnapshotExtension.class)
+public class ExternalSystemServiceInstanceRepositoryTest
+{
+	private ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepo;
+	private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	void beforeEach()
@@ -56,6 +77,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 		externalSystemServiceInstanceRepo = new ExternalSystemServiceInstanceRepository(new ExternalSystemServiceRepository());
 	}
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void initStatic()
 	{
@@ -68,6 +90,8 @@ public class ExternalSystemServiceInstanceRepositoryTest
 		validateSnapshots();
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	void givenValidIds_whenGetByConfigAndServiceId_thenReturnInstance()
 	{
@@ -94,7 +118,11 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotEmpty();
+<<<<<<< HEAD
 		expect(result.get()).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -152,7 +180,11 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotNull();
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -184,7 +216,11 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(updated).isNotNull();
+<<<<<<< HEAD
 		expect(updated).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(updated);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Test
@@ -227,6 +263,10 @@ public class ExternalSystemServiceInstanceRepositoryTest
 		//then
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
+<<<<<<< HEAD
 		expect(result).toMatchSnapshot();
+=======
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

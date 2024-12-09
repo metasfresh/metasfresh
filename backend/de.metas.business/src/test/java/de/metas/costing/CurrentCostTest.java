@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyPrecision;
@@ -23,6 +26,20 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
 import lombok.Builder;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -107,7 +124,11 @@ public class CurrentCostTest
 					Quantity.of(0, uomEach),
 					QuantityUOMConverters.noConversion());
 
+<<<<<<< HEAD
 			assertThat(currentCost).isEqualToComparingFieldByField(currentCost().build());
+=======
+			assertThat(currentCost).usingRecursiveComparison().isEqualTo(currentCost().build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Test
@@ -130,6 +151,7 @@ public class CurrentCostTest
 		@Test
 		public void nonZeroAmt_zeroQty()
 		{
+<<<<<<< HEAD
 			final CurrentCost currentCost = currentCost().build();
 
 			assertThatThrownBy(() -> currentCost.addWeightedAverage(
@@ -138,6 +160,21 @@ public class CurrentCostTest
 					QuantityUOMConverters.noConversion()))
 							.isInstanceOf(AdempiereException.class)
 							.hasMessageStartingWith("Qty shall not be zero when amount is non zero");
+=======
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
+
+			currentCost.addWeightedAverage(
+					CostAmount.of(13, currencyId),
+					Quantity.of(0, uomEach),
+					QuantityUOMConverters.noConversion());
+
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1013"); // (1000x1 + 13) / (1 + 0)
+			assertThat(currentCost.getCurrentQty()).isEqualTo(Quantity.of(1, uomEach));
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Test

@@ -33,7 +33,11 @@ CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
     left outer join c_country c on l.c_country_id = c.c_country_id
     left outer join M_Product_Allergen pa on pa.M_product_ID = p.M_product_ID
     left outer join M_Allergen a on a.m_allergen_id = pa.m_allergen_id
+<<<<<<< HEAD
     left outer join M_Nutrition_Fact nf on 1 = 1
+=======
+    left outer join M_Nutrition_Fact nf on 1 = 1 AND nf.isactive = 'Y'::bpchar
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     left outer join M_Product_Nutrition pn
       on pn.M_product_ID = p.M_product_ID and nf.M_Nutrition_Fact_ID = pn.M_Nutrition_Fact_ID
     left outer join PP_Product_BOM bom on bom.M_Product_ID = p.m_product_id

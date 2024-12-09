@@ -2,7 +2,11 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,5 +28,8 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 
 public interface Shopware6QueryRequest
 {
+<<<<<<< HEAD
 	Boolean getIsQueryByDate();
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

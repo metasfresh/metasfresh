@@ -27,4 +27,9 @@ public interface IPickingSlotBL extends ISingletonService
 	QRCodePDFResource createQRCodesPDF(Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions);
 
 	boolean isAvailableForAnyBPartner(@NonNull PickingSlotId pickingSlotId);
+<<<<<<< HEAD
+=======
+
+	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

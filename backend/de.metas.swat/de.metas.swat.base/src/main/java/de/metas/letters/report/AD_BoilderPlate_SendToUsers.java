@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 
 package de.metas.letters.report;
@@ -14,18 +18,27 @@ package de.metas.letters.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -42,6 +55,13 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.email.mailboxes.UserEMailConfig;
+=======
+import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxQuery;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
@@ -53,6 +73,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.user.UserId;
+<<<<<<< HEAD
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 
@@ -67,13 +88,44 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 	private static final AdMessageKey AD_Message_UserNotifyError = AdMessageKey.of("de.metas.letters.UserNotifyError");
 
 	/** From User (sender) */
+=======
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.MNote;
+import org.compiere.model.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+/**
+ * Send BoilerPlate to selected contacts
+ *
+ * @author teo_sarca
+ */
+public class AD_BoilderPlate_SendToUsers extends JavaProcess
+{
+	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+	private static final AdMessageKey AD_Message_UserNotifyError = AdMessageKey.of("de.metas.letters.UserNotifyError");
+
+	/**
+	 * From User (sender)
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private UserId p_AD_User_ID;
 	private int p_AD_BoilerPlate_ID = -1;
 	private String p_WhereClause = null;
 	private int p_SMTPRetriesNo = 3;
 
+<<<<<<< HEAD
 	private UserEMailConfig fromUserEmailConfig = null;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private int m_count_notes = 0;
 
 	@Override
@@ -105,6 +157,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		}
 	}
 
+<<<<<<< HEAD
 	private UserEMailConfig getFromUserEMailConfig()
 	{
 		UserEMailConfig fromUserEmailConfig = this.fromUserEmailConfig;
@@ -119,6 +172,15 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		}
 
 		return fromUserEmailConfig;
+=======
+	private UserId getFromUserId()
+	{
+		if (p_AD_User_ID == null)
+		{
+			throw new FillMandatoryException("AD_User_ID");
+		}
+		return p_AD_User_ID;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -202,6 +264,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			@Override
 			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
+<<<<<<< HEAD
 				String message = text.getTextSnippetParsed(attributes);
 				//
 				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
@@ -223,10 +286,25 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 				}
 				send(email);
 				return email;
+=======
+				return mailService.sendEMail(EMailRequest.builder()
+						.mailboxQuery(MailboxQuery.builder()
+								.clientId(getClientId())
+								.orgId(getOrgId())
+								.adProcessId(getProcessInfo().getAdProcessId())
+								.fromUserId(getFromUserId())
+								.build())
+						.toList(toEMailAddresses(toEmail))
+						.subject(text.getSubject())
+						.message(text.getTextSnippetParsed(attributes))
+						.html(true)
+						.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			}
 		});
 	}
 
+<<<<<<< HEAD
 	private void send(EMail email)
 	{
 		int maxRetries = p_SMTPRetriesNo > 0 ? p_SMTPRetriesNo : 0;
@@ -252,6 +330,8 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		while (true);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private void createNote(MADBoilerPlate text, I_AD_User user, Exception e)
 	{
 		final AdMessageId adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(AD_Message_UserNotifyError)
@@ -261,11 +341,19 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String reference = msgBL.parseTranslation(getCtx(), "@AD_BoilerPlate_ID@: " + text.get_Translation(MADBoilerPlate.COLUMNNAME_Name))
 				+ ", " + msgBL.parseTranslation(getCtx(), "@AD_User_ID@: " + user.getName())
+<<<<<<< HEAD
 		// +", "+Msg.parseTranslation(getCtx(), "@AD_PInstance_ID@: "+getAD_PInstance_ID())
 		;
 		final MNote note = new MNote(getCtx(),
 				adMessageId.getRepoId(),
 				getFromUserEMailConfig().getUserId().getRepoId(),
+=======
+				// +", "+Msg.parseTranslation(getCtx(), "@AD_PInstance_ID@: "+getAD_PInstance_ID())
+				;
+		final MNote note = new MNote(getCtx(),
+				adMessageId.getRepoId(),
+				getFromUserId().getRepoId(),
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				InterfaceWrapperHelper.getModelTableId(user), user.getAD_User_ID(),
 				reference,
 				e.getLocalizedMessage(),
@@ -274,4 +362,19 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		note.saveEx();
 		m_count_notes++;
 	}
+<<<<<<< HEAD
+=======
+
+	static List<EMailAddress> toEMailAddresses(final String string)
+	{
+		final StringTokenizer st = new StringTokenizer(string, " ,;", false);
+		final ArrayList<EMailAddress> result = new ArrayList<>();
+		while (st.hasMoreTokens())
+		{
+			result.add(EMailAddress.ofString(st.nextToken()));
+		}
+		return result;
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

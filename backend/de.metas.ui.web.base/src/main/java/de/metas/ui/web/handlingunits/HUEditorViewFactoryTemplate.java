@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -45,6 +49,10 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -102,13 +110,22 @@ import java.util.Set;
 
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
+<<<<<<< HEAD
 	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
+=======
+	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private HUReservationService huReservationService;
+<<<<<<< HEAD
+=======
+	@Autowired
+	private ADReferenceService adReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -229,10 +246,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// NOTE: we need to add all HU's standard fields because those might be needed for some of the standard filters defined
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
+<<<<<<< HEAD
 			huEntityBindings.getFields()
 					.stream()
 					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
 					.forEach(sqlViewBinding::field);
+=======
+			sqlViewBinding.fields(SqlViewBindingFactory.createViewFieldBindings(huEntityBindings, displayFieldNames));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		//
@@ -354,7 +375,12 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
+<<<<<<< HEAD
 					.huReservationService(huReservationService);
+=======
+					.huReservationService(huReservationService)
+					.adReferenceService(adReferenceService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
@@ -473,9 +499,16 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
+<<<<<<< HEAD
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)
 							.setWidgetType(DocumentFieldWidgetType.Text)
+=======
+							.fieldName(PARAM_Barcode)
+							.operator(DocumentFilterParam.Operator.EQUAL)
+							.displayName(barcodeCaption)
+							.widgetType(DocumentFieldWidgetType.Text)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}

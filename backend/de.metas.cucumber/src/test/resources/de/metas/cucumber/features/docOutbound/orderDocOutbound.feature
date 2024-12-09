@@ -57,7 +57,11 @@ Feature: Validate order doc outbound log creation
 
     And after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
+<<<<<<< HEAD
       | orderOutboundLog                 | order_1              | C_Order       | user@email.com      | sale_bpartner                | SOO             | CO            |
+=======
+      | orderOutboundLog                 | order_1              | C_Order       | user@email.com          | sale_bpartner                | SOO             | CO            |
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     And validate C_Doc_Outbound_Log_Line:
       | C_Doc_Outbound_Log_Line_ID.Identifier | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType | OPT.DocStatus |

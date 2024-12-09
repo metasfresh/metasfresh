@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.grid;
 
+<<<<<<< HEAD
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -50,6 +51,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
+=======
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -72,11 +80,32 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+<<<<<<< HEAD
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  *	Tab to maintain Order/Sequence
@@ -885,7 +914,11 @@ public class VSortTab extends CPanel implements APanelTab
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final PO po = new Query(ctx, m_TableName, m_KeyColumnName + "=?", trxName)
 				.setParameters(item.getKey())
+<<<<<<< HEAD
 				.firstOnly();
+=======
+				.firstOnly(PO.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (po == null)
 		{
 			return false;

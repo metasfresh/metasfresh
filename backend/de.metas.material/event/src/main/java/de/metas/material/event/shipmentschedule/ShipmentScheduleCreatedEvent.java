@@ -47,14 +47,21 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
+<<<<<<< HEAD
 	private final DocumentLineDescriptor documentLineDescriptor;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Builder
 	public ShipmentScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
+<<<<<<< HEAD
 			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
+=======
+			@JsonProperty("shipmentScheduleDetail") @NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
@@ -62,6 +69,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 				eventDescriptor,
 				materialDescriptor,
 				minMaxDescriptor,
+<<<<<<< HEAD
 				reservedQuantity,
 				shipmentScheduleId);
 
@@ -78,6 +86,25 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	public BigDecimal getReservedQuantityDelta()
 	{
 		return getReservedQuantity();
+=======
+				shipmentScheduleDetail,
+				shipmentScheduleId,
+				documentLineDescriptor);
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getReservedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getReservedQuantity();
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -85,7 +112,12 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	{
 		super.validate();
 
+<<<<<<< HEAD
 		Check.errorIf(documentLineDescriptor == null, "documentLineDescriptor may not be null");
 		documentLineDescriptor.validate();
+=======
+		Check.errorIf(getDocumentLineDescriptor() == null, "documentLineDescriptor may not be null");
+		getDocumentLineDescriptor().validate();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

@@ -66,7 +66,11 @@ public class AD_Note_StepDef
 	@And("AD_Note table is reset")
 	public void reset_ad_note()
 	{
+<<<<<<< HEAD
 		DB.executeUpdateEx("DELETE FROM AD_Note", ITrx.TRXNAME_None);
+=======
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_Note", ITrx.TRXNAME_None);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@And("after not more than (.*)s, validate AD_Note:$")

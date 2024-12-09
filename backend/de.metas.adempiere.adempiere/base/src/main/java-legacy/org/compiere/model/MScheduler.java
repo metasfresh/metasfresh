@@ -166,7 +166,11 @@ public class MScheduler extends X_AD_Scheduler
 		final String sql = "DELETE FROM AD_SchedulerLog "
 			+ "WHERE AD_Scheduler_ID=" + getAD_Scheduler_ID()
 			+ " AND Created > (now() - INTERVAL '" + getKeepLogDays() + " days')";
+<<<<<<< HEAD
 		return DB.executeUpdateEx(sql, trxName);
+=======
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}	//	deleteLog
 
 	/**

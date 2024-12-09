@@ -280,7 +280,11 @@ public class SweepTableBL implements ISweepTableBL
 			sql = "DELETE FROM " + table + " WHERE " + whereClause;
 		}
 
+<<<<<<< HEAD
 		final int no = DB.executeUpdate(sql, sweepCtx.trxName);
+=======
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, sweepCtx.trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no < 0)
 		{
 			// sql error, returning false, error is already logged in console
@@ -507,8 +511,13 @@ public class SweepTableBL implements ISweepTableBL
 						+ referingTableCol + "=NULL WHERE " + wc
 						+ " AND AD_Client_ID="
 						+ Env.getAD_Client_ID(sweepCtx.ctx);
+<<<<<<< HEAD
 				final int updateCount = DB.executeUpdateEx(updateSQL,
 						new Object[] {}, sweepCtx.trxName);
+=======
+				final int updateCount = DB.executeUpdateAndThrowExceptionOnFail(updateSQL,
+																				new Object[] {}, sweepCtx.trxName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				if (updateCount != ids.length)
 				{
 					// shall not happen

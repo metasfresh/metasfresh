@@ -299,14 +299,24 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				// Planned values
 				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit.getTemporalUnit()))
 				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit.getTemporalUnit()))
+<<<<<<< HEAD
 				.qtyRequired(Quantitys.create(record.getQtyRequiered(), uomId))
+=======
+				.qtyRequired(Quantitys.of(record.getQtyRequiered(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				// Reported values
 				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit.getTemporalUnit()))
 				.durationReal(Duration.of(record.getDurationReal(), durationUnit.getTemporalUnit()))
+<<<<<<< HEAD
 				.qtyDelivered(Quantitys.create(record.getQtyDelivered(), uomId))
 				.qtyScrapped(Quantitys.create(record.getQtyScrap(), uomId))
 				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
+=======
+				.qtyDelivered(Quantitys.of(record.getQtyDelivered(), uomId))
+				.qtyScrapped(Quantitys.of(record.getQtyScrap(), uomId))
+				.qtyRejected(Quantitys.of(record.getQtyReject(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
 				//

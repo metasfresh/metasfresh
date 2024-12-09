@@ -104,6 +104,10 @@ public class ProductUpsertRequestProducer
 		return Optional.of(JsonRequestProductUpsertItem.builder()
 								   .productIdentifier(productIdentifier)
 								   .requestProduct(jsonRequestProduct)
+<<<<<<< HEAD
+=======
+								   .externalSystemConfigId(routeContext.getExternalSystemRequest().getExternalSystemConfigId())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 								   .build());
 	}
 
@@ -141,4 +145,8 @@ public class ProductUpsertRequestProducer
 		}
 		return jsonUOM.getCode();
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

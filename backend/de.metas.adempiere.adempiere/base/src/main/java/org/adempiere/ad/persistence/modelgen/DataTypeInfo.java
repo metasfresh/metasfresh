@@ -23,7 +23,10 @@
 package org.adempiere.ad.persistence.modelgen;
 
 import de.metas.adempiere.service.IColumnBL;
+<<<<<<< HEAD
 import de.metas.util.Services;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -154,7 +157,11 @@ public class DataTypeInfo
 		}
 		// Record_ID
 		// TODO: hardcoded
+<<<<<<< HEAD
 		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
+=======
+		else if (IColumnBL.isRecordIdColumnName(columnName))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return Integer.class;
 		}

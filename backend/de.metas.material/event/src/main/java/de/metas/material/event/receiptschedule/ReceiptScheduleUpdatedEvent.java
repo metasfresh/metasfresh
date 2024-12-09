@@ -58,6 +58,10 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	public ReceiptScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+<<<<<<< HEAD
+=======
+			@JsonProperty("oldReceiptScheduleData") final OldReceiptScheduleData oldReceiptScheduleData,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
@@ -66,6 +70,10 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+<<<<<<< HEAD
+=======
+				oldReceiptScheduleData,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				minMaxDescriptor,
 				reservedQuantity,
 				receiptScheduleId);

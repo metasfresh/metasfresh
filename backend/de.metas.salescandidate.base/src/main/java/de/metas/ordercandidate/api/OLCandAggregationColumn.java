@@ -4,6 +4,10 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.column.AdColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -31,7 +35,11 @@ import lombok.Value;
 public class OLCandAggregationColumn
 {
 	private final String columnName;
+<<<<<<< HEAD
 	private final int adColumnId;
+=======
+	private final AdColumnId adColumnId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final int orderBySeqNo;
 	private final boolean splitOrderDiscriminator;
 	private final boolean groupByColumn;
@@ -46,14 +54,21 @@ public class OLCandAggregationColumn
 	@Builder
 	private OLCandAggregationColumn(
 			@NonNull final String columnName,
+<<<<<<< HEAD
 			final int adColumnId,
+=======
+			@NonNull final AdColumnId adColumnId,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			final int orderBySeqNo,
 			final boolean splitOrderDiscriminator,
 			final boolean groupByColumn,
 			final Granularity granularity)
 	{
 		Check.assumeNotEmpty(columnName, "columnName is not empty");
+<<<<<<< HEAD
 		Check.assume(adColumnId > 0, "adColumnId > 0");
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		this.columnName = columnName;
 		this.adColumnId = adColumnId;

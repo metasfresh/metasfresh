@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { formatSortingQuery } from '../utils';
+=======
+import { delete as del, get, post } from 'axios';
+
+import { getData } from './view';
+import { parseToDisplay } from '../utils/documentListHelper';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -78,6 +85,7 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
+<<<<<<< HEAD
     orderBy: formatSortingQuery(orderBy),
   })
     .then(
@@ -89,6 +97,21 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
           fieldsByName: parseToDisplay(row.fieldsByName),
         }))
     )
+=======
+    orderBy,
+  })
+    .then((res) => {
+      const rows =
+        res?.data?.result?.map((row) => ({
+          ...row,
+          fieldsByName: parseToDisplay(row.fieldsByName),
+        })) ?? [];
+
+      const orderBys = res?.data?.orderBys ?? [];
+
+      return { rows, orderBys };
+    })
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error('getTabRequest error: ', error);
@@ -143,6 +166,10 @@ export function startProcess(processType, pinstanceId) {
 export function getProcessData({
   processId,
   viewId,
+<<<<<<< HEAD
+=======
+  viewOrderBy,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   documentType,
   ids,
   tabId,
@@ -159,6 +186,10 @@ export function getProcessData({
 
   if (viewId) {
     payload.viewId = viewId;
+<<<<<<< HEAD
+=======
+    payload.viewOrderBy = viewOrderBy;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
     payload.viewDocumentIds = ids;
 
     if (childViewId) {

@@ -72,7 +72,13 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.AccountingQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.ManageSchedulerQueueConfiguration.QUEUE_NAME_SPEL,
+<<<<<<< HEAD
 			RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.QUEUE_NAME_SPEL
+=======
+			RabbitMQEventBusConfiguration.AsyncBatchQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.EffortControlQueueConfiguration.QUEUE_NAME_SPEL
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	})
 	public void onEvent(
 			@Payload final Event event,

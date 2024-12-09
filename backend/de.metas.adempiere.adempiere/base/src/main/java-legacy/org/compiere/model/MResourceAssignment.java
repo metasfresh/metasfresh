@@ -44,8 +44,11 @@ public class MResourceAssignment extends X_S_ResourceAssignment
 	{
 		super (ctx, S_ResourceAssignment_ID, trxName);
 		
+<<<<<<< HEAD
 		// FIXME: get rid of this shit because POInfo shall be immutable
 		getPOInfo().setUpdateable(true);		//	default table is not updateable
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		//	Default values
 		if (S_ResourceAssignment_ID == 0)
 		{

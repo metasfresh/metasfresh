@@ -41,8 +41,12 @@ import java.math.BigDecimal;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
+<<<<<<< HEAD
 	@Nullable
 	private BigDecimal explicitCostPriceBD;
+=======
+	@Nullable private final BigDecimal explicitCostPriceBD;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
@@ -81,12 +85,21 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
+<<<<<<< HEAD
 															  .acctSchemaId(as.getId())
 															  .reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
 															  .date(getDateAcct())
 															  .build())
 					.getTotalAmountToPost(as);
+=======
+							.acctSchemaId(as.getId())
+							.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+							.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+							.date(getDateAcctAsInstant())
+							.build())
+					.getMainAmountToPost(as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -101,9 +114,15 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 									.qty(getQty())
 									.amt(CostAmount.zero(as.getCurrencyId()))
 									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
+<<<<<<< HEAD
 									.date(getDateAcct())
 									.build())
 					.getTotalAmountToPost(as);
+=======
+									.date(getDateAcctAsInstant())
+									.build())
+					.getMainAmountToPost(as);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

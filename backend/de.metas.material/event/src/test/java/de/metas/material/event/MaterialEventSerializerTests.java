@@ -3,6 +3,10 @@ package de.metas.material.event;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
+<<<<<<< HEAD
+=======
+import de.metas.event.Event;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.AttributesKey;
@@ -17,6 +21,10 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.eventbus.MaterialEventConverter;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -46,6 +54,10 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
@@ -60,11 +72,19 @@ import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
+<<<<<<< HEAD
+=======
+import de.metas.util.JSONObjectMapper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.BeforeEach;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -73,13 +93,20 @@ import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+<<<<<<< HEAD
 import static de.metas.material.event.EventTestHelper.assertEventEqualAfterSerializeDeserialize;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
+<<<<<<< HEAD
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -105,8 +132,56 @@ import static java.math.BigDecimal.valueOf;
 
 public class MaterialEventSerializerTests
 {
+<<<<<<< HEAD
 	private static EventDescriptor newEventDescriptor() {return EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(1, 2), "traceId");}
 
+=======
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
+
+	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
+
+	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
+	private MaterialEventConverter materialEventConverter;
+
+	private static EventDescriptor newEventDescriptor() {return EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(1, 2), "traceId");}
+
+	@BeforeEach
+	public void init()
+	{
+		this.materialEventConverter = new MaterialEventConverter();
+	}
+
+	private void assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
+	{
+		//
+		// Test direct serialization/deserialization
+		{
+			final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(originalEvent);
+			final MaterialEvent deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter
+		{
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
+
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+	}
+
+	private static EventDescriptor createEventDescriptor()
+	{
+		return EventDescriptor.ofClientAndOrg(1, 2);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Test
 	public void attributesChangedEvent()
 	{
@@ -575,7 +650,16 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
+<<<<<<< HEAD
 				.reservedQuantity(new BigDecimal("3"))
+=======
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(TEN)
+												.orderedQuantityDelta(TEN)
+												.reservedQuantityDelta(new BigDecimal("3"))
+												.reservedQuantity(new BigDecimal("3"))
+												.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.shipmentScheduleId(4);
 	}
 
@@ -586,9 +670,18 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
+<<<<<<< HEAD
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
+=======
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(new BigDecimal("2"))
+												.orderedQuantityDelta(new BigDecimal("2"))
+												.reservedQuantity(new BigDecimal("3"))
+												.reservedQuantityDelta(new BigDecimal("4"))
+												.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.shipmentScheduleId(5)
 				.build();
 
@@ -601,7 +694,16 @@ public class MaterialEventSerializerTests
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
+<<<<<<< HEAD
 				.reservedQuantity(new BigDecimal("3"))
+=======
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.shipmentScheduleId(5)
 				.build();
 

@@ -399,7 +399,11 @@ public class ADWindowDAO implements IADWindowDAO
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
 	{
 		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId.getRepoId();
+<<<<<<< HEAD
 		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Window_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
@@ -409,7 +413,11 @@ public class ADWindowDAO implements IADWindowDAO
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId.getRepoId();
 
+<<<<<<< HEAD
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Window_Trl inserted: {}", countInsert);
 	}
 
@@ -487,7 +495,11 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceUISectionId, "sourceUISectionId");
 
 		final String sqlDelete = "DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + targetUISectionId;
+<<<<<<< HEAD
 		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_UI_Section_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language, " +
@@ -496,7 +508,11 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetUISectionId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, IsTranslated " +
 				" FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + sourceUISectionId;
+<<<<<<< HEAD
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);
 	}
 
@@ -981,7 +997,11 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
 
 		final String sqlDelete = "DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = " + targetTabId;
+<<<<<<< HEAD
 		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Tab_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language, " +
@@ -990,7 +1010,11 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetTabId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated " +
 				" FROM AD_Tab_Trl WHERE AD_Tab_ID = " + sourceTabId;
+<<<<<<< HEAD
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Tab_Trl inserted: {}", countInsert);
 	}
 
@@ -1091,7 +1115,11 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
 
 		final String sqlDelete = "DELETE FROM AD_Field_Trl WHERE AD_Field_ID = " + targetFieldId;
+<<<<<<< HEAD
 		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Field_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language, " +
@@ -1100,7 +1128,11 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetFieldId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Field_Trl WHERE AD_Field_ID = " + sourceFieldId;
+<<<<<<< HEAD
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+=======
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		logger.debug("AD_Field_Trl inserted: {}", countInsert);
 	}
 
@@ -1248,4 +1280,16 @@ public class ADWindowDAO implements IADWindowDAO
 				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
 		return ImmutableSet.copyOf(adWindowIds);
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

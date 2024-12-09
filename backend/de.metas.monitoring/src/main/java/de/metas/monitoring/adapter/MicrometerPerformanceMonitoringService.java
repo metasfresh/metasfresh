@@ -2,7 +2,11 @@
  * #%L
  * de.metas.monitoring
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2021 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +26,42 @@
 
 package de.metas.monitoring.adapter;
 
+<<<<<<< HEAD
 import de.metas.common.util.EmptyUtil;
+=======
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.util.lang.IAutoCloseable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+=======
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Service
 @Primary
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
+<<<<<<< HEAD
 	private final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService;
 
 	public MicrometerPerformanceMonitoringService(
@@ -49,10 +69,19 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final MeterRegistry meterRegistry)
 	{
 		this.apmPerformanceMonitoringService = apmPerformanceMonitoringService;
+=======
+	private static final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = new ThreadLocal<>();
+	private static final String METER_PREFIX = "mf.";
+
+	public MicrometerPerformanceMonitoringService(
+			@NonNull final MeterRegistry meterRegistry)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		this.meterRegistry = meterRegistry;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public <V> V monitorTransaction(
 			@NonNull final Callable<V> callable,
 			@NonNull final TransactionMetadata metadata)
@@ -132,4 +161,133 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
 	}
+=======
+	public <V> V monitor(
+			@NonNull final Callable<V> callable,
+			@NonNull final PerformanceMonitoringService.Metadata metadata)
+	{
+		final PerformanceMonitoringData perfMonData = getPerformanceMonitoringData();
+
+		final Metadata dummyHTTPRequestMetadata = perfMonData.isInitiator() && metadata.getType().isAnyRestControllerType()
+				? createHTTPRequestPlaceholder(metadata)
+				: null;
+
+		try (final IAutoCloseable ignored = perfMonData.addCalledByIfNotNull(dummyHTTPRequestMetadata))
+		{
+			final ArrayList<Tag> tags = createTags(metadata, perfMonData);
+			try (final IAutoCloseable ignored2 = perfMonData.addCalledByIfNotNull(metadata))
+			{
+				final Type effectiveType = perfMonData.getEffectiveType(metadata);
+				final Timer timer = meterRegistry.timer(METER_PREFIX + effectiveType.getCode(), tags);
+				try
+				{
+					return timer.recordCallable(callable);
+				}
+				catch (final Exception e)
+				{
+					throw PerformanceMonitoringServiceUtil.asRTE(e);
+				}
+			}
+		}
+	}
+
+	private PerformanceMonitoringService.Metadata createHTTPRequestPlaceholder(final PerformanceMonitoringService.Metadata metadata)
+	{
+		final Type type = metadata.getType();
+		final String windowNameAndId = metadata.getWindowNameAndId();
+		final Type typeEffective;
+		if (type.isAnyRestControllerType())
+		{
+			typeEffective = type;
+		}
+		else if (Check.isBlank(windowNameAndId))
+		{
+			typeEffective = Type.REST_CONTROLLER;
+		}
+		else
+		{
+			typeEffective = Type.REST_CONTROLLER_WITH_WINDOW_ID;
+		}
+		return PerformanceMonitoringService.Metadata.builder()
+				.type(typeEffective)
+				.className("HTTP")
+				.functionName("Request")
+				.windowNameAndId(windowNameAndId)
+				.isGroupingPlaceholder(true)
+				//.labels() // don't copy the labels
+				.build();
+	}
+
+	@Override
+	public void recordElapsedTime(final long duration, final TimeUnit unit, final Metadata metadata)
+	{
+		final PerformanceMonitoringData perfMonData = getPerformanceMonitoringData();
+
+		final ArrayList<Tag> tags = createTags(metadata, perfMonData);
+
+		try (final IAutoCloseable ignored = perfMonData.addCalledByIfNotNull(metadata))
+		{
+			final Type effectiveType = perfMonData.getEffectiveType(metadata);
+			final Timer timer = meterRegistry.timer(METER_PREFIX + effectiveType.getCode(), tags);
+			timer.record(duration, unit);
+		}
+	}
+
+	private static PerformanceMonitoringData getPerformanceMonitoringData()
+	{
+		if (perfMonDataTL.get() == null)
+		{
+			perfMonDataTL.set(new PerformanceMonitoringData());
+		}
+		return perfMonDataTL.get();
+	}
+
+	@NonNull
+	private static ArrayList<Tag> createTags(final @NonNull Metadata metadata, final PerformanceMonitoringData perfMonData)
+	{
+		final ArrayList<Tag> tags = new ArrayList<>();
+		addTagIfNotNull("name", metadata.getClassName(), tags);
+		addTagIfNotNull("action", metadata.getFunctionName(), tags);
+
+		if (!perfMonData.isInitiator())
+		{
+			addTagIfNotNull("depth", String.valueOf(perfMonData.getDepth()), tags);
+			addTagIfNotNull("initiator", perfMonData.getInitiatorFunctionNameFQ(), tags);
+			addTagIfNotNull("window", perfMonData.getInitiatorWindow(), tags);
+			addTagIfNotNull("callerName", metadata.getFunctionNameFQ(), tags);
+			addTagIfNotNull("calledBy", perfMonData.getLastCalledFunctionNameFQ(), tags);
+		}
+		else
+		{
+			for (final Entry<String, String> entry : metadata.getLabels().entrySet())
+			{
+				if (PerformanceMonitoringService.VOLATILE_LABELS.contains(entry.getKey()))
+				{
+					// Avoid OOME: if we included e.g. the recordId, then every recordId would cause a new meter to be created.
+					continue;
+				}
+				addTagIfNotNull(entry.getKey(), entry.getValue(), tags);
+			}
+		}
+		return tags;
+	}
+
+	private static void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull final ArrayList<Tag> tags)
+	{
+		final String nameNorm = StringUtils.trimBlankToNull(name);
+		if (nameNorm == null)
+		{
+			return;
+		}
+
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		if (valueNorm == null)
+		{
+			return;
+		}
+
+		tags.add(Tag.of(nameNorm, valueNorm));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

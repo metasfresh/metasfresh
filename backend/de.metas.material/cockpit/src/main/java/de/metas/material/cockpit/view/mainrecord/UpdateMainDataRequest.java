@@ -63,6 +63,12 @@ public class UpdateMainDataRequest
 	BigDecimal offeredQty = BigDecimal.ZERO;
 
 	@Default
+<<<<<<< HEAD
+=======
+	BigDecimal offeredQtyNextDay = BigDecimal.ZERO;
+
+	@Default
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	BigDecimal qtyDemandPPOrder = BigDecimal.ZERO;
 	@Default
 	BigDecimal qtyDemandSalesOrder = BigDecimal.ZERO;

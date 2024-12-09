@@ -16,6 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
@@ -34,7 +38,10 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.adempiere.util.LegacyAdapters;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
@@ -43,13 +50,17 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+<<<<<<< HEAD
 import java.util.List;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Properties;
 
 /**
  * GL Journal Model
  *
  * @author Jorg Janke
+<<<<<<< HEAD
  * @version $Id: MJournal.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1619150 ] Usability/Consistency: reversed gl journal description <li>BF [ 1775358 ] GL Journal DateAcct/C_Period_ID issue <li>FR [ 1776045 ] Add
@@ -58,6 +69,12 @@ import java.util.Properties;
  * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962 <li>FR: [ 2214883 ] Remove SQL code and Replace for Query <li>FR [ 2520591 ] Support multiples calendar for
  *      Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+=======
+ *
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1619150 ] Usability/Consistency: reversed gl journal description <li>BF [ 1775358 ] GL Journal DateAcct/C_Period_ID issue <li>FR [ 1776045 ] Add
+ * ReActivate action to GL Journal
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class MJournal extends X_GL_Journal implements IDocument
 {
@@ -66,6 +83,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
 
+<<<<<<< HEAD
 	/**
 	 * Standard Constructor
 	 *
@@ -77,6 +95,12 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		super(ctx, GL_Journal_ID, trxName);
 		if (GL_Journal_ID == 0)
+=======
+	public MJournal(final Properties ctx, final int GL_Journal_ID, final String trxName)
+	{
+		super(ctx, GL_Journal_ID, trxName);
+		if (is_new())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			// setGL_Journal_ID (0); // PK
 			// setC_AcctSchema_ID (0);
@@ -100,6 +124,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setPosted(false);
 			setProcessed(false);
 		}
+<<<<<<< HEAD
 	}	// MJournal
 
 	/**
@@ -131,6 +156,16 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setDateAcct(parent.getDateAcct());
 		setC_Currency_ID(parent.getC_Currency_ID());
 	}	// MJournal
+=======
+	}    // MJournal
+
+	public MJournal(final Properties ctx, final ResultSet rs, final String trxName)
+	{
+		super(ctx, rs, trxName);
+	}    // MJournal
+
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Copy Constructor. Dos not copy: Dates/Period
@@ -157,18 +192,27 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		// setDateDoc(original.getDateDoc());
 		// setDateAcct(original.getDateAcct());
+<<<<<<< HEAD
 	}	// MJournal
+=======
+	}    // MJournal
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Overwrite Client/Org if required
 	 *
 	 * @param AD_Client_ID client
+<<<<<<< HEAD
 	 * @param AD_Org_ID org
+=======
+	 * @param AD_Org_ID    org
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	@Override
 	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
+<<<<<<< HEAD
 	}	// setClientOrg
 
 	/**
@@ -183,13 +227,22 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (DateAcct == null)
 			return;
 	}	// setDateAcct
+=======
+	}    // setClientOrg
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Currency Info
 	 *
+<<<<<<< HEAD
 	 * @param C_Currency_ID currency
 	 * @param C_ConversionType_ID type
 	 * @param CurrencyRate rate
+=======
+	 * @param C_Currency_ID       currency
+	 * @param C_ConversionType_ID type
+	 * @param CurrencyRate        rate
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 */
 	public void setCurrency(final int C_Currency_ID, final int C_ConversionType_ID, final BigDecimal CurrencyRate)
 	{
@@ -199,7 +252,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setC_ConversionType_ID(C_ConversionType_ID);
 		if (CurrencyRate != null && CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
 			setCurrencyRate(CurrencyRate);
+<<<<<<< HEAD
 	}	// setCurrency
+=======
+	}    // setCurrency
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Add to Description
@@ -216,6 +273,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setDescription(desc + " | " + description);
 	}
 
+<<<<<<< HEAD
 	/**************************************************************************
 	 * Get Journal Lines
 	 *
@@ -227,13 +285,28 @@ public class MJournal extends X_GL_Journal implements IDocument
 		final List<I_GL_JournalLine> lines = Services.get(IGLJournalLineDAO.class).retrieveLines(this);
 		return LegacyAdapters.convertToPOArray(lines, MJournalLine.class);
 	}	// getLines
+=======
+	private ImmutableList<I_GL_JournalLine> getActiveLines()
+	{
+		final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
+		return glJournalLineDAO.retrieveLines(this)
+				.stream()
+				.filter(I_GL_JournalLine::isActive)
+				.collect(ImmutableList.toImmutableList());
+	}    // getLines
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Copy Lines from other Journal
 	 *
 	 * @param fromJournal Journal
+<<<<<<< HEAD
 	 * @param dateAcct date used - if null original
 	 * @param typeCR type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
+=======
+	 * @param dateAcct    date used - if null original
+	 * @param typeCR      type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return number of lines copied
 	 */
 	private int copyLinesFrom(final MJournal fromJournal, final Timestamp dateAcct, final char typeCR)
@@ -241,17 +314,29 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (isProcessed() || fromJournal == null)
 			return 0;
 		int count = 0;
+<<<<<<< HEAD
 		MJournalLine[] fromLines = fromJournal.getLines(false);
 		for (final MJournalLine fromLine : fromLines)
 		{
 			MJournalLine toLine = new MJournalLine(getCtx(), 0, fromJournal.get_TrxName());
 			PO.copyValues(fromLine, toLine, getAD_Client_ID(), getAD_Org_ID());
+=======
+		final ImmutableList<I_GL_JournalLine> fromLines = fromJournal.getActiveLines();
+		for (final I_GL_JournalLine fromLine : fromLines)
+		{
+			MJournalLine toLine = new MJournalLine(getCtx(), 0, fromJournal.get_TrxName());
+			PO.copyValues(InterfaceWrapperHelper.getPO(fromLine), toLine, getAD_Client_ID(), getAD_Org_ID());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			toLine.setGL_Journal(this);
 			//
 			if (dateAcct != null)
 				toLine.setDateAcct(dateAcct);
 			// Amounts
+<<<<<<< HEAD
 			if (typeCR == 'C')			// correct
+=======
+			if (typeCR == 'C')            // correct
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				toLine.setAmtSourceDr(fromLine.getAmtSourceDr().negate());
 				toLine.setAmtSourceCr(fromLine.getAmtSourceCr().negate());
@@ -262,6 +347,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 				toLine.setDR_TaxBaseAmt(fromLine.getDR_TaxBaseAmt().negate());
 				toLine.setDR_TaxAmt(fromLine.getDR_TaxAmt().negate());
 				toLine.setDR_TaxTotalAmt(fromLine.getDR_TaxTotalAmt().negate());
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				toLine.setCR_AutoTaxAccount(fromLine.isCR_AutoTaxAccount());
 				toLine.setCR_Tax_ID(fromLine.getCR_Tax_ID());
@@ -269,8 +358,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 				toLine.setCR_TaxBaseAmt(fromLine.getCR_TaxBaseAmt().negate());
 				toLine.setCR_TaxAmt(fromLine.getCR_TaxAmt().negate());
 				toLine.setCR_TaxTotalAmt(fromLine.getCR_TaxTotalAmt().negate());
+<<<<<<< HEAD
 			}
 			else if (typeCR == 'R')		// reverse
+=======
+
+			}
+			else if (typeCR == 'R')        // reverse
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			{
 				toLine.setAmtSourceDr(fromLine.getAmtSourceCr());
 				toLine.setAmtSourceCr(fromLine.getAmtSourceDr());
@@ -285,11 +380,19 @@ public class MJournal extends X_GL_Journal implements IDocument
 			if (toLine.save())
 				count++;
 		}
+<<<<<<< HEAD
 		if (fromLines.length != count)
 			log.error("Line difference - JournalLines=" + fromLines.length + " <> Saved=" + count);
 
 		return count;
 	}	// copyLinesFrom
+=======
+		if (fromLines.size() != count)
+			log.error("Line difference - JournalLines=" + fromLines.size() + " <> Saved=" + count);
+
+		return count;
+	}    // copyLinesFrom
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set Processed. Propagate to Lines/Taxes
@@ -305,9 +408,15 @@ public class MJournal extends X_GL_Journal implements IDocument
 		String sql = "UPDATE GL_JournalLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE GL_Journal_ID=" + getGL_Journal_ID();
+<<<<<<< HEAD
 		int noLine = DB.executeUpdate(sql, get_TrxName());
 		log.debug(processed + " - Lines=" + noLine);
 	}	// setProcessed
+=======
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+		log.debug("{} - Lines={}", processed, noLine);
+	}    // setProcessed
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**************************************************************************
 	 * Before Save
@@ -345,13 +454,21 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setAmtPrecision(this); // metas: cg: 02476
 
 		return true;
+<<<<<<< HEAD
 	}	// beforeSave
+=======
+	}    // beforeSave
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * After Save. Update Batch Total
 	 *
 	 * @param newRecord true if new record
+<<<<<<< HEAD
 	 * @param success true if success
+=======
+	 * @param success   true if success
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return success
 	 */
 	@Override
@@ -363,7 +480,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		updateBatch();
 
 		return true;
+<<<<<<< HEAD
 	}	// afterSave
+=======
+	}    // afterSave
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * After Delete
@@ -380,7 +501,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		updateBatch();
 
 		return true;
+<<<<<<< HEAD
 	}	// afterDelete
+=======
+	}    // afterDelete
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Update Batch total
@@ -388,16 +513,27 @@ public class MJournal extends X_GL_Journal implements IDocument
 	private void updateBatch()
 	{
 		final int glJournalBatchId = getGL_JournalBatch_ID();
+<<<<<<< HEAD
 		if(glJournalBatchId <= 0)
+=======
+		if (glJournalBatchId <= 0)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			return;
 		}
 
 		final String sql = DB.convertSqlToNative("UPDATE " + I_GL_JournalBatch.Table_Name + " jb"
+<<<<<<< HEAD
 				+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
 				+ " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
 				+ "WHERE GL_JournalBatch_ID=?");
 		final int no = DB.executeUpdateEx(sql, new Object[] { glJournalBatchId }, get_TrxName());
+=======
+														 + " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
+														 + " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
+														 + "WHERE GL_JournalBatch_ID=?");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { glJournalBatchId }, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (no != 1)
 		{
 			throw new AdempiereException("Failed updating GL_JournalBatch_ID=" + glJournalBatchId);
@@ -427,7 +563,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setProcessing(false);
 		return true;
+<<<<<<< HEAD
 	}	// unlockIt
+=======
+	}    // unlockIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Invalidate Document
@@ -439,7 +579,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		log.info(toString());
 		return true;
+<<<<<<< HEAD
 	}	// invalidateIt
+=======
+	}    // invalidateIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Prepare Document
@@ -458,24 +602,44 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		// Assert period is open
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
+<<<<<<< HEAD
 
 		// Lines
 		final MJournalLine[] lines = getLines(true);
 		if (lines.length == 0)
+=======
+		final int headerPeriodId = MPeriod.get(getCtx(), getDateAcct(), getAD_Org_ID()).getC_Period_ID();
+
+		// Lines
+		final ImmutableList<I_GL_JournalLine> lines = getActiveLines();
+		if (lines.isEmpty())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			throw AdempiereException.noLines();
 		}
 
+<<<<<<< HEAD
+=======
+		// Make sure the line period is the same as header period, else
+		// * we would have Fact_Acct.DateAcct/C_Period_ID mismatches
+		// * we would need to enforce each period is open (on process and on posting)
+		final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
+		glJournalBL.assertSamePeriod(this, lines);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// Add up Amounts
 		BigDecimal AmtAcctDr = BigDecimal.ZERO;
 		BigDecimal AmtAcctCr = BigDecimal.ZERO;
 		for (final I_GL_JournalLine line : lines)
 		{
+<<<<<<< HEAD
 			if (!isActive())
 			{
 				continue;
 			}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (line.isAllowAccountDR())
 			{
 				Services.get(IGLJournalLineBL.class).assertAccountValid(line.getAccount_DR(), line);
@@ -522,14 +686,22 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
+<<<<<<< HEAD
 	}	// prepareIt
+=======
+	}    // prepareIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private AcctSchema getAcctSchema()
 	{
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+<<<<<<< HEAD
 		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
 		return acctSchema;
+=======
+		return acctSchemasRepo.getById(acctSchemaId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	/**
@@ -543,7 +715,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setIsApproved(true);
 		return true;
+<<<<<<< HEAD
 	}	// approveIt
+=======
+	}    // approveIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Reject Approval
@@ -556,7 +732,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setIsApproved(false);
 		return true;
+<<<<<<< HEAD
 	}	// rejectIt
+=======
+	}    // rejectIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Complete Document
@@ -597,7 +777,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
+<<<<<<< HEAD
 	}	// completeIt
+=======
+	}    // completeIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Set the definite document number after completed
@@ -635,7 +819,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		boolean ok_to_void = false;
+=======
+		final boolean ok_to_void;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (DOCSTATUS_Drafted.equals(getDocStatus())
 				|| DOCSTATUS_Invalid.equals(getDocStatus()))
 		{
@@ -654,7 +842,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_to_void;
+<<<<<<< HEAD
 	}	// voidIt
+=======
+	}    // voidIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Close Document. Cancel not delivered Qunatities
@@ -670,7 +862,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (m_processMsg != null)
 			return false;
 
+<<<<<<< HEAD
 		boolean ok_to_close = false;
+=======
+		final boolean ok_to_close;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (DOCSTATUS_Completed.equals(getDocStatus()))
 		{
 			setProcessed(true);
@@ -688,7 +884,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_to_close;
+<<<<<<< HEAD
 	}	// closeIt
+=======
+	}    // closeIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Reverse Correction (in same batch). As if nothing happened - same date
@@ -714,7 +914,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_correct;
+<<<<<<< HEAD
 	}	// reverseCorrectIt
+=======
+	}    // reverseCorrectIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Reverse Correction. As if nothing happened - same date
@@ -760,7 +964,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		saveEx();
 
 		return reverse;
+<<<<<<< HEAD
 	}	// reverseCorrectionIt
+=======
+	}    // reverseCorrectionIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Reverse Accrual (sane batch). Flip Dr/Cr - Use Today's date
@@ -786,7 +994,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_reverse;
+<<<<<<< HEAD
 	}	// reverseAccrualIt
+=======
+	}    // reverseAccrualIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Reverse Accrual. Flip Dr/Cr - Use Today's date
@@ -801,7 +1013,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		MJournal reverse = new MJournal(this);
 		reverse.setGL_JournalBatch_ID(GL_JournalBatch_ID);
 		reverse.setDateDoc(new Timestamp(System.currentTimeMillis()));
+<<<<<<< HEAD
 		reverse.set_ValueNoCheck("C_Period_ID", null);		// reset
+=======
+		reverse.set_ValueNoCheck("C_Period_ID", null);        // reset
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		reverse.setDateAcct(reverse.getDateDoc());
 		// Reverse indicator
 		String description = reverse.getDescription();
@@ -819,7 +1035,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return reverse;
+<<<<<<< HEAD
 	}	// reverseAccrualIt
+=======
+	}    // reverseAccrualIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Re-activate
@@ -844,11 +1064,16 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+<<<<<<< HEAD
 		if (m_processMsg != null)
 			return false;
 
 		return true;
 	}	// reActivateIt
+=======
+		return m_processMsg == null;
+	}    // reActivateIt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/*************************************************************************
 	 * Get Summary
@@ -873,8 +1098,12 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
+<<<<<<< HEAD
 	}	// getSummary
 
+=======
+	}    // getSummary
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public LocalDate getDocumentDate()
@@ -890,6 +1119,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	@Override
 	public String toString()
 	{
+<<<<<<< HEAD
 		StringBuffer sb = new StringBuffer("MJournal[");
 		sb.append(get_ID()).append(",").append(getDescription())
 				.append(",DR=").append(getTotalDr())
@@ -897,6 +1127,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 				.append("]");
 		return sb.toString();
 	}	// toString
+=======
+		return "MJournal["
+				+ get_ID() + "," + getDescription()
+				+ ",DR=" + getTotalDr()
+				+ ",CR=" + getTotalCr()
+				+ "]";
+	}    // toString
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Document Info
@@ -908,7 +1146,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
+<<<<<<< HEAD
 	}	// getDocumentInfo
+=======
+	}    // getDocumentInfo
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Create PDF
@@ -918,6 +1160,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	@Override
 	public File createPDF()
 	{
+<<<<<<< HEAD
 		try
 		{
 			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
@@ -943,6 +1186,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 		return null;
 		// return re.getPDF(file);
 	}	// createPDF
+=======
+		return null;
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Process Message
@@ -953,7 +1200,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public String getProcessMsg()
 	{
 		return m_processMsg;
+<<<<<<< HEAD
 	}	// getProcessMsg
+=======
+	}    // getProcessMsg
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Document Owner (Responsible)
@@ -964,7 +1215,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public int getDoc_User_ID()
 	{
 		return getCreatedBy();
+<<<<<<< HEAD
 	}	// getDoc_User_ID
+=======
+	}    // getDoc_User_ID
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get Document Approval Amount
@@ -975,7 +1230,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public BigDecimal getApprovalAmt()
 	{
 		return getTotalDr();
+<<<<<<< HEAD
 	}	// getApprovalAmt
+=======
+	}    // getApprovalAmt
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Document Status is Complete or Closed
@@ -986,7 +1245,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public boolean isComplete()
 	{
 		return Services.get(IGLJournalBL.class).isComplete(this);
+<<<<<<< HEAD
 	}	// isComplete
+=======
+	}    // isComplete
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	// metas: cg: 02476
 	private static void setAmtPrecision(final I_GL_Journal journal)
@@ -996,6 +1259,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		{
 			return;
 		}
+<<<<<<< HEAD
 		
 		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final CurrencyPrecision precision = as.getStandardPrecision();
@@ -1004,3 +1268,13 @@ public class MJournal extends X_GL_Journal implements IDocument
 		journal.setControlAmt(controlAmt);
 	}
 }	// MJournal
+=======
+
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final CurrencyPrecision precision = as.getStandardPrecision();
+
+		final BigDecimal controlAmt = precision.roundIfNeeded(journal.getControlAmt());
+		journal.setControlAmt(controlAmt);
+	}
+}    // MJournal
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

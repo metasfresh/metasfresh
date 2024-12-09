@@ -22,11 +22,18 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
 import com.google.common.collect.ImmutableList;
+=======
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -34,9 +41,15 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
+<<<<<<< HEAD
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+=======
+import java.math.MathContext;
+import java.util.Date;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 public interface IAttributesBL extends ISingletonService
 {
@@ -52,6 +65,11 @@ public interface IAttributesBL extends ISingletonService
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+<<<<<<< HEAD
+=======
+	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
 	 *
@@ -61,7 +79,11 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Gets product attribute by ID.
+<<<<<<< HEAD
 	 *
+=======
+	 * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
 	 *

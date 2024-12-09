@@ -180,13 +180,21 @@ public class C_AcctSchema_Element
 		{
 			final int clientId = elementRecord.getAD_Client_ID();
 			final String sql = "UPDATE C_ValidCombination SET " + element + "=? WHERE " + element + " IS NULL AND AD_Client_ID=?";
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, new Object[] { id, clientId }, ITrx.TRXNAME_ThreadInherited);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, clientId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		//
 		{
 			final int acctSchemaId = elementRecord.getC_AcctSchema_ID();
 			final String sql = "UPDATE Fact_Acct SET " + element + "=? WHERE " + element + " IS NULL AND C_AcctSchema_ID=?";
+<<<<<<< HEAD
 			DB.executeUpdateEx(sql, new Object[] { id, acctSchemaId }, ITrx.TRXNAME_ThreadInherited);
+=======
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, acctSchemaId }, ITrx.TRXNAME_ThreadInherited);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 	}
 

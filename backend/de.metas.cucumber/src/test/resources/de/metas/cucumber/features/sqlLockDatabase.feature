@@ -4,6 +4,12 @@ Feature: DB-Based Locking
   As a developer
   I want to use a locking mechanism for data records
 
+<<<<<<< HEAD
+=======
+  Background:
+    Given infrastructure and metasfresh are running
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   @from:cucumber
   Scenario: Acquiring a lock on an not-yet-locked record succeeds
     Given I_AD_PInstance with id 123124 is created

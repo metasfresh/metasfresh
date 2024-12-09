@@ -1,5 +1,6 @@
 de.metas.rest_api.v2.attachment.AttachmentRestControllerTest.createAttachment=[
   {
+<<<<<<< HEAD
     "target" : [
       {
         "externalReferenceType" : "BPartner",
@@ -9,5 +10,16 @@ de.metas.rest_api.v2.attachment.AttachmentRestControllerTest.createAttachment=[
     "attachmentId" : "100001",
     "filename" : "test.txt",
     "mimeType" : "text/plain"
+=======
+    "attachmentId": "100001",
+    "filename": "test.txt",
+    "mimeType": "text/plain",
+    "target": [
+      {
+        "externalReferenceIdentifier": "111111",
+        "externalReferenceType": "BPartner"
+      }
+    ]
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

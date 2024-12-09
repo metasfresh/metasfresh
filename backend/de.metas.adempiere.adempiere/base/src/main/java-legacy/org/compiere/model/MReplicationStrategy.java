@@ -17,15 +17,25 @@
 
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
+import org.slf4j.Logger;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.Access;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @author Trifon N. Trifonov
  * @author victor.perez@e-evolution.com, e-Evolution
@@ -104,7 +114,11 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 			.setOnlyActiveRecords(true)
 			.setRequiredAccess(Access.READ)
 			.setParameters(AD_ReplicationStrategy_ID, AD_Table_ID)
+<<<<<<< HEAD
 			.firstOnly()
+=======
+			.firstOnly(X_AD_ReplicationTable.class)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		;	
 	}
 	

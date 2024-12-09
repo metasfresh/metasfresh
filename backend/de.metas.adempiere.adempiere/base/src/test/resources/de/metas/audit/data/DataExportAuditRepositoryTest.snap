@@ -1,10 +1,19 @@
 de.metas.audit.data.DataExportAuditRepositoryTest.save=[
   {
+<<<<<<< HEAD
       "id" : 100001,
       "tableRecordReference" : {
         "tableName" : "C_BPartner",
         "recordId" : 1
       },
       "parentId" : 2
+=======
+    "id": 100001,
+    "parentId": 2,
+    "tableRecordReference": {
+      "recordId": 1,
+      "tableName": "C_BPartner"
+    }
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   }
 ]

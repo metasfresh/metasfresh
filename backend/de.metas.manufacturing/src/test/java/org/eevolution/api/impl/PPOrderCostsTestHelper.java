@@ -26,6 +26,10 @@ import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostTypeId;
@@ -110,7 +114,11 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+<<<<<<< HEAD
 		final CostElementRepository costElementRepo = new CostElementRepository();
+=======
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 

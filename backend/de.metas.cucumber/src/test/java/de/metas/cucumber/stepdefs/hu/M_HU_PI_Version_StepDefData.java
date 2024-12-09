@@ -25,6 +25,12 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
+<<<<<<< HEAD
+=======
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class M_HU_PI_Version_StepDefData extends StepDefData<I_M_HU_PI_Version>
 {
 	public M_HU_PI_Version_StepDefData()

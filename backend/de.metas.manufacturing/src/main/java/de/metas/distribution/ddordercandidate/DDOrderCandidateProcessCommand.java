@@ -494,7 +494,11 @@ class DDOrderCandidateProcessCommand
 		public LineAggregate(@NonNull final LineAggregationKey key)
 		{
 			this.key = key;
+<<<<<<< HEAD
 			this.qty = Quantitys.createZero(key.getUomId());
+=======
+			this.qty = Quantitys.zero(key.getUomId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		public void add(@NonNull final DDOrderCandidate candidate)

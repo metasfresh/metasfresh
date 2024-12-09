@@ -24,6 +24,10 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
+<<<<<<< HEAD
+=======
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -32,6 +36,10 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -59,6 +67,10 @@ import java.util.List;
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory implements IViewFactory
 {
+<<<<<<< HEAD
+=======
+	public static final String SYSCFG_Layout = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
 	 */
@@ -67,7 +79,12 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	private final MaterialCockpitRowsLoader materialCockpitRowsLoader;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+<<<<<<< HEAD
 	
+=======
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -75,11 +92,20 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
 			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory,
+<<<<<<< HEAD
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
+=======
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.materialCockpitRowsLoader = materialCockpitRowsLoader;
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+<<<<<<< HEAD
+=======
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
@@ -104,6 +130,10 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
+<<<<<<< HEAD
+=======
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_SetProcurementStatus.class))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 
@@ -122,6 +152,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader)
 	{
 		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
+<<<<<<< HEAD
 		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
 		if (date == null)
 		{
@@ -131,6 +162,17 @@ public class MaterialCockpitViewFactory implements IViewFactory
 		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, includePerPlantDetailRows);
 
 		return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, rows);
+=======
+		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = retrieveDetailsRowAggregation();
+		if (date == null)
+		{
+			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory,qtyDemandSupplyRepository, ImmutableList.of());
+		}
+
+		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
+
+		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory,qtyDemandSupplyRepository, rows);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -143,6 +185,10 @@ public class MaterialCockpitViewFactory implements IViewFactory
 						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
 						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
+<<<<<<< HEAD
+=======
+		final String commaSeparatedFieldNames = sysConfigBL.getValue(SYSCFG_Layout, (String)null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);
 
 		final ViewLayout.Builder viewlayOutBuilder = ViewLayout.builder()
@@ -151,7 +197,11 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.setAllowOpeningRowDetails(false)
+<<<<<<< HEAD
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
+=======
+				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType, commaSeparatedFieldNames)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();
@@ -180,4 +230,16 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
 	}
+<<<<<<< HEAD
+=======
+
+	private MaterialCockpitDetailsRowAggregation retrieveDetailsRowAggregation()
+	{
+		if (retrieveIsIncludePerPlantDetailRows())
+		{
+			return MaterialCockpitDetailsRowAggregation.PLANT;
+		}
+		return MaterialCockpitDetailsRowAggregation.getDefault();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

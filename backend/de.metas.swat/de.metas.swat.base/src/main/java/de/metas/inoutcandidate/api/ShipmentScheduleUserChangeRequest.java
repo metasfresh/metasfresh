@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,6 +12,17 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+=======
+import de.metas.inout.ShipmentScheduleId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

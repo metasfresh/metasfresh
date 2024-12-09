@@ -28,8 +28,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.invoice.InvoiceVerificationSetId;
 import de.metas.invoice.InvoiceVerificationSetLineId;
@@ -171,7 +176,11 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(setLine.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+<<<<<<< HEAD
 		final I_C_InvoiceLine invoiceLine = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
+=======
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.retrieveLineById(InvoiceAndLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 

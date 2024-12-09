@@ -89,7 +89,11 @@ public class StockRepository
 
 			final String insertSQL = createInsertSqlStatement(sqlQuery, uuid);
 
+<<<<<<< HEAD
 			final int insertCount = DB.executeUpdateEx(
+=======
+			final int insertCount = DB.executeUpdateAndThrowExceptionOnFail(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 					insertSQL,
 					sqlQuery.getParametersEffective().toArray(),
 					ITrx.TRXNAME_ThreadInherited);

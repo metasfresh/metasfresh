@@ -3,8 +3,13 @@ package de.metas.handlingunits.picking;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+<<<<<<< HEAD
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.reflist.ReferenceId;
+=======
+import de.metas.ad_reference.ReferenceId;
+import de.metas.handlingunits.model.X_M_Picking_Candidate;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;

@@ -17,6 +17,13 @@ import java.util.Properties;
  * @author tsa
  */
 public interface IQueryBuilder<T>
+<<<<<<< HEAD
+=======
+		extends
+		IQueryBuilderExecutors<T>,
+		ICompositeQueryFilterProxy<T, IQueryBuilder<T>>,
+		IQueryBuilderOrderBys<T>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 	/**
 	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.
@@ -52,7 +59,11 @@ public interface IQueryBuilder<T>
 	/**
 	 * Add the given filter.
 	 */
+<<<<<<< HEAD
 	IQueryBuilder<T> filter(IQueryFilter<T> filter);
+=======
+	IQueryBuilder<T> filter(@NonNull IQueryFilter<T> filter);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Unboxes and adds the filters contained in the <code>compositeFilter</code>.
@@ -68,10 +79,14 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> setLimit(QueryLimit limit);
 
 	@Deprecated
+<<<<<<< HEAD
 	default IQueryBuilder<T> setLimit(final int limit)
 	{
 		return setLimit(QueryLimit.ofInt(limit));
 	}
+=======
+	default IQueryBuilder<T> setLimit(final int limit) {return setLimit(QueryLimit.ofInt(limit));}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Sets a query option which will be used while building the query or while executing the query.

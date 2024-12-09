@@ -16,11 +16,20 @@
  *****************************************************************************/
 package org.compiere.model;
 
+<<<<<<< HEAD
+=======
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -29,6 +38,8 @@ import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  *  Tax Model
  *
@@ -165,6 +176,7 @@ public class MTax extends X_C_Tax
 		return sb.toString();
 	}	//	toString
 
+<<<<<<< HEAD
 	
 	/**
 	 * 	Calculate Tax - no rounding
@@ -181,6 +193,8 @@ public class MTax extends X_C_Tax
 		return Services.get(ITaxBL.class).calculateTax(this, amount, taxIncluded, scale);
 	}	//	calculateTax
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * 	After Save
 	 *	@param newRecord new

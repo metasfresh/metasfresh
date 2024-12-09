@@ -54,6 +54,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.QueryLimit;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,6 +68,13 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_CostDetail;
+import org.compiere.model.I_M_InOutLine;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_SupplierApproval_Norm;
@@ -380,6 +391,18 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		return getByIds(productIds)
+				.stream()
+				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -603,9 +626,15 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
+<<<<<<< HEAD
 								.setJoinOr()
 								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
 								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+=======
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -687,6 +716,22 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
+				.create()
+				.listIds(ProductId::ofRepoId);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -713,7 +758,11 @@ public class ProductDAO implements IProductDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+<<<<<<< HEAD
 			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+=======
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else
@@ -721,4 +770,65 @@ public class ProductDAO implements IProductDAO
 			throw new AdempiereException("Unknown valueType: " + valueType);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL // Even if a product was not yet ordered/delivered/invoiced, it might be a component and thus end up in a cost-detail..
+						.createQueryBuilder(I_M_CostDetail.class)
+						.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.setLimit(limit)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
+
+		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+	}
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

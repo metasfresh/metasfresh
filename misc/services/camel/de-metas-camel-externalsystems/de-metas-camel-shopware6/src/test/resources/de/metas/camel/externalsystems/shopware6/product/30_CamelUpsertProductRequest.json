@@ -6,6 +6,10 @@
         "productIdentifier": "ext-Shopware6-!!productId!!",
         "externalVersion": null,
         "externalReferenceUrl": null,
+<<<<<<< HEAD
+=======
+        "externalSystemConfigId": 1,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         "requestProduct": {
           "code": "!!productNumber!!",
           "codeSet": true,

@@ -515,7 +515,11 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
+<<<<<<< HEAD
 	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
+=======
+	public ImmutableList<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 												 final ViewRowIdsOrderedSelection orderedSelection,
 												 final int firstRow,
 												 final int pageLength)

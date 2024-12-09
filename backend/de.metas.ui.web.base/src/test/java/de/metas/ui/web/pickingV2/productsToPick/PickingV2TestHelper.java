@@ -1,5 +1,9 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -199,8 +203,13 @@ final class PickingV2TestHelper
 				sourceHUsRepository,
 				huReservationService,
 				bpartnersService,
+<<<<<<< HEAD
 				InventoryService.newInstanceForUnitTesting()
 		);
+=======
+				ADReferenceService.newMocked(),
+				InventoryService.newInstanceForUnitTesting());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)

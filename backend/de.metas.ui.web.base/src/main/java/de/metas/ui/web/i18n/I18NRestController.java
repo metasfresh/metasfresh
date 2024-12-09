@@ -1,5 +1,6 @@
 package de.metas.ui.web.i18n;
 
+<<<<<<< HEAD
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.AdMessagesTree;
 import de.metas.i18n.AdMessagesTreeLoader;
@@ -8,17 +9,25 @@ import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.po.POTrlRepository;
+=======
+import de.metas.i18n.AdMessagesTree;
+import de.metas.i18n.IMsgBL;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Message;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+=======
+import org.springframework.web.bind.annotation.GetMapping;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +62,7 @@ import java.util.Map;
 public class I18NRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/i18n";
+<<<<<<< HEAD
 
 	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -63,6 +73,12 @@ public class I18NRestController
 	private static final String AD_MESSAGE_PREFIX = "webui.";
 	private static final String ENTITY_TYPE = "de.metas.ui.web";
 
+=======
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final UserSession userSession;
+
+	private static final String AD_MESSAGE_PREFIX = "webui.";
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public I18NRestController(
 			@NonNull final UserSession userSession)
 	{
@@ -91,6 +107,7 @@ public class I18NRestController
 		json.putAll(messagesTree.getMap());
 		return json;
 	}
+<<<<<<< HEAD
 
 	@PostMapping("/messages")
 	public Map<String, Object> updateMessages(@RequestBody final Map<String, String> flatMessagesToUpload)
@@ -138,4 +155,6 @@ public class I18NRestController
 			POTrlRepository.instance.setTrlUpdateModeAsUpdateIdenticalTrls(adMessage, true);
 		});
 	}
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

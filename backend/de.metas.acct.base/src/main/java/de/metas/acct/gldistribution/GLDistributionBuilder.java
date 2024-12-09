@@ -1,5 +1,6 @@
 package de.metas.acct.gldistribution;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +11,34 @@ import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+=======
+import de.metas.sales_region.SalesRegionId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.compiere.model.I_GL_Distribution;
+import org.compiere.model.I_GL_DistributionLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -50,18 +70,29 @@ import lombok.NonNull;
  */
 public class GLDistributionBuilder
 {
+<<<<<<< HEAD
 	public static final GLDistributionBuilder newInstance()
+=======
+	public static GLDistributionBuilder newInstance()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new GLDistributionBuilder();
 	}
 
 	// services
+<<<<<<< HEAD
 	private static final transient Logger log = LogManager.getLogger(GLDistributionBuilder.class);
+=======
+	private static final Logger log = LogManager.getLogger(GLDistributionBuilder.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	// Parameters
+<<<<<<< HEAD
 	private Properties _ctx;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private I_GL_Distribution _glDistribution;
 	private BigDecimal _amountToDistribute;
 	private Sign _amountSign = Sign.DETECT;
@@ -158,7 +189,11 @@ public class GLDistributionBuilder
 		return GLDistributionResult.of(resultLines);
 	}
 
+<<<<<<< HEAD
 	private final GLDistributionResultLine createResultLine(final I_GL_DistributionLine glDistributionLine)
+=======
+	private GLDistributionResultLine createResultLine(final I_GL_DistributionLine glDistributionLine)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final AccountDimension accountDimension = createAccountDimension(glDistributionLine);
 
@@ -186,14 +221,22 @@ public class GLDistributionBuilder
 		// Calculate Qty
 		{
 			final BigDecimal qtyToDistribute = getQtyToDistribute();
+<<<<<<< HEAD
 			final BigDecimal qty = qtyToDistribute.multiply(percent).divide(Env.ONEHUNDRED, BigDecimal.ROUND_HALF_UP);
+=======
+			final BigDecimal qty = qtyToDistribute.multiply(percent).divide(Env.ONEHUNDRED, RoundingMode.HALF_UP);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			resultLine.setQty(qty);
 		}
 
 		return resultLine;
 	}	// setAmt
 
+<<<<<<< HEAD
 	private final AccountDimension createAccountDimension(final I_GL_DistributionLine line)
+=======
+	private AccountDimension createAccountDimension(final I_GL_DistributionLine line)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final AccountDimension.Builder builder = AccountDimension.builder()
 				.applyOverrides(getAccountDimension());
@@ -228,7 +271,11 @@ public class GLDistributionBuilder
 		}
 		if (line.isOverwriteSalesRegion())
 		{
+<<<<<<< HEAD
 			builder.setC_SalesRegion_ID(line.getC_SalesRegion_ID());
+=======
+			builder.setC_SalesRegion_ID(SalesRegionId.ofRepoIdOrNull(line.getC_SalesRegion_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		if (line.isOverwriteProject())
 		{
@@ -254,17 +301,28 @@ public class GLDistributionBuilder
 		return builder.build();
 	}
 
+<<<<<<< HEAD
 	private final String buildDescription(final I_GL_DistributionLine line)
+=======
+	private String buildDescription(final I_GL_DistributionLine line)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		final I_GL_Distribution distribution = getGLDistribution();
 
 		final StringBuilder description = new StringBuilder()
 				.append(distribution.getName()).append(" #").append(line.getLine());
 
+<<<<<<< HEAD
 		final String lineDescription = line.getDescription();
 		if (!Check.isEmpty(lineDescription, true))
 		{
 			description.append(" - ").append(lineDescription.trim());
+=======
+		final String lineDescription = StringUtils.trimBlankToNull(line.getDescription());
+		if (lineDescription != null)
+		{
+			description.append(" - ").append(lineDescription);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return description.toString();
@@ -273,11 +331,18 @@ public class GLDistributionBuilder
 	public GLDistributionBuilder setGLDistribution(final I_GL_Distribution distribution)
 	{
 		_glDistribution = distribution;
+<<<<<<< HEAD
 		_ctx = null;
 		return this;
 	}
 
 	private final I_GL_Distribution getGLDistribution()
+=======
+		return this;
+	}
+
+	private I_GL_Distribution getGLDistribution()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_glDistribution, "glDistribution not null");
 		return _glDistribution;
@@ -296,13 +361,21 @@ public class GLDistributionBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final CurrencyId getCurrencyId()
+=======
+	private CurrencyId getCurrencyId()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_currencyId, "currencyId not null");
 		return _currencyId;
 	}
 
+<<<<<<< HEAD
 	private final CurrencyPrecision getPrecision()
+=======
+	private CurrencyPrecision getPrecision()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (_precision == null)
 		{
@@ -317,7 +390,11 @@ public class GLDistributionBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final BigDecimal getAmountToDistribute()
+=======
+	private BigDecimal getAmountToDistribute()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_amountToDistribute, "amountToDistribute not null");
 		return _amountToDistribute;
@@ -329,7 +406,11 @@ public class GLDistributionBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final Sign getAmountSign()
+=======
+	private Sign getAmountSign()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_amountSign, "amountSign not null");
 		return _amountSign;
@@ -341,7 +422,11 @@ public class GLDistributionBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final BigDecimal getQtyToDistribute()
+=======
+	private BigDecimal getQtyToDistribute()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_qtyToDistribute, "qtyToDistribute not null");
 		return _qtyToDistribute;
@@ -353,7 +438,11 @@ public class GLDistributionBuilder
 		return this;
 	}
 
+<<<<<<< HEAD
 	private final AccountDimension getAccountDimension()
+=======
+	private AccountDimension getAccountDimension()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.assumeNotNull(_accountDimension, "_accountDimension not null");
 		return _accountDimension;

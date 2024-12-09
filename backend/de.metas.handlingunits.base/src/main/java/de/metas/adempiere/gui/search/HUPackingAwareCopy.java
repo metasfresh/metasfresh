@@ -61,6 +61,10 @@ public class HUPackingAwareCopy
 		to.setQty(from.getQty());
 		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
+<<<<<<< HEAD
+=======
+		from.getQtyCUsPerTU().ifPresent(to::setQtyCUsPerTU);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		copyBPartner(to);
 	}

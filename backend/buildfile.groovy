@@ -90,9 +90,13 @@ Map build(
 final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
+<<<<<<< HEAD
                 final String publishedAppImageName = dockerBuildAndPush(appDockerConf)
 
 //                // postgres DB init container
+=======
+                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 //                final DockerConf dbInitDockerConf = reportDockerConf
 //                        .withArtifactName('metasfresh-db-init-pg-14-2')
 //                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
@@ -123,6 +127,10 @@ final DockerConf appDockerConf = reportDockerConf
                         cucumberBuildFile.build(mvnConf, scmVars)
                     }
                 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 //                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 //                testSQLMigrationScripts(
 //                        params.MF_SQL_SEED_DUMP_URL,

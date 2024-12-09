@@ -1,5 +1,6 @@
 package de.metas.cache.model.impl;
 
+<<<<<<< HEAD
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +22,10 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
@@ -33,6 +38,7 @@ import de.metas.cache.model.IMutableTableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
+<<<<<<< HEAD
 import de.metas.cache.model.ITableCacheStatisticsCollector;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -41,6 +47,31 @@ import lombok.NonNull;
 public class ModelCacheService implements IModelCacheService
 {
 	private static final transient Logger logger = LogManager.getLogger(ModelCacheService.class);
+=======
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.NullTrxPlaceholder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+public class ModelCacheService implements IModelCacheService
+{
+	private static final Logger logger = LogManager.getLogger(ModelCacheService.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -50,12 +81,17 @@ public class ModelCacheService implements IModelCacheService
 
 	private final ConcurrentHashMap<String, ITableCacheConfig> tableName2cacheConfig = new ConcurrentHashMap<>();
 
+<<<<<<< HEAD
 	private final ITableCacheStatisticsCollector statisticsCollector;
 
 	public ModelCacheService()
 	{
 		statisticsCollector = new TableCacheStatisticsCollector(getClass().getSimpleName());
 
+=======
+	public ModelCacheService()
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		CacheMgt.get().addCacheResetListener(this::onCacheResetRequest);
 	}
 
@@ -72,6 +108,7 @@ public class ModelCacheService implements IModelCacheService
 		return createTableCacheConfigBuilder(tableName);
 	}
 
+<<<<<<< HEAD
 	private final ITableCacheConfig getTableCacheConfig(final String tableName)
 	{
 		//
@@ -97,6 +134,10 @@ public class ModelCacheService implements IModelCacheService
 			}
 		}
 
+=======
+	private ITableCacheConfig getTableCacheConfig(final String tableName)
+	{
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ITableCacheConfig cacheConfig = tableName2cacheConfig.get(tableName);
 		if (cacheConfig == null)
 		{
@@ -141,7 +182,11 @@ public class ModelCacheService implements IModelCacheService
 	{
 		if (!Adempiere.isUnitTestMode())
 		{
+<<<<<<< HEAD
 			final POInfo poInfo = POInfo.getPOInfo(cacheConfig.getTableName());
+=======
+			final POInfo poInfo = POInfo.getPOInfoNotNull(cacheConfig.getTableName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			if (!poInfo.isSingleKeyColumnName())
 			{
 				logger.warn("Skip adding {} because the table does not have a single primary key", cacheConfig);
@@ -214,6 +259,7 @@ public class ModelCacheService implements IModelCacheService
 			poCached = retrieveObjectFromTrx(cacheConfig, ctx, tableName, recordId, ITrx.TRX_None);
 		}
 
+<<<<<<< HEAD
 		//
 		// Update statistics & logging
 		final boolean hit = poCached != null;
@@ -221,11 +267,20 @@ public class ModelCacheService implements IModelCacheService
 		//
 		if (logger.isTraceEnabled())
 		{
+=======
+		if (logger.isTraceEnabled())
+		{
+			final boolean hit = poCached != null;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			logger.trace("Cache {} (inTrx={}) - tableName/recordId={}/{}", hit ? "HIT" : "MISS", inTransaction, tableName, recordId);
 		}
 
 		// Make sure the trls are loaded before copying it, else trls will be loaded each time
+<<<<<<< HEAD
 		if(poCached != null)
+=======
+		if (poCached != null)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		{
 			poCached.get_ModelTranslationMap();
 		}
@@ -237,16 +292,24 @@ public class ModelCacheService implements IModelCacheService
 	/**
 	 * Creates a copy of orginal PO, having given <code>trxName</code>.
 	 *
+<<<<<<< HEAD
 	 * @param originalPO
 	 * @param trxName
 	 * @return
 	 *         <ul>
+=======
+	 * @return <ul>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 *         <li>copy of <code>originalPO</code>;
 	 *         <li>if original PO is null, null will be returned;
 	 *         <li>if there is an error while cloning given PO, null will be returned but an warning will be logged (just to not stop the current execution)
 	 *         </ul>
 	 */
+<<<<<<< HEAD
 	private static final PO copyPO(final PO originalPO, final String trxName)
+=======
+	private static PO copyPO(final PO originalPO, final String trxName)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		if (originalPO == null)
 		{
@@ -276,7 +339,11 @@ public class ModelCacheService implements IModelCacheService
 		return cacheMapsByTrx.computeIfAbsent(NullTrxPlaceholder.boxNotNull(trx), TrxCacheMap::new);
 	}
 
+<<<<<<< HEAD
 	private final PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
+=======
+	private PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		//
 		// Check if we can cache on this transaction level?
@@ -315,7 +382,12 @@ public class ModelCacheService implements IModelCacheService
 		return poCached;
 	}
 
+<<<<<<< HEAD
 	private final boolean isTrxLevelEnabled(final ITableCacheConfig cacheConfig, final ITrx trx)
+=======
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private boolean isTrxLevelEnabled(final ITableCacheConfig cacheConfig, final ITrx trx)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		// If caching is not enabled in cache config, simply return false
 		if (!cacheConfig.isEnabled())
@@ -343,12 +415,15 @@ public class ModelCacheService implements IModelCacheService
 	}
 
 	/**
+<<<<<<< HEAD
 	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param recordId
 	 * @param trxName
 	 * @param po
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	 * @return true if given PO is expired
 	 */
 	private boolean isExpired(final Properties ctx, final String tableName, final int recordId, final ITrx trx, final PO po)

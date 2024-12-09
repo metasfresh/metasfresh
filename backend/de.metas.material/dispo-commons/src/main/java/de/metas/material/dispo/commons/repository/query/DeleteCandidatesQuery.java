@@ -22,17 +22,58 @@
 
 package de.metas.material.dispo.commons.repository.query;
 
+<<<<<<< HEAD
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+=======
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Builder
 @Value
 public class DeleteCandidatesQuery
 {
+<<<<<<< HEAD
 	@NonNull
 	String status;
 
 	@NonNull
 	Boolean isActive;
 }
+=======
+	@Nullable
+	Boolean isActive;
+
+	@Nullable
+	String status;
+
+	@Nullable
+	CandidateId candidateId;
+
+	public DeleteCandidatesQuery(
+			@Nullable final Boolean isActive,
+			@Nullable final String status,
+			@Nullable final CandidateId candidateId)
+	{
+		final boolean allNull = Stream.of(isActive, status, candidateId).noneMatch(Objects::nonNull);
+
+		if (allNull)
+		{
+			throw new AdempiereException("At least one criteria must be set!");
+		}
+
+		this.isActive = isActive;
+		this.status = status;
+		this.candidateId = candidateId;
+	}
+}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

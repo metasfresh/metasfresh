@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.process;
 
+<<<<<<< HEAD
 import java.util.Set;
 
 import org.compiere.model.I_M_Product;
@@ -9,6 +10,16 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.order.pricingconditions.view.ProductPricingConditionsViewFactory;
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.order.pricingconditions.view.ProductPricingConditionsViewFactory;
+import org.compiere.model.I_M_Product;
+
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -57,6 +68,10 @@ public class MD_Cockpit_PricingConditions extends MaterialCockpitViewBasedProces
 	{
 		return streamSelectedRows()
 				.map(MaterialCockpitRow::getProductId)
+<<<<<<< HEAD
+=======
+				.map(ProductId::toRepoId)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.filter(productId -> productId > 0)
 				.distinct()
 				.limit(2)

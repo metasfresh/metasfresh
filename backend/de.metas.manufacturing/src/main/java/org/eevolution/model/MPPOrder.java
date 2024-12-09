@@ -119,7 +119,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
+<<<<<<< HEAD
 		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+=======
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override

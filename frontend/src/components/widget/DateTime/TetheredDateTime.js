@@ -3,6 +3,10 @@ import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 import classnames from 'classnames';
+<<<<<<< HEAD
+=======
+import { setMomentToEndOfDay } from '../../../utils/dateHelpers';
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 // TODO: This monkeypatching that's happening here has to go at some point.
 class TetheredDateTime extends DateTime {
@@ -20,6 +24,37 @@ class TetheredDateTime extends DateTime {
     this.setState({ selectedDate, inputValue });
   };
 
+<<<<<<< HEAD
+=======
+  openCalendar = (e) => {
+    //
+    // In case we are about to open the calendar,
+    // and we deal with a date with time
+    // and there is no selected date yet
+    // then make sure the view time is set to 23:59.
+    const { timeFormat } = this.props;
+    const { open, selectedDate } = this.state;
+    if (!open && timeFormat && !selectedDate) {
+      this.setState(({ viewDate }) => ({
+        viewDate: this.convertMomentToEndOfDay(viewDate),
+      }));
+    }
+
+    super.openCalendar(e);
+  };
+
+  convertMomentToEndOfDay = (date) => {
+    let dateAtEndOfDay = date;
+    if (!dateAtEndOfDay) {
+      dateAtEndOfDay = this.localMoment();
+    }
+
+    setMomentToEndOfDay(dateAtEndOfDay);
+
+    return dateAtEndOfDay;
+  };
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   render() {
     const { open, className, input, inputProps, renderInput } = this.props;
     const { inputValue, currentView } = this.state;

@@ -258,7 +258,11 @@ public interface I_AD_Column
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	void setColumnName (java.lang.String ColumnName);
+=======
+	void setColumnName (@Nullable java.lang.String ColumnName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	/**
 	 * Get DB Column Name.

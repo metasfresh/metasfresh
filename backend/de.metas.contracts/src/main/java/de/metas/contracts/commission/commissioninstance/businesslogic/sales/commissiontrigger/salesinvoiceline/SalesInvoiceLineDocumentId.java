@@ -1,7 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
+<<<<<<< HEAD
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.InvoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
@@ -35,11 +39,19 @@ public class SalesInvoiceLineDocumentId implements CommissionTriggerDocumentId
 		return (SalesInvoiceLineDocumentId)commissionTriggerDocInfo;
 	}
 
+<<<<<<< HEAD
 	InvoiceLineId invoiceLineId;
+=======
+	InvoiceAndLineId invoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public RepoIdAware getRepoIdAware()
 	{
+<<<<<<< HEAD
 		return invoiceLineId;
+=======
+		return invoiceAndLineId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

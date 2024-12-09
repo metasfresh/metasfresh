@@ -136,7 +136,11 @@ public class AssetRevalEntry extends JavaProcess
 				  + "WHERE Processed='Y'"
 				  + " AND A_Entry_Type = 'RVL'" + clientCheck;
 
+<<<<<<< HEAD
 			no = DB.executeUpdate (sql,null);
+=======
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		try {

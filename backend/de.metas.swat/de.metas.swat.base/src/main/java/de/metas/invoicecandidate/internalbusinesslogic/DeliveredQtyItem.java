@@ -1,6 +1,10 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import static de.metas.common.util.CoalesceUtil.coalesce;
+=======
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 
@@ -48,6 +52,12 @@ public class DeliveredQtyItem
 	/** default: {@code false} */
 	boolean inDispute;
 
+<<<<<<< HEAD
+=======
+	/** Usually we ignore items where this is false; but sometimes we still need the items to exist none the less */
+	boolean completedOrClosed;
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Builder
 	@JsonCreator
 	private DeliveredQtyItem(
@@ -55,14 +65,23 @@ public class DeliveredQtyItem
 			@JsonProperty("qtyNominal") @NonNull final Quantity qtyNominal,
 			@JsonProperty("qtyCatch") @Nullable final Quantity qtyCatch,
 			@JsonProperty("qtyOverride") @Nullable final Quantity qtyOverride,
+<<<<<<< HEAD
+=======
+			@JsonProperty("completedOrClosed") final boolean completedOrClosed,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@JsonProperty("inDispute") @Nullable final Boolean inDispute)
 	{
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
+<<<<<<< HEAD
 
 		this.inDispute = coalesce(inDispute, false);
+=======
+		this.completedOrClosed = completedOrClosed;
+		this.inDispute = coalesceNotNull(inDispute, false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 }

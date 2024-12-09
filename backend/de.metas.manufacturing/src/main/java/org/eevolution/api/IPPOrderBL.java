@@ -1,5 +1,9 @@
 package org.eevolution.api;
 
+<<<<<<< HEAD
+=======
+import de.metas.document.DocSubType;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -76,10 +80,19 @@ public interface IPPOrderBL extends ISingletonService
 	void setDocType(
 			I_PP_Order ppOrder,
 			PPOrderDocBaseType docBaseType,
+<<<<<<< HEAD
 			@Nullable String docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
 
+=======
+			@Nullable DocSubType docSubType);
+
+	void closeOrder(PPOrderId ppOrderId);
+
+	void closeOrder(I_PP_Order ppOrder);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
 	 */

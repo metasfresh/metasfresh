@@ -70,6 +70,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -80,7 +85,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+<<<<<<< HEAD
 import java.util.Collections;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -88,6 +96,10 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import static de.metas.common.util.IdConstants.toRepoId;
+<<<<<<< HEAD
+=======
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -143,12 +155,20 @@ public class CandidateRepositoryWriteService
 				candidate, false/*doesn't matter*/);
 	}
 
+<<<<<<< HEAD
 	public void updateCandidateById(@NonNull final Candidate candidate)
+=======
+	public CandidateSaveResult updateCandidateById(@NonNull final Candidate candidate)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
 
+<<<<<<< HEAD
 		addOrUpdate(query, candidate, false);
+=======
+		return addOrUpdate(query, candidate, false);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private CandidateSaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
@@ -623,10 +643,19 @@ public class CandidateRepositoryWriteService
 				.build();
 	}
 
+<<<<<<< HEAD
+=======
+
+
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
+<<<<<<< HEAD
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
 				DateAndSeqNo.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
@@ -636,6 +665,82 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForCandidate(candidateRecord);
 
 		deleteRecord(candidateRecord);
+=======
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
+		}
+		else
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
+		}
+
+		return deleteResult;
+	}
+
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateAndDetailsById(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		if (candidateRecord == null)
+		{
+			throw new AdempiereException("No candidate found with id " + candidateId);
+		}
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() <= 0)
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(candidateId)
+													  .build());
+		}
+		else
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(stockCandidateId)
+													  .build());
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return deleteResult;
 	}
 
@@ -644,20 +749,44 @@ public class CandidateRepositoryWriteService
 		return load(candidateId, I_MD_Candidate.class);
 	}
 
+<<<<<<< HEAD
 	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
 	{
 		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 	}
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull
 	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
+<<<<<<< HEAD
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus())
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive())
+=======
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class);
+
+		if (deleteCandidatesQuery.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive());
+		}
+
+		if (Check.isNotBlank(deleteCandidatesQuery.getStatus()))
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus());
+		}
+
+		if (deleteCandidatesQuery.getCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, deleteCandidatesQuery.getCandidateId());
+		}
+
+		queryBuilder
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
@@ -677,7 +806,11 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
+<<<<<<< HEAD
 				DateAndSeqNo
+=======
+														   DateAndSeqNo
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
 						.seqNo(candidateRecord.getSeqNo())
@@ -787,6 +920,39 @@ public class CandidateRepositoryWriteService
 				.execute();
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	private CandidateId getStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
+	{
+		Check.assume(!MD_CANDIDATE_TYPE_STOCK.equals(candidate.getMD_Candidate_Type()), "The given Candidate is a Stock Candidate!");
+
+		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		{
+			return CandidateId.ofRepoId(candidate.getMD_Candidate_Parent_ID());
+		}
+
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+		return candidateRepositoryRetrieval.retrieveSingleChild(candidateId)
+				.orElseThrow(() -> new AdempiereException("No stock found for CandidateId!")
+						.appendParametersToMessage()
+						.setParameter("CandidateId", candidateId))
+				.getId();
+	}
+
+	@NonNull
+	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
+																 DateAndSeqNo
+																		 .builder()
+						.date(candidateRecord.getDateProjected().toInstant())
+																		 .seqNo(candidateRecord.getSeqNo())
+																		 .build(),
+																 candidateRecord.getQty());
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
 	{
 		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);

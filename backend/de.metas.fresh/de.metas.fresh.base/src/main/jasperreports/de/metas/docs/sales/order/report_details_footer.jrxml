@@ -19,6 +19,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
+<<<<<<< HEAD
 		<![CDATA[SELECT
 	o.descriptionbottom,
 	
@@ -47,6 +48,61 @@ WHERE o.c_order_id = $P{c_order_id}]]>
 	</field>
 	<field name="ad_boilerplate_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_boilerplate_id"/>
+=======
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer($P{c_order_id}, $P{ad_language});]]>
+	</queryString>
+	<field name="paymentrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="paymentrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="paymentrule"/>
+	</field>
+	<field name="paymentterm" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="paymentterm"/>
+		<property name="com.jaspersoft.studio.field.label" value="paymentterm"/>
+	</field>
+	<field name="discount1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
+		<property name="com.jaspersoft.studio.field.label" value="discount1"/>
+	</field>
+	<field name="discount2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discount2"/>
+		<property name="com.jaspersoft.studio.field.label" value="discount2"/>
+	</field>
+	<field name="discount_date1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="discount_date1"/>
+		<property name="com.jaspersoft.studio.field.label" value="discount_date1"/>
+	</field>
+	<field name="discount_date2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="discount_date2"/>
+		<property name="com.jaspersoft.studio.field.label" value="discount_date2"/>
+	</field>
+	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
+		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
+	</field>
+	<field name="documentnote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentnote"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentnote"/>
+	</field>
+	<field name="descriptionbottom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
+		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
+	</field>
+	<field name="subject" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="subject"/>
+		<property name="com.jaspersoft.studio.field.label" value="subject"/>
+	</field>
+	<field name="textsnippet" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="textsnippet"/>
+		<property name="com.jaspersoft.studio.field.label" value="textsnippet"/>
+	</field>
+	<field name="incoterms" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="incoterms"/>
+		<property name="com.jaspersoft.studio.field.label" value="incoterms"/>
+	</field>
+	<field name="incotermlocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
+		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -61,9 +117,16 @@ WHERE o.c_order_id = $P{c_order_id}]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
+<<<<<<< HEAD
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2"/>
+=======
+		<band height="15" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,12 +134,92 @@ WHERE o.c_order_id = $P{c_order_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="none">
+<<<<<<< HEAD
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PaymentCond}+": " +$F{payment_term}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="57">
+=======
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paymentterm}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="64453b9a-1165-4f7a-8492-bd0b0e0d334e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PaymentCond}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="c2270788-3505-4228-9155-0f1ebbf23ae6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PaymentRule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="4a409f15-aa58-4e70-a59b-9d2fe8068003"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paymentrule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="c1169dda-8133-4544-8e79-2673db219077"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Incoterms}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="364" height="12" isPrintWhenDetailOverflows="true" uuid="d4e92884-78f1-483a-b80a-e608f39c1c1a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -88,7 +231,11 @@ WHERE o.c_order_id = $P{c_order_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" markup="none">
+<<<<<<< HEAD
 					<font size="9"/>
+=======
+					<font fontName="Arial" size="9"/>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				</textElement>
 				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
 			</textField>

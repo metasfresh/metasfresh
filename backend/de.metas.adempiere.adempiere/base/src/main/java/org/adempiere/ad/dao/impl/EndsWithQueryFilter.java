@@ -25,22 +25,36 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.util.Check;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+<<<<<<< HEAD
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.util.Check;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 /**
  * @author cg
  *
  */
+<<<<<<< HEAD
 /* package */ class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+=======
+public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 {
 
 	private String columnName;

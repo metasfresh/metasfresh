@@ -1,9 +1,15 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+<<<<<<< HEAD
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
+=======
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /** Generated Model for EDI_M_HU_PI_Item_Product_Lookup_UPC_v
  *  @author metasfresh (generated) 
@@ -12,7 +18,11 @@ import javax.annotation.Nullable;
 public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.PO implements I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = 1809833829L;
+=======
+	private static final long serialVersionUID = -1994744480L;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
     /** Standard Constructor */
     public X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v (final Properties ctx, final int EDI_M_HU_PI_Item_Product_Lookup_UPC_v_ID, @Nullable final String trxName)
@@ -35,6 +45,21 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setGLN (final @Nullable java.lang.String GLN)
+	{
+		set_Value (COLUMNNAME_GLN, GLN);
+	}
+
+	@Override
+	public java.lang.String getGLN() 
+	{
+		return get_ValueAsString(COLUMNNAME_GLN);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
 		if (M_HU_PI_Item_Product_ID < 1) 
@@ -50,6 +75,21 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setStoreGLN (final @Nullable java.lang.String StoreGLN)
+	{
+		set_ValueNoCheck (COLUMNNAME_StoreGLN, StoreGLN);
+	}
+
+	@Override
+	public java.lang.String getStoreGLN() 
+	{
+		return get_ValueAsString(COLUMNNAME_StoreGLN);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);

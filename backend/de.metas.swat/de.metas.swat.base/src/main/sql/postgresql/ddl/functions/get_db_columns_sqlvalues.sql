@@ -44,6 +44,10 @@ BEGIN
 					or lower(c.ColumnName) like '%logic%'
 					or lower(c.ColumnName) like lower('%DefaultValue%')
 				)
+<<<<<<< HEAD
+=======
+				and c.columnname not in ('AD_SQLColumn_SourceTableColumn_ID')
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				order by t.tableName, c.ColumnName
 	) loop
 		if (v_sql <> '') then
@@ -53,10 +57,18 @@ BEGIN
 	end loop;
 	
 	v_sql := 'SELECT * FROM ('||v_sql||') t';
+<<<<<<< HEAD
+=======
+	raise notice 'SQL: %', v_sql;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	
 	return query execute v_sql;
 END;
 $$ LANGUAGE plpgsql;
 
 
+<<<<<<< HEAD
 ALTER FUNCTION get_db_columns_sqlvalues() OWNER TO adempiere;
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

@@ -22,6 +22,10 @@
 
 package org.eevolution.api.impl;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.ImmutableMap;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostingLevel;
@@ -31,6 +35,12 @@ import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 
+<<<<<<< HEAD
+=======
+import java.util.Map;
+import java.util.Set;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class MockedProductCostingBL implements IProductCostingBL
 {
 	@NonNull
@@ -71,6 +81,17 @@ public class MockedProductCostingBL implements IProductCostingBL
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public @NonNull Map<ProductId, CostingLevel> getCostingLevels(
+			final Set<ProductId> productIds,
+			final AcctSchema acctSchema)
+	{
+		return productIds.stream().collect(ImmutableMap.toImmutableMap(productId -> productId, productId -> defaultCostingLevel));
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public @NonNull CostingMethod getCostingMethod(
 			final I_M_Product product,
 			final AcctSchema acctSchema)

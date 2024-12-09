@@ -11,6 +11,10 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 /*
@@ -95,6 +99,14 @@ public class OrderAndLineId
 				: null;
 	}
 
+<<<<<<< HEAD
+=======
+	public static Optional<OrderAndLineId> optionalOfRepoIds(final int orderRepoId, final int orderLineRepoId)
+	{
+		return Optional.ofNullable(ofRepoIdsOrNull(orderRepoId, orderLineRepoId));
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static int toOrderRepoId(final OrderAndLineId orderAndLineId)
 	{
 		return getOrderRepoIdOr(orderAndLineId, -1);

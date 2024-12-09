@@ -3,6 +3,7 @@
  */
 package de.metas.async.processor.impl;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -38,6 +39,8 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.NOPWorkpackageLogsRepository;
@@ -45,10 +48,30 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
+<<<<<<< HEAD
 
 /**
  * @author tsa
  *
+=======
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBDeadLockDetectedException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
+/**
+ * @author tsa
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  */
 public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 {
@@ -60,9 +83,16 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 				final IQueueProcessor queueProcessor,
 				final IWorkpackageProcessor workPackageProcessor,
 				final I_C_Queue_WorkPackage workPackage,
+<<<<<<< HEAD
 				final IWorkpackageLogsRepository logsRepository)
 		{
 			super(queueProcessor, workPackageProcessor, workPackage, logsRepository);
+=======
+				final IWorkpackageLogsRepository logsRepository,
+				PerformanceMonitoringService perfMonService)
+		{
+			super(queueProcessor, workPackageProcessor, workPackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		@Override
@@ -82,11 +112,20 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 
 	private I_C_Queue_WorkPackage workpackage;
 
+<<<<<<< HEAD
+=======
+	private PerformanceMonitoringService perfMonService;
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@Override
 	protected void beforeTestCustomized()
 	{
 		queueProcessor = new MockedQueueProcessor();
 		logsRepository = NOPWorkpackageLogsRepository.instance;
+<<<<<<< HEAD
+=======
+		perfMonService = NoopPerformanceMonitoringService.INSTANCE;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		workpackage = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
 		workpackage.setProcessed(false);
@@ -112,7 +151,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessSuccess()
 	{
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> IWorkpackageProcessor.Result.SUCCESS;
+<<<<<<< HEAD
 		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -131,7 +174,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw new RuntimeException(processingErrorMsg);
 		};
+<<<<<<< HEAD
 		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -154,7 +201,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
 		};
+<<<<<<< HEAD
 		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -173,7 +224,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw new DBDeadLockDetectedException(null, null);
 		};
+<<<<<<< HEAD
 		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -197,7 +252,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 
 		for (int i = 1; i <= 10; i++)
 		{
+<<<<<<< HEAD
 			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			task.run();
 			Assert.assertEquals("Invalid Skipped_Count", i, workpackage.getSkipped_Count());
 		}
@@ -210,7 +269,11 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessInvalidReturnValue()
 	{
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> null;
+<<<<<<< HEAD
 		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+=======
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);

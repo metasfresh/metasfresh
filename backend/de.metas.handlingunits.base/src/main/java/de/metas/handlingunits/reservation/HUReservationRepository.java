@@ -183,7 +183,11 @@ public class HUReservationRepository
 				.documentRef(extractDocumentRef(record))
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
 				.vhuId(HuId.ofRepoId(record.getVHU_ID()))
+<<<<<<< HEAD
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
+=======
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), uomId))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.build();
 	}
 

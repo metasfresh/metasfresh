@@ -13,6 +13,10 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADReferenceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.i18n.AdMessageKey;
@@ -20,9 +24,15 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+<<<<<<< HEAD
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import lombok.NonNull;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Throwed when desired document type was not found
@@ -53,12 +63,22 @@ public class DocTypeNotFoundException extends AdempiereException
 
 		if (docBaseType != null)
 		{
+<<<<<<< HEAD
 			final IADReferenceDAO adReferenceService = Services.get(IADReferenceDAO.class);
 
 			builder.append(" - ")
 					.appendADElement("DocBaseType")
 					.append(": ")
 					.append(adReferenceService.retrieveListNameTranslatableString(DocBaseType.AD_REFERENCE_ID, docBaseType.getCode()));
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType.getCode());
+			builder.append(" - ")
+					.appendADElement("DocBaseType")
+					.append(": ")
+					.append(docBaseTypeName);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		if (!Check.isBlank(additionalInfo))
@@ -73,10 +93,20 @@ public class DocTypeNotFoundException extends AdempiereException
 	{
 		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 		builder.appendADMessage(AdMessageKey.of("NotFound")).append(" ").appendADElement("C_DocType_ID");
+<<<<<<< HEAD
 
 		final IADReferenceDAO adReferenceService = Services.get(IADReferenceDAO.class);
 		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(adReferenceService.retrieveListNameTranslatableString(DocBaseType.AD_REFERENCE_ID, query.getDocBaseType().getCode()));
 		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType());
+=======
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType().getCode());
+
+
+		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(docBaseTypeName);
+		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType().getCode());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		builder.append(", ").appendADElement("AD_Client_ID").append(": ").append(query.getAdClientId());
 		builder.append(", ").appendADElement("AD_Org_ID").append(": ").append(query.getAdOrgId());
 

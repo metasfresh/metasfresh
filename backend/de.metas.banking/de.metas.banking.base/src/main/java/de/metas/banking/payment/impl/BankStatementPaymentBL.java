@@ -30,6 +30,12 @@ import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.PaymentLinkResult;
+<<<<<<< HEAD
+=======
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -62,6 +68,11 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+<<<<<<< HEAD
+=======
+import java.time.ZonedDateTime;
+import java.util.Optional;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 @Component
@@ -73,6 +84,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
+<<<<<<< HEAD
 
 	public BankStatementPaymentBL(
 			@NonNull final IBankStatementBL bankStatementBL,
@@ -80,6 +92,18 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.moneyService = moneyService;
+=======
+	private final PaymentAllocationService paymentAllocationService;
+
+	public BankStatementPaymentBL(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final MoneyService moneyService,
+			@NonNull final PaymentAllocationService paymentAllocationService)
+	{
+		this.bankStatementBL = bankStatementBL;
+		this.moneyService = moneyService;
+		this.paymentAllocationService = paymentAllocationService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -136,6 +160,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
+<<<<<<< HEAD
 				.limit(QueryLimit.ofInt(limit))
 				.docStatus(DocStatus.Completed)
 				.reconciled(false)
@@ -144,6 +169,16 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.payAmt(expectedPaymentAmount)
 				.excludePaymentIds(excludePaymentIds)
 				.build());
+=======
+											   .limit(QueryLimit.ofInt(limit))
+											   .docStatus(DocStatus.Completed)
+											   .reconciled(false)
+											   .direction(expectedPaymentDirection)
+											   .bpartnerId(bpartnerId)
+											   .payAmt(expectedPaymentAmount)
+											   .excludePaymentIds(excludePaymentIds)
+											   .build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static Money extractTrxAmt(final I_C_BankStatementLine line)
@@ -201,6 +236,21 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		if (invoiceId != null)
 		{
+<<<<<<< HEAD
+=======
+			final ZonedDateTime evaluationDate = bankStatementLine
+					.getValutaDate()
+					.toLocalDateTime()
+					.atZone(orgDAO.getTimeZone(orgId));
+
+			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(payAmount.getCurrencyId(), invoiceId, evaluationDate).orElse(null);
+			
+			if (invoiceToAllocate != null && invoiceToAllocate.grantDiscount(payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId)))
+			{
+				paymentBuilder.discountAmt(invoiceToAllocate.getDiscountAmountConverted().toBigDecimal());
+			}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			paymentBuilder.invoiceId(invoiceId);
 		}
 
@@ -264,6 +314,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()
+<<<<<<< HEAD
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
 				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
 				.bankStatementLineRefId(null)
@@ -271,6 +322,15 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.statementTrxAmt(trxAmt)
 				.paymentMarkedAsReconciled(payment.isReconciled())
 				.build());
+=======
+																.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
+																.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
+																.bankStatementLineRefId(null)
+																.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+																.statementTrxAmt(trxAmt)
+																.paymentMarkedAsReconciled(payment.isReconciled())
+																.build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static PaymentDirection extractPaymentDirection(final I_C_Payment payment)
@@ -299,4 +359,34 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.build()
 				.execute();
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	private Optional<InvoiceToAllocate> getInvoiceToAllocate(
+			@NonNull final CurrencyId paymentCurrencyId,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final InvoiceToAllocateQuery query = InvoiceToAllocateQuery.builder()
+				.currencyId(paymentCurrencyId)
+				.evaluationDate(evaluationDate)
+				.onlyInvoiceId(invoiceId)
+				.build();
+
+		return paymentAllocationService.retrieveInvoicesToAllocate(query)
+				.stream()
+				.filter(invoiceToAllocate -> {
+					// just to be sure
+					final InvoiceId invId = invoiceToAllocate.getInvoiceId();
+					if (invId == null)
+					{
+						return false;
+					}
+
+					return invId.equals(invoiceId);
+				})
+				.findFirst();
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

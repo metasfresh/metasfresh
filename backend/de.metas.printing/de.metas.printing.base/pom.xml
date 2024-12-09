@@ -47,8 +47,13 @@
         </dependency>
 
         <dependency>
+<<<<<<< HEAD
             <groupId>com.lowagie</groupId>
             <artifactId>itext</artifactId>
+=======
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         </dependency>
 
         <dependency>

@@ -54,7 +54,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_OLCand}.
+<<<<<<< HEAD
  *
+=======
+ * <p>
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
  * Please note:
  * <ul>
  * <li>only those {@link I_C_OLCand}s are handled which have {@link InvoiceCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME} as their destination datasource
@@ -64,12 +68,16 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+<<<<<<< HEAD
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
+=======
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Override
 	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
@@ -264,7 +272,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setDateOrdered(olc.getDateCandidate());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+<<<<<<< HEAD
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final Quantity olCandQuantity = Quantity.of(olCandEffectiveValuesBL.getEffectiveQtyEntered(olc), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
 		ic.setQtyEntered(olCandQuantity.toBigDecimal());
@@ -308,7 +319,11 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				olc,
 				null,
 				PricingSystemId.NULL,
+<<<<<<< HEAD
 				TimeUtil.asLocalDate(olc.getDateCandidate(), timeZone));
+=======
+				TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olc), timeZone));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())
@@ -321,8 +336,11 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
+<<<<<<< HEAD
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final I_C_OLCand olc = getOLCand(ic);
 
 		InvoiceCandidateLocationAdapterFactory

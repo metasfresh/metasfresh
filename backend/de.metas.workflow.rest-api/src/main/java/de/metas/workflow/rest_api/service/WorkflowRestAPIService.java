@@ -25,6 +25,14 @@ package de.metas.workflow.rest_api.service;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
+=======
+import de.metas.mobile.application.MobileApplication;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.security.IUserRolePermissions;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
@@ -32,8 +40,11 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScann
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+<<<<<<< HEAD
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -46,20 +57,32 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+=======
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Service
+<<<<<<< HEAD
+=======
+@RequiredArgsConstructor
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 public class WorkflowRestAPIService
 {
 	private final static AdMessageKey NOT_WORKFLOW_APP_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.service.NOT_WORKFLOW_APP_ERROR_MSG");
@@ -70,6 +93,7 @@ public class WorkflowRestAPIService
 	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
 	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
 
+<<<<<<< HEAD
 	private final MobileApplicationsMap applications;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
@@ -98,6 +122,19 @@ public class WorkflowRestAPIService
 					}
 				})
 				.filter(Objects::nonNull);
+=======
+	@NonNull private final MobileApplicationService mobileApplicationService;
+	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
+
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	{
+		mobileApplicationService.assertAccess(applicationId, permissions);
+	}
+
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
+	{
+		return mobileApplicationService.streamMobileApplicationInfos(userPermissions);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -113,7 +150,11 @@ public class WorkflowRestAPIService
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
 	{
+<<<<<<< HEAD
 		final MobileApplication mobileApplication = applications.getById(applicationId);
+=======
+		final MobileApplication mobileApplication = mobileApplicationService.getById(applicationId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		if (mobileApplication instanceof WorkflowBasedMobileApplication)
 		{
 			return (WorkflowBasedMobileApplication)mobileApplication;
@@ -124,11 +165,17 @@ public class WorkflowRestAPIService
 		}
 	}
 
+<<<<<<< HEAD
 	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications()
 	{
 		return applications.stream()
 				.filter(app -> app instanceof WorkflowBasedMobileApplication)
 				.map(app -> (WorkflowBasedMobileApplication)app);
+=======
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull final IUserRolePermissions permissions)
+	{
+		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, permissions);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private QueryLimit getLaunchersLimit()
@@ -139,6 +186,7 @@ public class WorkflowRestAPIService
 				: QueryLimit.ofInt(limitInt);
 	}
 
+<<<<<<< HEAD
 	public void logout(@NonNull final UserId userId)
 	{
 		applications.stream()
@@ -152,6 +200,11 @@ public class WorkflowRestAPIService
 						logger.warn("Application {} failed to loggout. Skipped", application, ex);
 					}
 				});
+=======
+	public void logout(@NonNull final IUserRolePermissions permissions)
+	{
+		mobileApplicationService.logout(permissions);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
@@ -186,10 +239,17 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
+<<<<<<< HEAD
 	public void abortAllWFProcesses(@NonNull final UserId callerId)
 	{
 		streamWorkflowBasedMobileApplications()
 				.forEach(application -> abortAllNoFail(application, callerId));
+=======
+	public void abortAllWFProcesses(@NonNull final IUserRolePermissions permissions)
+	{
+		streamWorkflowBasedMobileApplications(permissions)
+				.forEach(application -> abortAllNoFail(application, permissions.getUserId()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)

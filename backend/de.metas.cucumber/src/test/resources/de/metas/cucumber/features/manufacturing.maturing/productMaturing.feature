@@ -40,6 +40,10 @@ Feature: Maturing scenarios
 
   @from:cucumber
   @Id:S0382_100
+<<<<<<< HEAD
+=======
+  @flaky
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
     When metasfresh initially has M_Inventory data
       | M_Inventory_ID | MovementDate | DocumentNo   |

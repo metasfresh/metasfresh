@@ -54,6 +54,10 @@ public class DDOrder
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
 	@Nullable ShipperId shipperId;
+<<<<<<< HEAD
+=======
+	Instant datePromised;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull @Singular List<DDOrderLine> lines;
 	int ddOrderId;
 	@NonNull DocStatus docStatus;

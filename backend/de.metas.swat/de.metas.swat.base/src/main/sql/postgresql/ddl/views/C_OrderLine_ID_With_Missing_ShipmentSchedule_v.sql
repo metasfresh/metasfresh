@@ -11,7 +11,11 @@ WHERE true
 	AND (dt.docsubtype NOT IN (
 	    'ON', -- Proposal (not binding)
 	    'OB', -- Quotation (binding)
+<<<<<<< HEAD
 	    'WR', -- POS Order
+=======
+	    -- 'WR', -- POS Order
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	    'FA', -- Frame Agreement
 	    'CE'  -- Cost Estimate
 	))

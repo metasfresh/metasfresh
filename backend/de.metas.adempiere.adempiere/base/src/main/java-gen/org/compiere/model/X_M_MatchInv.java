@@ -36,6 +36,51 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public org.compiere.model.I_C_Cost_Type getC_Cost_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class);
+	}
+
+	@Override
+	public void setC_Cost_Type(final org.compiere.model.I_C_Cost_Type C_Cost_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class, C_Cost_Type);
+	}
+
+	@Override
+	public void setC_Cost_Type_ID (final int C_Cost_Type_ID)
+	{
+		if (C_Cost_Type_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, C_Cost_Type_ID);
+	}
+
+	@Override
+	public int getC_Cost_Type_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Cost_Type_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -90,6 +135,35 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setCostAmount (final @Nullable BigDecimal CostAmount)
+	{
+		set_ValueNoCheck (COLUMNNAME_CostAmount, CostAmount);
+	}
+
+	@Override
+	public BigDecimal getCostAmount()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCostAmountInvoiced (final @Nullable BigDecimal CostAmountInvoiced)
+	{
+		set_ValueNoCheck (COLUMNNAME_CostAmountInvoiced, CostAmountInvoiced);
+	}
+
+	@Override
+	public BigDecimal getCostAmountInvoiced()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmountInvoiced);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -192,6 +266,63 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1)
+			set_Value (COLUMNNAME_M_CostElement_ID, null);
+		else
+			set_Value (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut_Cost getM_InOut_Cost()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_Cost_ID, org.compiere.model.I_M_InOut_Cost.class);
+	}
+
+	@Override
+	public void setM_InOut_Cost(final org.compiere.model.I_M_InOut_Cost M_InOut_Cost)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_Cost_ID, org.compiere.model.I_M_InOut_Cost.class, M_InOut_Cost);
+	}
+
+	@Override
+	public void setM_InOut_Cost_ID (final int M_InOut_Cost_ID)
+	{
+		if (M_InOut_Cost_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Cost_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Cost_ID, M_InOut_Cost_ID);
+	}
+
+	@Override
+	public int getM_InOut_Cost_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_Cost_ID);
+	}
+
+	@Override
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
@@ -351,4 +482,28 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+<<<<<<< HEAD
+=======
+
+	/**
+	 * Type AD_Reference_ID=541716
+	 * Reference name: M_MatchInv_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=541716;
+	/** Material = M */
+	public static final String TYPE_Material = "M";
+	/** Cost = C */
+	public static final String TYPE_Cost = "C";
+	@Override
+	public void setType (final java.lang.String Type)
+	{
+		set_ValueNoCheck (COLUMNNAME_Type, Type);
+	}
+
+	@Override
+	public java.lang.String getType()
+	{
+		return get_ValueAsString(COLUMNNAME_Type);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

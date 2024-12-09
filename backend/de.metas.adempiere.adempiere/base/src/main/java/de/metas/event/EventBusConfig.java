@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.UUID;
+<<<<<<< HEAD
+=======
+import java.util.concurrent.CopyOnWriteArraySet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -49,6 +53,10 @@ public final class EventBusConfig
 	}
 
 	private static boolean distributedEventsEnabled = true;
+<<<<<<< HEAD
+=======
+	private static final CopyOnWriteArraySet<Topic> alwaysConsiderAsyncTopics = new CopyOnWriteArraySet<>();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	private EventBusConfig()
 	{
@@ -94,18 +102,42 @@ public final class EventBusConfig
 
 	public static final String JMX_BASE_NAME = "de.metas.event.EventBus";
 
+<<<<<<< HEAD
 	/** World wide unique Sender ID of this JVM instance */
 	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
 
 	/** @return world wide unique Sender ID of this JVM instance */
+=======
+	/**
+	 * World wide unique Sender ID of this JVM instance
+	 */
+	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
+
+	/**
+	 * @return world wide unique Sender ID of this JVM instance
+	 */
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static String getSenderId()
 	{
 		return SENDER_ID;
 	}
 
+<<<<<<< HEAD
 	/** @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
+=======
+	/**
+	 * @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously
+	 */
+	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
+	{
+		if (alwaysConsiderAsyncTopics.contains(topic))
+		{
+			return true;
+		}
+		
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
 		if (Adempiere.isUnitTestMode())
@@ -129,6 +161,14 @@ public final class EventBusConfig
 		return StringUtils.toBoolean(standardValue, false);
 	}
 
+<<<<<<< HEAD
+=======
+	public static void alwaysConsiderAsync(@NonNull final Topic topic)
+	{
+		alwaysConsiderAsyncTopics.add(topic);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public static boolean isMonitorIncomingEvents()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[ {
   "orgId" : 10,
   "id" : 100010,
@@ -22,3 +23,33 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
     "currencyId" : 100008
   } ]
 } ]
+=======
+de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[
+  {
+    "commissionDate": "2020-03-21",
+    "currencyId": 100008,
+    "customerBPartnerId": 30,
+    "id": 100010,
+    "invoiceLines": [
+      {
+        "currencyId": 100008,
+        "id": {
+          "invoiceId": 100010,
+          "repoId": 100011
+        },
+        "invoicedCommissionPoints": -100,
+        "invoicedQty": {
+          "qty": "0",
+          "uomId": 100007
+        },
+        "productId": 100009,
+        "updated": "2020-03-03T08:23:00.929Z"
+      }
+    ],
+    "orgId": 10,
+    "salesRepBPartnerId": 20,
+    "triggerType": "SalesCreditmemo",
+    "updated": "2020-03-03T08:23:00.929Z"
+  }
+]
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

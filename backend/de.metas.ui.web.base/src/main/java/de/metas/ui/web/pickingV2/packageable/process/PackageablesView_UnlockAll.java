@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
+<<<<<<< HEAD
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,12 +8,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+<<<<<<< HEAD
+=======
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.stream.Stream;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L

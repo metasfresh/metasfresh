@@ -22,9 +22,14 @@
 
 package de.metas.acct.process;
 
+<<<<<<< HEAD
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.gljournal.GLCategoryId;
+=======
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.api.AcctSchemaId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;

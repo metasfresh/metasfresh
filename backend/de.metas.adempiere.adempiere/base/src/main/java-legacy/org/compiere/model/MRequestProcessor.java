@@ -234,7 +234,11 @@ public class MRequestProcessor extends X_R_RequestProcessor
 		String sql = "DELETE FROM R_RequestProcessorLog "
 			+ "WHERE R_RequestProcessor_ID=" + getR_RequestProcessor_ID()
 			+ " AND (Created+" + getKeepLogDays() + ") < now()";
+<<<<<<< HEAD
 		int no = DB.executeUpdate(sql, get_TrxName());
+=======
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return no;
 	}	//	deleteLog
 

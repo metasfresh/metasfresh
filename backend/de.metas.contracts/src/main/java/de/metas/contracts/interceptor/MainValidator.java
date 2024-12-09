@@ -22,6 +22,10 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.GLCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
 import de.metas.contracts.callorder.CallOrderContractService;
@@ -75,6 +79,10 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
 	private final CallOrderContractService callOrderContractService;
+<<<<<<< HEAD
+=======
+	private final GLCategoryRepository glCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@Deprecated
 	public MainValidator()
@@ -84,7 +92,12 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
 				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
+<<<<<<< HEAD
 				SpringContextHolder.instance.getBean(CallOrderContractService.class));
+=======
+				SpringContextHolder.instance.getBean(CallOrderContractService.class),
+				GLCategoryRepository.get());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	public MainValidator(
@@ -92,13 +105,22 @@ public class MainValidator extends AbstractModuleInterceptor
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
+<<<<<<< HEAD
 			@NonNull final CallOrderContractService callOrderContractService)
+=======
+			@NonNull final CallOrderContractService callOrderContractService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.groupChangesHandler = groupChangesHandler;
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
 		this.callOrderContractService = callOrderContractService;
+<<<<<<< HEAD
+=======
+		this.glCategoryRepository = glCategoryRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@Override
@@ -177,7 +199,11 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_SubscriptionProgress.instance);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance);
 		engine.addModelValidator(C_Flatrate_Matching.instance);
+<<<<<<< HEAD
 		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+=======
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL, glCategoryRepository));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		engine.addModelValidator(new C_Invoice_Candidate());
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc());

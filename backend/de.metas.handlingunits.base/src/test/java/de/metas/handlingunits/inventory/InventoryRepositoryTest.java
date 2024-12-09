@@ -1,5 +1,11 @@
 package de.metas.handlingunits.inventory;
 
+<<<<<<< HEAD
+=======
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.business.BusinessTestHelper;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -32,8 +38,11 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,9 +51,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+<<<<<<< HEAD
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -74,7 +86,11 @@ import static org.assertj.core.api.Assertions.tuple;
  * #L%
  */
 
+<<<<<<< HEAD
 @ExtendWith(AdempiereTestWatcher.class)
+=======
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 class InventoryRepositoryTest
 {
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
@@ -86,6 +102,7 @@ class InventoryRepositoryTest
 
 	private AttributeSetInstanceId asiId;
 
+<<<<<<< HEAD
 	@BeforeAll
 	static void beforeAll()
 	{
@@ -97,6 +114,9 @@ class InventoryRepositoryTest
 	{
 		validateSnapshots();
 	}
+=======
+	@SuppressWarnings("unused") private Expect expect;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 	@BeforeEach
 	public void beforeEach()
@@ -106,7 +126,11 @@ class InventoryRepositoryTest
 
 		orgId = createOrg(orgTimeZone);
 
+<<<<<<< HEAD
 		uomRecord = newInstance(I_C_UOM.class);
+=======
+		uomRecord = BusinessTestHelper.createUomEach();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		saveRecord(uomRecord);
 
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
@@ -121,6 +145,10 @@ class InventoryRepositoryTest
 		inventoryLineRepository = new InventoryRepository();
 	}
 
+<<<<<<< HEAD
+=======
+	@SuppressWarnings("SameParameterValue")
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private OrgId createOrg(final ZoneId timeZone)
 	{
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -217,7 +245,11 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
+<<<<<<< HEAD
 		expect(reloadedResult).toMatchSnapshot();
+=======
+		expect.toMatchSnapshot(reloadedResult);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

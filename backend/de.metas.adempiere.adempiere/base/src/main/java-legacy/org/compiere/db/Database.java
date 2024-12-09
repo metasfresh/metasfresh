@@ -6,6 +6,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
+<<<<<<< HEAD
+=======
+import org.compiere.util.TimeUtil;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -14,6 +18,10 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+<<<<<<< HEAD
+=======
+import java.time.ZoneOffset;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,6 +32,15 @@ import java.time.format.DateTimeFormatter;
  */
 public class Database
 {
+<<<<<<< HEAD
+=======
+	private final static DateTimeFormatter DAY_ONLY_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+			.withZone(ZoneOffset.UTC);
+	
+	private final static DateTimeFormatter DATE_TIME_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+			.withZone(ZoneOffset.UTC);
+	
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	/**
 	 * PostgreSQL ID
 	 */
@@ -50,9 +67,17 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
+<<<<<<< HEAD
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
 				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+=======
+		final long microseconds = zdt.getNano() / 1000;
+
+		return "'"
+				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -100,17 +125,29 @@ public class Database
 		}
 
 		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
+<<<<<<< HEAD
 		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
 		final String myDate = time.toString();
 		if (dayOnly)
 		{
 			dateString.append(myDate.substring(0, 10));
+=======
+		if (dayOnly)
+		{
+			dateString.append(DAY_ONLY_UTC_FORMATTER.format(TimeUtil.asLocalDate(time, SystemTime.zoneId())));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			dateString.append("','YYYY-MM-DD')");
 		}
 		else
 		{
+<<<<<<< HEAD
 			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
 			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
+=======
+			dateString.append(DATE_TIME_UTC_FORMATTER.format(time.toInstant()))
+					// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"  (UTC time zone)
+					.append("','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		return dateString.toString();
 	}   // TO_DATE

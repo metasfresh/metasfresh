@@ -22,15 +22,30 @@
 
 package de.metas.ui.web.material.cockpit;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import de.metas.material.cockpit.ProductWithDemandSupply;
+import de.metas.material.cockpit.ProductWithDemandSupplyCollection;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
+<<<<<<< HEAD
+=======
+import de.metas.ui.web.view.template.RowsDataTool;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -41,9 +56,17 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+=======
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import java.util.Set;
 
 /**
@@ -52,6 +75,7 @@ import java.util.Set;
  */
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
+<<<<<<< HEAD
 	private final boolean includePerPlantDetailRows;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
@@ -68,18 +92,53 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
+=======
+	@NonNull private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	@NonNull private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
+
+	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
+	@NonNull private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
+	@NonNull private DocumentIdsSelection invalidRowIds = DocumentIdsSelection.EMPTY;
+
+	/**
+	 * Every row has a product, and so does every MD_Stock and MD_Candidate.
+	 */
+	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
+
+	public MaterialCockpitRowsData(
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository,
+			@NonNull final List<MaterialCockpitRow> rows)
+	{
+		this.detailsRowAggregation = detailsRowAggregation;
+		this.materialCockpitRowFactory = materialCockpitRowFactory;
+
+		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final ImmutableMultimap.Builder<ProductId, DocumentId> productIdDocumentIdBuilder = new ImmutableMultimap.Builder<>();
 
 		for (final MaterialCockpitRow row : rows)
 		{
+<<<<<<< HEAD
 			productIdDocumentIdBuilder.put(ProductId.ofRepoId(row.getProductId()), row.getId());
+=======
+			productIdDocumentIdBuilder.put(row.getProductId(), row.getId());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
 	{
+=======
+	public synchronized Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
+	{
+		recomputeInvalidRows();
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
@@ -115,12 +174,37 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	 * Recomputes the given rows.
 	 */
 	@Override
+<<<<<<< HEAD
 	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
 	{
 		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowIds);
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
+=======
+	public synchronized void invalidate(@NonNull final DocumentIdsSelection rowIds)
+	{
+		this.invalidRowIds = this.invalidRowIds.addAll(rowIds);
+	}
+
+	private synchronized void recomputeInvalidRows()
+	{
+		final DocumentIdsSelection rowIds = this.invalidRowIds;
+
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
+		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowsHolder.getDocumentId2TopLevelRows(), rowIds);
+
+		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
+
+		final ProductWithDemandSupplyCollection productWithDemandSupplyCollection = MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive()
+				? loadQuantitiesRecords(rowsToInvalidate)
+				: ProductWithDemandSupplyCollection.of(ImmutableMap.of());
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		for (final MaterialCockpitRow row : rowsToInvalidate)
 		{
 			final CreateRowsRequestBuilder builder = builders.computeIfAbsent(row.getDate(), this::createNewBuilder);
@@ -131,7 +215,24 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			final List<I_MD_Stock> stockRecords = loadStockRecords(row.getAllIncludedStockRecordIds());
 			builder.stockRecords(stockRecords);
 
+<<<<<<< HEAD
 			builder.productIdToListEvenIfEmpty(ProductId.ofRepoId(row.getProductId()));
+=======
+			final ProductId productId = row.getProductId();
+
+			final List<ProductWithDemandSupply> quantitiesRecords;
+			if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+			{
+				quantitiesRecords = productWithDemandSupplyCollection.getByProductId(productId);
+			}
+			else
+			{
+				quantitiesRecords = ImmutableList.of();
+			}
+			builder.quantitiesRecords(quantitiesRecords);
+
+			builder.productIdToListEvenIfEmpty(productId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		final List<MaterialCockpitRow> newRows = new ArrayList<>();
@@ -141,6 +242,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		}
 
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+<<<<<<< HEAD
 	}
 
 	@NonNull
@@ -152,6 +254,20 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		if (rowIds.isAll())
 		{
 			rowsToInvalidate.addAll(getAllRows());
+=======
+		this.invalidRowIds = DocumentIdsSelection.EMPTY;
+	}
+
+	@NonNull
+	private static ArrayList<MaterialCockpitRow> extractRows(
+			@NonNull final ImmutableMap<DocumentId, MaterialCockpitRow> documentId2TopLevelRows,
+			@NonNull final DocumentIdsSelection rowIds)
+	{
+		final ArrayList<MaterialCockpitRow> rowsToInvalidate = new ArrayList<>();
+		if (rowIds.isAll())
+		{
+			rowsToInvalidate.addAll(RowsDataTool.extractAllRows(documentId2TopLevelRows.values()).values());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 		else
 		{
@@ -179,7 +295,23 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		return MaterialCockpitRowFactory.CreateRowsRequest.builder()
 				.date(localDate)
+<<<<<<< HEAD
 				.includePerPlantDetailRows(includePerPlantDetailRows);
 	}
 
+=======
+				.detailsRowAggregation(detailsRowAggregation);
+	}
+
+	@NonNull
+	private ProductWithDemandSupplyCollection loadQuantitiesRecords(@NonNull final Collection<MaterialCockpitRow> rows)
+	{
+		final ImmutableSet<ProductId> productIds = rows.stream()
+				.map(MaterialCockpitRow::getProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

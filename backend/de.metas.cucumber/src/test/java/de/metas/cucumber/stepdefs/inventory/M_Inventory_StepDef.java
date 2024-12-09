@@ -281,12 +281,20 @@ public class M_Inventory_StepDef
 		{
 			productId = productIdentifier.getAsId(ProductId.class);
 			final I_M_Product productById = productDAO.getById(productId);
+<<<<<<< HEAD
 			productTable.put(productIdentifier, productById);
+=======
+			productTable.putOrReplace(productIdentifier, productById);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		}
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 
+<<<<<<< HEAD
 		InterfaceWrapperHelper.save(inventoryLineRecord);
+=======
+		saveRecord(inventoryLineRecord);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		row.getAsOptionalIdentifier("M_InventoryLine_ID")
 				.ifPresent(inventoryLineIdentifier -> inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord));

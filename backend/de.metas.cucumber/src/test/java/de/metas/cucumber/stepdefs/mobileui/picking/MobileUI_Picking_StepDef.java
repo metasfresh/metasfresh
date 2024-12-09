@@ -43,7 +43,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef

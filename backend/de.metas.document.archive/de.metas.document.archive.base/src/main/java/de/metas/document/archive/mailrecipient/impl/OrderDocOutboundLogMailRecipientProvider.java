@@ -38,6 +38,10 @@ import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.compiere.model.I_C_BPartner;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
@@ -87,6 +91,12 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 		final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 
+<<<<<<< HEAD
+=======
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final I_C_BPartner bpartnerPO =  bpartnerBL.getById(bpartnerId);
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		final int orderUserRecordId = orderRecord.getAD_User_ID();
 		if (orderUserRecordId > 0)
 		{
@@ -106,9 +116,40 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			{
 				return Optional.of(orderUser.withEmailAddress(locationEmail));
 			}
+<<<<<<< HEAD
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+=======
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(orderUser.withEmailAddress(bpartnerPO.getEMail()));
+			}
+		}
+
+		final int billingUserRecordId = orderRecord.getBill_User_ID();
+		if (billingUserRecordId > 0)
+		{
+			final DocOutBoundRecipient orderBillingUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billingUserRecordId));
+
+			if (Check.isNotBlank(orderEmail))
+			{
+				return Optional.of(orderBillingUser.withEmailAddress(orderEmail));
+			}
+
+			if (!Check.isBlank(orderBillingUser.getEmailAddress()))
+			{
+				return Optional.of(orderBillingUser);
+			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(orderBillingUser.withEmailAddress(bpartnerPO.getEMail()));
+			}
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final User billContact = bpartnerBL.retrieveContactOrNull(
 				IBPartnerBL.RetrieveContactRequest
@@ -116,6 +157,11 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+<<<<<<< HEAD
+=======
+						.onlyActive(true)
+						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 						.build());
 		if (billContact != null)
 		{
@@ -136,6 +182,14 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			{
 				return Optional.of(docOutBoundRecipient);
 			}
+<<<<<<< HEAD
+=======
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(bpartnerPO.getEMail()));
+			}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return Optional.empty();

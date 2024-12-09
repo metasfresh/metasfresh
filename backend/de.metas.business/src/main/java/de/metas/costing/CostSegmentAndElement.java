@@ -1,8 +1,11 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
+=======
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -11,6 +14,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+<<<<<<< HEAD
+=======
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -37,7 +45,11 @@ import lombok.Value;
 @Value
 public class CostSegmentAndElement
 {
+<<<<<<< HEAD
 	public static final CostSegmentAndElement of(
+=======
+	public static CostSegmentAndElement of(
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElementId costElementId)
 	{
@@ -102,6 +114,16 @@ public class CostSegmentAndElement
 		return getCostSegment().getCostTypeId();
 	}
 
+<<<<<<< HEAD
+=======
+	public CostingLevel getCostingLevel() {return getCostSegment().getCostingLevel();}
+
+	public ClientId getClientId()
+	{
+		return getCostSegment().getClientId();
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public OrgId getOrgId()
 	{
 		return getCostSegment().getOrgId();

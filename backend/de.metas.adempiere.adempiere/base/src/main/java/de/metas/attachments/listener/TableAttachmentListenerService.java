@@ -22,6 +22,7 @@
 
 package de.metas.attachments.listener;
 
+<<<<<<< HEAD
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -33,6 +34,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
 import de.metas.i18n.AdMessageKey;
@@ -44,12 +49,28 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Table_AttachmentListener;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 @Service
 public class TableAttachmentListenerService
 {
 	private static final Logger logger = LogManager.getLogger(TableAttachmentListenerService.class);
 
+<<<<<<< HEAD
+=======
+	private static final AdMessageKey Msg_AttachmentNotImportedFAILURE = AdMessageKey.of("AttachmentNotImportedFAILURE");
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
@@ -80,6 +101,24 @@ public class TableAttachmentListenerService
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public void fireBeforeRecordLinked(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		for (final TableRecordReference recordReference : attachmentEntry.getLinkedRecords())
+		{
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(recordReference))
+			{
+				final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(recordReference.getAdTableId());
+				logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), recordReference.getAD_Table_ID());
+
+				settings.forEach(setting -> invokeBeforeRecordLinked(setting, recordReference, attachmentEntry));
+			}
+		}
+	}
+
+	@NonNull
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	private AttachmentListenerActionResult invokeListener(
 			@NonNull final AttachmentListenerSettings listenerSettings,
 			@NonNull final TableRecordReference tableRecordReference,
@@ -124,4 +163,33 @@ public class TableAttachmentListenerService
 			notificationBL.send(userNotificationRequest);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	private void invokeBeforeRecordLinked(
+			@NonNull final AttachmentListenerSettings listenerSettings,
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AttachmentEntry attachmentEntry)
+	{
+		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
+
+		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		{
+			final ListenerWorkStatus status = attachmentListener.beforeRecordLinked(attachmentEntry, tableRecordReference);
+			logger.debug("attachmentListener returned status={}", status);
+
+			if (status.equals(ListenerWorkStatus.FAILURE))
+			{
+				throw new AdempiereException(retrieveFailureMessage(listenerSettings))
+						.markAsUserValidationError();
+			}
+		}
+	}
+
+	@NonNull
+	private AdMessageKey retrieveFailureMessage(@NonNull final AttachmentListenerSettings listenerSettings)
+	{
+		return adMessageDAO.retrieveValueById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
+	}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 }

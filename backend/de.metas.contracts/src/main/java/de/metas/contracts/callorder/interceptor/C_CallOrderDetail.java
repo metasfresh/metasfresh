@@ -112,12 +112,20 @@ public class C_CallOrderDetail
 	@NonNull
 	private static Quantity getQtyDelivered(@NonNull final I_C_CallOrderDetail callOrderDetail)
 	{
+<<<<<<< HEAD
 		return Quantitys.create(callOrderDetail.getQtyDeliveredInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+=======
+		return Quantitys.of(callOrderDetail.getQtyDeliveredInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 
 	@NonNull
 	private static Quantity getQtyInvoiced(@NonNull final I_C_CallOrderDetail callOrderDetail)
 	{
+<<<<<<< HEAD
 		return Quantitys.create(callOrderDetail.getQtyInvoicedInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+=======
+		return Quantitys.of(callOrderDetail.getQtyInvoicedInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	}
 }

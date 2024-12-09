@@ -1,5 +1,6 @@
 package de.metas.shipment.service;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
@@ -48,6 +54,25 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+<<<<<<< HEAD
+=======
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipment_Declaration;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -234,7 +259,11 @@ public class ShipmentDeclarationCreator
 	{
 		final InOutLineId shipmentLineId = shipmentAndLineId.getInOutLineId();
 
+<<<<<<< HEAD
 		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineById(shipmentLineId);
+=======
+		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineByIdInTrx(shipmentLineId);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 		final ProductId productId = ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);

@@ -63,3 +63,13 @@ export const convertMomentToTimezone = (momentDate, timeZone) => {
     return momentWithTZ.tz(timeZone, false);
   }
 };
+<<<<<<< HEAD
+=======
+
+export const setMomentToEndOfDay = (moment) => {
+  moment.hours(23);
+  moment.minutes(59);
+  moment.seconds(59);
+  moment.milliseconds(999);
+};
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))

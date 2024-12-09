@@ -2,6 +2,10 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
+=======
+import de.metas.ad_reference.ADRefList;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
@@ -53,9 +57,15 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
+=======
+import de.metas.workplace.WorkplaceService;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -77,7 +87,11 @@ public class PickingJobService
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
 	public final static AdMessageKey MISSING_PICKING_SLOT_ID_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.MISSING_PICKING_SLOT_ID_ERROR_MSG");
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -93,6 +107,10 @@ public class PickingJobService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+<<<<<<< HEAD
+=======
+	@NonNull private final WorkplaceService workplaceService;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -117,6 +135,10 @@ public class PickingJobService
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
+<<<<<<< HEAD
+=======
+				.workplaceService(workplaceService)
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				//
 				.request(request)
 				//
@@ -274,7 +296,11 @@ public class PickingJobService
 				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
+<<<<<<< HEAD
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+=======
+	public ADRefList getQtyRejectedReasons()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
 	}
@@ -591,11 +617,19 @@ public class PickingJobService
 		if (luId != null)
 		{
 			huLabelService.print(HULabelPrintRequest.builder()
+<<<<<<< HEAD
 					.sourceDocType(HULabelSourceDocType.Picking)
 					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
 					.onlyIfAutoPrint(true)
 					.failOnMissingLabelConfig(false)
 					.build());
+=======
+										 .sourceDocType(HULabelSourceDocType.Picking)
+										 .hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+										 .onlyIfAutoPrint(true)
+										 .failOnMissingLabelConfig(false)
+										 .build());
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		}
 
 		return pickingJobChanged;

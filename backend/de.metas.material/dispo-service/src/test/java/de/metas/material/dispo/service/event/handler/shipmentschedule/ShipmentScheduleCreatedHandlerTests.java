@@ -21,6 +21,10 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+<<<<<<< HEAD
+=======
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -169,7 +173,16 @@ public class ShipmentScheduleCreatedHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
+<<<<<<< HEAD
 				.reservedQuantity(new BigDecimal("20"))
+=======
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(BigDecimal.TEN)
+												.orderedQuantityDelta(BigDecimal.TEN)
+												.reservedQuantity(new BigDecimal("20"))
+												.reservedQuantityDelta(new BigDecimal("20"))
+												.build())
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 				.shipmentScheduleId(shipmentScheduleId)
 				.documentLineDescriptor(OrderLineDescriptor.builder()
 						.orderLineId(orderLineId)

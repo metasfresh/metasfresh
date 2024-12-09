@@ -130,8 +130,14 @@ class ListWidget extends Component {
         }
 
         request.then((res) => {
+<<<<<<< HEAD
           let values = res.data.values || [];
           let singleOption = values && values.length === 1;
+=======
+          const hasMoreResults = !!res.data.hasMoreResults;
+          const values = res.data.values || [];
+          const singleOption = values && values.length === 1;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
           if (forceSelection && singleOption) {
             this.previousValue = '';
@@ -139,6 +145,10 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+<<<<<<< HEAD
+=======
+              hasMoreResults,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               loading: false,
             });
 
@@ -150,6 +160,10 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+<<<<<<< HEAD
+=======
+              hasMoreResults,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
               loading: false,
             });
           }
@@ -292,6 +306,10 @@ class ListWidget extends Component {
     const {
       list,
       listHash,
+<<<<<<< HEAD
+=======
+      hasMoreResults,
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
       loading,
       selectedItem,
       autoFocus,
@@ -306,6 +324,10 @@ class ListWidget extends Component {
         loading={loading}
         list={list}
         listHash={listHash}
+<<<<<<< HEAD
+=======
+        hasMoreResults={hasMoreResults}
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}

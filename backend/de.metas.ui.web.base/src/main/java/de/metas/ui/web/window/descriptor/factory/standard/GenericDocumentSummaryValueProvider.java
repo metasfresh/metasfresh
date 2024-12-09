@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+<<<<<<< HEAD
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.TableRefTable;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -31,6 +38,21 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.util.Services;
 import lombok.Data;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
+import org.compiere.model.ILookupDisplayColumn;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /*
  * #%L
@@ -90,8 +112,13 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			}
 
 			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+<<<<<<< HEAD
 			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
 			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefInfo);
+=======
+			final TableRefTable tableRefTable = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
+			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefTable);
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 			final ImmutableList<FieldValueExtractor> displayColumnNames = displayInfo.getLookupDisplayColumns()
 					.stream()

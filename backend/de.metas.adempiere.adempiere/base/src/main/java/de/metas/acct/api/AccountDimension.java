@@ -22,6 +22,7 @@ package de.metas.acct.api;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,18 @@ import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
+=======
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.util.NumberUtils;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 
 /**
  * Immutable {@link AccountDimension} implementation
@@ -43,7 +56,11 @@ public final class AccountDimension
 {
 	public static final AccountDimension NULL = builder().build();
 
+<<<<<<< HEAD
 	public static final Builder builder()
+=======
+	public static Builder builder()
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	{
 		return new Builder();
 	}
@@ -169,6 +186,14 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
 	}
 
+<<<<<<< HEAD
+=======
+	public int getSalesOrderId()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesOrder), 0);
+	}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 	public int getUser1_ID()
 	{
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1),0);
@@ -371,9 +396,15 @@ public final class AccountDimension
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setC_SalesRegion_ID(final int C_SalesRegion_ID)
 		{
 			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
+=======
+		public Builder setC_SalesRegion_ID(@Nullable final SalesRegionId C_SalesRegion_ID)
+		{
+			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 			return this;
 		}
 
@@ -395,6 +426,15 @@ public final class AccountDimension
 			return this;
 		}
 
+<<<<<<< HEAD
+=======
+		public Builder setSalesOrderId(final int C_OrderSO_ID)
+		{
+			setSegmentValue(AcctSegmentType.SalesOrder, C_OrderSO_ID);
+			return this;
+		}
+
+>>>>>>> 3091b8e938a (externalSystems-Leich+Mehl can invoke a customizable postgREST reports (#19521))
 		public Builder setUser1_ID(final int user1_ID)
 		{
 			setSegmentValue(AcctSegmentType.UserList1, user1_ID);
