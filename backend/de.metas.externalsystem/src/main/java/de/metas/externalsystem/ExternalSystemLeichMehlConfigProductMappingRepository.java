@@ -37,10 +37,14 @@ import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -57,6 +61,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepository
 			.tableName(I_LeichMehl_PluFile_ConfigGroup.Table_Name) // header
 			.additionalTableNameToResetFor(I_LeichMehl_PluFile_Config.Table_Name) // lines
 			.build();
+	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull
 	public Optional<ExternalSystemLeichMehlConfigProductMapping> getByQuery(@NonNull final ExternalSystemLeichConfigProductMappingQuery query)
@@ -92,21 +97,32 @@ public class ExternalSystemLeichMehlConfigProductMappingRepository
 
 	private LeichMehlPluFileConfigGroup retrieveConfigGroupById(LeichMehlPluFileConfigGroupId id)
 	{
-		return toLeichMehlPluFileConfigGroup(queryBL.createQueryBuilder(I_LeichMehl_PluFile_ConfigGroup.class)
+		final I_LeichMehl_PluFile_ConfigGroup configGroupRecord = queryBL.createQueryBuilder(I_LeichMehl_PluFile_ConfigGroup.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_LeichMehl_PluFile_ConfigGroup.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, id)
 				.create()
-				.firstNotNull(I_LeichMehl_PluFile_ConfigGroup.class));
+				.firstNotNull(I_LeichMehl_PluFile_ConfigGroup.class);
+
+		return toLeichMehlPluFileConfigGroup(configGroupRecord);
 	}
 
-	private LeichMehlPluFileConfigGroup toLeichMehlPluFileConfigGroup(@NonNull final I_LeichMehl_PluFile_ConfigGroup leichMehlPluFileConfigGroup)
+	private LeichMehlPluFileConfigGroup toLeichMehlPluFileConfigGroup(@NonNull final I_LeichMehl_PluFile_ConfigGroup configGroupRecord)
 	{
-		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(leichMehlPluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
-		return LeichMehlPluFileConfigGroup.builder()
+		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(configGroupRecord.getLeichMehl_PluFile_ConfigGroup_ID());
+		final LeichMehlPluFileConfigGroup.LeichMehlPluFileConfigGroupBuilder builder = LeichMehlPluFileConfigGroup.builder()
 				.id(leichMehlPluFileConfigGroupId)
-				.name(leichMehlPluFileConfigGroup.getName())
-				.externalSystemLeichMehlPluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(leichMehlPluFileConfigGroupId))
-				.build();
+				.name(configGroupRecord.getName())
+				.externalSystemLeichMehlPluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(leichMehlPluFileConfigGroupId));
+
+		if (configGroupRecord.isAdditionalCustomQuery() && configGroupRecord.getAD_Process_CustomQuery_ID() > 0)
+		{
+			final AdProcessId processId = AdProcessId.ofRepoId(configGroupRecord.getAD_Process_CustomQuery_ID());
+			final I_AD_Process processRecord = Check.assumeNotNull(processDAO.getById(processId),
+																   "Missing AD_Process record for AD_Process_ID={}", processId.getRepoId());
+			builder.customQueryProcessValue(processRecord.getValue());
+		}
+
+		return builder.build();
 	}
 
 	@NonNull

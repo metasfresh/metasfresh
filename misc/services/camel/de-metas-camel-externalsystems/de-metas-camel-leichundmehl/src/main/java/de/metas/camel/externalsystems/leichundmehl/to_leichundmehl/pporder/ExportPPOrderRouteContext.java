@@ -50,6 +50,9 @@ public class ExportPPOrderRouteContext
 	private final JsonExternalSystemRequest jsonExternalSystemRequest;
 
 	@NonNull
+	private final Integer ppOrderMetasfreshId;
+	
+	@NonNull
 	private final ConnectionDetails connectionDetails;
 
 	@NonNull
@@ -57,6 +60,9 @@ public class ExportPPOrderRouteContext
 
 	private final boolean pluFileExportAuditEnabled;
 
+	@Nullable
+	private final String customQueryAdProcessValue;
+	
 	@NonNull
 	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
 
@@ -72,6 +78,9 @@ public class ExportPPOrderRouteContext
 	private JsonProduct jsonProduct;
 
 	@Nullable
+	private String customQueryProcessResponse;
+	
+	@Nullable
 	@Getter(AccessLevel.NONE)
 	private JsonPluFileAudit jsonPluFileAudit;
 
@@ -82,7 +91,7 @@ public class ExportPPOrderRouteContext
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String filename;
-
+	
 	@NonNull
 	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
 	{
