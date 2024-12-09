@@ -22,13 +22,14 @@ package org.adempiere.ad.validationRule;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Evaluatee;
 
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 /**
  * Factory class used to create {@link IValidationRule} instances
@@ -49,7 +50,11 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * @param ctxColumnName
 	 * @return
 	 */
-	IValidationRule create(String tableName, int adValRuleId, String ctxTableName, String ctxColumnName);
+	IValidationRule create(
+			@NonNull final String tableName,
+			@Nullable final AdValRuleId adValRuleId,
+			@Nullable final String ctxTableName,
+			@Nullable final String ctxColumnName);
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause

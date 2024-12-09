@@ -1,21 +1,21 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.caregiver.AlbertaCaregiverRepositoryTest.save_allFields=[
   {
-    "bPartnerAlbertaCaregiverId" : 100001,
-    "bPartnerId" : 1,
-    "caregiverId" : 2,
-    "type" : "Enkel",
-    "isLegalCarer" : true,
-    "legalCarer" : true
+    "bPartnerAlbertaCaregiverId": 100001,
+    "bPartnerId": 1,
+    "caregiverId": 2,
+    "isLegalCarer": true,
+    "legalCarer": true,
+    "type": "Enkel"
   }
 ]
 
 
 de.metas.vertical.healthcare.alberta.service.bpartner.caregiver.AlbertaCaregiverRepositoryTest.save_onlyMandatory=[
   {
-    "bPartnerAlbertaCaregiverId" : 100001,
-    "bPartnerId" : 1,
-    "caregiverId" : 2,
-    "isLegalCarer" : false,
-    "legalCarer" : false
+    "bPartnerAlbertaCaregiverId": 100001,
+    "bPartnerId": 1,
+    "caregiverId": 2,
+    "isLegalCarer": false,
+    "legalCarer": false
   }
 ]

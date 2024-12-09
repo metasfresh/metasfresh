@@ -16,7 +16,11 @@ import java.util.Properties;
  * @param <T> model type
  * @author tsa
  */
-public interface IQueryBuilder<T> extends IQueryBuilderExecutors<T>
+public interface IQueryBuilder<T>
+		extends
+		IQueryBuilderExecutors<T>,
+		ICompositeQueryFilterProxy<T, IQueryBuilder<T>>,
+		IQueryBuilderOrderBys<T>
 {
 	/**
 	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.

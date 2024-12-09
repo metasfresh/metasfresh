@@ -38,6 +38,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
@@ -815,10 +816,9 @@ public class PaymentAllocationBuilder
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)
 	{
 		CurrencyConversionContext conversionContext = moneyService.createConversionContext(
-				payment.getDate(),
+				LocalDateAndOrgId.ofLocalDate(payment.getDate(), payment.getClientAndOrgId().getOrgId()),
 				payment.getPaymentCurrencyContext().getCurrencyConversionTypeId(),
-				payment.getClientAndOrgId()
-		);
+				payment.getClientAndOrgId().getClientId());
 
 		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)

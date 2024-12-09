@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -402,5 +403,15 @@ public class AllocationDAO implements IAllocationDAO
 	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
 	{
 		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
+	}
+
+	@Override
+	public @NonNull I_C_AllocationLine getLineById(@NonNull final PaymentAllocationLineId lineId)
+	{
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, lineId.getHeaderId())
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID, lineId.getRepoId())
+				.create()
+				.firstOnlyNotNull();
 	}
 }

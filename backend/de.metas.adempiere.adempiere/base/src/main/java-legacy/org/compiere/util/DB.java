@@ -22,6 +22,7 @@
 package org.compiere.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
@@ -133,7 +134,6 @@ public class DB
 		 * <p>
 		 * NOTE: avoid using this method. We introduced it just to migrate from old API.
 		 *
-		 * @param ignoreError
 		 * @return {@link OnFail} value
 		 */
 		public static OnFail valueOfIgnoreError(final boolean ignoreError)
@@ -153,14 +153,8 @@ public class DB
 	 */
 	private final Logger log = LogManager.getLogger(DB.class);
 
-	/**
-	 * SQL Statement Separator "; "
-	 */
-	public final String SQLSTATEMENT_SEPARATOR = "; ";
-
 	/**************************************************************************
 	 * Set connection.
-	 *
 	 * If the connection was already set and it's the same, this method does nothing.
 	 *
 	 * @param cc connection
@@ -389,7 +383,6 @@ public class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param readOnly
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
@@ -646,7 +639,7 @@ public class DB
 		}
 		else if (param instanceof Integer)
 		{
-			pstmt.setInt(index, ((Integer)param).intValue());
+			pstmt.setInt(index, (Integer)param);
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -947,7 +940,7 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
-	public int executeUpdateAndThrowExceptionOnFail(final String sql, final Object[] params, @Nullable final String trxName) throws DBException
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, final Object[] params, final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 
@@ -1075,7 +1068,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
@@ -1119,7 +1111,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
@@ -1188,8 +1179,6 @@ public class DB
 		finally
 		{
 			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return retValue;
 	}
@@ -1996,6 +1985,11 @@ public class DB
 		return Database.TO_NUMBER(number, displayType);
 	}
 
+	public String TO_STRING(@Nullable final ReferenceListAwareEnum value)
+	{
+		return TO_STRING(value != null ? value.getCode() : null, 0);
+	}
+
 	/**
 	 * Package Strings for SQL command in quotes
 	 *
@@ -2116,7 +2110,6 @@ public class DB
 	/**
 	 * convenient method to close statement
 	 *
-	 * @param st
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2310,8 +2303,6 @@ public class DB
 	/**
 	 * Delete T_Selection
 	 *
-	 * @param pinstanceId
-	 * @param trxName
 	 * @return number of records that were deleted
 	 */
 	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
@@ -2365,7 +2356,6 @@ public class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it returns the string <code>"(?,?,?)"</code>, and it will copy <code>paramsIn</code> to the list <code>paramsOut</code>. Note that e.g. if we need
 	 * something like <code>AND ..._ID IN (?,?,?)</code>, then the ordering paramsIn's elements doesn't really matter.
 	 *
-	 * @param paramsIn
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
@@ -2447,7 +2437,6 @@ public class DB
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 *
-	 * @param paramsIn
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
@@ -2506,7 +2495,7 @@ public class DB
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
 		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
 			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
 			return false;
@@ -2587,7 +2576,6 @@ public class DB
 	 * <li>use it only if is really needed</li>
 	 * </ul>
 	 *
-	 * @param sql
 	 * @return converted SQL
 	 */
 	public String convertSqlToNative(final String sql)
@@ -2808,7 +2796,9 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader, rows::add);
+		return rows.build();
 	}
 
 	@NonNull
@@ -2817,7 +2807,9 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
+		return rows.build();
 	}
 
 	@NonNull
@@ -2827,45 +2819,30 @@ public class DB
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
 		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
-		return retrieveRows(sql, sqlParamsList, ITrx.TRXNAME_ThreadInherited, loader);
+		return retrieveRows(sql, sqlParamsList, loader);
 	}
 
 
 	@NonNull
-	private static <T> ImmutableList<T> retrieveRows(
+	public static <T> ImmutableSet<T> retrieveUniqueRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
-			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = prepareStatement(sql.toString(), trxName);
-			setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			final ImmutableList.Builder<T> rows = ImmutableList.builder();
-			while (rs.next())
-			{
-				final T row = loader.retrieveRowOrNull(rs);
-				if (row != null)
-				{
-					rows.add(row);
-				}
-			}
-
+		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
 			return rows.build();
 		}
-		catch (final SQLException ex)
+
+	public void forFirstRowIfAny(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer consumer)
 		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			close(rs, pstmt);
-		}
+		retrieveFirstRowOrNull(sql, sqlParams, (rs) -> {
+			consumer.accept(rs);
+			return null;
+		});
 	}
 
 	public <T> T retrieveFirstRowOrNull(
@@ -2887,6 +2864,40 @@ public class DB
 			else
 			{
 				return null;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
+	private static <T> void retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
+			@NonNull final ResultSetRowLoader<T> loader,
+			@NonNull final Consumer<T> collector)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql.toString(), trxName);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			while (rs.next())
+			{
+				final T row = loader.retrieveRowOrNull(rs);
+				if (row != null)
+				{
+					collector.accept(row);
+				}
 			}
 		}
 		catch (final SQLException ex)

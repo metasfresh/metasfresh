@@ -87,8 +87,8 @@ public class InvoicedDataLoader
 
 			final UomId stockUomId = stockUomIds.get(invoiceCandidateId);
 
-			Quantity qty = Quantitys.createZero(icUomIds.get(invoiceCandidateId));
-			Quantity qtyInStockUom = Quantitys.createZero(stockUomId);
+			Quantity qty = Quantitys.zero(icUomIds.get(invoiceCandidateId));
+			Quantity qtyInStockUom = Quantitys.zero(stockUomId);
 
 			Money netAmount = Money.zero(currencyId);
 

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CCache;
+import de.metas.cache.CCacheStats;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -269,7 +269,7 @@ public class DebugRestController
 
 		return LookupDataSourceFactory.instance.getCacheStats()
 				.stream()
-				.map(CCache.CCacheStats::toString)
+				.map(CCacheStats::toString)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

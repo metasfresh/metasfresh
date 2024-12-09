@@ -105,8 +105,9 @@ public interface DocumentHandler
 		docFields.setDocAction(IDocument.ACTION_None);
 	}
 
-	//@formatter:off
-	void reactivateIt(DocumentTableFields docFields);
-	//@formatter:on
+	default void reactivateIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException("Reactivate action is not supported");
+	}
 
 }

@@ -104,7 +104,7 @@ class POSOrderUpdateFromRemoteCommand
 			if (existingLine == null || amount.compareTo(amountPrev) != 0)
 			{
 				tax = tax != null ? tax : taxDAO.getTaxById(taxId); // load tax if needed
-				BigDecimal taxAmtBD = tax.calculateTax(amount.toBigDecimal(), order.isTaxIncluded(), currencyPrecision.toInt());
+				BigDecimal taxAmtBD = tax.calculateTax(amount.toBigDecimal(), order.isTaxIncluded(), currencyPrecision.toInt()).getTaxAmount();
 				taxAmt = toMoney(taxAmtBD);
 			}
 			else

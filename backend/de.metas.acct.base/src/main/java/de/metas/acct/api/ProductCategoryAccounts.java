@@ -1,12 +1,7 @@
 package de.metas.acct.api;
 
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
-
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.product.ProductCategoryId;
@@ -15,6 +10,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L

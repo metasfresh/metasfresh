@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="camel-externalsystems - new_dawn_uat" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration default="false" name="camel-externalsystems - new_dawn_uat" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="new_dawn_uat">
     <module name="de-metas-camel-externalsystems-core" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.camel.externalsystems.core.ESBCamelApplication" />
     <extension name="net.ashald.envfile">

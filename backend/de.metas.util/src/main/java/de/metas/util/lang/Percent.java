@@ -36,7 +36,7 @@ import java.math.RoundingMode;
  */
 
 @Value
-public class Percent
+public class Percent implements Comparable<Percent>
 {
 	@JsonCreator
 	public static Percent of(@NonNull final String value)
@@ -97,6 +97,11 @@ public class Percent
 	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
 	{
 		return of(numerator, denominator, 2);
+	}
+
+	public static Percent of(final long numerator, final long denominator)
+	{
+		return of(BigDecimal.valueOf(numerator), BigDecimal.valueOf(denominator));
 	}
 
 	/**
@@ -160,7 +165,7 @@ public class Percent
 		}
 		return percent.toBigDecimal();
 	}
-	
+
 	private static final BigDecimal ONE_HUNDRED_VALUE = BigDecimal.valueOf(100);
 	public static final Percent ONE_HUNDRED = new Percent(ONE_HUNDRED_VALUE);
 
@@ -381,4 +386,7 @@ public class Percent
 
 		return Percent.of(newPercentValue);
 	}
+
+	@Override
+	public int compareTo(final Percent other) {return this.value.compareTo(other.value);}
 }

@@ -11,6 +11,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -47,6 +48,11 @@ public class PaymentId implements RepoIdAware
 	public static PaymentId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new PaymentId(repoId) : null;
+	}
+
+	public static Optional<PaymentId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final PaymentId id)
@@ -88,5 +94,8 @@ public class PaymentId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

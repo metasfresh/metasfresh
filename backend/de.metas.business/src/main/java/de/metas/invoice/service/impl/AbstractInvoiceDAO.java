@@ -15,19 +15,23 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -45,6 +49,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
@@ -81,7 +86,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
@@ -128,7 +132,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	public I_C_InvoiceLine retrieveLineById(final InvoiceAndLineId invoiceLineId)
 	{
 		return load(invoiceLineId, I_C_InvoiceLine.class);
 	}
@@ -273,6 +277,36 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
+	{
+		return retrieveTaxRecords(invoiceId)
+				.stream()
+				.map(AbstractInvoiceDAO::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static InvoiceTax fromRecord(final I_C_InvoiceTax record)
+	{
+		return InvoiceTax.builder()
+				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
+				.taxAmt(record.getTaxAmt())
+				.taxBaseAmt(record.getTaxBaseAmt())
+				.isTaxIncluded(record.isTaxIncluded())
+				.isReverseCharge(false)
+				.reverseChargeTaxAmt(BigDecimal.ZERO)
+				.build();
+	}
+
+	@Override
 	public List<I_C_Invoice> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
 		final IQueryBL queryBL = this.queryBL;
@@ -377,6 +411,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Nullable
 	private org.compiere.model.I_C_Invoice getReferencedInvoice(@NonNull final I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
@@ -468,11 +503,11 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)
+	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		final IQueryBL queryBL = this.queryBL;
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceAndLineId)
 				.create()
 				.list();
 	}
@@ -536,12 +571,16 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 		final DocBaseType docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
-		final String docSubType = docType.getDocSubType();
+		final DocSubType docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-		if (Check.isNotBlank(docSubType))
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
 		{
 			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
@@ -609,13 +648,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id)
+	public Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceLineId.ofRepoId(id, lineId));
+				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)

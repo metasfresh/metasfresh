@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -39,6 +40,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -2271,7 +2273,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
+		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(InOutId.ofRepoIdOrNull(getM_InOut_ID())))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
 			{
@@ -2307,7 +2309,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.

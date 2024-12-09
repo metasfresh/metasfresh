@@ -1,5 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -7,7 +9,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.product.ProductId;
-import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
@@ -16,22 +17,19 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
+@ExtendWith(SnapshotExtension.class)
 class HUQRCodeGenerateCommandTest
 {
-	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -131,6 +129,6 @@ class HUQRCodeGenerateCommandTest
 				.build()
 				.execute();
 
-		expect(qrCodes).toMatchSnapshot();
+		expect.toMatchSnapshot(qrCodes);
 	}
 }

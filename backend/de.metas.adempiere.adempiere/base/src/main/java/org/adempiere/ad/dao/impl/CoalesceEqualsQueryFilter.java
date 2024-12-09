@@ -22,6 +22,10 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import de.metas.util.Check;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,13 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.Check;
-
-/* package */ class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	private final List<String> columnNames;
 	private final Object value;

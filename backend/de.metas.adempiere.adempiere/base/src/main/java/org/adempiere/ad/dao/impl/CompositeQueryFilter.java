@@ -22,13 +22,9 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,11 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
@@ -54,7 +52,7 @@ import javax.annotation.Nullable;
  * @author tsa
  */
 @EqualsAndHashCode(of = { "filters", "and", "_defaultAccept" })
-		/* package */class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
+		public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
 {
 	/* package */static final String DEFAULT_SQL_TRUE = "1=1";
 	/* package */static final String DEFAULT_SQL_FALSE = "1=0";
@@ -125,7 +123,7 @@ import javax.annotation.Nullable;
 		this(InterfaceWrapperHelper.getTableName(modelClass));
 	}
 
-	CompositeQueryFilter(final String tableName)
+	public CompositeQueryFilter(final String tableName)
 	{
 		this.tableName = tableName;
 	}
@@ -383,9 +381,28 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
+	public String getModelTableName() {return tableName;}
+
+	@Override
 	public List<IQueryFilter<T>> getFilters()
 	{
 		return new ArrayList<>(filters);
+	}
+
+	@Override
+	public void addFilter0(@NonNull final IQueryFilter<T> filter)
+	{
+		Check.errorIf(filter == this, "Attempt to add a filter to itself; filter={}", filter);
+
+		if (filters.contains(filter))
+		{
+			return;
+		}
+
+		filters.add(filter);
+
+		// recompile needed
+		this._compiled = false;
 	}
 
 	@Override
@@ -441,6 +458,29 @@ import javax.annotation.Nullable;
 		else
 		{
 			return addFilter(compositeFilter);
+		}
+	}
+
+	@Override
+	public void addFiltersUnboxed0(@NonNull final ICompositeQueryFilter<T> compositeFilter)
+	{
+		final List<IQueryFilter<T>> filtersToAdd = compositeFilter.getFilters();
+		if (filtersToAdd.isEmpty())
+		{
+			return;
+		}
+
+		if (filtersToAdd.size() == 1)
+		{
+			addFilters(filtersToAdd);
+		}
+		else if (isJoinAnd() == compositeFilter.isJoinAnd())
+		{
+			addFilters(filtersToAdd);
+		}
+		else
+		{
+			addFilter(compositeFilter);
 		}
 	}
 

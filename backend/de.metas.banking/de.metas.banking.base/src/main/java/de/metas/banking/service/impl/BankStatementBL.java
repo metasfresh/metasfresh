@@ -36,6 +36,7 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.ReconcileAsBankTransferRequest;
 import de.metas.currency.Amount;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -56,7 +57,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -132,7 +132,7 @@ public class BankStatementBL implements IBankStatementBL
 		if (bankStatement.isPosted())
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 			factAcctDAO.deleteForDocumentModel(bankStatement);
 

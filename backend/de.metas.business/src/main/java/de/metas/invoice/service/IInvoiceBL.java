@@ -3,6 +3,7 @@ package de.metas.invoice.service;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -10,14 +11,17 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -37,6 +41,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -110,6 +115,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isCreditMemo(String docBaseType);
 
+    boolean isReversal(InvoiceId invoiceId);
+
 	/**
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -126,6 +133,12 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -160,6 +173,10 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.
 	 */
 	I_C_InvoiceLine createLine(I_C_Invoice invoice);
+
+	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
+
+	void testAllocated(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Test Allocation (and set paid flag)
@@ -373,7 +390,14 @@ public interface IInvoiceBL extends ISingletonService
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
+
+	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 	
 	@Nullable
 	String getPOReference(@NonNull InvoiceId invoiceId);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+
 }

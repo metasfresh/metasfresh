@@ -40,6 +40,7 @@ import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -284,8 +285,7 @@ public class InterfaceWrapperHelper
 		{
 			return POJOWrapper.create(ctx, cl, trxName);
 		}
-		final T bean = POWrapper.create(ctx, cl, trxName);
-		return bean;
+		return POWrapper.create(ctx, cl, trxName);
 	}
 
 	/**
@@ -301,8 +301,7 @@ public class InterfaceWrapperHelper
 		{
 			return POJOWrapper.create(ctx, id, cl, trxName);
 		}
-		final T bean = POWrapper.create(ctx, id, cl, trxName);
-		return bean;
+		return POWrapper.create(ctx, id, cl, trxName);
 	}
 
 	/**
@@ -320,8 +319,7 @@ public class InterfaceWrapperHelper
 		{
 			return POJOWrapper.create(ctx, tableName, id, cl, trxName);
 		}
-		final T bean = POWrapper.create(ctx, tableName, id, cl, trxName);
-		return bean;
+		return POWrapper.create(ctx, tableName, id, cl, trxName);
 	}
 
 	public static <T> T loadOutOfTrx(@NonNull final RepoIdAware id, final Class<T> modelClass)
@@ -345,6 +343,16 @@ public class InterfaceWrapperHelper
 	public static <T> T load(@NonNull final RepoIdAware id, @NonNull final Class<T> modelClass)
 	{
 		return load(id.getRepoId(), modelClass);
+	}
+
+	public static <T> T loadNotNull(@NonNull final RepoIdAware id, @NonNull final Class<T> modelClass)
+	{
+		final T record = load(id, modelClass);
+		if (record == null)
+		{
+			throw new AdempiereException("No " + modelClass.getSimpleName() + " found for " + id);
+		}
+		return record;
 	}
 
 	/**
@@ -420,11 +428,9 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = list.stream()
+		return list.stream()
 				.map(item -> create(item, clazz))
 				.collect(Collectors.toList());
-
-		return result;
 	}
 
 	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
@@ -775,6 +781,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void deleteAll(@NonNull final Collection<?> models, final boolean failIfProcessed)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(model -> InterfaceWrapperHelper.delete(model, failIfProcessed));
+	}
+
 	public static void deleteAll(@NonNull final Collection<?> models)
 	{
 		if (models.isEmpty())
@@ -950,12 +966,7 @@ public class InterfaceWrapperHelper
 		{
 			return false;
 		}
-		if (modelClassInfo.getTableName() == null)
-		{
-			return false;
-		}
-
-		return true;
+		return modelClassInfo.getTableName() != null;
 	}
 
 	public static int getTableId(@NonNull final Class<?> clazz)
@@ -1003,8 +1014,7 @@ public class InterfaceWrapperHelper
 	public static String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
-		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
-		return keyColumnName;
+		return tableName + "_ID";
 	}
 
 	public static String getModelKeyColumnName(final Object model)
@@ -1181,17 +1191,14 @@ public class InterfaceWrapperHelper
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
-	public static <T> T getValueByColumnId(final Object model, final int adColumnId)
+	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assume(adColumnId > 0, "adColumnId > 0");
-
 		if (GridTabWrapper.isHandled(model))
 		{
 			final GridTab gridTab = GridTabWrapper.getGridTab(model);
 			for (final GridField field : gridTab.getFields())
 			{
-				if (field.getAD_Column_ID() == adColumnId)
+				if (field.getAD_Column_ID() == adColumnId.getRepoId())
 				{
 					@SuppressWarnings("unchecked") final T value = (T)field.getValue();
 					return value;
@@ -1221,8 +1228,7 @@ public class InterfaceWrapperHelper
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
-		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
-		return value;
+		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
 	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
@@ -1262,8 +1268,7 @@ public class InterfaceWrapperHelper
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = true;
-		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
-		return value;
+		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
 	private static <T> T getValue(@NonNull final Object model,
@@ -1444,8 +1449,7 @@ public class InterfaceWrapperHelper
 			return false;
 		}
 
-		final boolean saveDeleteDisabledBoolean = (Boolean)saveDeleteDisabled;
-		return saveDeleteDisabledBoolean;
+		return (boolean)(Boolean)saveDeleteDisabled;
 	}
 
 	/**

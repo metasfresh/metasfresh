@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
@@ -34,22 +36,20 @@ import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Process;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 {
+	private Expect expect;
 	private ExternalSystemLeichMehlConfigProductMappingRepository externalSystemLeichMehlConfigProductMappingRepository;
 
 	@BeforeEach
@@ -57,18 +57,6 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemLeichMehlConfigProductMappingRepository = new ExternalSystemLeichMehlConfigProductMappingRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -127,7 +115,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -252,7 +240,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -310,7 +298,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 
 		// then
 		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 	
 }

@@ -1,9 +1,9 @@
 package org.adempiere.ad.table;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.HashMap;
-
+import de.metas.ad_reference.ReferenceId;
+import de.metas.logging.LogManager;
+import de.metas.util.NumberUtils;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionDAO;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -13,9 +13,9 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.NumberUtils;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.HashMap;
 
 /*
  * #%L
@@ -139,7 +139,7 @@ final class RecordChangeLogEntryValuesResolver
 		final int displayType = poInfo.getColumnDisplayType(columnName);
 		if (DisplayType.List == displayType)
 		{
-			final int adReferenceId = poInfo.getColumnReferenceValueId(columnName);
+			final int adReferenceId = ReferenceId.toRepoId(poInfo.getColumnReferenceValueId(columnName));
 			if (adReferenceId <= 0)
 			{
 				return null;

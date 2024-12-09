@@ -3,41 +3,6 @@
  */
 package de.metas.async.processor.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBDeadLockDetectedException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.NOPWorkpackageLogsRepository;
@@ -45,10 +10,23 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBDeadLockDetectedException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author tsa
- *
  */
 public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 {
@@ -60,9 +38,10 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 				final IQueueProcessor queueProcessor,
 				final IWorkpackageProcessor workPackageProcessor,
 				final I_C_Queue_WorkPackage workPackage,
-				final IWorkpackageLogsRepository logsRepository)
+				final IWorkpackageLogsRepository logsRepository,
+				PerformanceMonitoringService perfMonService)
 		{
-			super(queueProcessor, workPackageProcessor, workPackage, logsRepository);
+			super(queueProcessor, workPackageProcessor, workPackage, logsRepository, perfMonService);
 		}
 
 		@Override
@@ -82,11 +61,14 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 
 	private I_C_Queue_WorkPackage workpackage;
 
+	private PerformanceMonitoringService perfMonService;
+
 	@Override
 	protected void beforeTestCustomized()
 	{
 		queueProcessor = new MockedQueueProcessor();
 		logsRepository = NOPWorkpackageLogsRepository.instance;
+		perfMonService = NoopPerformanceMonitoringService.INSTANCE;
 
 		workpackage = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
 		workpackage.setProcessed(false);
@@ -112,7 +94,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessSuccess()
 	{
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> IWorkpackageProcessor.Result.SUCCESS;
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -131,7 +113,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw new RuntimeException(processingErrorMsg);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -154,7 +136,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -173,7 +155,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
 			throw new DBDeadLockDetectedException(null, null);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -197,7 +179,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 
 		for (int i = 1; i <= 10; i++)
 		{
-			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 			task.run();
 			Assert.assertEquals("Invalid Skipped_Count", i, workpackage.getSkipped_Count());
 		}
@@ -210,7 +192,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessInvalidReturnValue()
 	{
 		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> null;
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);

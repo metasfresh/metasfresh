@@ -17,6 +17,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
@@ -95,7 +96,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
@@ -382,6 +382,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
 		tax_NotFound.setValidFrom(plvDate);
 		tax_NotFound.setC_Country_ID(100);
+		tax_NotFound.setName("TaxNotFound");
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -394,6 +395,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
 		tax_Default.setValidFrom(plvDate);
 		tax_Default.setC_Country_ID(100);
+		tax_Default.setName("Default Tax");
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 
@@ -401,14 +403,14 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_ARI.setName("ARI");
-		docType_ARI.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
+		docType_ARI.setDocBaseType(DocBaseType.SalesInvoice.getCode());
 		docType_ARI.setIsSOTrx(true);
 		docType_ARI.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_ARI);
 
 		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_API.setName("API");
-		docType_API.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		docType_API.setDocBaseType(DocBaseType.PurchaseInvoice.getCode());
 		docType_API.setIsSOTrx(false);
 		docType_API.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_API);

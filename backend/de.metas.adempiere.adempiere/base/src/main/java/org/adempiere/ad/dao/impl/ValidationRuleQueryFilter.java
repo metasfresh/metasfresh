@@ -60,7 +60,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 		final IValidationRule valRule = validationRuleFactory.create(
 				tableName,
-				adValRuleId.getRepoId(),
+				adValRuleId,
 				null, // ctx table name
 				null // ctx column name
 		);

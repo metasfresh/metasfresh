@@ -16,22 +16,20 @@
  *****************************************************************************/
 package org.compiere.report;
 
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.i18n.Language;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.model.MElementValue;
+import org.compiere.model.MPeriod;
+import org.compiere.util.DB;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
-import org.compiere.model.MElementValue;
-import org.compiere.model.MPeriod;
-import org.compiere.util.DB;
-
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.i18n.Language;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-
 
 /**
  *	Trial Balance
@@ -324,7 +322,7 @@ public class TrialBalance extends JavaProcess
 		else
 			sql.append(",null");
 		Timestamp balanceDay = p_DateAcct_From; // TimeUtil.addDays(p_DateAcct_From, -1);
-		sql.append(",null,").append(DB.TO_DATE(balanceDay, true)).append(",");
+		sql.append(",null,").append(DB.TO_DATE(balanceDay)).append(",");
 		if (p_C_Period_ID == 0)
 			sql.append("null");
 		else
@@ -451,8 +449,8 @@ public class TrialBalance extends JavaProcess
 		//
 		sql.append(" FROM Fact_Acct WHERE AD_Client_ID=").append(getAD_Client_ID())
 			.append (" AND ").append(m_parameterWhere)
-			.append(" AND DateAcct >= ").append(DB.TO_DATE(p_DateAcct_From, true))
-			.append(" AND TRUNC(DateAcct) <= ").append(DB.TO_DATE(p_DateAcct_To, true));
+			.append(" AND DateAcct >= ").append(DB.TO_DATE(p_DateAcct_From))
+			.append(" AND TRUNC(DateAcct) <= ").append(DB.TO_DATE(p_DateAcct_To));
 		//
 		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no == 0)

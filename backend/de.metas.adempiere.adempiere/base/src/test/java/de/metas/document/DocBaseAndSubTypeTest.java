@@ -31,8 +31,8 @@ public class DocBaseAndSubTypeTest
 	@Test
 	public void ofDocBaseTypeAndSubType()
 	{
-		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"))
-				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"));
+		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE))
+				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE));
 	}
 
 	@Test

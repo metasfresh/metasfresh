@@ -22,6 +22,8 @@
 
 package de.metas.contracts.commission.commissioninstance.services.margin;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -48,24 +50,24 @@ import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+@ExtendWith(SnapshotExtension.class)
 public class MarginCommissionConfigFactoryTest
 {
 	private MarginCommissionConfigFactory marginCommissionConfigFactorySpy;
+	private Expect expect;
 
 	@BeforeAll
 	static void init()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -116,7 +118,7 @@ public class MarginCommissionConfigFactoryTest
 		final List<CommissionConfig> configs = marginCommissionConfigFactorySpy.createForNewCommissionInstances(requestForNewInstance);
 
 		//then
-		expect(configs).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
 	}
 
 	@Builder(builderMethodName = "contractAndComplementaryRecordsBuilder")

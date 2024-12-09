@@ -1,15 +1,14 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.function.Consumer;
-
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -46,7 +45,7 @@ public class InSubQueryFilterClause<ModelType, ParentType> implements IInSubQuer
 	private final InSubQueryFilter.Builder<ModelType> inSubQueryBuilder;
 	private boolean destroyed = false;
 
-	InSubQueryFilterClause(@NonNull final String tableName, @NonNull final ParentType parent, @NonNull final Consumer<InSubQueryFilter<ModelType>> finisher)
+	public InSubQueryFilterClause(@NonNull final String tableName, @NonNull final ParentType parent, @NonNull final Consumer<InSubQueryFilter<ModelType>> finisher)
 	{
 		this.parent = parent;
 		this.finisher = finisher;
