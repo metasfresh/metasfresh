@@ -65,6 +65,8 @@ public interface ISysConfigBL extends ISingletonService
 
 	int getIntValue(String name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
 
+	int getIntValue(String name, int defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
+
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
