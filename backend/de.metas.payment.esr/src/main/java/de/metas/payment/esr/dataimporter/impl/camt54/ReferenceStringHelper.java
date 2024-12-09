@@ -250,7 +250,8 @@ public class ReferenceStringHelper
 				&& cdtrRefInf.getTp() != null
 				&& cdtrRefInf.getTp().getCdOrPrtry() != null
 				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode())
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_SCOR.getCode()));
 	}
 
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
@@ -259,7 +260,9 @@ public class ReferenceStringHelper
 				&& cdtrRefInf.getTp() != null
 				&& cdtrRefInf.getTp().getCdOrPrtry() != null
 				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode())
+					    || cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_SCOR.getCode()));
+
 	}
 	
 	/**
