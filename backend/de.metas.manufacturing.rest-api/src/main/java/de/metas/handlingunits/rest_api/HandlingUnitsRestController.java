@@ -239,12 +239,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonHUList.builder()
 				.hus(huRepoIds.stream()
-							 .map(HuId::ofRepoId)
-							 .map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
-							 .collect(ImmutableList.toImmutableList()))
+						.map(HuId::ofRepoId)
+						.map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
-	
+
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(
 			@NonNull final Supplier<I_M_HU> huSupplier,
 			@NonNull final ClientAndOrgId clientAndOrgId)
@@ -262,13 +262,13 @@ public class HandlingUnitsRestController
 			final ImmutableSet<String> attributesToInclude = extractStringSet(SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE, "", clientAndOrgId);
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
-																						 .hu(hu)
-																						 .adLanguage(adLanguage)
-																						 .excludeEmptyAttributes(true)
-																						 .emptyAttributesToInclude(attributesToInclude)
-																						 .build()))
-											 .build());
+					.result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
+							.hu(hu)
+							.adLanguage(adLanguage)
+							.excludeEmptyAttributes(true)
+							.emptyAttributesToInclude(attributesToInclude)
+							.build()))
+					.build());
 		}
 		catch (final Exception ex)
 		{
@@ -282,11 +282,11 @@ public class HandlingUnitsRestController
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return Arrays.stream(sysConfigBL
-									 .getValue(
-											 sysConfigValue,
-											 defaultValue,
-											 clientAndOrgId)
-									 .split(","))
+						.getValue(
+								sysConfigValue,
+								defaultValue,
+								clientAndOrgId)
+						.split(","))
 				.map(String::trim)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -329,12 +329,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-								 .stream()
-								 .map(item -> JsonDisposalReason.builder()
-										 .key(item.getValue())
-										 .caption(item.getName().translate(adLanguage))
-										 .build())
-								 .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(item -> JsonDisposalReason.builder()
+								.key(item.getValue())
+								.caption(item.getName().translate(adLanguage))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -390,11 +390,11 @@ public class HandlingUnitsRestController
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-										  .huId(request.getHuId())
-										  .huQRCode(huQRCode)
-										  .numberOfTUs(request.getNumberOfTUs())
-										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-										  .build());
+				.huId(request.getHuId())
+				.huQRCode(huQRCode)
+				.numberOfTUs(request.getNumberOfTUs())
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
 	}
 
 	@PostMapping("/bulk/move")
@@ -405,9 +405,9 @@ public class HandlingUnitsRestController
 				.collect(ImmutableList.toImmutableList());
 
 		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
-											  .huQrCodes(huQrCodes)
-											  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-											  .build());
+				.huQrCodes(huQrCodes)
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
 	}
 
 	@PostMapping("/huLabels/print")
@@ -470,16 +470,16 @@ public class HandlingUnitsRestController
 				.warehouseValue(null)
 				.locatorValue(null)
 				.product(JsonHUProduct.builder()
-								 .productValue(product.getValue())
-								 .productName(product.getName())
-								 .qty("0")
-								 .uom(uom.getX12DE355())
-								 .build())
+						.productValue(product.getValue())
+						.productName(product.getName())
+						.qty("0")
+						.uom(uom.getX12DE355())
+						.build())
 				.attributes2(JsonHUAttributes.builder()
-									 .list(huQRCode.getAttributes().stream()
-												   .map(this::toJsonHUAttribute)
-												   .collect(ImmutableList.toImmutableList()))
-									 .build())
+						.list(huQRCode.getAttributes().stream()
+								.map(this::toJsonHUAttribute)
+								.collect(ImmutableList.toImmutableList()))
+						.build())
 				.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
 				.build();
 	}

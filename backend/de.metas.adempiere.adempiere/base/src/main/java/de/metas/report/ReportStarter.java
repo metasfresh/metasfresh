@@ -255,19 +255,19 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	@Nullable
-	private static String extractReportBasename_IfDocument(@NonNull final ProcessInfo pi)
+	private String extractReportBasename_IfDocument(@NonNull final ProcessInfo pi)
 	{
 		return Optional.ofNullable(getDocument(pi))
 				.map(IDocument::getDocumentInfo)
 				.orElse(null);
 	}
-	
+
 	private static boolean isDocument(@NonNull final ProcessInfo pi)
 	{
 		return Optional.ofNullable(getDocument(pi))
 				.isPresent();
 	}
-	
+
 	@Nullable
 	private static IDocument getDocument(@NonNull final ProcessInfo pi)
 	{

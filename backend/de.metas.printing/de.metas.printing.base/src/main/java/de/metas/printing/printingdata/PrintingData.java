@@ -23,6 +23,7 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.lowagie.text.pdf.PdfReader;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -43,7 +44,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 
 @ToString(exclude = { "data" })
 public class PrintingData
@@ -300,25 +300,21 @@ public class PrintingData
 	public PrintingData onlyWithType(@NonNull final OutputType outputType)
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> OutputType.equals(s.getPrinter().getOutputType(), outputType))
+				.filter(segment -> segment.isMatchingOutputType(outputType))
 				.collect(ImmutableList.toImmutableList());
 
-		return PrintingData.builder()
+		return toBuilder()
+				.clearSegments()
+				.segments(filteredSegments)
 				.pInstanceId(this.pInstanceId)
 				.adjustSegmentPageRanges(false)
-				.data(this.data)
-				.documentFileName(this.documentFileName)
-				.orgId(this.orgId)
-				.printingQueueItemId(this.printingQueueItemId)
-				.segments(filteredSegments)
 				.build();
 	}
 
 	public PrintingData onlyQueuedForExternalSystems()
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), OutputType.Queue))
-				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
+				.filter(PrintingSegment::isQueuedForExternalSystems)
 				.collect(ImmutableList.toImmutableList());
 
 		return toBuilder()
@@ -326,5 +322,16 @@ public class PrintingData
 				.segments(filteredSegments)
 				.adjustSegmentPageRanges(false)
 				.build();
+	}
+
+	public boolean hasSegments() {return !getSegments().isEmpty();}
+
+	public int getSegmentsCount() {return getSegments().size();}
+
+	public ImmutableSet<String> getPrinterNames()
+	{
+		return segments.stream()
+				.map(segment -> segment.getPrinter().getName())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

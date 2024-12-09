@@ -157,9 +157,9 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(
-                huQRCodesRepository,
-                new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-                new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+				huQRCodesRepository,
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
 		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();

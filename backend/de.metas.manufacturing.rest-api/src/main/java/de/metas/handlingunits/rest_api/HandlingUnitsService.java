@@ -162,11 +162,11 @@ public class HandlingUnitsService
 		}
 
 		return toJson(LoadJsonHURequest.builder()
-							  .hu(hu)
-							  .expectedQRCode(expectedQRCode)
-							  .adLanguage(adLanguage)
-							  .includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
-							  .build());
+				.hu(hu)
+				.expectedQRCode(expectedQRCode)
+				.adLanguage(adLanguage)
+				.includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+				.build());
 	}
 
 	@NonNull
@@ -446,21 +446,21 @@ public class HandlingUnitsService
 			}
 
 			list.add(JsonHUAttribute.builder()
-							 .code(attributeCode.getCode())
-							 .caption(attribute.getName())
-							 .value(value)
-							 .valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
-							 .build());
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
+					.build());
 		}
 
 		// count attributes that end with ".._<digit>" and create additional attribute(s) for those counters.
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-							 .code(counterAttribute.getAttributeCode())
-							 .caption(counterAttribute.getAttributeCode())
-							 .value(counterAttribute.getCounter())
-							 .build());
+					.code(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -566,9 +566,9 @@ public class HandlingUnitsService
 	{
 		final MoveHURequestItem moveHURequestItem = MoveHURequestItem.builder()
 				.huIdAndQRCode(HUIdAndQRCode.builder()
-									   .huId(request.getHuId())
-									   .huQRCode(request.getHuQRCode())
-									   .build())
+						.huId(request.getHuId())
+						.huQRCode(request.getHuQRCode())
+						.build())
 				.numberOfTUs(request.getNumberOfTUs())
 				.build();
 
@@ -639,12 +639,12 @@ public class HandlingUnitsService
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
-																   .huId(huIdToUpdate)
-																   .huQRCode(qrCode)
-																   .locatorId(locatorId)
-																   .qty(qty)
-																   .description(request.getDescription())
-																   .build());
+				.huId(huIdToUpdate)
+				.huQRCode(qrCode)
+				.locatorId(locatorId)
+				.qty(qty)
+				.description(request.getDescription())
+				.build());
 
 		if (inventory != null)
 		{
