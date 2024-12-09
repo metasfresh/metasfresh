@@ -96,7 +96,8 @@ public class LayoutFactory
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
+	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
+
 	@Autowired
 	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
@@ -194,6 +195,8 @@ public class LayoutFactory
 				.add("UIProvider", getUIProvider())
 				.toString();
 	}
+
+	public String getTableName() {return descriptorsFactory.getTableName();}
 
 	public boolean isSkipAD_Tab_ID(final AdTabId adTabId)
 	{
@@ -536,7 +539,7 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
-		if(viewEditMode != null)
+		if (viewEditMode != null)
 		{
 			return viewEditMode;
 		}
@@ -711,7 +714,7 @@ public class LayoutFactory
 			return null;
 		}
 
-		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
+		if (!quickInputDescriptors.hasQuickInputEntityDescriptor(
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),

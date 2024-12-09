@@ -1,14 +1,11 @@
 package org.adempiere.mm.attributes;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +34,8 @@ import javax.annotation.Nullable;
 @Value
 public class AttributeSetId implements RepoIdAware
 {
+	public static final AttributeSetId NONE = new AttributeSetId(0);
+	
 	int repoId;
 
 	@JsonCreator
@@ -77,16 +76,9 @@ public class AttributeSetId implements RepoIdAware
 		return attributeSetId != null ? attributeSetId.getRepoId() : -1;
 	}
 
-	public static final AttributeSetId NONE = new AttributeSetId();
-
 	private AttributeSetId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
-	private AttributeSetId()
-	{
-		this.repoId = AttributeConstants.M_AttributeSet_ID_None;
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "M_AttributeSet_ID");
 	}
 
 	@Override

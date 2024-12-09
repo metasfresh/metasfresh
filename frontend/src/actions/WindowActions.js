@@ -48,7 +48,11 @@ import {
 import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import {
+  getScope,
+  parseItemToDisplay,
+  parseToDisplay,
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
@@ -79,6 +83,7 @@ import {
 } from './CommentsPanelActions';
 import {
   createTabTable,
+  partialUpdateGridTableRows,
   updateTableRowProperty,
   updateTableSelection,
   updateTabTable,
@@ -1066,26 +1071,51 @@ function updateData(doc, scope) {
 }
 
 function mapDataToState({ data, isModal, rowId, disconnected }) {
+  const isNewRow = rowId === 'NEW';
+
   return (dispatch) => {
+    if (disconnected === 'inlineTab') {
+      // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+      // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+      return;
+    }
+
     const dataArray = typeof data.splice === 'function' ? data : [data];
+    const rowsToUpdateByTableId = {};
 
-    dataArray.map((item, index) => {
-      const parsedItem = item.fieldsByName
-        ? {
-            ...item,
-            fieldsByName: parseToDisplay(item.fieldsByName),
-          }
-        : item;
+    dataArray.forEach((item, index) => {
+      const isFirstItem = index === 0;
+      const isRow = !!item.rowId;
 
-      if (
-        !(index === 0 && rowId === 'NEW') &&
-        (!item.rowId || (isModal && item.rowId))
-      ) {
-        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
-        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
-        disconnected !== 'inlineTab' &&
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+      if (isNewRow && isFirstItem) {
+        //
+      } else if (!isRow || (isModal && isRow)) {
+        const parsedItem = parseItemToDisplay({ item });
+        dispatch(updateData(parsedItem, getScope(isModal && isFirstItem)));
       }
+
+      if (isRow) {
+        const tableId = getTableId({
+          windowId: item.windowId,
+          docId: item.id,
+          tabId: item.tabId,
+        });
+
+        if (!rowsToUpdateByTableId[tableId]) {
+          rowsToUpdateByTableId[tableId] = [];
+        }
+
+        rowsToUpdateByTableId[tableId].push(item);
+      }
+    });
+
+    Object.keys(rowsToUpdateByTableId).forEach((tableId) => {
+      dispatch(
+        partialUpdateGridTableRows({
+          tableId,
+          rowsToUpdate: rowsToUpdateByTableId[tableId],
+        })
+      );
     });
   };
 }

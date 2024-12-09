@@ -92,8 +92,8 @@ class Column extends PureComponent {
     });
   };
 
-  renderEntryTable = (groups) => {
-    const columns = groups.reduce((columnsArray, group) => {
+  renderEntryTable = (elementGroups) => {
+    const rowsLayout = elementGroups.reduce((acc, group) => {
       const cols = [];
       group.elementsLine.forEach((line) => {
         if (line && line.elements && line.elements.length) {
@@ -101,12 +101,12 @@ class Column extends PureComponent {
         }
       });
 
-      columnsArray.push({
+      acc.push({
         cols,
         colsCount: group.columnCount,
       });
 
-      return columnsArray;
+      return acc;
     }, []);
 
     const {
@@ -129,7 +129,7 @@ class Column extends PureComponent {
         )}
       >
         <EntryTable
-          columns={columns}
+          rowsLayout={rowsLayout}
           windowId={windowId}
           documentId={dataId}
           tabId={tabId}

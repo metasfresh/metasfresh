@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ProductBLTest
 {
@@ -55,7 +55,7 @@ public class ProductBLTest
 			save(product1);
 
 			assertThat(productBL.getAttributeSetId(product1)).isEqualTo(AttributeSetId.NONE);
-		}
+	}
 
 		@Test
 		public void ProductCategory()
