@@ -199,7 +199,7 @@ public class PostFinanceYbInvoiceService
 		}
 	}
 
-	public void exportBatchToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	private void exportBatchToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		try
 		{
