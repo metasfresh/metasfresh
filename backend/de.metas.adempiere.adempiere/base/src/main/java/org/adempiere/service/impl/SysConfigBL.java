@@ -16,6 +16,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -104,7 +105,7 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
-	public String getValue(final String name, final int AD_Client_ID, final int AD_Org_ID)
+	public String getValue(@NonNull final String name, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
 				.orElse(null);
@@ -119,9 +120,15 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
-	public int getIntValue(final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
+	public int getIntValue(@NonNull final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
+		return getIntValue(name, defaultValue, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID));
+	}
+
+	@Override
+	public int getIntValue(@NonNull final String name, final int defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
@@ -259,6 +266,8 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	@Nullable
+	@Contract("_, !null, _ -> !null")
 	public String getValue(@NonNull final String name, @Nullable final String defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigDAO.getValue(name, clientAndOrgId).orElse(defaultValue);

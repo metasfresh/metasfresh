@@ -24,7 +24,7 @@ package de.metas.postfinance.document.export;
 
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,8 +39,9 @@ public class PostFinanceYbInvoiceRequest
 	@NonNull TableRecordReference pInstanceReference;
 
 	@NonNull TableRecordReference docOutboundLogReference;
-	@NonNull OrgId orgId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 
+	@NonNull
 	public DocOutboundLogId getDocOutboundLogId()
 	{
 		return docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
