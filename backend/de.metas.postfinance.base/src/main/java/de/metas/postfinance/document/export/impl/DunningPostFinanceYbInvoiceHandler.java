@@ -131,7 +131,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 				.pInstanceReference(postFinanceYbInvoiceRequest.getPInstanceReference())
 				.documentReference(postFinanceYbInvoiceRequest.getDocumentReference())
 				.transactionId(invoice.getTransactionID().getValue())
-				.orgId(postFinanceYbInvoiceRequest.getOrgId())
+				.clientAndOrgId(postFinanceYbInvoiceRequest.getClientAndOrgId())
 				.build();
 	}
 }
