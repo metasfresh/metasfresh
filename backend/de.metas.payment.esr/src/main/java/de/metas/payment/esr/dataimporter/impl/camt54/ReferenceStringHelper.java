@@ -1,7 +1,9 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
+import java.util.Objects;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -14,6 +16,8 @@ import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -227,7 +231,12 @@ public class ReferenceStringHelper
 				.map(strd -> strd.getCdtrRefInf())
 				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
-				.map(r ->  ESRType.ofNullableCode(r))
+				.map(r -> {
+					ESRType type = ESRType.ofNullableCode(r);
+					validateESRType(type, r); // Validate ESRType and notify user if invalid
+					return type;
+				})
+				.filter(Objects::nonNull)
 				.findFirst();
 
 	}
@@ -239,9 +248,27 @@ public class ReferenceStringHelper
 				.map(strd -> strd.getCdtrRefInf())
 				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
-				.map(r ->  ESRType.ofNullableCode(r))
+				.map(r -> {
+					ESRType type = ESRType.ofNullableCode(r);
+					validateESRType(type, r); // Validate ESRType and notify user if invalid
+					return type;
+				})
+				.filter(Objects::nonNull)
 				.findFirst();
 
+	}
+
+	private void validateESRType(@Nullable ESRType esrType, String rawCode)
+	{
+		if (esrType == null ||
+				!(esrType == ESRType.TYPE_ESR || esrType == ESRType.TYPE_QRR || esrType == ESRType.TYPE_SCOR))
+		{
+			// Log the error with the invalid value
+			final String errorMsg = String.format("Invalid ESRType: '%s'. Accepted types are: ESR, QRR, SCOR.", rawCode);
+
+			// Optionally, throw an exception to halt processing
+			throw new AdempiereException(errorMsg);
+		}
 	}
 
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
