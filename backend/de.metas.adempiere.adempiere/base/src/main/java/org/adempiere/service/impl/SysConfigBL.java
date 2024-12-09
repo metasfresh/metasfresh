@@ -105,7 +105,7 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
-	public String getValue(final String name, final int AD_Client_ID, final int AD_Org_ID)
+	public String getValue(@NonNull final String name, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
 				.orElse(null);
@@ -120,13 +120,13 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
-	public int getIntValue(final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
+	public int getIntValue(@NonNull final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return getIntValue(name, defaultValue, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID));
 	}
 
 	@Override
-	public int getIntValue(final String name, final int defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
+	public int getIntValue(@NonNull final String name, final int defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigDAO.getValue(name, clientAndOrgId)
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
