@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,36 +20,39 @@
  * #L%
  */
 
-package de.metas.common.externalsystem.leichundmehl;
+package de.metas.common.rest_api.v2.adprocess;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonQuantity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = JsonExternalSystemLeichMehlConfigProductMapping.JsonExternalSystemLeichMehlConfigProductMappingBuilder.class)
-public class JsonExternalSystemLeichMehlConfigProductMapping
-{
-	@NonNull
-	String pluFile;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
-	@NonNull
-	JsonMetasfreshId productId;
-	
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+
+@Value
+@Schema
+public class JsonAdProcessRequestParam
+{
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
+	String name;
+
+	@Schema()
+	String value;
+
 	@Builder
 	@JsonCreator
-	public JsonExternalSystemLeichMehlConfigProductMapping(
-			@JsonProperty("pluFile") @NonNull final String pluFile,
-			@JsonProperty("productId") @NonNull final JsonMetasfreshId productId)
+	public JsonAdProcessRequestParam(
+			@JsonProperty("name") @NonNull final String name,
+			@JsonProperty("value") @Nullable final String value)
 	{
-		this.pluFile = pluFile;
-		this.productId = productId;
+		this.name = name;
+		this.value = value;
 	}
 }
-
