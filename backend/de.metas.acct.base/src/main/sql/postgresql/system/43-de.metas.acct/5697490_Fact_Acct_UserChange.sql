@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2023-07-31T06:25:02.144Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556291,TO_TIMESTAMP('2023-07-31 09:25:02','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table Fact_Acct_UserChange',1,'Y','N','Y','Y','Fact_Acct_UserChange','N',1000000,TO_TIMESTAMP('2023-07-31 09:25:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556291,TO_TIMESTAMP('2023-07-31 09:25:02','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table Fact_Acct_UserChange',1,'Y','N','Y','Y','Fact_Acct_UserChange',1000000,TO_TIMESTAMP('2023-07-31 09:25:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-07-31T06:25:02.161Z

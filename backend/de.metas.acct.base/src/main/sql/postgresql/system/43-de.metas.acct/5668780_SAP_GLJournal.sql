@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-12-15T13:23:04.659Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556067,TO_TIMESTAMP('2022-12-15 15:23:04','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SAP_GLJournal',1,'Y','N','Y','Y','SAP_GLJournal','N',1000000,TO_TIMESTAMP('2022-12-15 15:23:04','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556067,TO_TIMESTAMP('2022-12-15 15:23:04','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SAP_GLJournal',1,'Y','N','Y','Y','SAP_GLJournal',1000000,TO_TIMESTAMP('2022-12-15 15:23:04','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-15T13:23:04.668Z
