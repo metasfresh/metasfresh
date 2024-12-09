@@ -57,7 +57,6 @@ public class B2BServiceWrapper
 	private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
 	public static final ObjectFactory B2B_SERVICE_OBJECT_FACTORY = new ObjectFactory();
 	private static final String B2B_SERVICE_WSDL_URL_TEST = "https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?wsdl";
-
 	private static final String B2B_SERVICE_WSDL_URL_PROD = "https://ebill.postfinance.ch/B2BService/B2BService.svc?wsdl";
 
 	@NonNull
@@ -122,7 +121,6 @@ public class B2BServiceWrapper
 				.flatMap(List::stream)
 				.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
 				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	private B2BService_Service getB2BService(final boolean isTestServer)
@@ -137,6 +135,5 @@ public class B2BServiceWrapper
 		{
 			throw new PostFinanceExportException("MalformedURLException on static variable, this shouldn't happen!", e);
 		}
-
 	}
 }
