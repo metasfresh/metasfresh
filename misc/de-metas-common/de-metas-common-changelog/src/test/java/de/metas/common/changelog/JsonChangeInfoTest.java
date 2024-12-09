@@ -36,7 +36,7 @@ import java.io.IOException;
 
 class JsonChangeInfoTest
 {
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@BeforeAll
 	static void beforeAll()
