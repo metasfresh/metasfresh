@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,13 +37,13 @@ import java.math.BigDecimal;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @Value
-@ApiModel
+@Schema
 public class JsonAdProcessRequestParam
 {
-	@ApiModelProperty(position = 10, value = PRODUCT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
 	String name;
 
-	@ApiModelProperty(position = 20)
+	@Schema()
 	String value;
 
 	@Builder
