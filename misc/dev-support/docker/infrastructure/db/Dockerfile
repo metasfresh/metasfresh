@@ -1,4 +1,4 @@
-# make sure with the tag to have a common ancestor for all possible user branches
+# 5.175 which is postgresql-15
 FROM metasfresh/metas-db:5.175-release-5.175
 
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8

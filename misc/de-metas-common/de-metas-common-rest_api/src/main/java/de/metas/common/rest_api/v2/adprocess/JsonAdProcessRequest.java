@@ -42,7 +42,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 @Value
-@ApiModel(description = "Contains a product external identifier and the actual bom formula to insert.")
+@ApiModel(description = "A list of parameters for the AD_Process to be invoked.")
 public class JsonAdProcessRequest
 {
 	@ApiModelProperty

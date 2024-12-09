@@ -31,14 +31,15 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+@Getter
 @AllArgsConstructor
 public enum ReplacementSource implements ReferenceListAwareEnum
 {
 	Product(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_Product),
 	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder),
-	CustomPRocessResult(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_CustomProcessResult);
+	/** Result of a customer postgREST procsess invokation (via API) */
+	CustomProcessResult(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_CustomProcessResult);
 
-	@Getter
 	@NonNull
 	private final String code;
 

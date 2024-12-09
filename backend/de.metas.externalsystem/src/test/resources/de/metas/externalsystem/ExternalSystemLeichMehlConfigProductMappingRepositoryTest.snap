@@ -3,9 +3,7 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
     "bPartnerId": 1,
     "id": 2,
     "leichMehlPluFileConfigGroup": {
-      "id" : 1,
-      "name" : "testGroupName",
-      "customQueryProcessValue" : ExternalSystem_Config_LeichMehl_CustomQuery,
+      "customQueryProcessValue": "ExternalSystem_Config_LeichMehl_CustomQuery",
       "externalSystemLeichMehlPluFileConfigs": [
         {
           "id": 1,

@@ -41,7 +41,7 @@ public class AdProcessRouteBuilder extends RouteBuilder
 {
 	/**
 	 * Does a POST to the app-Server's processes API. 
-	 * The exchange's header needs to contain the AD_Process.Value, the exchange body needs to contain the process aprameters (if any).
+	 * The exchange's header needs to contain the AD_Process.Value, the exchange-body needs to contain the process parameters (if any).
 	 */
 	@Override
 	public void configure() throws Exception
