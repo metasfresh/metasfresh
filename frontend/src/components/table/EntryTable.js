@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
-import { getTableId, getTable } from '../../reducers/tables';
+import { getTable, getTableId } from '../../reducers/tables';
 import { updateTableRowProperty } from '../../actions/TableActions';
 import {
+  allowShortcut,
+  disableShortcut,
   openModal,
   patch,
   updatePropertyValue,
-  allowShortcut,
-  disableShortcut,
 } from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
