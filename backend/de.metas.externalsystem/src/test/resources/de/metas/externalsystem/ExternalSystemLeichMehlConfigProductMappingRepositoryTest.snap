@@ -8,6 +8,7 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
     "leichMehlPluFileConfigGroup" : {
       "id" : 1,
       "name" : "testGroupName",
+      "customQueryProcessValue": "ExternalSystem_Config_LeichMehl_CustomQuery",
       "externalSystemLeichMehlPluFileConfigs" : [
         {
           "id" : 1,
