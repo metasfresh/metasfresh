@@ -24,7 +24,7 @@ package de.metas.postfinance.document.export.process;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceHandlerFactory;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -81,7 +81,7 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 				.documentReference(TableRecordReference.of(docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()))
 				.pInstanceReference(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId()))
 				.docOutboundLogReference(TableRecordReference.of(I_C_Doc_Outbound_Log.Table_Name, docOutboundLog.getC_Doc_Outbound_Log_ID()))
-				.orgId(OrgId.ofRepoId(docOutboundLog.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(docOutboundLog.getAD_Client_ID(), docOutboundLog.getAD_Org_ID()))
 				.build();
 	}
 }
