@@ -108,6 +108,7 @@ public class DATEVExportLinesRepository
 
 		return queryBuilder.create()
 			.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax());
+		// todo: add the second flag
 	}
 
 }
