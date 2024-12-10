@@ -59,7 +59,6 @@ import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
