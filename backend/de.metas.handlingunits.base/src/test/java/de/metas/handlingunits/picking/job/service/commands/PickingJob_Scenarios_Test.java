@@ -4,7 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -15,6 +19,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -22,6 +27,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +43,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test
@@ -150,12 +157,12 @@ class PickingJob_Scenarios_Test
 				.build();
 
 		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
-				PickingJobCreateRequest.builder()
-						.pickerId(UserId.ofRepoId(1234))
-						.salesOrderId(orderAndLineId.getOrderId())
-						.deliveryBPLocationId(helper.shipToBPLocationId)
-						.isAllowPickingAnyHU(false) // we need a plan built
-						.build())
+						PickingJobCreateRequest.builder()
+								.pickerId(UserId.ofRepoId(1234))
+								.salesOrderId(orderAndLineId.getOrderId())
+								.deliveryBPLocationId(helper.shipToBPLocationId)
+								.isAllowPickingAnyHU(false) // we need a plan built
+								.build())
 				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 		System.out.println("Created " + pickingJob);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
@@ -240,7 +247,7 @@ class PickingJob_Scenarios_Test
 							.isAllowPickingAnyHU(false) // we need a plan built
 							.build());
 		}
-		
+
 		@Test
 		void gs1ProductNotFound()
 		{
@@ -292,5 +299,97 @@ class PickingJob_Scenarios_Test
 			)
 					.hasMessageStartingWith("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
 		}
+	}
+
+	@Nested
+	class pick_EAN13
+	{
+		private ProductCategoryId productCategoryId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			this.productCategoryId = BusinessTestHelper.createProductCategory("PC", null);
+		}
+
+		private ProductId createProduct(@NonNull String productValue)
+		{
+			final I_M_Product product = BusinessTestHelper.createProduct(productValue, helper.uomEach);
+			product.setValue(productValue);
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+			InterfaceWrapperHelper.save(product);
+			return ProductId.ofRepoId(product.getM_Product_ID());
+		}
+
+		@SuppressWarnings("SameParameterValue")
+		private PickingJob createPickingJob(final ProductId productId, String qtyToDeliver)
+		{
+			final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder");
+			helper.packageable()
+					.orderAndLineId(orderAndLineId)
+					.productId(productId)
+					.qtyToDeliver(qtyToDeliver)
+					.build();
+
+			return helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.pickerId(UserId.ofRepoId(1234))
+									.salesOrderId(orderAndLineId.getOrderId())
+									.deliveryBPLocationId(helper.shipToBPLocationId)
+									.isAllowPickingAnyHU(false) // we need a plan built
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
+		}
+
+		@Test
+		void ean13ProductNotMatching()
+		{
+			final ProductId productId = createProduct("123456");
+			helper.createVHU(productId, "100");
+
+			final PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			assertThatThrownBy(
+					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+							.pickingLineId(line.getId())
+							.pickingStepId(stepId)
+							.pickFromKey(PickingJobStepPickFromKey.MAIN)
+							.eventType(PickingJobStepEventType.PICK)
+							.huQRCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow())
+							.qtyPicked(new BigDecimal("1"))
+							.qtyRejectedReasonCode(null)
+							.build())
+			)
+					.hasMessageStartingWith("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+		}
+
+		@Test
+		void ean13Valid()
+		{
+			// remark: we use 6 digits from productNo while our EAN13 contains 5 digits product no
+			// we expect product to be valid
+
+			final ProductId productId = createProduct("594143");
+			helper.createVHU(productId, "100");
+
+			PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(stepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.huQRCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow())
+					.qtyPicked(new BigDecimal("1"))
+					.qtyRejectedReasonCode(null)
+					.build());
+		}
+
 	}
 }

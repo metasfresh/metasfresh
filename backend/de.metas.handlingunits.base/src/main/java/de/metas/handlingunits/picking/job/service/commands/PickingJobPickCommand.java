@@ -49,6 +49,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -882,6 +883,10 @@ public class PickingJobPickCommand
 		{
 			validateQRCodeForGS1((GS1HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
 		}
+		else if (pickFromHUQRCode instanceof EAN13HUQRCode)
+		{
+			validateQRCodeForEAN13((EAN13HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
+		}
 	}
 
 	private static void validateQRCodeForLMQRCode(@NonNull final LMQRCode pickFromHUQRCode, @Nullable final BigDecimal catchWeightBD)
@@ -902,13 +907,13 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private void validateQRCodeForGS1(@NonNull final GS1HUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final  BigDecimal catchWeightBD)
+	private void validateQRCodeForGS1(@NonNull final GS1HUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final BigDecimal catchWeightBD)
 	{
 		final GTIN gtin = pickFromHUQRCode.getGTIN().orElse(null);
-		if(gtin != null)
+		if (gtin != null)
 		{
 			final ProductId gs1ProductId = productBL.getProductIdByGTINNotNull(gtin, ClientId.METASFRESH);
-			if(!ProductId.equals(productId, gs1ProductId))
+			if (!ProductId.equals(productId, gs1ProductId))
 			{
 				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
 						.setParameter("gtin", gtin)
@@ -916,7 +921,7 @@ public class PickingJobPickCommand
 						.setParameter("actual", gs1ProductId);
 			}
 		}
-		
+
 		if (catchWeightBD != null)
 		{
 			final BigDecimal gs1Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
@@ -931,6 +936,41 @@ public class PickingJobPickCommand
 						.appendParametersToMessage()
 						.setParameter("pickFromHUQRCode", pickFromHUQRCode)
 						.setParameter("catchWeightBD", catchWeightBD);
+			}
+		}
+	}
+
+	private void validateQRCodeForEAN13(
+			@NonNull final EAN13HUQRCode pickFromHUQRCode,
+			@NonNull final ProductId expectedProductId,
+			@Nullable final BigDecimal expectedCatchWeightBD)
+	{
+		final String expectedProductNo = productBL.getProductValue(expectedProductId);
+		final String ean13ProductNo = pickFromHUQRCode.getProductNo();
+		{
+			if(!expectedProductNo.startsWith(ean13ProductNo))
+			{
+				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
+						.setParameter("ean13ProductNo", ean13ProductNo)
+						.setParameter("expectedProductNo", expectedProductNo)
+						.setParameter("expectedProductId", expectedProductId);
+			}
+		}
+
+		if (expectedCatchWeightBD != null)
+		{
+			final BigDecimal ean13Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
+			if (ean13Weight == null)
+			{
+				return;
+			}
+
+			if (ean13Weight.compareTo(expectedCatchWeightBD) != 0)
+			{
+				throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("pickFromHUQRCode", pickFromHUQRCode)
+						.setParameter("expectedCatchWeightBD", expectedCatchWeightBD);
 			}
 		}
 	}

@@ -141,5 +141,18 @@ describe('huQRCodes tests', () => {
         });
       });
     });
+    describe('EAN13', () => {
+      it('standard test', () => {
+        const code = '2859414004825';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '0.482 kg',
+          productNo: '59414',
+          weightNet: 0.482,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+        });
+      });
+    });
   });
 });

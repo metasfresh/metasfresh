@@ -7,6 +7,7 @@ import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -258,6 +259,12 @@ public class HUQRCodesService
 		if (gs1HUQRCode != null)
 		{
 			return gs1HUQRCode;
+		}
+
+		final EAN13HUQRCode ean13HUQRCode = EAN13HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (ean13HUQRCode != null)
+		{
+			return ean13HUQRCode;
 		}
 
 		throw new AdempiereException("QR code is not handled: " + jsonString);

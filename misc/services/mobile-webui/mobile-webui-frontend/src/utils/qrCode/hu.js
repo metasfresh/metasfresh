@@ -35,6 +35,7 @@ import {
 import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';
+import { parseEAN13CodeString } from './ean13';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
@@ -135,6 +136,11 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
 
   let result = parseGS1CodeString(string);
   allResults['gs1'] = result;
+
+  if (result?.error) {
+    result = parseEAN13CodeString(string);
+    allResults['ean13'] = result;
+  }
 
   if (result?.error) {
     result = parseQRCodeString_GlobalQRCode(string);
