@@ -1,16 +1,26 @@
-
 DROP FUNCTION IF EXISTS sales_invoice_excel_report(date,
                                                    date)
 ;
 
 
-CREATE FUNCTION sales_invoice_excel_report(p_DateInvoiced date,
-                                           p_DeliveryDate date)
+DROP FUNCTION IF EXISTS sales_invoice_excel_report(date,
+                                                   date,
+                                                   date,
+                                                   date)
+;
+
+CREATE FUNCTION sales_invoice_excel_report(p_DateInvoicedFrom date,
+                                           p_DateInvoicedTo   date,
+                                           p_DeliveryDateFrom date,
+                                           p_DeliveryDateTo   date)
     RETURNS TABLE
             (
                 DocTypeName     character varying,
+                ProductValue    character varying,
                 ProductName     character varying,
+                Postal          character varying,
                 ProductCategory character varying,
+                BPValue         character varying,
                 BPName          character varying,
                 BPGroupName     character varying,
                 SalesRep_Name   character varying,
@@ -25,8 +35,11 @@ AS
 $$
 
 SELECT x.DocTypeName     AS DocTypeName,
+       x.ProductValue    AS ProductValue,
        x.ProductName     AS ProductName,
+       x.Postal          AS Postal,
        x.ProductCategory AS ProductCategory,
+       x.BPValue         AS BPValue,
        x.BPName          AS BPName,
        x.BPGroupName     AS BPGroupName,
        x.SalesRep_Name   AS SalesRep_Name,
@@ -36,11 +49,13 @@ SELECT x.DocTypeName     AS DocTypeName,
        x.LineNetAmt      AS LineNetAmt
 
 FROM rv_sales_invoice_report x
-    WHERE (p_DateInvoiced IS NULL OR p_DateInvoiced = x.DateInvoiced)
-    AND (p_DeliveryDate IS NULL OR p_DeliveryDate = x.DeliveryDate)
+WHERE (p_DateInvoicedFrom <= x.DateInvoiced)
+  AND (p_DateInvoicedTo >= x.DateInvoiced)
+  AND (p_DeliveryDateFrom <= x.DeliveryDate)
+  AND (p_DeliveryDateTo >= x.DeliveryDate)
 
 $$
 ;
 
-ALTER FUNCTION sales_invoice_excel_report(date, date) OWNER TO metasfresh
+ALTER FUNCTION sales_invoice_excel_report(date, date, date, date) OWNER TO metasfresh
 ;
