@@ -18,7 +18,6 @@ import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
