@@ -32,6 +32,14 @@
       "qtyLabel": "Menge",
       "descriptionLabel": "Beschreibung",
       "allowedOnlyForSingleProducts": "Die Aktion kann nur für ein einzelnes Produkt durchgeführt werden."
+    },
+    "printLabels": {
+      "buttonCaption": "Etiketten drucken",
+      "nrOfCopies": "Zahl der Kopien",
+      "label": "Etikett",
+      "windowName": "Etiketten drucken",
+      "print": "Drucken",
+      "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
     }
   }
 }

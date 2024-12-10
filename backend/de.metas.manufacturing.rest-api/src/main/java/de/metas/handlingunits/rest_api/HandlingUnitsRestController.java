@@ -51,6 +51,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
+import de.metas.printing.frontend.FrontendPrinter;
+import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
@@ -332,6 +334,27 @@ public class HandlingUnitsRestController
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
+	}
+
+	@PostMapping("/huLabels/print")
+	public JsonPrintHULabelResponse printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		try (final FrontendPrinter frontendPrinter = FrontendPrinter.start())
+		{
+			handlingUnitsService.printHULabels(request);
+
+			final FrontendPrinterData printData = frontendPrinter.getDataAndClear();
+			return JsonPrintHULabelResponse.builder()
+					.printData(JsonPrintHULabelResponse.JsonPrintDataItem.of(printData))
+					.build();
+		}
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
 	}
 
 	@Deprecated

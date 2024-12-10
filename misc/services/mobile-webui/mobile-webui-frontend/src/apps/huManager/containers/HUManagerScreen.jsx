@@ -7,7 +7,7 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import { huManagerDisposeLocation, huManagerMoveLocation, huManagerHuLabelsLocation } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -57,6 +57,9 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+  };
+  const onPrintLabelsClicked = () => {
+    history.push(huManagerHuLabelsLocation());
   };
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })) //
@@ -153,6 +156,10 @@ const HUManagerScreen = () => {
               onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
             />
           )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.printLabels.buttonCaption')}
+            onClick={onPrintLabelsClicked}
+          />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
