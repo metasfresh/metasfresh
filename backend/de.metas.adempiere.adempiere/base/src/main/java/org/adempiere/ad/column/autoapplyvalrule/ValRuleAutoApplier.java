@@ -15,7 +15,6 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
-import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;

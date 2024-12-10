@@ -28,7 +28,6 @@ import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.PrintCopies;
-import de.metas.report.PrintCopies;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

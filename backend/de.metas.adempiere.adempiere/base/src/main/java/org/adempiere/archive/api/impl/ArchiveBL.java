@@ -39,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
@@ -67,18 +66,6 @@ import java.util.Properties;
 public class ArchiveBL implements IArchiveBL
 {
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
-
-	@Override
-	@Nullable
-	public I_AD_Archive archive(final Resource data,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
-	{
-		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
-		return archive(request).getArchiveRecord();
-	}
 	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
 	@Override
