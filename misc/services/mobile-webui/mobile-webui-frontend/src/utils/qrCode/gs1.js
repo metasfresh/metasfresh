@@ -1,5 +1,6 @@
 import GS1BarcodeParser from 'gs1-barcode-parser-mod';
 import {
+  ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
   ATTR_GTIN,
@@ -7,6 +8,7 @@ import {
   ATTR_lotNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
+  BARCODE_TYPE_GS1,
   toLocalDateString,
 } from './common';
 import { trl } from '../translations';
@@ -67,6 +69,7 @@ export const parseGS1CodeString = (string) => {
       };
     }
 
+    result[ATTR_barcodeType] = BARCODE_TYPE_GS1;
     return { displayable: string, ...result };
   } catch (ex) {
     //console.log('parseQRCodeString_GS1: got error', { ex });
