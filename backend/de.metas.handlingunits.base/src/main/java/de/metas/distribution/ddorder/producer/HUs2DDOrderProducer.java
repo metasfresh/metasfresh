@@ -112,6 +112,7 @@ public class HUs2DDOrderProducer
 	private Iterator<HUToDistribute> _hus;
 	private final Instant date = SystemTime.asInstant();
 	private BPartnerLocationId bpartnerLocationId;
+	private WarehouseId warehouseFromId;
 
 	//
 	// Status
@@ -247,6 +248,13 @@ public class HUs2DDOrderProducer
 		return this;
 	}
 
+	public HUs2DDOrderProducer setWarehouseFromId(@NonNull final WarehouseId warehouseFromId)
+	{
+		assertNotProcessed();
+		this.warehouseFromId = warehouseFromId;
+		return this;
+	}
+
 	public HUs2DDOrderProducer setBpartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		assertNotProcessed();
@@ -329,6 +337,7 @@ public class HUs2DDOrderProducer
 	{
 		final Properties ctx = huContext.getCtx();
 
+
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.create(ctx, I_DD_Order.class, ITrx.TRXNAME_ThreadInherited);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setMRP_Generated(true);
@@ -340,7 +349,8 @@ public class HUs2DDOrderProducer
 
 		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(docTypeDO_ID));
 		ddOrder.setM_Warehouse_ID(warehouseInTrasitId.getRepoId());
-		ddOrder.setM_Warehouse_From_ID(_locatorToId.getWarehouseId().getRepoId());
+		ddOrder.setM_Warehouse_From_ID(warehouseFromId.getRepoId());
+		ddOrder.setM_Warehouse_To_ID(_locatorToId.getWarehouseId().getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(TimeUtil.asTimestamp(date));
