@@ -100,6 +100,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.setLocatorToId(locatorToId)
 				.setBpartnerLocationId(orgBPLocationId)
 				.setHUs(retrieveHUs())
+				.setWarehouseFromId(warehouseFromId)
 				.process();
 
 		return MSG_OK;
