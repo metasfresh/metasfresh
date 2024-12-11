@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductBLTest
 {

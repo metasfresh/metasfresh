@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 offer_documentno  character varying,
                 deliverytoaddress character varying,
                 validuntil        timestamp,
-                versionno           character varying
+                versionno         character varying
             )
     STABLE
     LANGUAGE sql
