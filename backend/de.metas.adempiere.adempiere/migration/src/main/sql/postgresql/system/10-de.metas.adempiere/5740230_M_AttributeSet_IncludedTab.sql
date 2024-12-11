@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-11-21T07:43:31.615Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556385,TO_TIMESTAMP('2024-11-21 09:43:31','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_AttributeSet_IncludedTab',1,'Y','N','Y','Y','M_AttributeSet_IncludedTab','N',1000000,TO_TIMESTAMP('2024-11-21 09:43:31','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556385,TO_TIMESTAMP('2024-11-21 09:43:31','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_AttributeSet_IncludedTab',1,'Y','N','Y','Y','M_AttributeSet_IncludedTab',1000000,TO_TIMESTAMP('2024-11-21 09:43:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-11-21T07:43:31.636Z
