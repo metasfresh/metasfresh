@@ -176,27 +176,14 @@ BEGIN
 
 
 
-    -- Important: Perform this update after the dr_account and cr_account were switched
+    -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
+    -- Perform this update after the dr_account and cr_account were switched for credit memos
     UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
     SET dr_account = CASE WHEN issotrx = 'Y' AND BP_debtorId != '' THEN BP_debtorId ELSE dr_account END,
         cr_account = CASE WHEN issotrx = 'N' AND BP_creditorId != '' THEN BP_creditorId ELSE cr_account END;
 
 
-    -- drop table if exists tmp...
-    -- create table with select
-    -- in temp table add NULLIF(trim(bp.debitorId), '') as BP_debitorId
 
-
-    -- step 1- promul update: if para to negate => update temp table: negate amt and taxamt, switch dr_account and cr_account?
-    -- step 2: TODO: issotrx = Y && C_BPartner.debitorId if not blank     => update dr_account , take C_BPartner.debitorId
-    -- N, creditid, cr_account. Set debtor, creditor where bartner_cerditorID is not nbull etc,
-    -- small docu why was done like this
-
-    -- return temp table
-    --
-
-
-    ;
 END;
 $BODY$
 ;

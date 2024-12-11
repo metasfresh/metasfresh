@@ -107,8 +107,9 @@ public class DATEVExportLinesRepository
 		}
 
 		return queryBuilder.create()
-			.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax());
-		// todo: add the second flag
+			.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax())
+				.setSqlFromParameter("p_IsSwitchCreditMemo", datevExport.isSwitchCreditMemo() )
+		;
 	}
 
 }
