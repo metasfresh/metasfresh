@@ -23,6 +23,8 @@ SELECT t.ad_window_id
      , f.seqno
      , f.seqnogrid
      , f.sortno
+     , f.ad_sequence_id                                           AS AD_Sequence_ID
+     , f.isforbidnewrecordcreation                                AS isforbidnewrecordcreation
      , COALESCE(f.issameline, 'N'::bpchar)                                                                                                        AS issameline
      , COALESCE(f.isheading, 'N'::bpchar)                                                                                                         AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar)                                                                                                       AS isfieldonly
@@ -45,8 +47,8 @@ SELECT t.ad_window_id
      , COALESCE(f.ad_reference_id, c.ad_reference_id)                                                                                             AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
-     , c.isalwaysupdateable
-     , c.readonlylogic
+     , COALESCE(NULLIF(f.isalwaysupdateable, ''), c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                                                                                                              AS isencryptedcolumn
@@ -79,6 +81,7 @@ SELECT t.ad_window_id
      , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch
+     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)                                                                                       AS Filter_Val_Rule_ID
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
@@ -117,6 +120,8 @@ SELECT c_trl.ad_language
      , f.seqno
      , f.seqnogrid
      , f.sortno
+     , f.ad_sequence_id                                           AS AD_Sequence_ID
+     , f.isforbidnewrecordcreation                                AS isforbidnewrecordcreation
      , COALESCE(f.issameline, 'N'::bpchar)                        AS issameline
      , COALESCE(f.isheading, 'N'::bpchar)                         AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar)                       AS isfieldonly
@@ -139,8 +144,8 @@ SELECT c_trl.ad_language
      , COALESCE(f.ad_reference_id, c.ad_reference_id)             AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)               AS ad_val_rule_id
      , c.ad_process_id
-     , c.isalwaysupdateable
-     , c.readonlylogic
+     , COALESCE(NULLIF(f.isalwaysupdateable, ''),  c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                              AS isencryptedcolumn
@@ -174,6 +179,7 @@ SELECT c_trl.ad_language
      , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch
+     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)                                                                                                       AS Filter_Val_Rule_ID
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
