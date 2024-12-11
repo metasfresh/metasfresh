@@ -1,10 +1,12 @@
 import { trl } from '../translations';
 import {
+  ATTR_barcodeType,
   ATTR_displayable,
   ATTR_isTUToBePickedAsWhole,
   ATTR_productNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
+  BARCODE_TYPE_EAN13,
 } from './common';
 
 export const parseEAN13CodeString = (barcode) => {
@@ -35,7 +37,7 @@ export const parseEAN13CodeString = (barcode) => {
     if (checksumExpected !== checksum) {
       return {
         error: trl('error.qrCode.invalid'),
-        errorDetail: 'Invalid checksum. Barcode may be incorrect.',
+        errorDetail: 'Invalid checksum. Expected ' + checksumExpected + ', got ' + checksum + '.',
       };
     }
 
@@ -43,6 +45,7 @@ export const parseEAN13CodeString = (barcode) => {
     const weightInKg = parseFloat(weightStr) / 1000; // Convert weight from grams to kilograms
 
     const result = {};
+    result[ATTR_barcodeType] = BARCODE_TYPE_EAN13;
     result[ATTR_displayable] = '' + weightInKg + ' kg';
     result[ATTR_productNo] = productNo;
     result[ATTR_weightNet] = weightInKg;

@@ -21,6 +21,7 @@
  */
 
 import {
+  ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
   ATTR_isTUToBePickedAsWhole,
@@ -29,6 +30,8 @@ import {
   ATTR_productNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
+  BARCODE_TYPE_HU,
+  BARCODE_TYPE_LMQ,
   QRCODE_SEPARATOR,
   toLocalDateString,
 } from './common';
@@ -132,6 +135,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
 export const parseQRCodeString = (string, returnFalseOnError) => {
+  console.trace('parseQRCodeString', { string, returnFalseOnError });
   const allResults = {};
 
   let result = parseGS1CodeString(string);
@@ -229,6 +233,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
   }
 
   const result = { displayable };
+  result[ATTR_barcodeType] = BARCODE_TYPE_HU;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
@@ -259,6 +264,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 const LMQ_BEST_BEFORE_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
+  result[ATTR_barcodeType] = BARCODE_TYPE_LMQ;
 
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {
