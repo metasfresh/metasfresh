@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for Record_Attribute
  *  @author metasfresh (generated) 

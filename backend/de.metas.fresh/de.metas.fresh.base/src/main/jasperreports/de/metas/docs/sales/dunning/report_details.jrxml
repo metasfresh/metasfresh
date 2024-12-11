@@ -39,7 +39,7 @@
 	<pageHeader>
 		<band height="13" splitType="Stretch">
 			<line>
-				<reportElement uuid="76b8b71a-c8dc-4ce0-a046-831521655630" key="line-1" mode="Opaque" x="57" y="12" width="488" height="1" forecolor="#000000"/>
+				<reportElement key="line-1" mode="Opaque" x="57" y="12" width="488" height="1" forecolor="#000000" uuid="76b8b71a-c8dc-4ce0-a046-831521655630"/>
 			</line>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-13" mode="Transparent" x="117" y="0" width="37" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
