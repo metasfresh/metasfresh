@@ -67,13 +67,11 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
@@ -243,11 +241,9 @@ public class M_Product_StepDef
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			updateMProduct(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::updateMProduct);
 	}
 
 	private void createM_Product(@NonNull DataTableRow tableRow)
@@ -358,24 +354,15 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void updateMProduct(@NonNull final Map<String, String> tableRow)
+	private void updateMProduct(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		;
+		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
 		assertThat(productRecord).isNotNull();
 
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			productRecord.setGTIN(gtin);
-		}
-
-		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
-		if (isStocked != null)
-		{
-			productRecord.setIsStocked(isStocked);
-		}
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 
 		saveRecord(productRecord);
 	}
