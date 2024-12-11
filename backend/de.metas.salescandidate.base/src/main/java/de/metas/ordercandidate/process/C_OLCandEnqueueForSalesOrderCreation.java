@@ -48,7 +48,9 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 	{
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
-		final PInstanceId userSelectionId = queryBL.createQueryBuilder(I_C_OLCand.class)
+		// IMPORTANT: we shall create the selection out of transaction because
+		// else the selection (T_Selection) won't be available when creating the main lock for records of this selection.
+		final PInstanceId userSelectionId = queryBL.createQueryBuilderOutOfTrx(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.filter(getProcessInfo().getQueryFilterOrElseTrue())

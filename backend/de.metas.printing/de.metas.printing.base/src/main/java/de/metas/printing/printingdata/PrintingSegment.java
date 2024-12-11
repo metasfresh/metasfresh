@@ -25,6 +25,7 @@ package de.metas.printing.printingdata;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTrayId;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;
@@ -126,5 +127,16 @@ public class PrintingSegment
 	public boolean isLastPages()
 	{
 		return I_AD_PrinterRouting.ROUTINGTYPE_LastPages.equals(routingType);
+	}
+
+	public boolean isQueuedForExternalSystems()
+	{
+		return isMatchingOutputType(OutputType.Queue)
+				&& printer.getExternalSystemParentConfigId() != null;
+	}
+
+	public boolean isMatchingOutputType(@NonNull OutputType outputType)
+	{
+		return OutputType.equals(printer.getOutputType(), outputType);
 	}
 }

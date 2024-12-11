@@ -96,6 +96,8 @@ public class C_OLCandToOrderEnqueuer
 
 	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
+		// IMPORTANT: we shall create the selection out of transaction because
+		// else the selection (T_Selection) won't be available when creating the main lock for records of this selection.
 		final PInstanceId batchSelectionId = queryBL.createQueryBuilderOutOfTrx(I_C_OLCand.class)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
 				.create()

@@ -193,6 +193,7 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     lotNo,
     productNo,
+    barcodeType,
     isCloseTarget = false,
     isDone = true,
   }) => {
@@ -202,6 +203,7 @@ const ScanHUAndGetQtyComponent = ({
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      barcodeType,
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
