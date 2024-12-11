@@ -44,6 +44,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -125,6 +126,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs           resultset AD_Field_v
 	 * @return MFieldVO
 	 */
+	@NonNull
 	static GridFieldVO create(
 			final Properties ctx,
 			final int WindowNo,
@@ -141,7 +143,7 @@ public class GridFieldVO implements Serializable
 
 		final GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, applyRolePermissions);
 
-		String columnName = "ColumnName";
+		String columnName = null;
 		try
 		{
 			vo.ColumnName = rs.getString("ColumnName");
@@ -398,10 +400,12 @@ public class GridFieldVO implements Serializable
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			logger.error("Failed creating GridFieldVO for ColumnName={}. Returning null.", columnName, e);
-			return null;
+			throw new DBException("Exception loading GridFieldVO", e).appendParametersToMessage()
+					.setParameter("AD_Window_ID", AdWindowId.toRepoId(AD_Window_ID))
+					.setParameter("AD_Tab_ID", AD_Tab_ID)
+					.setParameter("ColumnName", columnName);
 		}
 
 		//
@@ -507,6 +511,7 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
+		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
@@ -538,6 +543,10 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
+		}
+		catch (final SQLException e)
+		{
+			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
