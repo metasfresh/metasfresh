@@ -85,13 +85,14 @@ describe('huQRCodes tests', () => {
     it('standard test', () => {
       const code =
         'HU#1#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
-      expect(parseQRCodeString(code)).toEqual({ code, displayable: '05650', productId: '1000001' });
+      expect(parseQRCodeString(code)).toEqual({ code, barcodeType: 'HU', displayable: '05650', productId: '1000001' });
     });
     it('QR code with attributes', () => {
       const code =
         'HU#1#{"id":"c9f94fa0d4268d63d86497b407ba-28193","packingInfo":{"huUnitType":"V","packingInstructionsId":101,"caption":"No Packing Item"},"product":{"id":2005577,"code":"P002737","name":"Convenience Salat 250g"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"2427.425"}]}';
       expect(parseQRCodeString(code)).toEqual({
         code,
+        barcodeType: 'HU',
         displayable: '28193',
         productId: '2005577',
         weightNet: 2427.425,
@@ -103,6 +104,7 @@ describe('huQRCodes tests', () => {
         const code = 'LMQ#1#123.456#13.12.2024#lot3';
         expect(parseQRCodeString(code)).toEqual({
           code,
+          barcodeType: 'LMQ',
           displayable: '123.456',
           weightNet: 123.456,
           weightNetUOM: 'kg',
@@ -116,6 +118,7 @@ describe('huQRCodes tests', () => {
         const code = 'LMQ#1#123.456#13.12.2024#lot3#productNo88';
         expect(parseQRCodeString(code)).toEqual({
           code,
+          barcodeType: 'LMQ',
           displayable: '123.456',
           weightNet: 123.456,
           weightNetUOM: 'kg',
@@ -131,6 +134,7 @@ describe('huQRCodes tests', () => {
         const code = '019731187634181131030075201527080910501';
         expect(parseQRCodeString(code)).toEqual({
           code,
+          barcodeType: 'GS1',
           displayable: '7.52 kg',
           weightNet: 7.52,
           weightNetUOM: 'kg',
@@ -138,6 +142,20 @@ describe('huQRCodes tests', () => {
           GTIN: '97311876341811',
           bestBeforeDate: '2027-08-09',
           lotNo: '501',
+        });
+      });
+    });
+    describe('EAN13', () => {
+      it('standard test', () => {
+        const code = '2859414004825';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          barcodeType: 'EAN13',
+          displayable: '0.482 kg',
+          productNo: '59414',
+          weightNet: 0.482,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
         });
       });
     });
