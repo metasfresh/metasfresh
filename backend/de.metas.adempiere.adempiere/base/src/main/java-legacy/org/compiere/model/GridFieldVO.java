@@ -511,6 +511,7 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
+		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
