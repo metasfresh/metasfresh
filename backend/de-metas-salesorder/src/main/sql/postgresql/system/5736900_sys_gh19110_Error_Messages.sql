@@ -51,11 +51,11 @@ $$
     BEGIN
         INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545446,0,TO_TIMESTAMP('2024-10-12 16:52:23','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Nur ein Kommissionierauftrag erwartet','E',TO_TIMESTAMP('2024-10-12 16:52:23','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.service.commands.ONE_PICKING_JOB_ERROR_MSG')
         ;
-        
+
         -- 2024-10-12T13:52:23.516Z
         INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Message_ID=545446 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
         ;
-        
+
         -- Value: de.metas.handlingunits.picking.job.service.commands.ONE_PICKING_JOB_ERROR_MSG
         -- 2024-10-12T13:52:32.053Z
         UPDATE AD_Message_Trl SET MsgText='Only one picking job expected',Updated=TO_TIMESTAMP('2024-10-12 16:52:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545446
