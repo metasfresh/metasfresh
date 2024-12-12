@@ -37,7 +37,8 @@ public class JsonCacheResetRequest
 {
 	@JsonAnySetter
 	@JsonAnyGetter
-	@NonNull private final HashMap<String, String> map = new HashMap<>();
+	@NonNull
+	private final HashMap<String, String> map = new HashMap<>();
 
 	public static JsonCacheResetRequest extractFrom(HttpServletRequest httpRequest)
 	{

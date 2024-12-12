@@ -2,6 +2,7 @@ package org.adempiere.ad.element.api.impl;
 
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -9,6 +10,8 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.ddl.TableDDLSyncService;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;

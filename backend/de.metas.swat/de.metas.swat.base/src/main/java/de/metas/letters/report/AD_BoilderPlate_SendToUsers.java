@@ -28,6 +28,9 @@ package de.metas.letters.report;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -42,10 +45,12 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -186,7 +191,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			}
 
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
+			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final BoilerPlateContext attributes)
 			{
 				return mailService.sendEMail(EMailRequest.builder()
 						.mailboxQuery(MailboxQuery.builder()

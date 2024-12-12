@@ -92,12 +92,14 @@ public abstract class CacheRestControllerTemplate
 		return response;
 	}
 
-	protected void resetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request) {}
+	protected void resetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request)
+	{
+	}
 
 	@GetMapping("/resetByTable")
 	public JsonCacheResetResponse resetForTable(@RequestParam("tableName") final String tableName)
 	{
-		JsonCacheResetResponse response = new JsonCacheResetResponse();
+		final JsonCacheResetResponse response = new JsonCacheResetResponse();
 		final long count = cacheMgt.reset(tableName);
 		response.addLog("Cleared " + count + " cache entries for " + tableName);
 
@@ -107,7 +109,7 @@ public abstract class CacheRestControllerTemplate
 	@GetMapping("/resetByRecord")
 	public JsonCacheResetResponse resetForRecordId(@RequestParam("tableName") final String tableName, @RequestParam("recordId") final int recordId)
 	{
-		JsonCacheResetResponse response = new JsonCacheResetResponse();
+		final JsonCacheResetResponse response = new JsonCacheResetResponse();
 		final long count = cacheMgt.reset(tableName, recordId);
 		response.addLog("Cleared " + count + " cache entries for " + tableName + "/" + recordId);
 

@@ -164,6 +164,6 @@ public class TableAttachmentListenerService
 	@NonNull
 	private AdMessageKey retrieveFailureMessage(@NonNull final AttachmentListenerSettings listenerSettings)
 	{
-		return adMessageDAO.retrieveValueById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
+		return msgBL.getAdMessageKeyById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
 	}
 }

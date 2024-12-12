@@ -104,7 +104,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	{
 		return getPOInfoMap().getByTableName(tableName);
 	}
-	
+
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final AdTableId adTableId)
 	{
@@ -160,8 +160,10 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			.build();
 
 	@Getter
-	@NonNull private final AdTableId adTableId;
-	@NonNull private final String m_TableName;
+	@NonNull
+	private final AdTableId adTableId;
+	@NonNull
+	private final String m_TableName;
 	private final TableAccessLevel m_AccessLevel;
 	private final boolean m_isView;
 	private final ImmutableList<POInfoColumn> m_columns;
@@ -175,7 +177,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * <p>
 	 * If table has composed primary key, this variable will be set to null
 	 */
-	@Nullable private final String m_keyColumnName;
+	@Nullable
+	private final String m_keyColumnName;
 	private final int firstValidId;
 
 	/**
@@ -184,10 +187,14 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_IsChangeLog;
 
 	private final boolean m_HasStaleableColumns;
-	@Getter private final int webuiViewPageLength;
-	@Getter private final TableCloningEnabled cloningEnabled;
-	@Getter private final TableWhenChildCloningStrategy whenChildCloningStrategy;
-	@Getter private final TableDownlineCloningStrategy downlineCloningStrategy;
+	@Getter
+	private final int webuiViewPageLength;
+	@Getter
+	private final TableCloningEnabled cloningEnabled;
+	@Getter
+	private final TableWhenChildCloningStrategy whenChildCloningStrategy;
+	@Getter
+	private final TableDownlineCloningStrategy downlineCloningStrategy;
 
 	private final String sqlWhereClauseByKeys;
 	private final String sqlSelectByKeys;
@@ -207,49 +214,49 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT "
-				+ "t.TableName, " // 1
-				+ "c.ColumnName, " // 2
-				+ "c.AD_Reference_ID, "        // 3
-				+ "c.IsMandatory, " // 4
-				+ "c.IsUpdateable, " // 5
-				+ "c.DefaultValue, " // 6
-				+ "e.Name, "                                                    // 7
-				+ "e.Description, "                                                // 8
-				+ "c.AD_Column_ID, "                                            // 9
-				+ "c.IsKey,c.IsParent, "                                        // 10..11
-				+ "c.AD_Reference_Value_ID, "                                    // 12
-				+ "vr.Code, "                                                    // 13
-				+ "c.FieldLength, c.ValueMin, c.ValueMax, c.IsTranslated"        // 14..17
-				+ ",t.AccessLevel"                                                // 18
-				+ ",c.ColumnSQL"                                                // 19
-				+ ",c.IsEncrypted "                                                // 20
-				+ ",c.IsAllowLogging"                                            // 21
-				+ ",t.IsChangeLog "                                                // 22
-				+ ",c.IsLazyLoading "                                            // 23
-				+ ",c.IsCalculated "                                            // 24 // metas
-				+ ",c.AD_Val_Rule_ID "                                            // 25 // metas
-				+ ",t.AD_Table_ID "                                                // 26 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsUseDocSequence                // 27 // metas: 05133
-				+ ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
-				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
-				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn              // 31
-				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
-				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
-				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
-				+ ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
-				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
-				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
-				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
-				+ ", c." + I_AD_Column.COLUMNNAME_IsIdentifier + " AS columnIsIdentifier"
+						   + "t.TableName, " // 1
+						   + "c.ColumnName, " // 2
+						   + "c.AD_Reference_ID, "        // 3
+						   + "c.IsMandatory, " // 4
+						   + "c.IsUpdateable, " // 5
+						   + "c.DefaultValue, " // 6
+						   + "e.Name, "                                                    // 7
+						   + "e.Description, "                                                // 8
+						   + "c.AD_Column_ID, "                                            // 9
+						   + "c.IsKey,c.IsParent, "                                        // 10..11
+						   + "c.AD_Reference_Value_ID, "                                    // 12
+						   + "vr.Code, "                                                    // 13
+						   + "c.FieldLength, c.ValueMin, c.ValueMax, c.IsTranslated"        // 14..17
+						   + ",t.AccessLevel"                                                // 18
+						   + ",c.ColumnSQL"                                                // 19
+						   + ",c.IsEncrypted "                                                // 20
+						   + ",c.IsAllowLogging"                                            // 21
+						   + ",t.IsChangeLog "                                                // 22
+						   + ",c.IsLazyLoading "                                            // 23
+						   + ",c.IsCalculated "                                            // 24 // metas
+						   + ",c.AD_Val_Rule_ID "                                            // 25 // metas
+						   + ",t.AD_Table_ID "                                                // 26 // metas
+						   + ",c." + I_AD_Column.COLUMNNAME_IsUseDocSequence                // 27 // metas: 05133
+						   + ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
+						   + ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
+						   + ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
+						   + ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn              // 31
+						   + ", rt_table.TableName AS AD_Reference_Value_TableName"
+						   + ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
+						   + ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
+						   + ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
+						   + ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
+						   + ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
+						   + ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+						   + ", c." + I_AD_Column.COLUMNNAME_IsIdentifier + " AS columnIsIdentifier"
 		);
 		sql.append(" FROM AD_Table t "
-				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
-				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
-				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
-				+ " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
-				+ " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
-				+ " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
+						   + " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
+						   + " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
+						   + " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
+						   + " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
+						   + " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
+						   + " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
 		);
 		sql.append(" WHERE t.IsActive='Y' AND c.IsActive='Y'");
 		sql.append(" ORDER BY t.TableName, c.ColumnName");
@@ -1523,7 +1530,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableId.get(tableId);
 		}
-		
+
 		@NonNull
 		public POInfo getByTableId(@NonNull final AdTableId tableId)
 		{
@@ -1552,9 +1559,19 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return poInfo;
 		}
 
-		public Stream<POInfo> stream() {return byTableId.values().stream();}
+		public Stream<POInfo> stream()
+		{
+			return byTableId.values().stream();
+		}
 
-		public int size() {return byTableId.size();}
-		public ImmutableCollection<POInfo> toCollection() {return byTableId.values();}
+		public int size()
+		{
+			return byTableId.size();
+		}
+
+		public ImmutableCollection<POInfo> toCollection()
+		{
+			return byTableId.values();
+		}
 	}
 }   // POInfo
