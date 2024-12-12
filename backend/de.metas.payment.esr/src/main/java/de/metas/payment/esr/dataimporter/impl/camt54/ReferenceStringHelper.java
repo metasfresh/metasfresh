@@ -3,6 +3,7 @@ package de.metas.payment.esr.dataimporter.impl.camt54;
 import java.util.Objects;
 import java.util.Optional;
 
+import de.metas.payment.camt054_001_06.DocumentType3Code;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
@@ -271,37 +272,54 @@ public class ReferenceStringHelper
 		}
 	}
 
+
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
 	{
-		if (cdtrRefInf == null)
+		if (cdtrRefInf == null || cdtrRefInf.getTp() == null || cdtrRefInf.getTp().getCdOrPrtry() == null)
 		{
 			return false;
 		}
 
-		return Optional.ofNullable(cdtrRefInf.getTp())
-				.map(tp -> tp.getCdOrPrtry())
-				.map(cdOrPrtry -> cdOrPrtry.getPrtry())
-				.map(prtry -> ESRType.TYPE_ESR.getCode().equals(prtry)
-						|| ESRType.TYPE_QRR.getCode().equals(prtry)
-						|| ESRType.TYPE_SCOR.getCode().equals(prtry))
-				.orElse(false);
+		de.metas.payment.camt054_001_02.CreditorReferenceType1Choice cdOrPrtry = cdtrRefInf.getTp().getCdOrPrtry();
+
+		// Check both getCd() (enum) and getPrtry() (string)
+		return isSupportedDocumentType(cdOrPrtry.getCd()) || isESRorQRRType(cdOrPrtry.getPrtry());
 	}
+
+	private static boolean isSupportedDocumentType(de.metas.payment.camt054_001_02.DocumentType3Code cd)
+	{
+		if (cd == null) {
+			return false;
+		}
+		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+	}
+
 
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
 	{
-		if (cdtrRefInf == null)
+		if (cdtrRefInf == null || cdtrRefInf.getTp() == null || cdtrRefInf.getTp().getCdOrPrtry() == null)
 		{
 			return false;
 		}
 
-		return Optional.ofNullable(cdtrRefInf.getTp())
-				.map(tp -> tp.getCdOrPrtry())
-				.map(cdOrPrtry -> cdOrPrtry.getPrtry())
-				.map(prtry -> ESRType.TYPE_ESR.getCode().equals(prtry)
-						|| ESRType.TYPE_QRR.getCode().equals(prtry)
-						|| ESRType.TYPE_SCOR.getCode().equals(prtry))
-				.orElse(false);
+		de.metas.payment.camt054_001_06.CreditorReferenceType1Choice cdOrPrtry = cdtrRefInf.getTp().getCdOrPrtry();
 
+		// Check both getCd() (enum) and getPrtry() (string)
+		return isSupportedDocumentType(cdOrPrtry.getCd()) || isESRorQRRType(cdOrPrtry.getPrtry());
+	}
+
+	private static boolean isSupportedDocumentType(de.metas.payment.camt054_001_06.DocumentType3Code cd)
+	{
+		if (cd == null) {
+			return false;
+		}
+		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+	}
+
+	private static boolean isESRorQRRType(String value)
+	{
+		return ESRType.TYPE_ESR.getCode().equals(value)
+				|| ESRType.TYPE_QRR.getCode().equals(value);
 	}
 	
 	/**
