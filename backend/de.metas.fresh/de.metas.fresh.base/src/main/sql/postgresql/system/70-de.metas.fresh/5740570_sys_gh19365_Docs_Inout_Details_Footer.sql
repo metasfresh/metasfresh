@@ -27,7 +27,7 @@ SELECT footer.*,
        COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule
 FROM (
          --Docnote DE
-         SELECT NULL                                                                                        AS textleft,
+         SELECT NULL                                                                                AS textleft,
                 CASE
                     WHEN io.descriptionbottom IS NOT NULL
                         THEN E'\n\n\n'
@@ -47,7 +47,7 @@ FROM (
          UNION
          ---------------------------------------------------------------------------------------------
          --Docnote TRL
-         SELECT NULL                             AS textleft,
+         SELECT NULL                   AS textleft,
                 CASE
                     WHEN io.descriptionbottom IS NOT NULL
                         THEN E'\n\n\n'
@@ -76,8 +76,8 @@ FROM (
                 COALESCE(inc_trl.name, inc.name) AS Incoterms,
                 io.incotermlocation
          FROM m_inout io
-                  LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
+         LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
+         LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
          WHERE io.isActive = 'Y') footer
          INNER JOIN m_inout io ON io.m_inout_id = footer.m_inout_id
          LEFT JOIN AD_Ref_List o_dr ON o_dr.AD_Reference_ID = 151 AND o_dr.value = io.deliveryrule

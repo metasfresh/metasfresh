@@ -196,6 +196,68 @@ Feature: mobileUI Picking - Pick catch weight products
       | asi1                      | HU_BestBeforeDate | 2027-08-09 00:00:00.0 |
       | asi1                      | Lot-Nummer        | 501                   |
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Pick single catch weight product (EAN13)
+    When update M_Product:
+      | Identifier | Value    |
+      | product    | 00027123 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | salesOrder | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | line1      | salesOrder            | product                 | 12         | TUx4                                   |
+    And the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | line1                     | N             |
+    And start picking job for sales order identified by salesOrder
+    And scan picking slot identified by 200.0
+    And pick lines
+      | PickFromHU | QRCode        |
+      | pickFromCU | 2800027002616 |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      | 0.261             | KGM          | 1         | cu1    | 0     | -          | 0     | -          | N         |
+    And complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      | 0.261             | KGM          | 1         | cu1    | 1     | tu1        | 1     | lu1        | Y         | shipmentLine1  |
+    And M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | ValueNumber | ValueDate | Value |
+      | cu1     | WeightNet            | 0.261       |           |       |
+    And validate the created shipment lines by id
+      | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | shipmentLine1 | product      | 1           | 0.261             | 1            | TUx4                    | asi1                      |
+
 
     
     

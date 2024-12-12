@@ -27,7 +27,7 @@ SELECT footer.*,
        COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule
 FROM (
          --Docnote DE
-         SELECT NULL                                                                                        AS textleft,
+         SELECT NULL                                                                                AS textleft,
                 CASE
                     WHEN io.descriptionbottom IS NOT NULL
                         THEN E'\n\n\n'
@@ -47,7 +47,7 @@ FROM (
          UNION
          ---------------------------------------------------------------------------------------------
          --Docnote TRL
-         SELECT NULL                             AS textleft,
+         SELECT NULL                   AS textleft,
                 CASE
                     WHEN io.descriptionbottom IS NOT NULL
                         THEN E'\n\n\n'

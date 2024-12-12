@@ -62,7 +62,6 @@ public abstract class ReportStarter extends JavaProcess
 
 	private final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
 	private final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	protected abstract ExecuteReportStrategy getExecuteReportStrategy();
 
