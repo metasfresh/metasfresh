@@ -24,9 +24,12 @@ package de.metas.externalsystem.leichmehl;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
@@ -44,11 +47,17 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	String productBaseFolderName;
 
 	@NonNull
+	PLUFileDestination pluFileDestination;
+	
+	@Nullable
 	Integer tcpPort;
 
-	@NonNull
+	@Nullable
 	String tcpHost;
 
+	@Nullable
+	String pluFileServerFolder;
+	
 	@NonNull
 	PLUType pluType;
 
@@ -59,9 +68,11 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 			@NonNull final ExternalSystemLeichMehlConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
-			@NonNull final String productBaseFolderName,
-			@NonNull final Integer tcpPort,
-			@NonNull final String tcpHost,
+			@NonNull final String productBaseFolderName, 
+			@NonNull final PLUFileDestination pluFileDestination,
+			@Nullable final Integer tcpPort,
+			@Nullable final String tcpHost, 
+			@Nullable final String pluFileServerFolder,
 			@NonNull final PLUType pluType,
 			final boolean pluFileExportAuditEnabled)
 	{
@@ -69,10 +80,22 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		this.parentId = parentId;
 		this.value = value;
 		this.productBaseFolderName = productBaseFolderName;
+		this.pluFileDestination = pluFileDestination;
 		this.tcpPort = tcpPort;
 		this.tcpHost = tcpHost;
+		this.pluFileServerFolder = pluFileServerFolder;
 		this.pluType = pluType;
 		this.pluFileExportAuditEnabled = pluFileExportAuditEnabled;
+		
+		if(pluFileDestination == PLUFileDestination.TCP)
+		{
+			Check.assumeNotEmpty(tcpHost, "tcpHost");
+			Check.assumeNotNull(tcpPort, "tcpPort");
+		}
+		else
+		{
+			Check.assumeNotEmpty(pluFileServerFolder, "pluFileServerFolder");
+		}
 	}
 
 	public static ExternalSystemLeichMehlConfig cast(@NonNull final IExternalSystemChildConfig childConfig)

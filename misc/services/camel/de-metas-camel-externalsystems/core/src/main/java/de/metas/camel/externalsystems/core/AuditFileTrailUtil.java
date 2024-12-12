@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import lombok.NonNull;
@@ -198,7 +199,7 @@ public class AuditFileTrailUtil
 		final Map<String, Object> headers = exchange.getIn().getHeaders().entrySet()
 				.stream()
 				.filter(entry -> !Exchange.HTTP_SERVLET_REQUEST.equals(entry.getKey()))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, v -> CoalesceUtil.coalesceNotNull(v, "<null>")));
 
 		if (headers.isEmpty())
 		{
