@@ -182,7 +182,37 @@ BEGIN
     SET dr_account = CASE WHEN t.issotrx = 'Y' AND t.BP_debtorId != '' THEN t.BP_debtorId ELSE t.dr_account END,
         cr_account = CASE WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId ELSE t.cr_account END;
 
-
+    RETURN QUERY SELECT t.dr_account,
+                        t.cr_account,
+                        t.Amt,
+                        t.Currency,
+                        t.AmtSource,
+                        t.TaxAmtSource,
+                        t.c_tax_id,
+                        t.c_tax_rate,
+                        t.vatcode,
+                        t.dateacct,
+                        t.datetrx,
+                        t.documentno,
+                        t.c_doctype_id,
+                        t.c_doctype_name,
+                        t.IsSOTrx,
+                        t.docbasetype,
+                        t.c_bpartner_id,
+                        t.BPValue,
+                        t.BPName,
+                        t.description,
+                        t.c_acctschema_id,
+                        t.postingtype,
+                        t.c_invoice_id,
+                        t.poreference,
+                        t.duedate,
+                        t.ad_client_id,
+                        t.ad_org_id,
+                        t.c_activity_id,
+                        t.ActivityName,
+                        t.rv_datev_export_fact_acct_invoice_id
+    FROM tmp_DATEV_Export_Fact_Acct_Invoice t;
 
 END;
 $BODY$
