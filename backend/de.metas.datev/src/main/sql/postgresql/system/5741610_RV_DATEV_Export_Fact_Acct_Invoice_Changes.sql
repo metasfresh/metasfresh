@@ -168,16 +168,15 @@ BEGIN
 
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-        SET Amt          = CASE WHEN docbasetype IN ('APC', 'ARC') THEN Amt * (-1) ELSE Amt END,
-            TaxAmtSource = CASE WHEN docbasetype IN ('APC', 'ARC') THEN TaxAmtSource * (-1) ELSE TaxAmtSource END,
-            dr_account   = CASE WHEN docbasetype IN ('APC', 'ARC') THEN cr_account ELSE dr_account END,
-            cr_account   = CASE WHEN docbasetype IN ('APC', 'ARC') THEN dr_account ELSE cr_account END;
+        SET Amt          = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.Amt * (-1) ELSE t.Amt END,
+            TaxAmtSource = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.TaxAmtSource * (-1) ELSE t.TaxAmtSource END,
+            dr_account   = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.cr_account ELSE t.dr_account END,
+            cr_account   = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.dr_account ELSE t.cr_account END;
     END IF;
 
 
-
     -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
-    -- Perform this update after the dr_account and cr_account were switched for credit memos
+    -- Important: Perform this update after the dr_account and cr_account were switched for credit memos to make sure the accounts are already in the correct place.
     UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
     SET dr_account = CASE WHEN t.issotrx = 'Y' AND t.BP_debtorId != '' THEN t.BP_debtorId ELSE t.dr_account END,
         cr_account = CASE WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId ELSE t.cr_account END;
