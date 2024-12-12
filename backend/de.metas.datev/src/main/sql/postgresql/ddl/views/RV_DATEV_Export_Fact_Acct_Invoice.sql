@@ -88,8 +88,8 @@ BEGIN
            fa.c_activity_id,
            a.name                                                                               AS ActivityName,
            MIN(fa.id)                                                                           AS rv_datev_export_fact_acct_invoice_id,
-           NULLIF(TRIM(bp.debtorid), '')                                                        AS BP_debtorId,
-           NULLIF(TRIM(bp.creditorid), '')                                                      AS BP_creditorId
+           NULLIF(TRIM(bp.debtorid::varchar), '')                                                        AS BP_debtorId,
+           NULLIF(TRIM(bp.creditorid::varchar), '')                                                      AS BP_creditorId
     FROM (SELECT
               --
               -- DR/CR Accounts:
@@ -179,8 +179,8 @@ BEGIN
     -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
     -- Perform this update after the dr_account and cr_account were switched for credit memos
     UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-    SET dr_account = CASE WHEN issotrx = 'Y' AND BP_debtorId != '' THEN BP_debtorId ELSE dr_account END,
-        cr_account = CASE WHEN issotrx = 'N' AND BP_creditorId != '' THEN BP_creditorId ELSE cr_account END;
+    SET dr_account = CASE WHEN t.issotrx = 'Y' AND t.BP_debtorId != '' THEN t.BP_debtorId ELSE t.dr_account END,
+        cr_account = CASE WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId ELSE t.cr_account END;
 
 
 
