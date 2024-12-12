@@ -662,6 +662,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+	}
+
+	@Override
 	public Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull final String queryString,
 			@NonNull final ClientId clientId,
