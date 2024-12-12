@@ -303,19 +303,19 @@ public interface I_DATEV_ExportLine
 	 * Set Credit Account.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCR_Account (java.lang.String CR_Account);
+	void setCR_Account (@Nullable java.lang.String CR_Account);
 
 	/**
 	 * Get Credit Account.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCR_Account();
+	@Nullable java.lang.String getCR_Account();
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_CR_Account = new ModelColumn<>(I_DATEV_ExportLine.class, "CR_Account", null);
 	String COLUMNNAME_CR_Account = "CR_Account";
@@ -574,19 +574,19 @@ public interface I_DATEV_ExportLine
 	 * Set Debit Account.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDR_Account (java.lang.String DR_Account);
+	void setDR_Account (@Nullable java.lang.String DR_Account);
 
 	/**
 	 * Get Debit Account.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDR_Account();
+	@Nullable java.lang.String getDR_Account();
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DR_Account = new ModelColumn<>(I_DATEV_ExportLine.class, "DR_Account", null);
 	String COLUMNNAME_DR_Account = "DR_Account";

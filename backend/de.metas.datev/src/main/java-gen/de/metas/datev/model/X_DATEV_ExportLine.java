@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1763764501L;
+	private static final long serialVersionUID = -130832715L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -209,7 +209,7 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setCR_Account (final java.lang.String CR_Account)
+	public void setCR_Account (final @Nullable java.lang.String CR_Account)
 	{
 		set_Value (COLUMNNAME_CR_Account, CR_Account);
 	}
@@ -363,7 +363,7 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setDR_Account (final java.lang.String DR_Account)
+	public void setDR_Account (final @Nullable java.lang.String DR_Account)
 	{
 		set_Value (COLUMNNAME_DR_Account, DR_Account);
 	}
