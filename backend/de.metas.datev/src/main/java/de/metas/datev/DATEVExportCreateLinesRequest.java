@@ -15,5 +15,4 @@ public class DATEVExportCreateLinesRequest
 	@NonNull Instant now;
 	@NonNull UserId userId;
 	boolean isOneLinePerInvoiceTax;
-	//todo: boolean isNegateCreditMemo
 }
