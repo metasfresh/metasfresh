@@ -27,50 +27,60 @@ import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceHandlerFactory;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
-import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceService;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 {
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final PostFinanceYbInvoiceHandlerFactory postFinanceYbInvoiceHandlerFactory = SpringContextHolder.instance.getBean(PostFinanceYbInvoiceHandlerFactory.class);
 	private final PostFinanceYbInvoiceService postFinanceYbInvoiceService = SpringContextHolder.instance.getBean(PostFinanceYbInvoiceService.class);
+
+	private static final String SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE = "de.metas.postfinance.document.export.process.C_Doc_Outbound_Log_Export_To_Post_Finance.PostFinanceUploadInvoiceBatchSize";
+
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_C_Doc_Outbound_Log> queryFilter = getProcessInfo()
 				.getQueryFilterOrElseTrue();
 		Check.assumeNotNull(queryFilter, "queryFilter is not null");
 
-		queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(
-						I_C_Doc_Outbound_Log.COLUMNNAME_PostFinance_Export_Status,
-						PostFinanceStatus.NOT_SEND,
-						PostFinanceStatus.TRANSMISSION_ERROR
-				)
-				.filter(queryFilter)
-				.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID)
-				.create()
-				.iterateAndStream()
-				.map(this::toPostFinanceExportRequest)
-				.filter(postFinanceYbInvoiceService::isPostFinanceActive)
-				.map(postFinanceYbInvoiceHandlerFactory::prepareYbInvoices)
-				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(PostFinanceYbInvoiceResponse::getBillerId))
-				.forEach(postFinanceYbInvoiceService::exportToPostFinance);
+		final int chunkSize = sysConfigBL.getIntValue(SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE, 20);
+
+		StreamUtils.dice(
+				queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(
+								I_C_Doc_Outbound_Log.COLUMNNAME_PostFinance_Export_Status,
+								PostFinanceStatus.NOT_SEND,
+								PostFinanceStatus.TRANSMISSION_ERROR
+						)
+						.filter(queryFilter)
+						.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Org_ID)
+						.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID)
+						.create()
+						.iterateAndStream()
+						.map(this::toPostFinanceExportRequest)
+						.filter(postFinanceYbInvoiceService::isPostFinanceActive)
+						.filter(postFinanceYbInvoiceHandlerFactory::hasEligibleHandler),
+				chunkSize)
+				.forEach(this::sendChunk);
 
 		return MSG_OK;
 	}
@@ -83,5 +93,15 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 				.docOutboundLogReference(TableRecordReference.of(I_C_Doc_Outbound_Log.Table_Name, docOutboundLog.getC_Doc_Outbound_Log_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(docOutboundLog.getAD_Client_ID(), docOutboundLog.getAD_Org_ID()))
 				.build();
+	}
+
+	private void sendChunk(final List<PostFinanceYbInvoiceRequest> requests)
+	{
+		trxManager.runInNewTrx(() -> postFinanceYbInvoiceService.exportToPostFinance(
+				requests.stream()
+						.map(postFinanceYbInvoiceHandlerFactory::prepareYbInvoices)
+						.filter(Objects::nonNull)
+						.toList()
+		));
 	}
 }

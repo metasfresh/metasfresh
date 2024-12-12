@@ -22,15 +22,16 @@
 
 package de.metas.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
+import static org.assertj.core.api.Assertions.*;
 
 public class StreamUtilsTests
 {
@@ -91,8 +92,46 @@ public class StreamUtilsTests
 				intRangeAsList(11, 20)));
 	}
 
-	private static final List<Integer> intRangeAsList(int startInclusive, int endInclusive)
+	private static List<Integer> intRangeAsList(final int startInclusive, final int endInclusive)
 	{
 		return IntStream.rangeClosed(startInclusive, endInclusive).boxed().collect(ImmutableList.toImmutableList());
 	}
+
+	@Test
+	public void dice_with_aggregation()
+	{
+		final List<TestObject> list = new ArrayList<>();
+		list.addAll(getTestObjectList(0,1,5));
+		list.addAll(getTestObjectList(0, 2, 7));
+		list.addAll(getTestObjectList(1, 0, 10));
+
+		final List<List<TestObject>> chunks = StreamUtils.dice(list.stream(), 10, TestObject::element1)
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(chunks).hasSize(3);
+
+		final List<TestObject> expectedList1 = getTestObjectList(0,1,5);
+		expectedList1.addAll(getTestObjectList(0, 2, 5));
+		assertThat(chunks).isEqualTo(ImmutableList.of(
+				expectedList1,
+				getTestObjectList(0,2,2),
+				getTestObjectList(1,0,10)));
+	}
+
+	private List<TestObject> getTestObjectList(final int element1, final int element2, final int count)
+	{
+		final List<TestObject> list = new ArrayList<>();
+		for(int i = 1; i <= count; i++)
+		{
+			list.add(TestObject.builder()
+							 .element1(element1)
+							 .element2(element2)
+							 .build()
+			);
+		}
+		return list;
+	}
+
+	@Builder
+	private record TestObject(int element1, int element2) { }
 }
