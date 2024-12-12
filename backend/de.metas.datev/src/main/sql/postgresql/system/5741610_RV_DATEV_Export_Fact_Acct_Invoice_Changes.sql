@@ -88,8 +88,8 @@ BEGIN
            fa.c_activity_id,
            a.name                                                                               AS ActivityName,
            MIN(fa.id)                                                                           AS rv_datev_export_fact_acct_invoice_id,
-           NULLIF(TRIM(bp.debtorid::varchar), '')                                                        AS BP_debtorId,
-           NULLIF(TRIM(bp.creditorid::varchar), '')                                                      AS BP_creditorId
+           NULLIF(TRIM(bp.debtorid::varchar), '')                                               AS BP_debtorId,
+           NULLIF(TRIM(bp.creditorid::varchar), '')                                             AS BP_creditorId
     FROM (SELECT
               --
               -- DR/CR Accounts:
@@ -168,10 +168,11 @@ BEGIN
 
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-        SET Amt          = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.Amt * (-1) ELSE t.Amt END,
-            TaxAmtSource = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.TaxAmtSource * (-1) ELSE t.TaxAmtSource END,
-            dr_account   = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.cr_account ELSE t.dr_account END,
-            cr_account   = CASE WHEN t.docbasetype IN ('APC', 'ARC') THEN t.dr_account ELSE t.cr_account END;
+        SET Amt          = t.Amt * (-1),
+            TaxAmtSource = t.TaxAmtSource * (-1),
+            dr_account   = t.cr_account,
+            cr_account   = t.dr_account
+        WHERE t.docbasetype IN ('APC', 'ARC');
     END IF;
 
 
@@ -211,7 +212,7 @@ BEGIN
                         t.c_activity_id,
                         t.ActivityName,
                         t.rv_datev_export_fact_acct_invoice_id
-    FROM tmp_DATEV_Export_Fact_Acct_Invoice t;
+                 FROM tmp_DATEV_Export_Fact_Acct_Invoice t;
 
 END;
 $BODY$
