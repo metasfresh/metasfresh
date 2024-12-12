@@ -1,5 +1,5 @@
 /**
- *
+ * 
  */
 
 package de.metas.letters.report;
@@ -14,12 +14,12 @@ package de.metas.letters.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
@@ -192,7 +191,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			}
 
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
+			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final BoilerPlateContext attributes)
 			{
 				return mailService.sendEMail(EMailRequest.builder()
 						.mailboxQuery(MailboxQuery.builder()
@@ -212,7 +211,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 
 	private void createNote(MADBoilerPlate text, I_AD_User user, Exception e)
 	{
-		final AdMessageId adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(AD_Message_UserNotifyError)
+		final AdMessageId adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(AD_Message_UserNotifyError)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @AD_Message_ID@ " + AD_Message_UserNotifyError));
 
 		//
