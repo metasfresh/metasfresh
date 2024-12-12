@@ -552,6 +552,13 @@ import java.util.Properties;
 	}
 
 	@Override
+	public IQueryBuilder<T> addStringStartsWith(@NonNull final String columnName, @NonNull final String prefix)
+	{
+		filters.addStringStartsWith(columnName, prefix);
+		return this;
+	}
+
+	@Override
 	public IQueryBuilder<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
 	{
 		filters.addCoalesceEqualsFilter(value, columnNames);

@@ -219,6 +219,8 @@ public interface IProductBL extends ISingletonService
 
 	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,
 			@NonNull ClientId clientId,
