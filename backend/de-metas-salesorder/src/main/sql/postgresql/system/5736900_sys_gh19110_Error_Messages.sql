@@ -1,3 +1,7 @@
+DO
+$$
+    BEGIN
+
 -- 2024-10-11T16:51:49.263Z
 UPDATE AD_Reference_Trl SET Name='Quantity Not Picked Reject Reason',Updated=TO_TIMESTAMP('2024-10-11 19:51:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Reference_ID=541422
 ;
@@ -467,4 +471,10 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 -- Value: de.metas.handlingunits.qrcodes.model.json.INVALID_QR_VERSION_ERROR_MSG
 -- 2024-10-14T08:26:13.088Z
 UPDATE AD_Message_Trl SET MsgText='Invalid HU QR Code version',Updated=TO_TIMESTAMP('2024-10-14 11:26:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545475
+;
+    EXCEPTION
+        WHEN unique_violation THEN
+            RAISE NOTICE 'WorkpackageProcessor de.metas.salesorder.async.CompleteShipAndInvoiceWorkpackageProcessor already exists';
+    END
+$$
 ;
