@@ -272,7 +272,6 @@ public class ReferenceStringHelper
 		}
 	}
 
-
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
 	{
 		if (cdtrRefInf == null || cdtrRefInf.getTp() == null || cdtrRefInf.getTp().getCdOrPrtry() == null)
@@ -288,7 +287,8 @@ public class ReferenceStringHelper
 
 	private static boolean isSupportedDocumentType(de.metas.payment.camt054_001_02.DocumentType3Code cd)
 	{
-		if (cd == null) {
+		if (cd == null)
+		{
 			return false;
 		}
 		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
@@ -310,7 +310,8 @@ public class ReferenceStringHelper
 
 	private static boolean isSupportedDocumentType(de.metas.payment.camt054_001_06.DocumentType3Code cd)
 	{
-		if (cd == null) {
+		if (cd == null)
+		{
 			return false;
 		}
 		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
