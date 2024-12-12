@@ -106,7 +106,8 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 
 		final JdbcExporterBuilder builder = new JdbcExporterBuilder(I_DATEV_ExportLine.Table_Name)
 				.addEqualsWhereClause(I_DATEV_ExportLine.COLUMNNAME_DATEV_Export_ID, datevExportId)
-				.addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DATEV_ExportLine_ID);
+				.addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DocumentNo)
+		        .addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DATEV_ExportLine_ID);
 
 		exportFormat
 				.getColumns()
