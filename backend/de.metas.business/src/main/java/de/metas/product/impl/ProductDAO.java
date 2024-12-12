@@ -691,6 +691,20 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
+	}
+
+	@Override
 	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -850,6 +864,7 @@ public class ProductDAO implements IProductDAO
 
 		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
 	}
+
 	@Override
 	public void save(I_M_Product record)
 	{
