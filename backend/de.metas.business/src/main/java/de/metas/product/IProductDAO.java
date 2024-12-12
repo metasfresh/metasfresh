@@ -112,6 +112,8 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
