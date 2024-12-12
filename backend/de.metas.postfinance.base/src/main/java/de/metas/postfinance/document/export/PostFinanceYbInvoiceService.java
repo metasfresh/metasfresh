@@ -185,6 +185,7 @@ public class PostFinanceYbInvoiceService
 
 	public void exportToPostFinance(@NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
+		trxManager.assertThreadInheritedTrxExists();
 		try
 		{
 			final String billerId = CollectionUtils.extractSingleElement(invoices, PostFinanceYbInvoiceResponse::getBillerId);
@@ -202,12 +203,6 @@ public class PostFinanceYbInvoiceService
 				);
 			}
 		}
-	}
-
-	private void exportBatchToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
-	{
-
-
 	}
 
 	private void handleProcessedInvoice(@NonNull final ProcessedInvoice processedInvoice, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
@@ -302,6 +297,7 @@ public class PostFinanceYbInvoiceService
 			@NonNull final PostFinanceExportException postFinanceExportException,
 			@NonNull final PostFinanceStatus postFinanceStatus)
 	{
+		trxManager.assertThreadInheritedTrxExists();
 		postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
 												.docOutboundLogId(docOutboundLogId)
 												.message(postFinanceExportException.getMessage())
@@ -312,6 +308,7 @@ public class PostFinanceYbInvoiceService
 
 	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference)
 	{
+		trxManager.assertThreadInheritedTrxExists();
 		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
 		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.DO_NOT_SEND);
 	}
