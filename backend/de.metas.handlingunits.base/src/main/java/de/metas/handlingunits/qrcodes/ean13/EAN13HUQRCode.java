@@ -46,7 +46,7 @@ public class EAN13HUQRCode implements IHUQRCode
 		int checksumExpected = computeChecksum(barcode.substring(0, 12));
 		if (checksumExpected != checksum)
 		{
-			return ExplainedOptional.emptyBecause("Invalid checksum. Barcode may be incorrect.");
+			return ExplainedOptional.emptyBecause("Invalid checksum. Expected '" + checksumExpected + "' but got '" + checksum + "'.");
 		}
 
 		final String prefix = barcode.substring(0, 2);
