@@ -4,6 +4,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.gs1.GTIN;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.InSetPredicate;
@@ -43,7 +44,8 @@ class POSProductsSearchCommand
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				this::searchByGS1,
-				this::searchByEAN,
+				this::searchByEAN13,
+				this::searchByUPCorValue,
 				this::searchByValueName,
 				this::allProducts
 		);
@@ -82,7 +84,33 @@ class POSProductsSearchCommand
 	}
 
 	@Nullable
-	private POSProductsSearchResult searchByEAN()
+	private POSProductsSearchResult searchByEAN13()
+	{
+		if (queryString == null)
+		{
+			return null;
+		}
+
+		final EAN13HUQRCode ean13 = EAN13HUQRCode.fromString(queryString).orElse(null);
+		if (ean13 == null)
+		{
+			return null;
+		}
+
+		final ProductId productId = productBL.getProductIdByValueStartsWith(queryString, ClientId.METASFRESH).orElse(null);
+		final POSProduct product = getPOSProduct(productId);
+		if (product == null)
+		{
+			return null;
+		}
+
+		return POSProductsSearchResult.ofBarcodeMatchedProduct(
+				product.withCatchWeight(ean13.getWeightInKg().orElse(null))
+		);
+	}
+
+	@Nullable
+	private POSProductsSearchResult searchByUPCorValue()
 	{
 		if (queryString == null)
 		{
