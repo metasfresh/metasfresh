@@ -76,6 +76,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -232,13 +233,11 @@ public class M_Product_StepDef
 	}
 
 	@Given("update M_Product:")
-	public void update_M_Product(@NonNull final DataTable dataTable)
+	public void update_M_Products(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			updateMProduct(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::updateMProduct);
 	}
 
 	@And("taxCategory {string} is updated to work with all productTypes")
@@ -294,8 +293,7 @@ public class M_Product_StepDef
 					}
 					catch (final AdempiereException exception)
 					{
-						final String expectedExceptionMessage = DataTableUtil.extractStringForColumnName(dataTableRow, "ExceptionMessage");
-
+						final String expectedExceptionMessage = row.getAsString("ExceptionMessage");
 						assertThat(exception.getMessage()).contains(expectedExceptionMessage);
 					}
 				});
@@ -461,17 +459,12 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 
-		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
-		if (Check.isNotBlank(uomX12DE355))
-		{
-			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
-					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.firstIdOnly(UomId::ofRepoIdOrNull);
-			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
-			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
-		}
+		row.getAsOptionalString(I_C_UOM.COLUMNNAME_X12DE355)
+				.map(X12DE355::ofNullableCode)
+				.ifPresent(uomX12DE355 -> {
+					final UomId uomId = uomDAO.getUomIdByX12DE355(uomX12DE355);
+					productRecord.setC_UOM_ID(uomId.getRepoId());
+				});
 
 		saveRecord(productRecord);
 	}
