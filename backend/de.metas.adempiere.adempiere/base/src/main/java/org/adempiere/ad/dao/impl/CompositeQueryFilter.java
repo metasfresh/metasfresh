@@ -52,7 +52,7 @@ import java.util.Properties;
  * @author tsa
  */
 @EqualsAndHashCode(of = { "filters", "and", "_defaultAccept" })
-		public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
+public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
 {
 	/* package */static final String DEFAULT_SQL_TRUE = "1=1";
 	/* package */static final String DEFAULT_SQL_FALSE = "1=0";
@@ -301,8 +301,8 @@ import java.util.Properties;
 	 * @param sqlFiltersToAppend
 	 */
 	private final void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
-			final List<ISqlQueryFilter> resultSqlFilters,
-			final List<ISqlQueryFilter> sqlFiltersToAppend)
+											final List<ISqlQueryFilter> resultSqlFilters,
+											final List<ISqlQueryFilter> sqlFiltersToAppend)
 	{
 		//
 		// If there are no SQL filters to append, return right away
@@ -575,6 +575,12 @@ import java.util.Properties;
 		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(NotQueryFilter.of(filter));
 	}
+	
+	@Override
+	public ICompositeQueryFilter<T> addStringStartsWith(@NonNull final String columnName, @NonNull final String prefix)
+	{
+		return addFilter(new StringStartsWithFilter<T>(columnName, prefix));
+	}
 
 	@Override
 	public ICompositeQueryFilter<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
@@ -756,8 +762,8 @@ import java.util.Properties;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -769,8 +775,8 @@ import java.util.Properties;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+																final String subQueryColumnName,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -783,8 +789,8 @@ import java.util.Properties;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+																final ModelColumn<ST, ?> subQueryColumn,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -798,8 +804,8 @@ import java.util.Properties;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+															 final ModelColumn<ST, ?> subQueryColumn,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -819,9 +825,9 @@ import java.util.Properties;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final IQueryFilterModifier modifier,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final IQueryFilterModifier modifier,
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
