@@ -17,7 +17,7 @@ import { postStepPicked } from '../../../api/picking';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { toNumberOrZero } from '../../../utils/numberUtils';
+import { toNumberOrZero } from '../../../utils/numbers';
 
 const PickStepScanScreen = () => {
   const {
