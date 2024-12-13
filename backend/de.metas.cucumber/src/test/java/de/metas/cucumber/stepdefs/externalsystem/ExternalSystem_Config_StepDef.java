@@ -300,7 +300,7 @@ public class ExternalSystem_Config_StepDef
 			case LeichUndMehl:
 				final int portNumber = DataTableUtil.extractIntForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
 				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
-				final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+				final String pluTemplateFile_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
 
 				final PLUType pluType = PLUType.ofCodeOptional(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_LeichMehl.COLUMNNAME_CU_TU_PLU))
 						.orElse(PLUType.CU);
@@ -308,7 +308,7 @@ public class ExternalSystem_Config_StepDef
 				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl.class);
 				leichMehlConfig.setTCP_PortNumber(portNumber);
 				leichMehlConfig.setTCP_Host(host);
-				leichMehlConfig.setProduct_BaseFolderName(product_BaseFolderName);
+				leichMehlConfig.setProduct_BaseFolderName(pluTemplateFile_BaseFolderName);
 				leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
 				leichMehlConfig.setIsActive(true);
 				leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
