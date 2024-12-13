@@ -317,13 +317,13 @@ public class FactLine
 
 		// User List 1
 		this.User1_ID = CoalesceUtil.firstGreaterThanZeroSupplier(
-				() -> (docLine != null) ? docLine.getUser1_ID() : null,
+				() -> (docLine != null) ? docLine.getUser1_ID() : 0,
 				doc::getUser1_ID,
 				() -> account != null ? account.getUser1_ID() : 0,
 				() -> 0
 		);
 		this.User2_ID = CoalesceUtil.firstGreaterThanZeroSupplier(
-				() -> (docLine != null) ? docLine.getUser2_ID() : null,
+				() -> (docLine != null) ? docLine.getUser2_ID() : 0,
 				doc::getUser2_ID,
 				() -> account != null ? account.getUser2_ID() : 0,
 				() -> 0

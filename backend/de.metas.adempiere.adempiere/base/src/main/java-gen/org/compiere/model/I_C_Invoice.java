@@ -1923,11 +1923,6 @@ public interface I_C_Invoice
 	 */
 	int getUser1_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser1();
-
-	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Invoice.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -1948,11 +1943,6 @@ public interface I_C_Invoice
 	 */
 	int getUser2_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser2();
-
-	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**

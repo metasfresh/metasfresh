@@ -58,8 +58,9 @@ SELECT fact.fact_acct_id,
        fact.docbasetype,
        fact.vatcode,
        fact.counterpart_fact_acct_id,
-       fact.userelementnumber1,
-       fact.userelementnumber2,
+       --NEW_DAWN_MERGE_ARTIFACT
+       -- fact.userelementnumber1,
+       -- fact.userelementnumber2,
        fact.userelementstring1,
        fact.userelementstring2,
        fact.userelementstring3,
@@ -67,9 +68,10 @@ SELECT fact.fact_acct_id,
        fact.userelementstring5,
        fact.userelementstring6,
        fact.userelementstring7,
-       fact.userElementDate1,
-       fact.userElementDate2,
-       fact.m_sectioncode_id,
+       --NEW_DAWN_MERGE_ARTIFACT
+       -- fact.userElementDate1,
+       -- fact.userElementDate2,
+       -- fact.m_sectioncode_id,
        fact.C_OrderSO_ID,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
        fact.m_costelement_id,
@@ -79,8 +81,9 @@ SELECT fact.fact_acct_id,
        fact.OI_TrxType,
        fact.IsOpenItemsReconciled,
        fact.OI_OpenAmount,
-       fact.OI_OpenAmountSource,
-       fact.c_harvesting_calendar_id,
-       fact.harvesting_year_id
+       fact.OI_OpenAmountSource
+--NEW_DAWN_MERGE_ARTIFACT
+-- ,fact.c_harvesting_calendar_id,
+-- fact.harvesting_year_id
 FROM fact_acct fact
 ;
