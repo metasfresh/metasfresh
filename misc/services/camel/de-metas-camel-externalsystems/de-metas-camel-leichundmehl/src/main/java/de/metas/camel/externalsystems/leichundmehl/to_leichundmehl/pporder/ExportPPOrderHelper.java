@@ -26,7 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DestinationDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp.TCPConnectionDetails;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
@@ -42,8 +43,25 @@ import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichM
 @UtilityClass
 public class ExportPPOrderHelper
 {
+	public static DestinationDetails getDestinationDetails(@NonNull final Map<String, String> parameters)
+	{
+		final String pluFileDestination = parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_DESTINATION);
+
+		final DestinationDetails.DestinationDetailsBuilder result = DestinationDetails.builder();
+
+		if ("2DSK".equals(pluFileDestination))
+		{
+			result.pluFileServerFolder(parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_SERVER_FOLDER));
+		}
+		else
+		{
+			result.tcpConnectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters));
+		}
+		return result.build();
+	}
+
 	@NonNull
-	public ConnectionDetails getTcpConnectionDetails(@NonNull final Map<String, String> params)
+	private TCPConnectionDetails getTcpConnectionDetails(@NonNull final Map<String, String> params)
 	{
 		final String tcpPortNumber = params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER);
 		if (Check.isBlank(tcpPortNumber))
@@ -57,7 +75,7 @@ public class ExportPPOrderHelper
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_TCP_HOST);
 		}
 
-		return ConnectionDetails.builder()
+		return TCPConnectionDetails.builder()
 				.tcpPort(Integer.parseInt(tcpPortNumber))
 				.tcpHost(tcpHost)
 				.build();
@@ -106,12 +124,21 @@ public class ExportPPOrderHelper
 	}
 
 	@NonNull
+	public Predicate isStoreFileOnDisk()
+	{
+		return exchange -> {
+			final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
+			return context.getDestinationDetails().isStoreFileOnDisk();
+		};
+	}
+
+	@NonNull
 	public Predicate isPluFileExportAuditEnabled()
 	{
 		return exchange -> {
 			final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-			return (context.isPluFileExportAuditEnabled());
+			return context.isPluFileExportAuditEnabled();
 		};
 	}
 

@@ -138,12 +138,14 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 	private void sortPacksAndItems(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		xmlDesadv.getEDIExpDesadvPack()
-				.sort(Comparator.comparing(EDIExpDesadvPackType::getSeqNo));
+				.sort(Comparator.comparing(EDIExpDesadvPackType::getSeqNo,
+										   Comparator.nullsLast(Comparator.naturalOrder())));
 
 		for (final EDIExpDesadvPackType pack : xmlDesadv.getEDIExpDesadvPack())
 		{
-			pack.getEDIExpDesadvPackItem().sort(Comparator.comparing(EDIExpDesadvPackItemType::getLine));
+			pack.getEDIExpDesadvPackItem()
+					.sort(Comparator.comparing(EDIExpDesadvPackItemType::getLine,
+											   Comparator.nullsLast(Comparator.naturalOrder())));
 		}
-
 	}
 }

@@ -7,7 +7,8 @@
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "parameters": {
-    "PluFileDestination": "1TCP",
+    "PluFileDestination": "2DSK",
+    "PluFileLocalServerFolder": "./localdir",
     "TCP_PortNumber": "445",
     "TCP_Host": "Host",
     "PluTemplateFile_BaseFolderName": "src",

@@ -90,16 +90,17 @@ public class ExternalSystemLeichMehlConfigProductMappingRepository
 				.build();
 	}
 
-	private LeichMehlPluFileConfigGroup getConfigGroupById(LeichMehlPluFileConfigGroupId id)
+	private LeichMehlPluFileConfigGroup getConfigGroupById(@NonNull final LeichMehlPluFileConfigGroupId id)
 	{
 		return groupsCache.getOrLoad(id, this::retrieveConfigGroupById);
 	}
 
-	private LeichMehlPluFileConfigGroup retrieveConfigGroupById(LeichMehlPluFileConfigGroupId id)
+	private LeichMehlPluFileConfigGroup retrieveConfigGroupById(@NonNull final LeichMehlPluFileConfigGroupId id)
 	{
 		final I_LeichMehl_PluFile_ConfigGroup configGroupRecord = queryBL.createQueryBuilder(I_LeichMehl_PluFile_ConfigGroup.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_LeichMehl_PluFile_ConfigGroup.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, id)
+				.orderBy(I_LeichMehl_PluFile_ConfigGroup.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID)
 				.create()
 				.firstNotNull(I_LeichMehl_PluFile_ConfigGroup.class);
 

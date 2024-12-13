@@ -140,9 +140,11 @@ public class ExternalSystemConstants
 	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
 	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
-	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
+	public static final String PARAM_PLU_FILE_TEMPLATE_BASE_FOLDER_NAME = "PluTemplateFile_BaseFolderName";
+	public static final String PARAM_PLU_FILE_DESTINATION = "PluFileDestination";
 	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
 	public static final String PARAM_TCP_HOST = "TCP_Host";
+	public static final String PARAM_PLU_FILE_SERVER_FOLDER = "PluFileLocalServerFolder";
 	public static final String PARAM_PLU_FILE_CONFIG = "PluFileConfig";
 	public static final String PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED = "PluFileExportAuditEnabled";
 	public static final String PARAM_CUSTOM_QUERY_AD_PROCESS_VALUE = "CustomQueryAdProcessValue";
