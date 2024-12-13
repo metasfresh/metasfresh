@@ -1,23 +1,23 @@
 package de.metas.payment.esr.dataimporter.impl.v11;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.compiere.util.Env;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /*
  * #%L
@@ -86,6 +86,13 @@ public class ESRTransactionLineMatcherUtil
 		return ESRConstants.ESRTRXTYPE_Payment.equals(trxType)
 				|| ESRConstants.ESRTRXTYPE_Receipt.equals(trxType);
 	}
+
+	public boolean isSCORLine(@NonNull final I_ESR_ImportLine importLine)
+	{
+		final String type = importLine.getType();
+		return ESRType.TYPE_SCOR.getCode().equals(type);
+	}
+
 
 	public boolean isCorrectTransactionLineLength(@NonNull final String v11LineStr)
 	{
