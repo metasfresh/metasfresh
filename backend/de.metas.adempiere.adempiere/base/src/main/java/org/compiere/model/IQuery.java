@@ -105,6 +105,8 @@ public interface IQuery<T>
 
 	String getTableName();
 
+	IQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value);
+
 	List<T> list() throws DBException;
 
 	/**
