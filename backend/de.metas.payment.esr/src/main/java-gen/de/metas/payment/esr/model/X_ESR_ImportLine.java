@@ -604,7 +604,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/** ESR = ISR Reference */
 	public static final String TYPE_ESR = "ISR Reference";
 	/** SCOR = SCOR Reference */
-	public static final String TYPE_SCOR = "SCOR Reference";
+	public static final String TYPE_SCOR = "SCOR";
 	@Override
 	public void setType (final java.lang.String Type)
 	{
