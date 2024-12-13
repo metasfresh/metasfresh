@@ -82,7 +82,7 @@ BEGIN
            fa.postingtype,
            fa.c_invoice_id,
            i.poreference                                                                        AS poreference,
-                        paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
+           paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,
@@ -220,7 +220,7 @@ $BODY$
 
 
 
---ó
+--
 --
 --
 --
