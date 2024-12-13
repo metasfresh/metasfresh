@@ -7,9 +7,10 @@
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "parameters": {
+    "PluFileDestination": "1TCP",
     "TCP_PortNumber": "445",
     "TCP_Host": "Host",
-    "Product_BaseFolderName": "src",
+    "PluTemplateFile_BaseFolderName": "src",
     "PluFileExportAuditEnabled": "true",
     "CustomQueryAdProcessValue": "ExternalSystem_Config_LeichMehl_CustomQuery",
     "ConfigMappings": "{\"pluFile\":\"test/resources/de/metas/camel/externalsystems/leichundmehl/to_leichundmehl/pporder/pluFile.xml\",\"productId\":22222}",

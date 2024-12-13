@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DestinationDetails;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfig;
@@ -53,10 +53,10 @@ public class ExportPPOrderRouteContext
 	private final Integer ppOrderMetasfreshId;
 	
 	@NonNull
-	private final ConnectionDetails connectionDetails;
-
+	private final DestinationDetails destinationDetails;
+	
 	@NonNull
-	private final String productBaseFolderName;
+	private final String pluTemplateFileBaseFolderName;
 
 	private final boolean pluFileExportAuditEnabled;
 
@@ -88,9 +88,10 @@ public class ExportPPOrderRouteContext
 	@Getter(AccessLevel.NONE)
 	private String pluFileXmlContent;
 
+	/** File of the PLU template file that was loaded from disk and who's XML was updated */
 	@Nullable
 	@Getter(AccessLevel.NONE)
-	private String filename;
+	private String pluTemplateFilename;
 	
 	@NonNull
 	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
@@ -137,14 +138,14 @@ public class ExportPPOrderRouteContext
 	}
 
 	@NonNull
-	public String getFilename()
+	public String getPLUTemplateFilename()
 	{
-		if (this.filename == null)
+		if (this.pluTemplateFilename == null)
 		{
 			throw new RuntimeCamelException("filename cannot be null!");
 		}
 
-		return this.filename;
+		return this.pluTemplateFilename;
 	}
 
 	@NonNull
