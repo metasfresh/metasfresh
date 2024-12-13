@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,56 +22,43 @@
 
 package de.metas.document.dimension;
 
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candidate>
+public class OrderDimensionFactory implements DimensionFactory<I_C_Order>
 {
 	@Override
 	public String getHandledTableName()
 	{
-		return I_MD_Candidate.Table_Name;
+		return I_C_Order.Table_Name;
 	}
 
 	@Override
 	@NonNull
-	public Dimension getFromRecord(@NonNull final I_MD_Candidate record)
+	public Dimension getFromRecord(@NonNull final I_C_Order record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
-				.userElementString1(record.getUserElementString1())
-				.userElementString2(record.getUserElementString2())
-				.userElementString3(record.getUserElementString3())
-				.userElementString4(record.getUserElementString4())
-				.userElementString5(record.getUserElementString5())
-				.userElementString6(record.getUserElementString6())
-				.userElementString7(record.getUserElementString7())
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.user1_ID(record.getUser1_ID())
+				.user2_ID(record.getUser2_ID())
 				.build();
 	}
 
 	@Override
-	public void updateRecord(final I_MD_Candidate record, final Dimension from)
+	public void updateRecord(@NonNull final I_C_Order record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
-		record.setUserElementString1(from.getUserElementString1());
-		record.setUserElementString2(from.getUserElementString2());
-		record.setUserElementString3(from.getUserElementString3());
-		record.setUserElementString4(from.getUserElementString4());
-		record.setUserElementString5(from.getUserElementString5());
-		record.setUserElementString6(from.getUserElementString6());
-		record.setUserElementString7(from.getUserElementString7());
-
+		record.setUser1_ID(from.getUser1_ID());
+		record.setUser2_ID(from.getUser2_ID());
 	}
 }
-

@@ -34,6 +34,7 @@ import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -107,6 +108,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final Dimension dimension = Dimension.builder()
 				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(event.getSalesOrderRepoId()))
 				.campaignId(event.getCampaignId())
 				.projectId(ProjectId.ofRepoIdOrNull(event.getProjectId()))
 				.userElement1Id(event.getUserElementId1())
