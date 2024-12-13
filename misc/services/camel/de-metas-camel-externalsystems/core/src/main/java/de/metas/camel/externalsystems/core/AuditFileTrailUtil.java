@@ -199,7 +199,10 @@ public class AuditFileTrailUtil
 		final Map<String, Object> headers = exchange.getIn().getHeaders().entrySet()
 				.stream()
 				.filter(entry -> !Exchange.HTTP_SERVLET_REQUEST.equals(entry.getKey()))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, v -> CoalesceUtil.coalesceNotNull(v, "<null>")));
+				.collect(ImmutableMap.toImmutableMap(
+						Map.Entry::getKey, 
+						entry -> CoalesceUtil.coalesceNotNull(entry.getValue(), "<null>")) // ImmutableMap doesn't allow null values
+				);
 
 		if (headers.isEmpty())
 		{
