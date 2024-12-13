@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { trl } from '../../../../utils/translations';
-import { useWhyDidYouUpdate } from '../../../../hooks/useWhyDidYouUpdate';
 
 const _ = (key, args = {}) => trl(`pos.currentOrder.getWeightModal.${key}`, args);
 
@@ -13,7 +12,6 @@ const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
   const weight = Number(weightStr);
   const isValid = weight > 0;
 
-  useWhyDidYouUpdate('AAAA', { weightRef_current: weightRef.current });
   useEffect(() => {
     if (weightRef?.current) {
       weightRef.current.focus();
