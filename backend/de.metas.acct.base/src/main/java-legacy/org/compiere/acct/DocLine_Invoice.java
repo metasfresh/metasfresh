@@ -350,6 +350,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	protected OrderId getSalesOrderId()
 	{
 		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-		return OrderId.ofRepoId(orderDAO.getOrderLineById(invoiceLine.getC_OrderLine_ID()).getC_Order_ID());
+		return OrderId.ofRepoIdOrNull(invoiceLine.getC_OrderSO_ID());
 	}
 }

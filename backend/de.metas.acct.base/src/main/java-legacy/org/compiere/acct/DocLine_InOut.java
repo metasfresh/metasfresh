@@ -101,7 +101,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	private Optional<OrderAndLineId> getOrderAndLineId()
 	{
 		final I_M_InOutLine inOutLine = getInOutLine();
-		return OrderAndLineId.optionalOfRepoIds(inOutLine.getC_OrderSO_ID(), inOutLine.getC_OrderLine_ID());
+		return OrderAndLineId.optionalOfRepoIds(inOutLine.getC_Order_ID(), inOutLine.getC_OrderLine_ID());
 	}
 
 	private Optional<I_C_OrderLine> getOrderLine()

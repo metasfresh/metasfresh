@@ -469,6 +469,15 @@ public class MRMALine extends X_M_RMALine
 		return m_ioLine.getC_Activity_ID();
 	}
 
+	public int getC_Order_ID()
+	{
+		if (m_ioLine == null)
+		{
+			return 0;
+		}
+		return m_ioLine.getC_Order_ID();
+	}
+
 	/**
 	 * Get Campaign
 	 * 
