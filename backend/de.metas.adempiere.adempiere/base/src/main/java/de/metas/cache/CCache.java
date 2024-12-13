@@ -115,21 +115,28 @@ public class CCache<K, V> implements CacheInterface
 
 	private static final Logger logger = LogManager.getLogger(CCache.class);
 
-	@NonNull private final CCacheConfig config;
+	@NonNull
+	private final CCacheConfig config;
 
 	/**
 	 * Internal map that is used as cache
 	 */
-	@NonNull private final Cache<K, V> cache;
+	@NonNull
+	private final Cache<K, V> cache;
 
 	static final AtomicLong NEXT_CACHE_ID = new AtomicLong(1);
 	/**
 	 * unique cache ID, mainly used for tracking, logging and debugging
 	 */
-	@Getter private final long cacheId;
+	@Getter
+	private final long cacheId;
 
-	@NonNull @Getter private final String cacheName;
-	@NonNull @Getter private final ImmutableSet<CacheLabel> labels;
+	@NonNull
+	@Getter
+	private final String cacheName;
+	@NonNull
+	@Getter
+	private final ImmutableSet<CacheLabel> labels;
 
 	public static final int EXPIREMINUTES_Never = 0;
 	/**
@@ -142,9 +149,11 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	private final Optional<CachingKeysMapper<K>> invalidationKeysMapper;
 
-	@Nullable private final String debugAcquireStacktrace;
+	@Nullable
+	private final String debugAcquireStacktrace;
 
-	@Nullable private final CacheAdditionListener<K, V> additionListener;
+	@Nullable
+	private final CacheAdditionListener<K, V> additionListener;
 
 	private final boolean allowDisablingCacheByThreadLocal;
 
@@ -169,16 +178,16 @@ public class CCache<K, V> implements CacheInterface
 	public CCache(final String name, final int initialCapacity, final int expireMinutes)
 	{
 		this(name, // cache name
-				null, // auto-detect tableName
-				null, // additionalTableNamesToResetFor
-				null, // additionalLabels
-				initialCapacity,
-				null,
-				expireMinutes,
-				null,
-				null,
-				null,
-				null);
+			 null, // auto-detect tableName
+			 null, // additionalTableNamesToResetFor
+			 null, // additionalLabels
+			 initialCapacity,
+			 null,
+			 expireMinutes,
+			 null,
+			 null,
+			 null,
+			 null);
 	}
 
 	@Builder
@@ -293,8 +302,10 @@ public class CCache<K, V> implements CacheInterface
 		{
 			//noinspection ResultOfMethodCallIgnored
 			cacheBuilder.removalListener(notification -> {
-				@SuppressWarnings("unchecked") final K key = (K)notification.getKey();
-				@SuppressWarnings("unchecked") final V value = (V)notification.getValue();
+				@SuppressWarnings("unchecked")
+				final K key = (K)notification.getKey();
+				@SuppressWarnings("unchecked")
+				final V value = (V)notification.getValue();
 				removalListener.itemRemoved(key, value);
 			});
 		}
@@ -366,7 +377,10 @@ public class CCache<K, V> implements CacheInterface
 	 *
 	 * @return true if it was just reset
 	 */
-	public final boolean isReset() {return m_justReset;}
+	public final boolean isReset()
+	{
+		return m_justReset;
+	}
 
 	/**
 	 * Reset Cache.
@@ -405,15 +419,9 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
-			if (invalidationKeysMapper.isPresent())
-			{
-				return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
-			}
-			else
-			{
-				// NOTE: resetting only by "key" is not supported, so we are resetting everything
-				return reset();
-			}
+			// NOTE: resetting only by "key" is not supported, so we are resetting everything
+			return invalidationKeysMapper.map(kCachingKeysMapper -> resetForRecordIdUsingKeysMapper(recordRef, kCachingKeysMapper))
+					.orElseGet(this::reset);
 		}
 	}
 
