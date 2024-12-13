@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -28,22 +28,22 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class ConnectionDetails
+public class DispatchMessageRequest
 {
 	@NonNull
-	@JsonProperty("tcpPort")
-	int tcpPort;
+	@JsonProperty("destinationDetails")
+	DestinationDetails destinationDetails;
 
 	@NonNull
-	@JsonProperty("tcpHost")
-	String tcpHost;
+	@JsonProperty("payload")
+	String payload;
 
 	@Builder
-	public ConnectionDetails(
-			@JsonProperty("tcpPort") @NonNull final int tcpPort,
-			@JsonProperty("tcpHost") @NonNull final String tcpHost)
+	public DispatchMessageRequest(
+			@JsonProperty("destinationDetails") @NonNull final DestinationDetails destinationDetails,
+			@JsonProperty("payload") @NonNull final String payload)
 	{
-		this.tcpPort = tcpPort;
-		this.tcpHost = tcpHost;
+		this.destinationDetails = destinationDetails;
+		this.payload = payload;
 	}
 }

@@ -64,8 +64,8 @@ public class HUAssignmentBLTest
 	@Nullable private String trxName;
 	private IContextAware contextProvider;
 
-	private IHUAssignmentBL huAssignmentBL;
-	private IHUAssignmentDAO huAssignmentDAO;
+	private HUAssignmentBL huAssignmentBL;
+	private HUAssignmentDAO huAssignmentDAO;
 
 	private I_Test record;
 	private I_M_HU hu;
@@ -110,8 +110,10 @@ public class HUAssignmentBLTest
 
 		//
 		// BL under test
-		huAssignmentBL = Services.get(IHUAssignmentBL.class);
-		huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		huAssignmentBL = new HUAssignmentBL();
+		Services.registerService(IHUAssignmentBL.class, huAssignmentBL);
+		huAssignmentDAO = new HUAssignmentDAO();
+		Services.registerService(IHUAssignmentDAO.class, huAssignmentDAO);
 
 		//
 		// Setup ctx and trxName

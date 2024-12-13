@@ -15,6 +15,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -45,7 +46,9 @@ import java.util.function.Function;
  * #L%
  */
 
-/** Bidirectional binding between local cache system and remote cache systems */
+/**
+ * Bidirectional binding between local cache system and remote cache systems
+ */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
 	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
@@ -73,11 +76,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			return;
 		}
 
-		//
-		// Globally register this listener.
-		// We register it globally because we want to survive.
-		final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
-		eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
+		if (!Adempiere.isUnitTestMode())
+		{
+			// Globally register this listener.
+			// We register it globally because we want to survive.
+			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+			eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
+		}
 	}
 
 	private boolean isEnabled()
