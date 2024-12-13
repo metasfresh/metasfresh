@@ -180,6 +180,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
+	public IQuery<T> setSqlFromParameter(final @NonNull String name, @Nullable final Object value)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public POJOQuery<T> copy()
 	{
 		final POJOQuery<T> queryNew = new POJOQuery<>(modelClass);
