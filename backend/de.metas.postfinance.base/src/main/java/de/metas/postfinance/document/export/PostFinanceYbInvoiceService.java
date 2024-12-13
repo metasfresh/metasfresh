@@ -61,6 +61,7 @@ import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.location.Location;
 import de.metas.location.LocationId;
 import de.metas.location.LocationRepository;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.postfinance.B2BServiceWrapper;
 import de.metas.postfinance.bpartnerconfig.PostFinanceBPartnerConfig;
@@ -116,6 +117,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -135,8 +137,6 @@ import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static de.metas.postfinance.B2BServiceWrapper.B2B_SERVICE_OBJECT_FACTORY;
 import static de.metas.postfinance.PostFinanceConstants.YB_INVOICE_SCHEMA_LOCATION;
@@ -168,7 +168,7 @@ public class PostFinanceYbInvoiceService
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private static final Logger logger = Logger.getLogger(PostFinanceYbInvoiceService.class.getName());
+	private static final Logger logger = LogManager.getLogger(PostFinanceYbInvoiceService.class);
 	private static final String YB_INVOICE_BILL_DETAILS_TYPE_PDF_APPENDIX = "PDFAppendix";
 	private static final String YB_INVOICE_PAPER_BILL_ID = "41100000301089304";
 	private static final JAXBElement<String> XML_FILE_TYPE = B2B_SERVICE_OBJECT_FACTORY.createInvoiceFileType("XML");
@@ -182,7 +182,6 @@ public class PostFinanceYbInvoiceService
 	private static final String AD_LANGUAGE_DE = "de_DE";
 	public static final ObjectFactory YB_INVOICE_OBJECT_FACTORY = new ObjectFactory();
 
-
 	public void exportToPostFinance(@NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		trxManager.assertThreadInheritedTrxExists();
@@ -193,9 +192,9 @@ public class PostFinanceYbInvoiceService
 			arrayOfProcessedInvoice.getProcessedInvoice()
 					.forEach(processedInvoice -> handleProcessedInvoice(processedInvoice, invoices));
 		}
-		catch(final Exception e)
+		catch (final Exception e)
 		{
-			for(final PostFinanceYbInvoiceResponse invoice : invoices)
+			for (final PostFinanceYbInvoiceResponse invoice : invoices)
 			{
 				handleConnectionExceptions(
 						invoice.getDocOutboundLogId(),
@@ -211,9 +210,9 @@ public class PostFinanceYbInvoiceService
 		final List<PostFinanceYbInvoiceResponse> matchingInvoice = invoices.stream()
 				.filter(invoice -> invoice.getTransactionId().equals(transactionId))
 				.toList();
-		if(matchingInvoice.size() != 1)
+		if (matchingInvoice.size() != 1)
 		{
-			logger.log(Level.SEVERE, "PostFinance document export result couldn't be matched to document. This shouldn't happen!");
+			logger.warn("PostFinance document export result couldn't be matched to document. This shouldn't happen!");
 			return;
 		}
 		final PostFinanceYbInvoiceResponse postFinanceYbInvoiceResponse = matchingInvoice.get(0);
@@ -228,8 +227,8 @@ public class PostFinanceYbInvoiceService
 
 			final JAXBElement<ProcessedInvoice> jaxbElement =
 					new JAXBElement<>(new QName("", "processedInvoice"),
-									  ProcessedInvoice.class,
-									  processedInvoice);
+							ProcessedInvoice.class,
+							processedInvoice);
 
 			final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			marshallerObj.marshal(jaxbElement, outputStream);
@@ -249,25 +248,24 @@ public class PostFinanceYbInvoiceService
 				.build();
 
 		attachmentEntryService.createNewAttachment(ImmutableList.of(postFinanceYbInvoiceResponse.getDocumentReference(),
-																	postFinanceYbInvoiceResponse.getPInstanceReference()),
-												   AttachmentEntryCreateRequest.builder()
-														   .type(AttachmentEntryType.Data)
-														   .filename(transactionId + "_postFinance_upload_processing_result.xml")
-														   .data(data)
-														   .contentType(MimeType.TYPE_XML)
-														   .tags(attachmentTags)
-														   .build());
-
+						postFinanceYbInvoiceResponse.getPInstanceReference()),
+				AttachmentEntryCreateRequest.builder()
+						.type(AttachmentEntryType.Data)
+						.filename(transactionId + "_postFinance_upload_processing_result.xml")
+						.data(data)
+						.contentType(MimeType.TYPE_XML)
+						.tags(attachmentTags)
+						.build());
 
 		final DocOutboundLogId docOutboundLogId = postFinanceYbInvoiceResponse.getDocOutboundLogId();
-		if(processedInvoice.getProcessingState().getValue().equals("OK"))
+		if (processedInvoice.getProcessingState().getValue().equals("OK"))
 		{
 			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.OK);
 			postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-													.docOutboundLogId(docOutboundLogId)
-													.message("PostFinance upload successful")
-													.transactionId(postFinanceYbInvoiceResponse.getTransactionId())
-													.build());
+					.docOutboundLogId(docOutboundLogId)
+					.message("PostFinance upload successful")
+					.transactionId(postFinanceYbInvoiceResponse.getTransactionId())
+					.build());
 		}
 		else
 		{
@@ -299,10 +297,10 @@ public class PostFinanceYbInvoiceService
 	{
 		trxManager.assertThreadInheritedTrxExists();
 		postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-												.docOutboundLogId(docOutboundLogId)
-												.message(postFinanceExportException.getMessage())
-												.postFinanceExportException(postFinanceExportException)
-												.build());
+				.docOutboundLogId(docOutboundLogId)
+				.message(postFinanceExportException.getMessage())
+				.postFinanceExportException(postFinanceExportException)
+				.build());
 		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, postFinanceStatus);
 	}
 
@@ -335,7 +333,7 @@ public class PostFinanceYbInvoiceService
 	private AppendixType getAppendixType(@NonNull final DocOutboundLogId docOutboundLogId)
 	{
 		final I_C_Doc_Outbound_Log_Line docOutboundLogLine = docOutboundDAO.retrieveCurrentPDFArchiveLogLineOrNull(docOutboundLogId);
-		if(docOutboundLogLine == null)
+		if (docOutboundLogLine == null)
 		{
 			throw new PostFinanceExportException("No PDF archive data found");
 		}
@@ -350,7 +348,7 @@ public class PostFinanceYbInvoiceService
 		return appendixType;
 	}
 
-	private Envelope  getEnvelopeWithHeader(@NonNull final InvoiceToExport invoiceToExport)
+	private Envelope getEnvelopeWithHeader(@NonNull final InvoiceToExport invoiceToExport)
 	{
 		final HeaderType headerType = getHeaderType();
 		headerType.setFrom(bPartnerBL.getBPartnerName(invoiceToExport.getBiller().getId()));
@@ -371,18 +369,18 @@ public class PostFinanceYbInvoiceService
 		{
 			deliveryType.setBillerID(Long.parseLong(billerId));
 		}
-		catch(final NumberFormatException nfe)
+		catch (final NumberFormatException nfe)
 		{
 			throw new PostFinanceExportException("Sender eBillId should be a number, but got " + billerId);
 		}
 
 		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
 		final String eBillAccountID;
-		if(postFinanceBPartnerConfigOptional.isPresent())
+		if (postFinanceBPartnerConfigOptional.isPresent())
 		{
 			eBillAccountID = postFinanceBPartnerConfigOptional.get().getReceiverEBillId();
 		}
-		else if(postFinanceOrgConfig.isUsePaperBill())
+		else if (postFinanceOrgConfig.isUsePaperBill())
 		{
 			eBillAccountID = YB_INVOICE_PAPER_BILL_ID;
 		}
@@ -398,13 +396,12 @@ public class PostFinanceYbInvoiceService
 		{
 			deliveryType.setEBillAccountID(Long.parseLong(eBillAccountID));
 		}
-		catch(final NumberFormatException nfe)
+		catch (final NumberFormatException nfe)
 		{
 			throw new PostFinanceExportException("Receiver eBillId should be a number, but got " + eBillAccountID);
 		}
 
 		deliveryType.setBillDetailsType(YB_INVOICE_BILL_DETAILS_TYPE_PDF_APPENDIX);
-
 
 		return deliveryType;
 	}
@@ -446,7 +443,7 @@ public class PostFinanceYbInvoiceService
 		header.setCurrency(invoiceToExport.getAmount().getCurrency());
 
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceToExport.getId());
-		if(EmptyUtil.isNotBlank(invoiceRecord.getPOReference()))
+		if (EmptyUtil.isNotBlank(invoiceRecord.getPOReference()))
 		{
 			final Reference orderReference = YB_INVOICE_OBJECT_FACTORY.createReference();
 			orderReference.setReferenceType("OrderReference");
@@ -463,7 +460,7 @@ public class PostFinanceYbInvoiceService
 		final String languageISO = languageDAO.retrieveByAD_Language(CoalesceUtil.firstNotBlank(adLanguageRecipient, adLanguageBiller, AD_LANGUAGE_DE)).getLanguageISO();
 		header.setLanguage(languageISO);
 
-		if(!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if (!invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
 		{
 			header.setPaymentInformation(getPaymentInformation(invoiceToExport));
 		}
@@ -475,7 +472,6 @@ public class PostFinanceYbInvoiceService
 
 		return billType;
 	}
-
 
 	private BillHeaderType.SenderParty getSenderParty(@NonNull final InvoiceToExport invoiceToExport)
 	{
@@ -497,7 +493,7 @@ public class PostFinanceYbInvoiceService
 
 		final Location location = locationRepository.getByLocationId(locationId);
 
-		if(location.getStreetAddress() == null
+		if (location.getStreetAddress() == null
 				|| location.getPostal() == null
 				|| location.getCity() == null
 				|| location.getCountryCode() == null)
@@ -511,10 +507,10 @@ public class PostFinanceYbInvoiceService
 		addressType.setCountry(location.getCountryCode());
 
 		final Optional<UserId> userId = bPartnerDAO.getDefaultContactId(bPartnerId);
-		if(userId.isPresent())
+		if (userId.isPresent())
 		{
 			final I_AD_User userRecord = userBL.getById(userId.get());
-			if(userRecord.getEMail() != null)
+			if (userRecord.getEMail() != null)
 			{
 				addressType.setEmail(userRecord.getEMail());
 			}
@@ -522,11 +518,10 @@ public class PostFinanceYbInvoiceService
 
 		senderParty.getPartyType().setAddress(addressType);
 		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
-		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		if (EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
 		{
 			senderParty.getPartyType().setTaxID(partnerRecord.getTaxID());
 		}
-
 
 		return senderParty;
 	}
@@ -546,7 +541,7 @@ public class PostFinanceYbInvoiceService
 		final LocationId locationId = bPartnerDAO.getLocationId(bPartnerDAO.retrieveBPartnerLocationId(query));
 		final Location location = locationRepository.getByLocationId(locationId);
 
-		if(location.getStreetAddress() == null
+		if (location.getStreetAddress() == null
 				|| location.getPostal() == null
 				|| location.getCity() == null
 				|| location.getCountryCode() == null)
@@ -560,18 +555,18 @@ public class PostFinanceYbInvoiceService
 		addressType.setCountry(location.getCountryCode());
 
 		final Optional<UserId> userId = bPartnerDAO.getDefaultContactId(bPartnerId);
-		if(userId.isPresent())
+		if (userId.isPresent())
 		{
 			final I_AD_User userRecord = userBL.getById(userId.get());
-			if(EmptyUtil.isNotBlank(userRecord.getEMail()))
+			if (EmptyUtil.isNotBlank(userRecord.getEMail()))
 			{
 				addressType.setEmail(userRecord.getEMail());
 			}
-			if(EmptyUtil.isNotBlank(userRecord.getLastname()))
+			if (EmptyUtil.isNotBlank(userRecord.getLastname()))
 			{
 				addressType.setFamilyName(userRecord.getLastname());
 			}
-			if(EmptyUtil.isNotBlank(userRecord.getFirstname()))
+			if (EmptyUtil.isNotBlank(userRecord.getFirstname()))
 			{
 				addressType.setGivenName(userRecord.getFirstname());
 			}
@@ -581,7 +576,7 @@ public class PostFinanceYbInvoiceService
 		partyType.setAddress(addressType);
 
 		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
-		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		if (EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
 		{
 			partyType.setTaxID(partnerRecord.getTaxID());
 		}
@@ -592,7 +587,7 @@ public class PostFinanceYbInvoiceService
 		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
 		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgIdOrError(orgId);
 		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
-		if(postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
+		if (postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
 		{
 			paperBillReferencesRepository.getPaperBillReferences(orgId)
 					.stream()
@@ -615,15 +610,13 @@ public class PostFinanceYbInvoiceService
 		return reference;
 	}
 
-
-
 	private BillHeaderType.PaymentInformation getPaymentInformation(@NonNull final InvoiceToExport invoiceToExport)
 	{
 		final BillHeaderType.PaymentInformation paymentInformation = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypePaymentInformation();
 		paymentInformation.setPaymentType("IBAN");
 
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceToExport.getId());
-		if(invoiceRecord.getDueDate() != null)
+		if (invoiceRecord.getDueDate() != null)
 		{
 			final GregorianCalendar dueDate = new GregorianCalendar();
 			dueDate.setTime(invoiceRecord.getDueDate());
@@ -636,20 +629,20 @@ public class PostFinanceYbInvoiceService
 
 		final BPartnerId bPartnerId = invoiceToExport.getBiller().getId();
 		final Optional<BankAccount> bankAccountOptional = bankAccountDAO.getDefaultESRBankAccount(bPartnerId);
-		if(bankAccountOptional.isEmpty())
+		if (bankAccountOptional.isEmpty())
 		{
 			throw new PostFinanceExportException("Missing default ESR bank account for OrgBPartner " + bPartnerId);
 		}
 
 		final BankAccount bankAccount = bankAccountOptional.get();
 		final BankAccountId invoiceBankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
-		if(invoiceBankAccountId != null && !BankAccountId.equals(invoiceBankAccountId, bankAccount.getId()))
+		if (invoiceBankAccountId != null && !BankAccountId.equals(invoiceBankAccountId, bankAccount.getId()))
 		{
 			throw new PostFinanceExportException("Only OrgBPartner default esr bank account is supported");
 		}
 
 		final BillHeaderType.PaymentInformation.IBAN iban = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypePaymentInformationIBAN();
-		if(bankAccount.getQR_IBAN() == null)
+		if (bankAccount.getQR_IBAN() == null)
 		{
 			throw new PostFinanceExportException("Missing QR-IBAN on default bank account for OrgBPartner " + bPartnerId);
 		}
@@ -659,8 +652,8 @@ public class PostFinanceYbInvoiceService
 		final I_C_ReferenceNo_Type refType = referenceNoDAO.retrieveRefNoTypeByName(INVOICE_REFERENCE);
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoiceRecord);
 
-		final Optional<I_C_ReferenceNo> refNo= referenceNoDAO.retrieveRefNo(invoiceRef, refType);
-		if(refNo.isEmpty())
+		final Optional<I_C_ReferenceNo> refNo = referenceNoDAO.retrieveRefNo(invoiceRef, refType);
+		if (refNo.isEmpty())
 		{
 			throw new PostFinanceExportException("No InvoiceReference found for invoice " + invoiceToExport.getId());
 		}
@@ -744,14 +737,14 @@ public class PostFinanceYbInvoiceService
 				.build();
 
 		attachmentEntryService.createNewAttachment(ImmutableList.of(postFinanceYbInvoiceRequest.getDocOutboundLogReference(),
-																	postFinanceYbInvoiceRequest.getPInstanceReference()),
-												   AttachmentEntryCreateRequest.builder()
-														   .type(AttachmentEntryType.Data)
-														   .filename(envelope.getBody().getDeliveryInfo().getTransactionID() + "_postFinance_upload.xml")
-														   .data(data)
-														   .contentType(MimeType.TYPE_XML)
-														   .tags(attachmentTags)
-														   .build());
+						postFinanceYbInvoiceRequest.getPInstanceReference()),
+				AttachmentEntryCreateRequest.builder()
+						.type(AttachmentEntryType.Data)
+						.filename(envelope.getBody().getDeliveryInfo().getTransactionID() + "_postFinance_upload.xml")
+						.data(data)
+						.contentType(MimeType.TYPE_XML)
+						.tags(attachmentTags)
+						.build());
 
 		return invoice;
 	}
@@ -781,7 +774,7 @@ public class PostFinanceYbInvoiceService
 		final SummaryType summaryType = YB_INVOICE_OBJECT_FACTORY.createSummaryType();
 		summaryType.setTax(taxType);
 
-		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		if (invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
 		{
 			summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines().negate());
 			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal().negate());
@@ -793,8 +786,6 @@ public class PostFinanceYbInvoiceService
 			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal());
 			summaryType.setTotalAmountDue(invoiceRecord.getGrandTotal());
 		}
-
-
 
 		summaryType.setTotalAmountPaid(BigDecimal.ZERO);
 
@@ -828,13 +819,15 @@ public class PostFinanceYbInvoiceService
 		final TableRecordReference recordRef = request.getDocumentReference();
 		switch (recordRef.getTableName())
 		{
-			case I_C_Invoice.Table_Name -> {
+			case I_C_Invoice.Table_Name ->
+			{
 				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(recordRef.getRecord_ID()));
 				isActive = isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 			}
-			case I_C_DunningDoc.Table_Name -> {
+			case I_C_DunningDoc.Table_Name ->
+			{
 				final List<I_C_Invoice> dunnedInvoiceRecords = dunningService.retrieveDunnedInvoices(DunningDocId.ofRepoId(recordRef.getRecord_ID()));
-				if(dunnedInvoiceRecords.size() != 1)
+				if (dunnedInvoiceRecords.size() != 1)
 				{
 					throw new PostFinanceExportException("Only a dunning linked to exactly one invoice is supported");
 				}
@@ -843,7 +836,7 @@ public class PostFinanceYbInvoiceService
 			}
 		}
 
-		if(!isActive)
+		if (!isActive)
 		{
 			trxManager.assertThreadInheritedTrxNotExists();
 			trxManager.runInNewTrx(() -> {
@@ -851,9 +844,9 @@ public class PostFinanceYbInvoiceService
 				final ImmutableSet<String> handledTableNames = ImmutableSet.of(I_C_Invoice.Table_Name, I_C_DunningDoc.Table_Name);
 				final String msg = handledTableNames.contains(recordRef.getTableName()) ? "Skipped because not active for Org or BPGroup/BPartner" : "Skipped because not handled Table";
 				postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-														.docOutboundLogId(request.getDocOutboundLogId())
-														.message(msg)
-														.build());
+						.docOutboundLogId(request.getDocOutboundLogId())
+						.message(msg)
+						.build());
 			});
 		}
 		return isActive;
@@ -870,8 +863,8 @@ public class PostFinanceYbInvoiceService
 		final boolean isActiveForPartner = partnerInvoiceDelivery != null && partnerInvoiceDelivery.isPostFinance()
 				|| partnerInvoiceDelivery == null && bpGroupInvoiceDelivery.isPostFinance();
 
-        return orgConfig != null
-                && isActiveForPartner
-                && (orgConfig.isUsePaperBill() || partnerConfig != null);
-    }
+		return orgConfig != null
+				&& isActiveForPartner
+				&& (orgConfig.isUsePaperBill() || partnerConfig != null);
+	}
 }
