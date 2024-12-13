@@ -107,7 +107,7 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 	}
 
 	@Nullable
-	private PostFinanceYbInvoiceRequest preflightEvaluate(PostFinanceYbInvoiceRequest request)
+	private PostFinanceYbInvoiceRequest preflightEvaluate(final PostFinanceYbInvoiceRequest request)
 	{
 		final ExplainedOptional<IPostFinanceYbInvoiceHandler> eligibleHandler = postFinanceYbInvoiceHandlerFactory.getEligibleHandler(request);
 		if (!eligibleHandler.isPresent())
