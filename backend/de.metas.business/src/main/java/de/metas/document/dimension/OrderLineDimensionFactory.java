@@ -22,6 +22,7 @@
 
 package de.metas.document.dimension;
 
+import de.metas.order.OrderId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
@@ -41,10 +42,18 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	@NonNull
 	public Dimension getFromRecord(@NonNull final I_C_OrderLine record)
 	{
+		OrderId salesOrderId = OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID());
+		if (salesOrderId == null
+				&& record.getC_Order().isSOTrx())
+		{
+			salesOrderId = OrderId.ofRepoId(record.getC_Order_ID());
+		}
+
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.salesOrderId(salesOrderId)
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -63,6 +72,7 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

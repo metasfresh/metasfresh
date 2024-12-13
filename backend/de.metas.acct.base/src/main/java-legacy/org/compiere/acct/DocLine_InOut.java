@@ -64,7 +64,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	@NonNull private final IOrderBL orderBL;
 
 	@NonNull @Getter private final ImmutableList<InOutCost> inoutCosts;
-	@Nullable private final OrderAndLineId orderAndLineId;
 
 	/**
 	 * Outside Processing
@@ -81,7 +80,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
 
 		final Quantity qty = doc.inOutBL.getMovementQty(inoutLine);
-		this.orderAndLineId = getOrderAndLineId(doc.getSalesOrderId());
 		setQty(qty, doc.isSOTrx());
 	}
 
@@ -100,17 +98,15 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return ppCostCollectorId;
 	}
 
-	@Nullable
-	private OrderAndLineId getOrderAndLineId(@Nullable final OrderId orderId)
+	private Optional<OrderAndLineId> getOrderAndLineId()
 	{
 		final I_M_InOutLine inOutLine = getInOutLine();
-		return OrderAndLineId.ofRepoIdsOrNull(OrderId.toRepoId(orderId), inOutLine.getC_OrderLine_ID());
+		return OrderAndLineId.optionalOfRepoIds(inOutLine.getC_OrderSO_ID(), inOutLine.getC_OrderLine_ID());
 	}
 
 	private Optional<I_C_OrderLine> getOrderLine()
 	{
-		return Optional.ofNullable(orderAndLineId)
-				.map(orderBL::getLineById);
+		return getOrderAndLineId().map(orderBL::getLineById);
 	}
 
 	private I_M_InOutLine getInOutLine()
@@ -239,7 +235,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	@Override
 	protected OrderId getSalesOrderId()
 	{
-		return orderAndLineId == null ? null : orderAndLineId.getOrderId();
+		final I_M_InOutLine inoutLine = getInOutLine();
+		return OrderId.ofRepoIdOrNull(inoutLine.getC_OrderSO_ID());
 	}
 
 	@Nullable
