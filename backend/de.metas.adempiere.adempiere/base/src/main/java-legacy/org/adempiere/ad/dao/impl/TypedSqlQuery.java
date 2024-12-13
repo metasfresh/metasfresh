@@ -37,6 +37,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -58,6 +59,7 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
+import org.compiere.util.DB.ResultSetRowLoader;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -106,6 +108,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private final Properties ctx;
 	private final String tableName;
 	private String sqlFrom = null;
+	private HashMap<String, Object> sqlFromParams = null;
 	private POInfo _poInfo;
 	private final Class<T> modelClass;
 	private String whereClause;
@@ -179,9 +182,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param sqlFrom SQL FROM clause (e.g. Table1 as t1 INNER JOIN Table t2 ON (...) .... )
 	 */
-	public TypedSqlQuery<T> setSqlFrom(final String sqlFrom)
+	public TypedSqlQuery<T> setSqlFrom(@Nullable final String sqlFrom)
 	{
-		this.sqlFrom = sqlFrom;
+		this.sqlFrom = StringUtils.trimBlankToNull(sqlFrom);
 		return this;
 	}
 
@@ -194,9 +197,45 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		if (sqlFrom == null || sqlFrom.isEmpty())
 		{
+			return buildSqlFrom();
+		}
+		else
+		{
+			return sqlFrom;
+		}
+	}
+
+	private String buildSqlFrom()
+	{
+		if (sqlFromParams != null)
+		{
+			final String sqlFunc = getTableName();
+			final StringBuilder sqlFuncParams = new StringBuilder();
+			sqlFromParams.forEach((name, value) -> {
+				if (sqlFuncParams.length() > 0)
+				{
+					sqlFuncParams.append(", ");
+				}
+				sqlFuncParams.append(name).append(" => ").append(DB.TO_SQL(value));
+			});
+
+			return sqlFunc + "(" + sqlFuncParams + ")";
+		}
+		else
+		{
 			return getTableName();
 		}
-		return sqlFrom;
+	}
+
+	@Override
+	public TypedSqlQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value)
+	{
+		if (this.sqlFromParams == null)
+		{
+			this.sqlFromParams = new HashMap<>();
+		}
+		this.sqlFromParams.put(name, value);
+		return this;
 	}
 
 	/**

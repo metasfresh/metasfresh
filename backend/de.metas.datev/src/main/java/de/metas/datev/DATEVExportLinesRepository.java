@@ -1,23 +1,21 @@
 package de.metas.datev;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.sql.Timestamp;
-
-import de.metas.common.util.time.SystemTime;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.datev.model.I_DATEV_Export;
+import de.metas.datev.model.I_DATEV_ExportLine;
+import de.metas.datev.model.I_RV_DATEV_Export_Fact_Acct_Invoice;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import de.metas.datev.model.I_DATEV_Export;
-import de.metas.datev.model.I_DATEV_ExportLine;
-import de.metas.datev.model.I_RV_DATEV_Export_Fact_Acct_Invoice;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -29,12 +27,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,42 +42,52 @@ import de.metas.util.Services;
 @Component
 public class DATEVExportLinesRepository
 {
-	public int deleteAllByExportId(final int datevExportId)
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public int createLines(@NonNull final DATEVExportCreateLinesRequest request)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DATEV_ExportLine.class)
+		deleteLinesByExportId(request.getDatevExportId());
+
+		final QueryInsertExecutorResult result = createSourceQuery(request)
+				.insertDirectlyInto(I_DATEV_ExportLine.class)
+				.mapCommonColumns()
+				.mapPrimaryKey()
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_DATEV_Export_ID, request.getDatevExportId())
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_Created, request.getNow())
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_CreatedBy, request.getUserId())
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_Updated, request.getNow())
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_UpdatedBy, request.getUserId())
+				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_IsActive, true)
+				.execute();
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, CacheInvalidateMultiRequest.rootRecord(I_DATEV_Export.Table_Name, request.getDatevExportId()));
+
+		return result.getRowsInserted();
+	}
+
+	private void deleteLinesByExportId(@NonNull final DATEVExportId datevExportId)
+	{
+		queryBL.createQueryBuilder(I_DATEV_ExportLine.class)
 				.addEqualsFilter(I_DATEV_ExportLine.COLUMN_DATEV_Export_ID, datevExportId)
 				.create()
 				.deleteDirectly();
 	}
 
-	public int createLinesFromConfig(final int datevExportId)
+	private static I_DATEV_Export getById(final DATEVExportId datevExportId)
 	{
-		Check.assume(datevExportId > 0, "datevExportId > 0");
-		final I_DATEV_Export datevExport = load(datevExportId, I_DATEV_Export.class);
-
-		final Timestamp now = SystemTime.asTimestamp();
-		final int userId = Env.getAD_User_ID();
-		final QueryInsertExecutorResult result = createSourceQuery(datevExport)
-				.insertDirectlyInto(I_DATEV_ExportLine.class)
-				.mapCommonColumns()
-				.mapPrimaryKey()
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_DATEV_Export_ID, datevExportId)
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_Created, now)
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_CreatedBy, userId)
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_Updated, now)
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_UpdatedBy, userId)
-				.mapColumnToConstant(I_DATEV_ExportLine.COLUMNNAME_IsActive, true)
-				.execute();
-
-		return result.getRowsInserted();
+		return load(datevExportId, I_DATEV_Export.class);
 	}
 
-	private IQuery<I_RV_DATEV_Export_Fact_Acct_Invoice> createSourceQuery(final I_DATEV_Export datevExport)
+	private IQuery<I_RV_DATEV_Export_Fact_Acct_Invoice> createSourceQuery(final DATEVExportCreateLinesRequest request)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_DATEV_Export datevExport = getById(request.getDatevExportId());
 
-		final IQueryBuilder<I_RV_DATEV_Export_Fact_Acct_Invoice> queryBuilder = queryBL.createQueryBuilder(I_RV_DATEV_Export_Fact_Acct_Invoice.class);
+		final IQueryBuilder<I_RV_DATEV_Export_Fact_Acct_Invoice> queryBuilder = queryBL.createQueryBuilder(I_RV_DATEV_Export_Fact_Acct_Invoice.class)
+				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_DateAcct)
+				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_C_Invoice_ID)
+				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID)
+				.addEqualsFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_AD_Org_ID, datevExport.getAD_Org_ID());
+
 		if (datevExport.getDateAcctFrom() != null)
 		{
 			queryBuilder.addCompareFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_DateAcct, Operator.GREATER_OR_EQUAL, datevExport.getDateAcctFrom());
@@ -98,7 +106,10 @@ public class DATEVExportLinesRepository
 					exportLinesQuery);
 		}
 
-		return queryBuilder.create();
+		return queryBuilder.create()
+			.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax())
+				.setSqlFromParameter("p_IsSwitchCreditMemo", datevExport.isSwitchCreditMemo() )
+		;
 	}
 
 }
