@@ -45,6 +45,7 @@ import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
@@ -599,6 +600,16 @@ public class ESRImportBL implements IESRImportBL
 			return true;
 		}
 
+		// Check for SCOR ESR Type
+		if (ESRTransactionLineMatcherUtil.isSCORLine(line))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unknown_Invoice);
+			line.setIsValid(true);
+			line.setProcessed(true);
+			esrImportDAO.save(line);
+			return true;
+		}
+
 		// skip reverse booking lines from regular processing
 		// the admin should deal with them manually
 		if (isReverseBookingLine(line))
@@ -659,6 +670,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return existentPaymentId.orElse(null);
 	}
+
 
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/2118
