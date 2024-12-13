@@ -1,6 +1,6 @@
 {
   "destinationDetails": {
-    "connectionDetails": {
+    "tcpConnectionDetails": {
       "tcpPort": 445,
       "tcpHost": "Host"
     }
