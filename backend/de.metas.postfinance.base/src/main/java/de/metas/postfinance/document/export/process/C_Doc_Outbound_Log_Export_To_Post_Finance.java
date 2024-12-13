@@ -130,6 +130,8 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 		trxManager.runInThreadInheritedTrx(() -> {
+			// NOTE: we assume errors are caught by service methods, so at this point if an error is thrown, we are letting it flow.
+			
 			final List<PostFinanceYbInvoiceResponse> invoices = postFinanceYbInvoiceHandlerFactory.prepareYbInvoices(requests);
 			postFinanceYbInvoiceService.exportToPostFinance(invoices);
 		});
