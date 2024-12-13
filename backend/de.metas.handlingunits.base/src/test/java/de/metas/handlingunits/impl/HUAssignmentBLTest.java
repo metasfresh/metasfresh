@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -52,11 +53,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class HUAssignmentBLTest
 {
-	private String trxName;
+	@Nullable private String trxName;
 	private IContextAware contextProvider;
 
-	private IHUAssignmentBL huAssignmentBL;
-	private IHUAssignmentDAO huAssignmentDAO;
+	private HUAssignmentBL huAssignmentBL;
+	private HUAssignmentDAO huAssignmentDAO;
 
 	private I_Test record;
 	private I_M_HU hu;
@@ -95,8 +96,10 @@ public class HUAssignmentBLTest
 
 		//
 		// BL under test
-		huAssignmentBL = Services.get(IHUAssignmentBL.class);
-		huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		huAssignmentBL = new HUAssignmentBL();
+		Services.registerService(IHUAssignmentBL.class, huAssignmentBL);
+		huAssignmentDAO = new HUAssignmentDAO();
+		Services.registerService(IHUAssignmentDAO.class, huAssignmentDAO);
 
 		//
 		// Setup ctx and trxName
