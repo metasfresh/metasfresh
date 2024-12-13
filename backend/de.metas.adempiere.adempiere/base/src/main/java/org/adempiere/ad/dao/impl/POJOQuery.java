@@ -50,6 +50,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -177,6 +178,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public String getTableName()
 	{
 		return InterfaceWrapperHelper.getTableName(modelClass);
+	}
+
+	@Override
+	public IQuery<T> setSqlFromParameter(final @NonNull String name, @Nullable final Object value)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

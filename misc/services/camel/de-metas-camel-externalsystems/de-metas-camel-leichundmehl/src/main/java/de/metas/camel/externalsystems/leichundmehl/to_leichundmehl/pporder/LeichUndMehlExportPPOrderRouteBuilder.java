@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DestinationDetails;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.ReadPluFileProcessor;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.JSONUtil;
@@ -59,6 +60,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.file.SendToFileRouteBuilder.SEND_TO_FILE_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -113,8 +115,13 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.end()
 								
 				.process(new ReadPluFileProcessor(processLogger))
-				.to(direct(SEND_TO_TCP_ROUTE_ID))
-				//.to(direct(SEND_TO_UDP_ROUTE_ID))
+				.choice()
+					.when(ExportPPOrderHelper.isStoreFileOnDisk())
+						.to(direct(SEND_TO_FILE_ROUTE_ID))
+					.otherwise()
+						.to(direct(SEND_TO_TCP_ROUTE_ID))
+					.endChoice()
+				.end()
 
 				.choice()
 					.when(ExportPPOrderHelper.isPluFileExportAuditEnabled())
@@ -140,22 +147,24 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 			throw new RuntimeException("Missing mandatory parameters from JsonExternalSystemRequest: " + request);
 		}
 
-		final String productBaseFolderName = parameters.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
-		if (Check.isBlank(productBaseFolderName))
+		final String pluTemplateFileBaseFolderName = parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_TEMPLATE_BASE_FOLDER_NAME);
+		if (Check.isBlank(pluTemplateFileBaseFolderName))
 		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PLU_FILE_TEMPLATE_BASE_FOLDER_NAME);
 		}
 
 		final String pluFileExportAuditEnabled = parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);
 		final String customQueryAdProcessValue = parameters.get(ExternalSystemConstants.PARAM_CUSTOM_QUERY_AD_PROCESS_VALUE); // may be null
 
+		final DestinationDetails destinationDetails = ExportPPOrderHelper.getDestinationDetails(parameters);
+
 		final ExportPPOrderRouteContext context = ExportPPOrderRouteContext.builder()
 				.jsonExternalSystemRequest(request)
 				.ppOrderMetasfreshId(ExportPPOrderHelper.getPPOrderMetasfreshId(parameters))
-				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
+				.destinationDetails(destinationDetails)
 				.customQueryAdProcessValue(customQueryAdProcessValue)
 				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
-				.productBaseFolderName(productBaseFolderName)
+				.pluTemplateFileBaseFolderName(pluTemplateFileBaseFolderName)
 				.pluFileExportAuditEnabled(StringUtils.toBoolean(pluFileExportAuditEnabled))
 				.pluFileConfigs(ExportPPOrderHelper.getPluFileConfigs(parameters))
 				.build();
@@ -272,7 +281,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
 		final JsonAttachment attachment = JsonAttachment.builder()
-				.fileName(context.getFilename())
+				.fileName(context.getPLUTemplateFilename())
 				.data(base64FileData)
 				.type(JsonAttachmentSourceType.Data)
 				.build();
