@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS Fact_Acct_Transactions_View;
+DROP VIEW IF EXISTS Fact_Acct_Transactions_View
+;
 
 CREATE VIEW Fact_Acct_Transactions_View AS
 SELECT fact_acct_id,
@@ -65,7 +66,9 @@ SELECT fact_acct_id,
        userElementString6,
        userElementString7,
        --
-       acctbalance(account_id, AmtAcctDr, amtacctcr) AS balance,
-       userElementDate1,
-       userElementDate2
-FROM Fact_Acct fact;
+       acctbalance(account_id, AmtAcctDr, amtacctcr) AS balance
+--NEW_DAWN_MERGE_ARTIFACT
+-- userElementDate1,
+-- userElementDate2
+FROM Fact_Acct fact
+;
