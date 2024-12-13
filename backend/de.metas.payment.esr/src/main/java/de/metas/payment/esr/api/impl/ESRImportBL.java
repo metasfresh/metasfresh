@@ -604,6 +604,8 @@ public class ESRImportBL implements IESRImportBL
 		if (ESRTransactionLineMatcherUtil.isSCORLine(line))
 		{
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unknown_Invoice);
+			line.setIsValid(true);
+			line.setProcessed(true);
 			esrImportDAO.save(line);
 			return true;
 		}
