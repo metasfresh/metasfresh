@@ -415,7 +415,7 @@ export class RawList0 extends PureComponent {
                       readOnly
                       tabIndex={-1}
                       placeholder={placeholder}
-                      value={value.replace(/\n/g, ' ')}
+                      value={value ? value.replace(/\n/g, ' ') : ''}
                       disabled={readonly || disabled}
                     />
                   </div>
