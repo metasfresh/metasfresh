@@ -24,14 +24,14 @@ package de.metas.util;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StreamUtilsTests
 {
@@ -50,8 +50,9 @@ public class StreamUtilsTests
 		final List<List<Integer>> chunks = StreamUtils.dice(Stream.of(123), 10)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(chunks).hasSize(1);
-		assertThat(chunks).isEqualTo(ImmutableList.of(ImmutableList.of(123)));
+		assertThat(chunks)
+				.hasSize(1)
+				.isEqualTo(ImmutableList.of(ImmutableList.of(123)));
 	}
 
 	@Test
@@ -60,14 +61,14 @@ public class StreamUtilsTests
 		final List<List<Integer>> chunks = StreamUtils.dice(intRangeAsList(1, 57).stream(), 10)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(chunks).hasSize(6);
-		assertThat(chunks).isEqualTo(ImmutableList.of(
-				intRangeAsList(1, 10),
-				intRangeAsList(11, 20),
-				intRangeAsList(21, 30),
-				intRangeAsList(31, 40),
-				intRangeAsList(41, 50),
-				intRangeAsList(51, 57)));
+		assertThat(chunks).hasSize(6)
+				.isEqualTo(ImmutableList.of(
+						intRangeAsList(1, 10),
+						intRangeAsList(11, 20),
+						intRangeAsList(21, 30),
+						intRangeAsList(31, 40),
+						intRangeAsList(41, 50),
+						intRangeAsList(51, 57)));
 	}
 
 	@Test
@@ -76,8 +77,8 @@ public class StreamUtilsTests
 		final List<List<Integer>> chunks = StreamUtils.dice(intRangeAsList(1, 10).stream(), 10)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(chunks).hasSize(1);
-		assertThat(chunks).isEqualTo(ImmutableList.of(intRangeAsList(1, 10)));
+		assertThat(chunks).hasSize(1)
+				.isEqualTo(ImmutableList.of(intRangeAsList(1, 10)));
 	}
 
 	@Test
@@ -86,10 +87,10 @@ public class StreamUtilsTests
 		final List<List<Integer>> chunks = StreamUtils.dice(intRangeAsList(1, 20).stream(), 10)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(chunks).hasSize(2);
-		assertThat(chunks).isEqualTo(ImmutableList.of(
-				intRangeAsList(1, 10),
-				intRangeAsList(11, 20)));
+		assertThat(chunks).hasSize(2)
+				.isEqualTo(ImmutableList.of(
+						intRangeAsList(1, 10),
+						intRangeAsList(11, 20)));
 	}
 
 	private static List<Integer> intRangeAsList(final int startInclusive, final int endInclusive)
@@ -101,37 +102,42 @@ public class StreamUtilsTests
 	public void dice_with_aggregation()
 	{
 		final List<TestObject> list = new ArrayList<>();
-		list.addAll(getTestObjectList(0,1,5));
+		list.addAll(getTestObjectList(0, 1, 5));
 		list.addAll(getTestObjectList(0, 2, 7));
 		list.addAll(getTestObjectList(1, 0, 10));
 
 		final List<List<TestObject>> chunks = StreamUtils.dice(list.stream(), 10, TestObject::element1)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(chunks).hasSize(3);
-
-		final List<TestObject> expectedList1 = getTestObjectList(0,1,5);
-		expectedList1.addAll(getTestObjectList(0, 2, 5));
-		assertThat(chunks).isEqualTo(ImmutableList.of(
-				expectedList1,
-				getTestObjectList(0,2,2),
-				getTestObjectList(1,0,10)));
+		assertThat(chunks).containsExactly(
+				concat(getTestObjectList(0, 1, 5), getTestObjectList(0, 2, 5)),
+				getTestObjectList(0, 2, 2),
+				getTestObjectList(1, 0, 10)
+		);
 	}
 
 	private List<TestObject> getTestObjectList(final int element1, final int element2, final int count)
 	{
 		final List<TestObject> list = new ArrayList<>();
-		for(int i = 1; i <= count; i++)
+		for (int i = 1; i <= count; i++)
 		{
 			list.add(TestObject.builder()
-							 .element1(element1)
-							 .element2(element2)
-							 .build()
+					.element1(element1)
+					.element2(element2)
+					.build()
 			);
 		}
 		return list;
 	}
 
+	private static <T> List<T> concat(final List<T> list1, final List<T> list2)
+	{
+		final List<T> list = new ArrayList<>();
+		list.addAll(list1);
+		list.addAll(list2);
+		return list;
+	}
+
 	@Builder
-	private record TestObject(int element1, int element2) { }
+	private record TestObject(int element1, int element2) {}
 }
