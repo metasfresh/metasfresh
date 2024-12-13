@@ -24,9 +24,12 @@ package de.metas.postfinance.document.export.process;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.postfinance.document.export.IPostFinanceYbInvoiceHandler;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceHandlerFactory;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
+import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -41,8 +44,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 {
@@ -55,34 +60,40 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
+	{
+		final int chunkSize = getChunkSize();
+		StreamUtils.dice(
+						streamDocOutboundLogs()
+								.map(this::toPostFinanceExportRequest)
+								.map(this::preflightEvaluate)
+								.filter(Objects::nonNull),
+						chunkSize)
+				.forEach(this::sendChunk);
+
+		return MSG_OK;
+	}
+
+	private int getChunkSize() {return sysConfigBL.getIntValue(SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE, 20);}
+
+	private Stream<I_C_Doc_Outbound_Log> streamDocOutboundLogs()
 	{
 		final IQueryFilter<I_C_Doc_Outbound_Log> queryFilter = getProcessInfo()
 				.getQueryFilterOrElseTrue();
 		Check.assumeNotNull(queryFilter, "queryFilter is not null");
 
-		final int chunkSize = sysConfigBL.getIntValue(SYS_CFG_INVOICE_UPLOAD_BATCH_SIZE, 20);
-
-		StreamUtils.dice(
-				queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-						.addOnlyActiveRecordsFilter()
-						.addInArrayFilter(
-								I_C_Doc_Outbound_Log.COLUMNNAME_PostFinance_Export_Status,
-								PostFinanceStatus.NOT_SEND,
-								PostFinanceStatus.TRANSMISSION_ERROR
-						)
-						.filter(queryFilter)
-						.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Org_ID)
-						.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID)
-						.create()
-						.iterateAndStream()
-						.map(this::toPostFinanceExportRequest)
-						.filter(postFinanceYbInvoiceService::isPostFinanceActive)
-						.filter(postFinanceYbInvoiceHandlerFactory::hasEligibleHandler),
-				chunkSize)
-				.forEach(this::sendChunk);
-
-		return MSG_OK;
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(
+						I_C_Doc_Outbound_Log.COLUMNNAME_PostFinance_Export_Status,
+						PostFinanceStatus.NOT_SEND,
+						PostFinanceStatus.TRANSMISSION_ERROR
+				)
+				.filter(queryFilter)
+				.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Org_ID)
+				.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID)
+				.create()
+				.iterateAndStream();
 	}
 
 	private PostFinanceYbInvoiceRequest toPostFinanceExportRequest(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
@@ -95,13 +106,32 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 				.build();
 	}
 
+	@Nullable
+	private PostFinanceYbInvoiceRequest preflightEvaluate(PostFinanceYbInvoiceRequest request)
+	{
+		final ExplainedOptional<IPostFinanceYbInvoiceHandler> eligibleHandler = postFinanceYbInvoiceHandlerFactory.getEligibleHandler(request);
+		if (!eligibleHandler.isPresent())
+		{
+			postFinanceYbInvoiceService.setPostFinanceStatusForSkipped(request.getDocOutboundLogReference(), eligibleHandler.getExplanation());
+			return null;
+		}
+
+		if (!postFinanceYbInvoiceService.isPostFinanceActive(request))
+		{
+			postFinanceYbInvoiceService.setPostFinanceStatusForSkipped(request.getDocOutboundLogReference(), "Skipped because not active for Org or BPGroup/BPartner");
+			return null;
+		}
+
+		// Possible valid request 
+		return request;
+	}
+
 	private void sendChunk(final List<PostFinanceYbInvoiceRequest> requests)
 	{
-		trxManager.runInNewTrx(() -> postFinanceYbInvoiceService.exportToPostFinance(
-				requests.stream()
-						.map(postFinanceYbInvoiceHandlerFactory::prepareYbInvoices)
-						.filter(Objects::nonNull)
-						.toList()
-		));
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() -> {
+			final List<PostFinanceYbInvoiceResponse> invoices = postFinanceYbInvoiceHandlerFactory.prepareYbInvoices(requests);
+			postFinanceYbInvoiceService.exportToPostFinance(invoices);
+		});
 	}
 }

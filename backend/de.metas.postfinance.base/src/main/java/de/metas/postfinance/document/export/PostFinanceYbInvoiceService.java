@@ -23,7 +23,6 @@
 package de.metas.postfinance.document.export;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryType;
@@ -53,6 +52,7 @@ import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
@@ -184,24 +184,25 @@ public class PostFinanceYbInvoiceService
 
 	public void exportToPostFinance(@NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
-		trxManager.assertThreadInheritedTrxExists();
-		try
-		{
-			final String billerId = CollectionUtils.extractSingleElement(invoices, PostFinanceYbInvoiceResponse::getBillerId);
-			final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
-			arrayOfProcessedInvoice.getProcessedInvoice()
-					.forEach(processedInvoice -> handleProcessedInvoice(processedInvoice, invoices));
-		}
-		catch (final Exception e)
-		{
-			for (final PostFinanceYbInvoiceResponse invoice : invoices)
+		trxManager.runInThreadInheritedTrx(() -> {
+			try
 			{
-				handleConnectionExceptions(
-						invoice.getDocOutboundLogId(),
-						new PostFinanceExportException("Error on uploadFilesReport to PostFinance", e)
-				);
+				final String billerId = CollectionUtils.extractSingleElement(invoices, PostFinanceYbInvoiceResponse::getBillerId);
+				final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
+				arrayOfProcessedInvoice.getProcessedInvoice()
+						.forEach(processedInvoice -> handleProcessedInvoice(processedInvoice, invoices));
 			}
-		}
+			catch (final Exception e)
+			{
+				for (final PostFinanceYbInvoiceResponse invoice : invoices)
+				{
+					handleConnectionExceptions(
+							invoice.getDocOutboundLogId(),
+							new PostFinanceExportException("Error on uploadFilesReport to PostFinance", e)
+					);
+				}
+			}
+		});
 	}
 
 	private void handleProcessedInvoice(@NonNull final ProcessedInvoice processedInvoice, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
@@ -295,20 +296,25 @@ public class PostFinanceYbInvoiceService
 			@NonNull final PostFinanceExportException postFinanceExportException,
 			@NonNull final PostFinanceStatus postFinanceStatus)
 	{
-		trxManager.assertThreadInheritedTrxExists();
-		postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-				.docOutboundLogId(docOutboundLogId)
-				.message(postFinanceExportException.getMessage())
-				.postFinanceExportException(postFinanceExportException)
-				.build());
-		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, postFinanceStatus);
+		trxManager.runInThreadInheritedTrx(() -> {
+			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, postFinanceStatus);
+			postFinanceLogRepository.create(docOutboundLogId, postFinanceExportException);
+		});
 	}
 
-	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference)
+	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference, @NonNull final ITranslatableString reason)
 	{
-		trxManager.assertThreadInheritedTrxExists();
+		setPostFinanceStatusForSkipped(docOutboundLogReference, reason.getDefaultValue());
+	}
+
+	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference, @NonNull final String reason)
+	{
 		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
-		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.DO_NOT_SEND);
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.DO_NOT_SEND);
+			postFinanceLogRepository.create(docOutboundLogId, reason);
+		});
 	}
 
 	public Envelope prepareExportData(
@@ -815,14 +821,13 @@ public class PostFinanceYbInvoiceService
 
 	public boolean isPostFinanceActive(@NonNull final PostFinanceYbInvoiceRequest request)
 	{
-		boolean isActive = false;
 		final TableRecordReference recordRef = request.getDocumentReference();
-		switch (recordRef.getTableName())
+		return switch (recordRef.getTableName())
 		{
 			case I_C_Invoice.Table_Name ->
 			{
 				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(recordRef.getRecord_ID()));
-				isActive = isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+				yield isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 			}
 			case I_C_DunningDoc.Table_Name ->
 			{
@@ -832,24 +837,10 @@ public class PostFinanceYbInvoiceService
 					throw new PostFinanceExportException("Only a dunning linked to exactly one invoice is supported");
 				}
 				final I_C_Invoice invoice = dunnedInvoiceRecords.get(0);
-				isActive = isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+				yield isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 			}
-		}
-
-		if (!isActive)
-		{
-			trxManager.assertThreadInheritedTrxNotExists();
-			trxManager.runInNewTrx(() -> {
-				setPostFinanceStatusForSkipped(request.getDocOutboundLogReference());
-				final ImmutableSet<String> handledTableNames = ImmutableSet.of(I_C_Invoice.Table_Name, I_C_DunningDoc.Table_Name);
-				final String msg = handledTableNames.contains(recordRef.getTableName()) ? "Skipped because not active for Org or BPGroup/BPartner" : "Skipped because not handled Table";
-				postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-						.docOutboundLogId(request.getDocOutboundLogId())
-						.message(msg)
-						.build());
-			});
-		}
-		return isActive;
+			default -> false;
+		};
 	}
 
 	private boolean isPostFinanceActiveForOrgAndBPartner(@NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId)

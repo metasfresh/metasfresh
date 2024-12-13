@@ -22,89 +22,80 @@
 
 package de.metas.postfinance.document.export;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
-import de.metas.postfinance.docoutboundlog.PostFinanceLogCreateRequest;
-import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 @Service
-@AllArgsConstructor
 public class PostFinanceYbInvoiceHandlerFactory
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(PostFinanceYbInvoiceHandlerFactory.class);
-	@NonNull private final List<IPostFinanceYbInvoiceHandler> postFinanceYbInvoiceHandlers;
-	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
-	@NonNull private final PostFinanceLogRepository postFinanceLogRepository;
-
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+	@NonNull private final ImmutableList<IPostFinanceYbInvoiceHandler> postFinanceYbInvoiceHandlers;
+
+	public PostFinanceYbInvoiceHandlerFactory(
+			@NonNull final PostFinanceYbInvoiceService postFinanceYbInvoiceService,
+			@NonNull final List<IPostFinanceYbInvoiceHandler> postFinanceYbInvoiceHandlers)
+	{
+		this.postFinanceYbInvoiceService = postFinanceYbInvoiceService;
+		this.postFinanceYbInvoiceHandlers = ImmutableList.copyOf(postFinanceYbInvoiceHandlers);
+	}
+
+	public List<PostFinanceYbInvoiceResponse> prepareYbInvoices(@NonNull final List<PostFinanceYbInvoiceRequest> requests)
+	{
+		return requests.stream()
+				.map(this::prepareYbInvoices)
+				.filter(Objects::nonNull)
+				.toList();
+	}
 
 	@Nullable
 	public PostFinanceYbInvoiceResponse prepareYbInvoices(@NonNull final PostFinanceYbInvoiceRequest request)
 	{
 		trxManager.assertThreadInheritedTrxExists();
-		final List<IPostFinanceYbInvoiceHandler> eligibleHandlers = postFinanceYbInvoiceHandlers.stream()
-				.filter(handler -> handler.applies(request))
-				.toList();
 
-		Check.assume(eligibleHandlers.size() == 1, "Exactly one matching handler should be found");
 		try
 		{
-			return eligibleHandlers.get(0).prepareExportData(request);
+			final IPostFinanceYbInvoiceHandler eligibleHandler = getEligibleHandler(request).orElseThrow(PostFinanceExportException::new);
+			return eligibleHandler.prepareExportData(request);
 		}
-		catch (final PostFinanceExportException e)
+		catch (final Exception ex)
 		{
-			logger.warn("Exception on post finance export", e);
-			postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogId(), e);
+			logger.warn("Exception on post finance export", ex);
+			postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogId(), PostFinanceExportException.wrapIfNeeded(ex));
 			return null;
 		}
 	}
 
-	public boolean hasEligibleHandler(@NonNull final PostFinanceYbInvoiceRequest request)
+	@NotNull
+	public ExplainedOptional<IPostFinanceYbInvoiceHandler> getEligibleHandler(@NotNull final PostFinanceYbInvoiceRequest request)
 	{
-		trxManager.assertThreadInheritedTrxNotExists();
 		final List<IPostFinanceYbInvoiceHandler> eligibleHandlers = postFinanceYbInvoiceHandlers.stream()
 				.filter(handler -> handler.applies(request))
 				.toList();
 
-		try
+		if (eligibleHandlers.isEmpty())
 		{
-			if (eligibleHandlers.isEmpty())
-			{
-				trxManager.runInNewTrx(() -> {
-					// ignore docTypes without matching handler
-					postFinanceYbInvoiceService.setPostFinanceStatusForSkipped(request.getDocOutboundLogReference());
-
-					postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
-							.docOutboundLogId(request.getDocOutboundLogId())
-							.message("Skipped because of no matching PostFinanceHandler")
-							.build());
-				});
-
-				return false;
-			}
-			else if (eligibleHandlers.size() > 1)
-			{
-				throw new PostFinanceExportException("More than one handler found for this docType");
-			}
-			else
-			{
-				return true;
-			}
+			return ExplainedOptional.emptyBecause("No eligible handles found for " + request);
 		}
-		catch (final PostFinanceExportException e)
+		else if (eligibleHandlers.size() > 1)
 		{
-			logger.warn("Exception on post finance export", e);
-			trxManager.runInNewTrx(() -> postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogId(), e));
-			return false;
+			return ExplainedOptional.emptyBecause("More than one eligible handles found for " + request + ": " + eligibleHandlers);
+		}
+		else
+		{
+			return ExplainedOptional.of(eligibleHandlers.get(0));
 		}
 	}
 }
