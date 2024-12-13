@@ -757,6 +757,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Reset
 			if (!setOrder)
 			{
+				line.setC_Order_ID(0);
 				line.setC_OrderLine_ID(0);
 				line.setM_RMALine_ID(0); // Reset RMA Line
 			}

@@ -436,6 +436,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		//
 		// Order Line Link (retrieved from current Shipment)
+		shipmentLine.setC_Order_ID(OrderAndLineId.toOrderRepoId(orderLineId));
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId.getOrderLineId());
 		if (orderLine != null)

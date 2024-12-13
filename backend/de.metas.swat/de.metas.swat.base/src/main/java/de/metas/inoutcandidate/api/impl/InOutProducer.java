@@ -602,6 +602,7 @@ public class InOutProducer implements IInOutProducer
 
 		//
 		// Order Line Link
+		line.setC_Order_ID(rs.getC_Order_ID());
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
 
 		//
