@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,9 +42,9 @@ import java.util.Properties;
 
 public final class SpringContextHolder
 {
-	public static final transient SpringContextHolder instance = new SpringContextHolder();
+	public static final SpringContextHolder instance = new SpringContextHolder();
 
-	private static final transient Logger logger = LogManager.getLogger(SpringContextHolder.class);
+	private static final Logger logger = LogManager.getLogger(SpringContextHolder.class);
 
 	@Nullable
 	private ApplicationContext applicationContext;
@@ -61,6 +61,7 @@ public final class SpringContextHolder
 		return applicationContext;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isApplicationContextSet()
 	{
 		return applicationContext != null;

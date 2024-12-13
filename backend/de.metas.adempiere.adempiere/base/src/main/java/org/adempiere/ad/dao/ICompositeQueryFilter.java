@@ -23,6 +23,7 @@
 package org.adempiere.ad.dao;
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -260,6 +261,8 @@ public interface ICompositeQueryFilter<T> extends ICompositeQueryFilterBase<T>, 
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
 	ICompositeQueryFilter<T> addStringNotLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
+
+	ICompositeQueryFilter<T> addStringStartsWith(@NonNull String columnName, @NonNull String prefix);
 
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 

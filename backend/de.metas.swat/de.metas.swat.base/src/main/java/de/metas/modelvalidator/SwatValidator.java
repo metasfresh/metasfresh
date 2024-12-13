@@ -18,7 +18,6 @@ import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
@@ -228,7 +227,6 @@ public class SwatValidator implements ModelValidator
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 
 			final boolean throwException = sysConfigBL.getBooleanValue(SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION, true);
 			Check.setThrowException(throwException);
@@ -236,7 +234,7 @@ public class SwatValidator implements ModelValidator
 			{
 				Check.setLogger(LogManager.getLogger(Check.class));
 			}
-			else if (msgDAO.isMessageExists(MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE))
+			else if (msgBL.isMessageExists(MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE))
 			{
 				Check.setExceptionHeaderMessage(msgBL.getMsg(Env.getCtx(), MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE));
 			}

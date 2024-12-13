@@ -34,3 +34,15 @@ FROM m_inoutline iol
 WHERE iol.m_inoutline_id = cd.m_inoutline_id
 ;
 
+UPDATE M_CostDetail cd
+SET DateAcct=(SELECT o.dateAcct FROM c_order o WHERE o.c_order_id = ol.c_order_id)
+FROM c_orderline ol
+WHERE cd.c_orderline_id = ol.c_orderline_id
+;
+
+UPDATE M_CostDetail cd
+SET DateAcct= (SELECT i.dateAcct FROM c_invoice i WHERE i.c_invoice_id = il.c_invoice_id)
+FROM c_invoiceline il
+WHERE cd.c_invoiceline_id = il.c_invoiceline_id
+;
+

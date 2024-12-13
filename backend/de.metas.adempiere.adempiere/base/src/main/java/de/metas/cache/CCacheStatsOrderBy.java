@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.cache;
 
 import com.google.common.base.Splitter;
@@ -20,7 +42,8 @@ import java.util.Optional;
 @ToString
 public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 {
-	@NonNull private final ImmutableList<Part> parts;
+	@NonNull
+	private final ImmutableList<Part> parts;
 	private transient Comparator<CCacheStats> _actualComparator = null; // lazy
 
 	@Builder
@@ -33,9 +56,15 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 	@SuppressWarnings("unused")
 	public static class CCacheStatsOrderByBuilder
 	{
-		public CCacheStatsOrderByBuilder ascending(@NonNull Field field) {return part(Part.of(field, true));}
+		public CCacheStatsOrderByBuilder ascending(@NonNull final Field field)
+		{
+			return part(Part.of(field, true));
+		}
 
-		public CCacheStatsOrderByBuilder descending(@NonNull Field field) {return part(Part.of(field, false));}
+		public CCacheStatsOrderByBuilder descending(@NonNull final Field field)
+		{
+			return part(Part.of(field, false));
+		}
 	}
 
 	public static Optional<CCacheStatsOrderBy> parse(@Nullable final String string)
@@ -57,7 +86,7 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 
 			return Optional.of(new CCacheStatsOrderBy(parts));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Invalid order by string `" + string + "`", ex);
 		}
@@ -128,7 +157,7 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 					comparator = Comparator.comparing(CCacheStats::getMissRate);
 					break;
 				default:
-					throw new IllegalArgumentException();
+					throw new AdempiereException("Unknown field type!");
 			}
 
 			if (!ascending)
@@ -139,9 +168,9 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 			return comparator;
 		}
 
-		static Part parse(@NonNull String string)
+		static Part parse(@NonNull final String string)
 		{
-			String stringNorm = StringUtils.trimBlankToNull(string);
+			final String stringNorm = StringUtils.trimBlankToNull(string);
 			if (stringNorm == null)
 			{
 				throw new AdempiereException("Invalid part: `" + string + "`");
