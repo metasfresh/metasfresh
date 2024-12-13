@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { trl } from '../../../../utils/translations';
+import { toNumberOrNaN } from '../../../../utils/numbers';
 
 const _ = (key, args = {}) => trl(`pos.currentOrder.getWeightModal.${key}`, args);
 
@@ -9,7 +10,7 @@ const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
   const [weightStr, setWeightStr] = useState(0);
   const weightRef = useRef();
 
-  const weight = Number(weightStr);
+  const weight = toNumberOrNaN(weightStr);
   const isValid = weight > 0;
 
   useEffect(() => {
