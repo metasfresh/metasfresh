@@ -22,3 +22,19 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545715
 ;
 
+-- UI Element: Geschäftspartner -> Geschäftspartner.Replikations Standard
+-- Column: C_BPartner.IsReplicationLookupDefault
+-- UI Element: Geschäftspartner(123,D) -> Geschäftspartner(220,D) -> advanced edit -> 10 -> advanced edit.Replikations Standard
+-- Column: C_BPartner.IsReplicationLookupDefault
+-- 2024-12-16T15:00:48.064Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540671, SeqNo=160,Updated=TO_TIMESTAMP('2024-12-16 16:00:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000085
+;
+
+-- UI Element: Geschäftspartner -> Geschäftspartner.Replikations Standard
+-- Column: C_BPartner.IsReplicationLookupDefault
+-- UI Element: Geschäftspartner(123,D) -> Geschäftspartner(220,D) -> advanced edit -> 10 -> advanced edit.Replikations Standard
+-- Column: C_BPartner.IsReplicationLookupDefault
+-- 2024-12-16T15:03:07.995Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-12-16 16:03:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000085
+;
+
