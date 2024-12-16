@@ -100,7 +100,11 @@ public class M_InOutLine_HandlerTest
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		save(paymentTerm);
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		save(bPartner);
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
