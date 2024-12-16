@@ -71,7 +71,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final TableRecordReference documentReference = postFinanceYbInvoiceRequest.getDocumentReference();
-		if(!documentReference.getTableName().equals(I_C_DunningDoc.Table_Name))
+		if (!documentReference.tableNameEqualsTo(I_C_DunningDoc.Table_Name))
 		{
 			return false;
 		}
@@ -86,7 +86,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 	{
 		final DunningDocId dunningDocId = postFinanceYbInvoiceRequest.getDocumentReference().getIdAssumingTableName(I_C_DunningDoc.Table_Name, DunningDocId::ofRepoId);
 		final List<DunningToExport> dunningToExportList = dunningToExportFactory.getCreateForId(dunningDocId);
-		if(dunningToExportList.size() != 1)
+		if (dunningToExportList.size() != 1)
 		{
 			throw new PostFinanceExportException("Only a dunning linked to exactly one invoice is supported");
 		}
@@ -95,7 +95,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 		final InvoiceId invoiceId = dunningToExport.getInvoiceId();
 		final Optional<InvoiceToExport> invoiceToExportOptional = invoiceToExportFactory.getCreateForId(invoiceId);
 
-		if(invoiceToExportOptional.isEmpty())
+		if (invoiceToExportOptional.isEmpty())
 		{
 			throw new PostFinanceExportException("Failed to create invoiceToExport");
 		}
