@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - keen_hawk_uat
   - temporary_test202412_uat
   - temporary_test990_uat
   - task_force_uat
