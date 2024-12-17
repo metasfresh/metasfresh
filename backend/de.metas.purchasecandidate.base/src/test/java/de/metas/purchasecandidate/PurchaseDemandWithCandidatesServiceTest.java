@@ -39,11 +39,9 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
@@ -68,7 +66,6 @@ import java.util.Optional;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
@@ -164,6 +161,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("test payment term");
+		paymentTermRecord.setName("test payment term");
 		saveRecord(paymentTermRecord);
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);

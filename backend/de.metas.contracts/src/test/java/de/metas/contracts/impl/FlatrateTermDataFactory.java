@@ -20,6 +20,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -117,14 +118,14 @@ public class FlatrateTermDataFactory
 
 	@Builder(builderMethodName = "flatrateConditionsNew")
 	public static I_C_Flatrate_Conditions createFlatrateConditions(
-			final String name, 
+			final String name,
 			final String invoiceRule,
-			final String typeConditions, 
+			final String typeConditions,
 			@Nullable final UomId uomId,
-			@NonNull final I_C_Calendar calendar, 
+			@NonNull final I_C_Calendar calendar,
 			@NonNull final String onFlatrateTermExtend,
-			@NonNull final I_M_PricingSystem pricingSystem, 
-			final String extensionType, 
+			@NonNull final I_M_PricingSystem pricingSystem,
+			final String extensionType,
 			final boolean isCreateNoInvoice)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
@@ -159,13 +160,13 @@ public class FlatrateTermDataFactory
 
 	@Builder(builderMethodName = "flatrateTransitionNew")
 	private static I_C_Flatrate_Transition createFlatrateTransition(
-			final I_C_Flatrate_Conditions conditions, 
-			@NonNull final I_C_Calendar calendar, 
-			final int termDuration, 
+			final I_C_Flatrate_Conditions conditions,
+			@NonNull final I_C_Calendar calendar,
+			final int termDuration,
 			final String termDurationUnit,
-			final int deliveryInterval, 
-			final String deliveryIntervalUnit, 
-			final boolean isAutoCompleteNewTerm, 
+			final int deliveryInterval,
+			final String deliveryIntervalUnit,
+			final boolean isAutoCompleteNewTerm,
 			final String extensionType)
 	{
 		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
@@ -189,9 +190,25 @@ public class FlatrateTermDataFactory
 	@Builder(builderMethodName = "bpartnerNew")
 	public static I_C_BPartner createBpartner(final String bpValue, final boolean isCustomer)
 	{
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setValue(bpValue);
 		bpartner.setIsCustomer(isCustomer);
+
+		if (isCustomer)
+		{
+			paymentTermRecord.setName("SO-paymentTerm");
+			saveRecord(paymentTermRecord);
+			bpartner.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
+		}
+		else
+		{
+			paymentTermRecord.setName("PO-paymentTerm");
+			saveRecord(paymentTermRecord);
+			bpartner.setPO_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
+		}
+
 		save(bpartner);
 		return bpartner;
 	}
