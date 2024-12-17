@@ -51,3 +51,15 @@ UPDATE AD_Column SET ColumnSQL='(SELECT COALESCE(i.EDI_ExportStatus, '''') from 
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,551500,0,540169,540453,TO_TIMESTAMP('2024-12-16 18:52:35','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',548468,548468,318,TO_TIMESTAMP('2024-12-16 18:52:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- Column: C_Doc_Outbound_Log.EDI_ExportStatus
+-- Column SQL (old): (SELECT COALESCE(i.EDI_ExportStatus, '') from C_Invoice i where C_Doc_Outbound_Log.AD_Table_ID = get_Table_ID('C_Invoice') and C_Doc_Outbound_Log.Record_ID= i.C_Invoice_ID)
+-- Column: C_Doc_Outbound_Log.EDI_ExportStatus
+-- Column SQL (old): (SELECT COALESCE(i.EDI_ExportStatus, '') from C_Invoice i where C_Doc_Outbound_Log.AD_Table_ID = get_Table_ID('C_Invoice') and C_Doc_Outbound_Log.Record_ID= i.C_Invoice_ID)
+-- 2024-12-17T08:59:34.121Z
+UPDATE AD_Column SET ColumnSQL='', IsLazyLoading='N',Updated=TO_TIMESTAMP('2024-12-17 10:59:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551500
+;
+
+-- 2024-12-17T09:03:37.351Z
+INSERT INTO t_alter_column values('c_doc_outbound_log','EDI_ExportStatus','CHAR(1)',null,null)
+;
+
