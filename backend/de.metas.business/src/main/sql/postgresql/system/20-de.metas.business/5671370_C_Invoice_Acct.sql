@@ -8,7 +8,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2023-01-12T09:08:19.269Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556189,TO_TIMESTAMP('2023-01-12 11:08:19','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Invoice_Acct',1,'Y','N','Y','Y','C_Invoice_Acct','N',1000000,TO_TIMESTAMP('2023-01-12 11:08:19','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556189,TO_TIMESTAMP('2023-01-12 11:08:19','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Invoice_Acct',1,'Y','N','Y','Y','C_Invoice_Acct',
+        1000000,TO_TIMESTAMP('2023-01-12 11:08:19','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-01-12T09:08:19.280Z
