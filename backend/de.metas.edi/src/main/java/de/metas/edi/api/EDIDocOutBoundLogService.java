@@ -88,6 +88,5 @@ public class EDIDocOutBoundLogService
 
 		final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
 		docOutboundLogRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
-		save(docOutboundLogRecord);
 	}
 }
