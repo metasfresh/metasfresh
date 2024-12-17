@@ -77,4 +77,17 @@ public class EDIDocOutBoundLogService
 	{
 		InterfaceWrapperHelper.save(docOutboundLog);
 	}
+
+	public void setEdiExportStatusFromInvoiceRecord(final @NonNull I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLogRecord);
+		if (!I_C_Invoice.Table_Name.equals(recordReference.getTableName()))
+		{
+			return ;
+		}
+
+		final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
+		docOutboundLogRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
+		save(docOutboundLogRecord);
+	}
 }
