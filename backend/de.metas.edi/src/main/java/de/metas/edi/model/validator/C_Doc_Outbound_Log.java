@@ -43,7 +43,7 @@ public class C_Doc_Outbound_Log
 		this.ediDocOutBoundLogService = ediDocOutBoundLogService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void setEdiExportStatusFromInvoice(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLogRecord);
