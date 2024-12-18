@@ -699,7 +699,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setLineTotalAmt(getLineNetAmt().add(taxAmt));
 		}
-		
+
 		super.setTaxAmt(taxAmt);
 	}    // setTaxAmt
 
