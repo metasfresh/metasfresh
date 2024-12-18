@@ -44,7 +44,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (I
                 cursymbol                  character varying,
                 iscampaignprice            character,
                 isprintwhenpackingmaterial character,
-                PricePattern               text
+                PricePattern               text,
+                AmountPattern              text
             )
     STABLE
     LANGUAGE sql
@@ -104,7 +105,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        c.cursymbol,
        ol.iscampaignprice,
        p.IsPrintWhenPackingMaterial,
-       report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern
+       report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
+       report.getAmountPatternForJasper(c.c_currency_id)    AS AmountPattern
 
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
