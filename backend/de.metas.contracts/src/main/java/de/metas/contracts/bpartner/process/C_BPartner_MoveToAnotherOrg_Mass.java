@@ -61,7 +61,7 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	public static final String PARAM_WhereClause = "WhereClause";
 
 	private final static Logger logger = LogManager.getLogger(C_BPartner_MoveToAnotherOrg_Mass.class);
-	
+
 	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -85,15 +85,14 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_C_BPartner> partnerIterator = retrievePartnersToMove(p_WhereClause);
-		
-		trxManager.runInNewTrx(() -> {
-			while (partnerIterator.hasNext())
-			{
+		while (partnerIterator.hasNext())
+		{
+			trxManager.runInNewTrx(() -> {
 				final I_C_BPartner partner = partnerIterator.next();
 				movePartnerToNewOrg(partner);
-			}
-		});
-		
+			});
+		}
+
 		return "@Processed@ (OK=#" + this.countOK + ", Error=#" + this.countError + ")";
 	}
 
