@@ -27,20 +27,25 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
+import de.metas.logging.LogManager;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_CompensationGroup_Schema_Category;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -55,8 +60,11 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	public static final String PARAM_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
 	public static final String PARAM_WhereClause = "WhereClause";
 
+	private final static Logger logger = LogManager.getLogger(C_BPartner_MoveToAnotherOrg_Mass.class);
+	
 	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	protected OrgId p_orgTargetId;
@@ -69,15 +77,30 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 	@Param(parameterName = PARAM_WhereClause, mandatory = true)
 	protected String p_WhereClause;
 
+	private int countOK = 0;
+	private int countError = 0;
+
+	@RunOutOfTrx
 	@Override
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_C_BPartner> partnerIterator = retrievePartnersToMove(p_WhereClause);
+		
+		trxManager.runInNewTrx(() -> {
+			while (partnerIterator.hasNext())
+			{
+				final I_C_BPartner partner = partnerIterator.next();
+				movePartnerToNewOrg(partner);
+			}
+		});
+		
+		return "@Processed@ (OK=#" + this.countOK + ", Error=#" + this.countError + ")";
+	}
 
-		while (partnerIterator.hasNext())
+	private void movePartnerToNewOrg(@NonNull final I_C_BPartner partner)
+	{
+		try
 		{
-			final I_C_BPartner partner = partnerIterator.next();
-
 			final OrgChangeRequest orgChangeRequest = OrgChangeRequest.builder()
 					.bpartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
 					.startDate(p_startDate)
@@ -88,9 +111,14 @@ public class C_BPartner_MoveToAnotherOrg_Mass extends JavaProcess implements
 					.build();
 
 			service.moveToNewOrg(orgChangeRequest);
+			countOK++;
 		}
-
-		return MSG_OK;
+		catch (final AdempiereException rte)
+		{
+			logger.warn("Error moving partner " + partner.getName() + " to AD_Org_ID " + p_orgTargetId, rte);
+			addLog("Error moving partner {} to AD_Org_ID {}: {}", partner.getName(), p_orgTargetId, rte.getLocalizedMessage());
+			countError++;
+		}
 	}
 
 	@Nullable
