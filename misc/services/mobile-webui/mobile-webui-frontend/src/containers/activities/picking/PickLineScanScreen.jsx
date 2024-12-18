@@ -42,7 +42,7 @@ import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { toNumberOrZero } from '../../../utils/numberUtils';
+import { toNumberOrZero } from '../../../utils/numbers';
 import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 
 export const NEXT_PickingJob = 'pickingJob';

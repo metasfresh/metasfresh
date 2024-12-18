@@ -106,7 +106,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			return Optional.of(PaymentTermId.ofRepoId(contextPaymentTerm));
 		}
 
-		final int dbPaymentTermId = Services.get(IQueryBL.class)
+		final int dbPaymentTermId = queryBL
 				.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDefault, true)

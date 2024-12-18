@@ -736,7 +736,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		return C_InvoiceSchedule_ID;
 	}
-	
+
 	@Override
 	public IInvoiceGenerator generateInvoices()
 	{
