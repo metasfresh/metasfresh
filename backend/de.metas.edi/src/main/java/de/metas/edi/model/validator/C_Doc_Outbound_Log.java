@@ -5,6 +5,7 @@ import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,12 @@ public class C_Doc_Outbound_Log
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setEdiExportStatusFromInvoice(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
+		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLogRecord);
 
-		ediDocOutBoundLogService.setEdiExportStatusFromInvoiceRecord(docOutboundLogRecord);
+		final String ediExportStatusFromInvoiceRecord = ediDocOutBoundLogService.getEDIExportStatusFromInvoiceRecord(recordReference);
+		if (ediExportStatusFromInvoiceRecord != null)
+		{
+			docOutboundLogRecord.setEDI_ExportStatus(ediExportStatusFromInvoiceRecord);
+		}
 	}
 }
