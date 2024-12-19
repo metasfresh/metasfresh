@@ -31,6 +31,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
 import org.compiere.util.DB;
@@ -78,11 +79,16 @@ class GenericRelatedDocumentDescriptorsRepository
 				.stream()
 				.flatMap(List::stream)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						TargetWindowAndColumn::window,
-						TargetWindowAndColumn::column));
+						TargetWindowAndColumn::getWindow,
+						TargetWindowAndColumn::getColumn));
 	}
 
-	private record TargetWindowAndColumn(@NonNull GenericTargetWindowInfo window, @NonNull GenericTargetColumnInfo column) {}
+	@Value
+	private static class TargetWindowAndColumn
+	{
+		@NonNull GenericTargetWindowInfo window;
+		@NonNull GenericTargetColumnInfo column;
+	}
 
 	private List<TargetWindowAndColumn> retrieveRowFrom_AD_Table_Related_Windows_V(final ResultSet rs) throws SQLException
 	{
@@ -184,13 +190,13 @@ class GenericRelatedDocumentDescriptorsRepository
 	{
 		final ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> map = DB.retrieveRows(
 						"SELECT * FROM dynamic_target_window_v",
-						null,
+						ImmutableList.of(),
 						this::retrieveRowFrom_Dynamic_Target_Window_V)
 				.stream()
 				.filter(Objects::nonNull)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						TargetWindowAndColumn::window,
-						TargetWindowAndColumn::column));
+						TargetWindowAndColumn::getWindow,
+						TargetWindowAndColumn::getColumn));
 
 		return new DynamicTargetsMap(map);
 	}
@@ -216,8 +222,11 @@ class GenericRelatedDocumentDescriptorsRepository
 	//
 	//
 
-	private record DynamicTargetsMap(ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> multimap)
+	@Value
+	private static class DynamicTargetsMap
 	{
+		ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> multimap;
+
 		public ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> toMultimap() {return multimap;}
 	}
 }
