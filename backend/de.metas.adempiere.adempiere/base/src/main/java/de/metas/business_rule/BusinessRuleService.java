@@ -6,6 +6,7 @@ import de.metas.business_rule.descriptor.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.TriggerTiming;
 import de.metas.business_rule.event.BusinessRuleEventProcessorCommand;
 import de.metas.business_rule.event.BusinessRuleEventRepository;
+import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.record.warning.RecordWarningRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class BusinessRuleService
 	@NonNull private final BusinessRuleRepository ruleRepository;
 	@NonNull private final BusinessRuleEventRepository eventRepository;
 	@NonNull private final RecordWarningRepository recordWarningRepository;
+	@NonNull private final BusinessRuleLogger logger;
 
 	public BusinessRulesCollection getRules()
 	{
@@ -30,25 +32,28 @@ public class BusinessRuleService
 		ruleRepository.addCacheResetListener(listener);
 	}
 
-	public void fireTriggersForSourceModel(@NonNull final Object model, @NonNull final TriggerTiming timing)
+	public void fireTriggersForSourceModel(@NonNull final Object sourceModel, @NonNull final TriggerTiming timing)
 	{
 		BusinessRuleFireTriggersCommand.builder()
 				.eventRepository(eventRepository)
+				.logger(logger)
 				.rules(ruleRepository.getAll())
-				.model(model)
+				.sourceModel(sourceModel)
 				.timing(timing)
 				.build()
 				.execute();
 	}
 
-	public void processEvents(final QueryLimit limit)
+	public void processEvents(@NonNull final QueryLimit limit)
 	{
 		BusinessRuleEventProcessorCommand.builder()
 				.ruleRepository(ruleRepository)
 				.eventRepository(eventRepository)
 				.recordWarningRepository(recordWarningRepository)
+				.logger(logger)
+				//
 				.limit(limit)
-				.build()
-				.execute();
+				//
+				.build().execute();
 	}
 }

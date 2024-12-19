@@ -8,8 +8,9 @@ import de.metas.business_rule.descriptor.TriggerTiming;
 import de.metas.business_rule.descriptor.Validation;
 import de.metas.business_rule.event.BusinessRuleEventCreateRequest;
 import de.metas.business_rule.event.BusinessRuleEventRepository;
+import de.metas.business_rule.log.BusinessRuleLogger;
+import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -20,62 +21,87 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 
 public class BusinessRuleFireTriggersCommand
 {
-	@NonNull private static final Logger logger = LogManager.getLogger(BusinessRuleFireTriggersCommand.class);
+	@NonNull private static final String LOGGER_MODULE = BusinessRuleFireTriggersCommand.class.getSimpleName();
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final BusinessRuleEventRepository eventRepository;
+	@NonNull private final BusinessRuleLogger logger;
 
 	@NonNull final BusinessRulesCollection rules;
-	@NonNull private final Object model;
+	@NonNull private final Object sourceModel;
 	@NonNull private final TriggerTiming timing;
 
-	@NonNull private final TableRecordReference modelRef;
+	@NonNull private final TableRecordReference sourceModelRef;
 	@NonNull private final ClientAndOrgId clientAndOrgId;
 
 	@Builder
 	private BusinessRuleFireTriggersCommand(
 			@NonNull final BusinessRuleEventRepository eventRepository,
+			@NonNull final BusinessRuleLogger logger,
 			@NonNull final BusinessRulesCollection rules,
-			@NonNull final Object model,
+			@NonNull final Object sourceModel,
 			@NonNull final TriggerTiming timing)
 	{
 		this.eventRepository = eventRepository;
+		this.logger = logger;
 		this.rules = rules;
-		this.model = model;
+		this.sourceModel = sourceModel;
 		this.timing = timing;
 
-		this.modelRef = TableRecordReference.of(model);
-		this.clientAndOrgId = InterfaceWrapperHelper.getClientAndOrgId(model);
+		this.sourceModelRef = TableRecordReference.of(sourceModel);
+		this.clientAndOrgId = InterfaceWrapperHelper.getClientAndOrgId(sourceModel);
 	}
 
 	public void execute()
 	{
-		for (final BusinessRuleAndTrigger ruleAndTrigger : getRuleAndTriggers())
+		try (final IAutoCloseable ignored = setupLoggerContext())
 		{
-			final BooleanWithReason matching = isMatching(ruleAndTrigger);
-			if (matching.isFalse())
+			for (final BusinessRuleAndTrigger ruleAndTrigger : getRuleAndTriggers())
 			{
-				logger.debug("Trigger {} not matching for {}: {}", ruleAndTrigger, model, matching.getReason());
-				continue;
-			}
+				try (final IAutoCloseable ignored2 = updateLoggerContextFrom(ruleAndTrigger))
+				{
+					final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
+					final BooleanWithReason matching = checkTriggerMatching(ruleAndTrigger);
+					logger.debug(stopwatch, "Checked if trigger is matching source: {}", matching);
 
-			enqueueToRecompute(ruleAndTrigger);
+					if (matching.isFalse())
+					{
+						logger.debug("Skip enqueueing event because trigger is not matching");
+						continue;
+					}
+
+					enqueueToRecompute(ruleAndTrigger);
+				}
+			}
 		}
+	}
+
+	private IAutoCloseable setupLoggerContext()
+	{
+		return logger.temporaryChangeContext(context -> context.moduleName(LOGGER_MODULE)
+				.sourceRecordRef(sourceModelRef));
+	}
+
+	private IAutoCloseable updateLoggerContextFrom(final BusinessRuleAndTrigger ruleAndTrigger)
+	{
+		return logger.temporaryChangeContext(contextBuilder -> contextBuilder.businessRuleId(ruleAndTrigger.getBusinessRuleId())
+				.triggerId(ruleAndTrigger.getTriggerId()));
 	}
 
 	private ImmutableList<BusinessRuleAndTrigger> getRuleAndTriggers()
 	{
-		return rules.getByTriggerTableId(modelRef.getAdTableId());
+		return rules.getByTriggerTableId(sourceModelRef.getAdTableId());
 	}
 
-	private BooleanWithReason isMatching(@NonNull final BusinessRuleAndTrigger ruleAndTrigger)
+	private BooleanWithReason checkTriggerMatching(@NonNull final BusinessRuleAndTrigger ruleAndTrigger)
 	{
 		try
 		{
@@ -86,18 +112,16 @@ public class BusinessRuleFireTriggersCommand
 				return BooleanWithReason.falseBecause("timing not matching");
 			}
 
-			return isConditionMatching(model, trigger.getCondition());
+			return checkConditionMatching(trigger.getCondition());
 		}
 		catch (final Exception ex)
 		{
-			logger.debug("Failed evaluating trigger condition {} for {}/{}", ruleAndTrigger, model, timing, ex);
+			logger.debug("Failed evaluating trigger condition {} for {}/{}", ruleAndTrigger, sourceModel, timing, ex);
 			return BooleanWithReason.falseBecause(ex.getLocalizedMessage());
 		}
 	}
 
-	private BooleanWithReason isConditionMatching(
-			@NonNull final Object model,
-			@Nullable final Validation condition)
+	private BooleanWithReason checkConditionMatching(@Nullable final Validation condition)
 	{
 		if (condition == null)
 		{
@@ -115,11 +139,11 @@ public class BusinessRuleFireTriggersCommand
 					return BooleanWithReason.TRUE;
 				}
 
-				final Evaluatee ctx = InterfaceWrapperHelper.getEvaluatee(model);
+				final Evaluatee ctx = InterfaceWrapperHelper.getEvaluatee(sourceModel);
 				final String sqlWhereClause = sqlWhereClauseExpr.evaluate(ctx, IExpressionEvaluator.OnVariableNotFound.ReturnNoResult);
-				final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-				final String keyColumnName = InterfaceWrapperHelper.getModelKeyColumnName(model);
-				final int recordId = InterfaceWrapperHelper.getId(model);
+				final String tableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
+				final String keyColumnName = InterfaceWrapperHelper.getModelKeyColumnName(sourceModel);
+				final int recordId = InterfaceWrapperHelper.getId(sourceModel);
 
 				try
 				{
@@ -151,9 +175,11 @@ public class BusinessRuleFireTriggersCommand
 	{
 		eventRepository.create(BusinessRuleEventCreateRequest.builder()
 				.clientAndOrgId(clientAndOrgId)
-				.recordRef(modelRef)
+				.recordRef(sourceModelRef)
 				.businessRuleId(ruleAndTrigger.getBusinessRuleId())
 				.triggerId(ruleAndTrigger.getTriggerId())
 				.build());
+
+		logger.debug("Enqueued event for re-computation");
 	}
 }

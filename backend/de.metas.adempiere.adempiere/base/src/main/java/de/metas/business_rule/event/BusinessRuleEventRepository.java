@@ -1,9 +1,11 @@
 package de.metas.business_rule.event;
 
 import de.metas.business_rule.descriptor.BusinessRuleAndTriggerId;
+import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.error.AdIssueId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
@@ -17,9 +19,11 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 @Repository
+@RequiredArgsConstructor
 public class BusinessRuleEventRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final BusinessRuleLogger logger;
 
 	public void create(@NonNull final BusinessRuleEventCreateRequest request)
 	{
@@ -58,12 +62,13 @@ public class BusinessRuleEventRepository
 		final int count = tagForProcessing(processingTag, limit);
 		if (count <= 0)
 		{
+			//logger.debug("No events to update. Skip processing.");
 			return;
 		}
 
 		try
 		{
-			queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
+			int countUpdate = queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
 					.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_ProcessingTag, processingTag)
 					.orderBy(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_Event_ID)
 					.create()
@@ -78,6 +83,8 @@ public class BusinessRuleEventRepository
 						updateRecord(record, updatedEvent);
 						return IQueryUpdater.MODEL_UPDATED;
 					});
+
+			logger.debug("Updated {} events", countUpdate);
 		}
 		finally
 		{
@@ -110,6 +117,7 @@ public class BusinessRuleEventRepository
 	private static BusinessRuleEvent fromRecord(final I_AD_BusinessRule_Event record)
 	{
 		return BusinessRuleEvent.builder()
+				.id(BusinessRuleEventId.ofRepoId(record.getAD_BusinessRule_Event_ID()))
 				.sourceRecordRef(TableRecordReference.of(record.getSource_Table_ID(), record.getSource_Record_ID()))
 				.businessRuleAndTriggerId(BusinessRuleAndTriggerId.ofRepoIds(record.getAD_BusinessRule_ID(), record.getAD_BusinessRule_Trigger_ID()))
 				.processed(record.isProcessed())

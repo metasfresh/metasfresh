@@ -6,6 +6,8 @@ import de.metas.business_rule.descriptor.BusinessRuleRepository;
 import de.metas.business_rule.descriptor.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.Validation;
+import de.metas.business_rule.log.BusinessRuleLogger;
+import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.record.warning.RecordWarningCreateRequest;
@@ -29,6 +31,7 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.EvaluateeValidationContext;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee2;
@@ -40,6 +43,8 @@ import javax.annotation.Nullable;
 @Builder
 public class BusinessRuleEventProcessorCommand
 {
+	@NonNull private static final String LOGGER_MODULE = BusinessRuleEventProcessorCommand.class.getSimpleName();
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
@@ -47,13 +52,21 @@ public class BusinessRuleEventProcessorCommand
 	@NonNull private final BusinessRuleRepository ruleRepository;
 	@NonNull private final BusinessRuleEventRepository eventRepository;
 	@NonNull private final RecordWarningRepository recordWarningRepository;
+	@NonNull private final BusinessRuleLogger logger;
 
 	@NonNull private final QueryLimit limit;
 	@Nullable private BusinessRulesCollection rules;
 
 	public void execute()
 	{
-		eventRepository.updateAllNotProcessed(this::processEvent, limit);
+		try (IAutoCloseable ignored = setupLoggerContext())
+		{
+			eventRepository.updateAllNotProcessed(this::processEvent, limit);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed processing events: {}", ex.getLocalizedMessage(), ex);
+		}
 	}
 
 	private BusinessRulesCollection getRules()
@@ -77,39 +90,69 @@ public class BusinessRuleEventProcessorCommand
 			return event;
 		}
 
-		try
+		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
+		try (final IAutoCloseable ignored = updateLoggerContextFrom(event))
 		{
 			trxManager.runInThreadInheritedTrx(() -> processEvent0(event));
+			logger.debug(stopwatch, "Event processed successful");
 			return event.markAsProcessedOK();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			final AdIssueId errorId = errorManager.createIssue(ex);
+			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+			final AdIssueId errorId = errorManager.createIssue(metasfreshException);
+			logger.debug(stopwatch, "Failed processing event", ex);
+
 			return event.markAsProcessingError(errorId);
 		}
 	}
 
+	private IAutoCloseable setupLoggerContext()
+	{
+		return logger.temporaryChangeContext(contextBuilder -> contextBuilder.moduleName(LOGGER_MODULE));
+	}
+
+	private IAutoCloseable updateLoggerContextFrom(@NonNull final BusinessRuleEvent event)
+	{
+		return logger.temporaryChangeContext(contextBuilder -> contextBuilder
+				.eventId(event.getId())
+				.businessRuleId(event.getBusinessRuleId())
+				.triggerId(event.getTriggerId())
+				.sourceRecordRef(event.getSourceRecordRef()));
+	}
+
 	private void processEvent0(final BusinessRuleEvent event)
 	{
-		final TableRecordReference targetRecordRef = retrieveTargetRecordRef(event);
+		logger.debug("Processing event: {}", event);
 
+		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
+		final TableRecordReference targetRecordRef = retrieveTargetRecordRef(event);
+		logger.setTargetRecordRef(targetRecordRef);
+		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
+
+		stopwatch.restart();
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
 		final boolean isValid = isRecordValid(targetRecordRef, rule.getValidation());
+		logger.debug(stopwatch, "Checked if target record valid: {}", isValid);
 
 		if (isValid)
 		{
+			stopwatch.restart();
 			recordWarningRepository.deleteByRecordRef(RecordWarningQuery.builder()
 					.recordRef(targetRecordRef)
 					.businessRuleId(rule.getId())
 					.build());
+			logger.debug(stopwatch, "=> Removed all warnings for target record");
 		}
 		else
 		{
+			stopwatch.restart();
 			recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 					.recordRef(targetRecordRef)
 					.businessRuleId(rule.getId())
 					.message(rule.getWarningMessage())
 					.build());
+			logger.debug(stopwatch, "=> Created/Updated warning for target record");
 		}
 	}
 

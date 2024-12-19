@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class BusinessRuleEvent
 {
+	@NonNull BusinessRuleEventId id;
 	@NonNull BusinessRuleAndTriggerId businessRuleAndTriggerId;
 	@NonNull TableRecordReference sourceRecordRef;
 	boolean processed;
