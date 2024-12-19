@@ -32,7 +32,7 @@ import lombok.With;
 import javax.annotation.Nullable;
 
 @Value
-public class GenericTargetColumnInfo
+class GenericTargetColumnInfo
 {
 	@Nullable ITranslatableString caption;
 	@Nullable String columnName;
