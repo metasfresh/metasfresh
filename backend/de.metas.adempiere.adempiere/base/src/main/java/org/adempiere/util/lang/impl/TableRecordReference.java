@@ -192,6 +192,11 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
+	public static TableRecordReference of(@NonNull final AdTableId adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId.getRepoId(), recordId);
+	}
+
 	@Nullable
 	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
 	{
@@ -339,12 +344,7 @@ public final class TableRecordReference implements ITableRecordReference
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("tableName", tableName)
-				.add("recordId", recordId)
-				// .add(" (SoftReference-)model", modelRef.get())
-				.toString();
+		return "ref{" + tableName + "/" + recordId + "}";
 	}
 
 	/**
