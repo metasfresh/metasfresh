@@ -644,10 +644,10 @@ public class PickingJobService
 				.map(this::getById)
 				.filter(pickingJob -> pickingJob.getPickedHuIds()
 						.stream()
-						.anyMatch(huId -> request.getHuIdsToPick().contains(huId)))
+						.anyMatch(huId -> request.getHuIds().contains(huId)))
 				.map(job -> commandBuilder
 						.jobToReopen(job)
-						.huIdsToPick(request.getHuIdsToPick())
+						.huIdsToPick(request.getHuInfoList())
 						.build())
 				.forEach(PickingJobReopenCommand::execute);
 	}

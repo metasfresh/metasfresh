@@ -22,6 +22,7 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -262,15 +264,17 @@ public class M_InOut
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
 				.map(ShipmentScheduleId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		final Set<HuId> allHusInvolved = assignedQuantities.stream()
+		final List<HUWithPickOnTheFlyStatus> allHusInvolved = assignedQuantities.stream()
 				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
-				.map(I_M_ShipmentSchedule_QtyPicked::getVHU_ID)
-				.map(HuId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.map(qtyPicked -> HUWithPickOnTheFlyStatus.builder()
+						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
+						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 
 		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
 				.shipmentScheduleIds(allShipmentSchedulesInvolved)
-				.huIdsToPick(allHusInvolved)
+				.huInfoList(allHusInvolved)
 				.build();
 
 		pickingJobService.reopenPickingJobs(request);

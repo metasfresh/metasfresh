@@ -22,28 +22,14 @@
 
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import java.util.List;
-import java.util.Set;
 
 @Value
 @Builder
-public class ReopenPickingJobRequest
+public class HUWithPickOnTheFlyStatus
 {
-	@NonNull Set<ShipmentScheduleId> shipmentScheduleIds;
-	@NonNull List<HUWithPickOnTheFlyStatus> huInfoList;
-
-	@NonNull
-	public ImmutableSet<HuId> getHuIds()
-	{
-		return huInfoList.stream()
-				.map(HUWithPickOnTheFlyStatus::getHuId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
+	HuId huId;
+	boolean anonymousHuPickedOnTheFly;
 }
