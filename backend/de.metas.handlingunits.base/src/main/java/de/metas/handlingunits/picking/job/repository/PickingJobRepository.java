@@ -30,8 +30,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Repository
@@ -175,18 +177,17 @@ public class PickingJobRepository
 	}
 
 	@NonNull
-	public Set<PickingJobId> getPickingJobIdsByShipmentScheduleIds(
+	public Map<ShipmentScheduleId, List<PickingJobId>> getPickingJobIdsByScheduleId(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
 				.addInArrayFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
-				.listDistinct(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID)
 				.stream()
-				.map(resultEntry -> resultEntry.get(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID))
-				.map(jobId -> (Integer)jobId)
-				.map(PickingJobId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(Collectors.groupingBy(
+						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
+						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
+										   Collectors.toList())));
 	}
 
 	@NonNull

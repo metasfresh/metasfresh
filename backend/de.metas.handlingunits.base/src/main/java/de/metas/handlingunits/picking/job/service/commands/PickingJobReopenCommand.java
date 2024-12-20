@@ -23,6 +23,7 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
 import de.metas.common.util.Check;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -38,14 +39,13 @@ import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 
-import java.util.List;
+import java.util.Set;
 
 @Value
 public class PickingJobReopenCommand
@@ -57,7 +57,8 @@ public class PickingJobReopenCommand
 	@NonNull IShipmentScheduleBL shipmentScheduleBL;
 	@NonNull IHandlingUnitsBL handlingUnitsBL;
 	@NonNull IHUContextFactory huContextFactory;
-	@NonNull List<PickingJob> jobsToReopen;
+	@NonNull PickingJob jobToReopen;
+	@NonNull Set<HuId> huIdsToPick;
 
 	@Builder
 	public PickingJobReopenCommand(
@@ -67,7 +68,8 @@ public class PickingJobReopenCommand
 			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUContextFactory huContextFactory,
-			@NonNull final List<PickingJob> jobsToReopen)
+			@NonNull final PickingJob jobToReopen,
+			@NonNull final Set<HuId> huIdsToPick)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
@@ -75,31 +77,26 @@ public class PickingJobReopenCommand
 		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huContextFactory = huContextFactory;
-		this.jobsToReopen = jobsToReopen;
+		this.jobToReopen = jobToReopen;
+		this.huIdsToPick = huIdsToPick;
 	}
 
 	public void execute()
 	{
-		trxManager.runInThreadInheritedTrx(this::executeWithinTrx);
+		trxManager.runInThreadInheritedTrx(this::reopenPickingJob);
 	}
 
-	private void executeWithinTrx()
+	private void reopenPickingJob()
 	{
-		jobsToReopen
-				.stream()
-				.filter(pickingJob -> pickingJob.getDocStatus().isCompleted())
-				.forEach(this::reopenPickingJob);
-	}
+		Check.assume(jobToReopen.getDocStatus().isCompleted(), "In order to reopen a picking job, it must be Completed");
 
-	private void reopenPickingJob(@NonNull final PickingJob pickingJob)
-	{
-		Check.assume(pickingJob.getDocStatus().isCompleted(), "In order to reopen a picking job, it must be Completed");
+		final PickingJob reopenedJob = jobToReopen
+				.withDocStatus(PickingJobDocStatus.Drafted)
+				.withLockedBy(null);
 
-		pickingJobRepository.save(reservePickingSlotIfPossible(pickingJob)
-										  .withDocStatus(PickingJobDocStatus.Drafted)
-										  .withLockedBy(null));
+		pickingJobRepository.save(reservePickingSlotIfPossible(reopenedJob));
 
-		pickingJob.getLines().forEach(this::reactivateLine);
+		jobToReopen.getLines().forEach(this::reactivateLine);
 	}
 
 	@NonNull
@@ -133,22 +130,18 @@ public class PickingJobReopenCommand
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getShipmentScheduleId());
 
-		if (shipmentSchedule.isProcessed())
-		{
-			return;
-		}
-
 		step.getPickFroms().getKeys()
 				.stream()
 				.map(key -> step.getPickFroms().getPickFrom(key))
 				.filter(pickFrom -> pickFrom.getPickedTo() != null)
+				.filter(pickFrom -> huIdsToPick.contains(pickFrom.getPickFromHU().getId()))
 				.forEach(pickStepHU -> {
 					final I_M_HU hu = handlingUnitsBL.getById(pickStepHU.getPickFromHU().getId());
 					huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 							shipmentSchedule,
 							CatchWeightHelper.extractQtys(
 									huContext,
-									ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()),
+									step.getProductId(),
 									pickStepHU.getPickedTo().getQtyPicked(),
 									hu),
 							hu,

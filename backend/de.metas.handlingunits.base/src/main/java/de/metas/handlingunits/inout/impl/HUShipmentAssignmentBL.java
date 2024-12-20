@@ -22,7 +22,7 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -38,7 +38,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,7 +56,6 @@ import org.compiere.model.I_M_InOut;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
@@ -239,15 +237,13 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	}
 
 	@NonNull
-	public Set<ShipmentScheduleId> retrieveAssignedShipmentSchedules(@NonNull final I_M_InOut shipment)
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(@NonNull final I_M_InOut shipment)
 	{
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 		return lines
 				.stream()
 				.map(line -> shipmentScheduleAllocDAO.retrieveAllForInOutLine(line, I_M_ShipmentSchedule_QtyPicked.class))
 				.flatMap(List::stream)
-				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
-				.map(ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(ImmutableList.toImmutableList());
 	}
 }

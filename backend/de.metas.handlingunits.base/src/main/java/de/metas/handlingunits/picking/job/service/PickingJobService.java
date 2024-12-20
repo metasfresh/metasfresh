@@ -71,6 +71,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -632,23 +633,29 @@ public class PickingJobService
 		return setPickTarget(pickingJob, (TUPickingTarget)null);
 	}
 
-	@NonNull
-	public Set<PickingJobId> findPickingJobsForShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)
 	{
-		return pickingJobRepository.getPickingJobIdsByShipmentScheduleIds(scheduleIds);
-	}
+		final Map<ShipmentScheduleId, List<PickingJobId>> scheduleId2JobIds = pickingJobRepository
+				.getPickingJobIdsByScheduleId(request.getShipmentScheduleIds());
 
-	public void reopenPickingJobs(@NonNull final Set<PickingJobId> jobIds)
-	{
-		PickingJobReopenCommand.builder()
+		final PickingJobReopenCommand.PickingJobReopenCommandBuilder commandBuilder = PickingJobReopenCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.pickingSlotService(pickingSlotService)
 				.huContextFactory(huContextFactory)
 				.huShipmentScheduleBL(huShipmentScheduleBL)
 				.shipmentScheduleBL(shipmentScheduleBL)
-				.pickingJobRepository(pickingJobRepository)
-				.jobsToReopen(getByIds(jobIds))
-				.build()
-				.execute();
+				.pickingJobRepository(pickingJobRepository);
+
+		scheduleId2JobIds.values().stream()
+				.flatMap(List::stream)
+				.map(this::getById)
+				.filter(pickingJob -> pickingJob.getPickedHuIds()
+						.stream()
+						.anyMatch(huId -> request.getHuIdsToPick().contains(huId)))
+				.map(job -> commandBuilder
+						.jobToReopen(job)
+						.huIdsToPick(request.getHuIdsToPick())
+						.build())
+				.forEach(PickingJobReopenCommand::execute);
 	}
 }

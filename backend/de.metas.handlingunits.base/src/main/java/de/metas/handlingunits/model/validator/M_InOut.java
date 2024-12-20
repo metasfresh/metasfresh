@@ -22,6 +22,7 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -39,10 +40,12 @@ import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
@@ -244,9 +247,8 @@ public class M_InOut
 			return;
 		}
 
-		final Set<ShipmentScheduleId> linkedShipmentSchedules =
-				huShipmentAssignmentBL.retrieveAssignedShipmentSchedules(shipment);
-
+		final List<I_M_ShipmentSchedule_QtyPicked> assignedQuantities =
+				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -255,8 +257,23 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		pickingJobService.reopenPickingJobs(
-				pickingJobService.findPickingJobsForShipmentScheduleIds(linkedShipmentSchedules));
+		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = assignedQuantities.stream()
+				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
+				.map(ShipmentScheduleId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		final Set<HuId> allHusInvolved = assignedQuantities.stream()
+				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
+				.map(I_M_ShipmentSchedule_QtyPicked::getVHU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
+				.shipmentScheduleIds(allShipmentSchedulesInvolved)
+				.huIdsToPick(allHusInvolved)
+				.build();
+
+		pickingJobService.reopenPickingJobs(request);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
