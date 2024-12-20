@@ -641,6 +641,8 @@ public class PickingJobService
 
 		scheduleId2JobIds.values().stream()
 				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet())
+				.stream()
 				.map(this::getById)
 				.filter(pickingJob -> pickingJob.getPickedHuIds()
 						.stream()
