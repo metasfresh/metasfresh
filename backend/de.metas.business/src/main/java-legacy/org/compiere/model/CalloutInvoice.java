@@ -285,7 +285,7 @@ public class CalloutInvoice extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
+		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getRecordById(paymentTermId);
 
 		// TODO: Fix in next step (refactoring: Move the apply method from MPaymentTerm to a BL)
 		final MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);

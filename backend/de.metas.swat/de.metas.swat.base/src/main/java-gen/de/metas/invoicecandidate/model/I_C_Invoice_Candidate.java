@@ -891,7 +891,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
@@ -901,7 +901,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_ID();
