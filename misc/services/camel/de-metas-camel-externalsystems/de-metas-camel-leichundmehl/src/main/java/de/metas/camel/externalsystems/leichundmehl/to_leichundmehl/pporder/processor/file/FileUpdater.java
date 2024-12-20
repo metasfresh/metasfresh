@@ -141,7 +141,7 @@ public class FileUpdater
 
 		final Replacement replacement = Replacement.of(config.getReplacement());
 
-		final JsonNode targetNode = replacementSourceTree.at(replacement.getJsonPath());
+		JsonNode targetNode = replacementSourceTree.at(replacement.getJsonPath());
 
 		if (targetNode == null || !targetNode.isValueNode())
 		{
