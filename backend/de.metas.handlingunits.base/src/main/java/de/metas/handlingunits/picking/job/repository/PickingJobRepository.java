@@ -95,16 +95,6 @@ public class PickingJobRepository
 	}
 
 	@NonNull
-	public List<PickingJob> getByIds(
-			@NonNull final Set<PickingJobId> pickingJobIds,
-			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
-	{
-		return pickingJobIds.stream()
-				.map(jobId -> getById(jobId, loadingSupportServices))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(
 			@NonNull final PickingJobReferenceQuery query,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)

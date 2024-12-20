@@ -113,13 +113,6 @@ public class PickingJobService
 		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
 	}
 
-	@NonNull
-	public List<PickingJob> getByIds(final Set<PickingJobId> pickingJobIds)
-	{
-		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		return pickingJobRepository.getByIds(pickingJobIds, loadingSupportingServices);
-	}
-
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
