@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.picking.job.service.commands;
 
-import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -32,6 +31,8 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -45,6 +46,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 
+import java.util.List;
 import java.util.Set;
 
 @Value
@@ -88,7 +90,10 @@ public class PickingJobReopenCommand
 
 	private void reopenPickingJob()
 	{
-		Check.assume(jobToReopen.getDocStatus().isCompleted(), "In order to reopen a picking job, it must be Completed");
+		if (!jobToReopen.getDocStatus().isCompleted())
+		{
+			return;
+		}
 
 		final PickingJob reopenedJob = jobToReopen
 				.withDocStatus(PickingJobDocStatus.Drafted)
@@ -134,15 +139,18 @@ public class PickingJobReopenCommand
 				.stream()
 				.map(key -> step.getPickFroms().getPickFrom(key))
 				.filter(pickFrom -> pickFrom.getPickedTo() != null)
-				.filter(pickFrom -> huIdsToPick.contains(pickFrom.getPickFromHU().getId()))
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.map(PickingJobStepPickedTo::getActualPickedHUs)
+				.flatMap(List::stream)
+				.filter(pickStepHu -> huIdsToPick.contains(pickStepHu.getActualPickedHU().getId()))
 				.forEach(pickStepHU -> {
-					final I_M_HU hu = handlingUnitsBL.getById(pickStepHU.getPickFromHU().getId());
+					final I_M_HU hu = handlingUnitsBL.getById(pickStepHU.getActualPickedHU().getId());
 					huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 							shipmentSchedule,
 							CatchWeightHelper.extractQtys(
 									huContext,
 									step.getProductId(),
-									pickStepHU.getPickedTo().getQtyPicked(),
+									pickStepHU.getQtyPicked(),
 									hu),
 							hu,
 							huContext,
