@@ -80,38 +80,47 @@ public class PickingJobReopenCommand
 
 	public void execute()
 	{
-		jobsToReopen.forEach(job -> trxManager.runInThreadInheritedTrx(() -> reopenPickingJob(job)));
+		trxManager.runInThreadInheritedTrx(this::executeWithinTrx);
+	}
+
+	private void executeWithinTrx()
+	{
+		jobsToReopen
+				.stream()
+				.filter(pickingJob -> pickingJob.getDocStatus().isCompleted())
+				.forEach(this::reopenPickingJob);
 	}
 
 	private void reopenPickingJob(@NonNull final PickingJob pickingJob)
 	{
 		Check.assume(pickingJob.getDocStatus().isCompleted(), "In order to reopen a picking job, it must be Completed");
 
-		reservePickingSlot(pickingJob);
-
-		pickingJobRepository.save(pickingJob
+		pickingJobRepository.save(reservePickingSlotIfPossible(pickingJob)
 										  .withDocStatus(PickingJobDocStatus.Drafted)
 										  .withLockedBy(null));
 
 		pickingJob.getLines().forEach(this::reactivateLine);
 	}
 
-	private void reservePickingSlot(@NonNull final PickingJob pickingJob)
+	@NonNull
+	private PickingJob reservePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
 	{
 		final PickingSlotId slotId = pickingJob.getPickingSlotId()
 				.orElse(null);
 
 		if (slotId == null)
 		{
-			return;
+			return pickingJob;
 		}
 
-		PickingJobAllocatePickingSlotCommand.builder()
+		return PickingJobAllocatePickingSlotCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.pickingJob(pickingJob)
+				.pickingJob(pickingJob.withPickingSlot(null))
 				.pickingSlotId(slotId)
-				.build().execute();
+				.failIfNotAllocated(false)
+				.build()
+				.execute();
 	}
 
 	private void reactivateLine(@NonNull final PickingJobLine line)
