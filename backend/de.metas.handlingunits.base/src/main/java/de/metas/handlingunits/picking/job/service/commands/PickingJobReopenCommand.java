@@ -47,6 +47,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,11 @@ public class PickingJobReopenCommand
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getShipmentScheduleId());
 
+		final ShipmentScheduleWithHUFactory shipmentScheduleWithHUFactory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContext)
+				.build();
+
 		step.getPickFroms().getKeys()
 				.stream()
 				.map(key -> step.getPickFroms().getPickFrom(key))
@@ -157,7 +164,7 @@ public class PickingJobReopenCommand
 									pickStepHU.getQtyPicked(),
 									hu),
 							hu,
-							huContext,
+							shipmentScheduleWithHUFactory,
 							huIdsToPick.get(pickStepHU.getActualPickedHU().getId()).isAnonymousHuPickedOnTheFly());
 				});
 	}
