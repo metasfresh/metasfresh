@@ -13,6 +13,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -92,6 +93,16 @@ public class PickingJobRepository
 	}
 
 	@NonNull
+	public List<PickingJob> getByIds(
+			@NonNull final Set<PickingJobId> pickingJobIds,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		return pickingJobIds.stream()
+				.map(jobId -> getById(jobId, loadingSupportServices))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(
 			@NonNull final PickingJobReferenceQuery query,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
@@ -161,6 +172,21 @@ public class PickingJobRepository
 				.create()
 				.firstIdOnlyOptional(PickingJobId::ofRepoIdOrNull)
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
+	}
+
+	@NonNull
+	public Set<PickingJobId> getPickingJobIdsByShipmentScheduleIds(
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addInArrayFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.listDistinct(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID)
+				.stream()
+				.map(resultEntry -> resultEntry.get(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID))
+				.map(jobId -> (Integer)jobId)
+				.map(PickingJobId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

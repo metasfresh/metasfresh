@@ -11,6 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -44,8 +46,11 @@ import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -82,6 +87,9 @@ public class PickingJobService
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -97,10 +105,18 @@ public class PickingJobService
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
+	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
+	}
+
+	@NonNull
+	public List<PickingJob> getByIds(final Set<PickingJobId> pickingJobIds)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getByIds(pickingJobIds, loadingSupportingServices);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
@@ -614,5 +630,25 @@ public class PickingJobService
 		}
 
 		return setPickTarget(pickingJob, (TUPickingTarget)null);
+	}
+
+	@NonNull
+	public Set<PickingJobId> findPickingJobsForShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		return pickingJobRepository.getPickingJobIdsByShipmentScheduleIds(scheduleIds);
+	}
+
+	public void reopenPickingJobs(@NonNull final Set<PickingJobId> jobIds)
+	{
+		PickingJobReopenCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.pickingSlotService(pickingSlotService)
+				.huContextFactory(huContextFactory)
+				.huShipmentScheduleBL(huShipmentScheduleBL)
+				.shipmentScheduleBL(shipmentScheduleBL)
+				.pickingJobRepository(pickingJobRepository)
+				.jobsToReopen(getByIds(jobIds))
+				.build()
+				.execute();
 	}
 }

@@ -42,10 +42,12 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -85,11 +87,14 @@ public class M_InOut
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
+	private final PickingJobService pickingJobService;
 
 	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+			@NonNull final ReturnsServiceFacade returnsServiceFacade,
+			@NonNull final PickingJobService pickingJobService)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
+		this.pickingJobService = pickingJobService;
 	}
 
 	@Init
@@ -239,6 +244,9 @@ public class M_InOut
 			return;
 		}
 
+		final Set<ShipmentScheduleId> linkedShipmentSchedules =
+				huShipmentAssignmentBL.retrieveAssignedShipmentSchedules(shipment);
+
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -246,6 +254,9 @@ public class M_InOut
 		//
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
+
+		pickingJobService.reopenPickingJobs(
+				pickingJobService.findPickingJobsForShipmentScheduleIds(linkedShipmentSchedules));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
