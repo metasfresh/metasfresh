@@ -1,4 +1,4 @@
-package de.metas.business_rule.interceptor;
+package de.metas.business_rule.trigger.interceptor;
 
 import de.metas.business_rule.BusinessRuleService;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
