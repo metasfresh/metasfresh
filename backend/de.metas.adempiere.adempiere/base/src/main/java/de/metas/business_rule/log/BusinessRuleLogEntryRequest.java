@@ -1,7 +1,7 @@
 package de.metas.business_rule.log;
 
-import de.metas.business_rule.descriptor.BusinessRuleId;
-import de.metas.business_rule.descriptor.BusinessRuleTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.event.BusinessRuleEventId;
 import de.metas.error.AdIssueId;
 import lombok.Builder;

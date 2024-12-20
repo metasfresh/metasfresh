@@ -2,6 +2,15 @@ package de.metas.business_rule.descriptor;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.business_rule.descriptor.model.BusinessRule;
+import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRulePrecondition;
+import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
+import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.TriggerTiming;
+import de.metas.business_rule.descriptor.model.Validation;
+import de.metas.business_rule.descriptor.model.ValidationType;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.ICacheResetListener;

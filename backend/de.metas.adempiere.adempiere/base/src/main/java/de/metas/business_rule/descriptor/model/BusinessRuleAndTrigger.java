@@ -1,4 +1,4 @@
-package de.metas.business_rule.descriptor;
+package de.metas.business_rule.descriptor.model;
 
 import lombok.NonNull;
 import lombok.Value;

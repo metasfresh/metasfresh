@@ -1,4 +1,4 @@
-package de.metas.business_rule.descriptor;
+package de.metas.business_rule.descriptor.model;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;

@@ -2,11 +2,12 @@ package de.metas.business_rule;
 
 import de.metas.business_rule.descriptor.BusinessRuleRepository;
 import de.metas.business_rule.descriptor.BusinessRulesChangedListener;
-import de.metas.business_rule.descriptor.BusinessRulesCollection;
-import de.metas.business_rule.descriptor.TriggerTiming;
+import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.business_rule.event.BusinessRuleEventProcessorCommand;
 import de.metas.business_rule.event.BusinessRuleEventRepository;
 import de.metas.business_rule.log.BusinessRuleLogger;
+import de.metas.business_rule.trigger.BusinessRuleFireTriggersCommand;
 import de.metas.record.warning.RecordWarningRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

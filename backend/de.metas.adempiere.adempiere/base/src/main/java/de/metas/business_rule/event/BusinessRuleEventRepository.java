@@ -1,6 +1,6 @@
 package de.metas.business_rule.event;
 
-import de.metas.business_rule.descriptor.BusinessRuleAndTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggerId;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.error.AdIssueId;
 import de.metas.util.Services;

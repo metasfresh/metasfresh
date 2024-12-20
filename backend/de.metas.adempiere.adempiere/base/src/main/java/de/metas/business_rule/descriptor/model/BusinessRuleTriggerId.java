@@ -1,4 +1,4 @@
-package de.metas.business_rule.descriptor;
+package de.metas.business_rule.descriptor.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

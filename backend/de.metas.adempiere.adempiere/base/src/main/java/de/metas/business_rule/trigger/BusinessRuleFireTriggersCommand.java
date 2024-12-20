@@ -1,11 +1,11 @@
-package de.metas.business_rule;
+package de.metas.business_rule.trigger;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.business_rule.descriptor.BusinessRuleAndTrigger;
-import de.metas.business_rule.descriptor.BusinessRuleTrigger;
-import de.metas.business_rule.descriptor.BusinessRulesCollection;
-import de.metas.business_rule.descriptor.TriggerTiming;
-import de.metas.business_rule.descriptor.Validation;
+import de.metas.business_rule.descriptor.model.BusinessRuleAndTrigger;
+import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
+import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.TriggerTiming;
+import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.event.BusinessRuleEventCreateRequest;
 import de.metas.business_rule.event.BusinessRuleEventRepository;
 import de.metas.business_rule.log.BusinessRuleLogger;

@@ -1,11 +1,11 @@
 package de.metas.business_rule.event;
 
-import de.metas.business_rule.descriptor.BusinessRule;
-import de.metas.business_rule.descriptor.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRule;
+import de.metas.business_rule.descriptor.model.BusinessRuleId;
 import de.metas.business_rule.descriptor.BusinessRuleRepository;
-import de.metas.business_rule.descriptor.BusinessRuleTrigger;
-import de.metas.business_rule.descriptor.BusinessRulesCollection;
-import de.metas.business_rule.descriptor.Validation;
+import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
+import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.error.AdIssueId;

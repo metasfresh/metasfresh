@@ -1,7 +1,7 @@
 package de.metas.business_rule.log;
 
-import de.metas.business_rule.descriptor.BusinessRuleId;
-import de.metas.business_rule.descriptor.BusinessRuleTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.event.BusinessRuleEventId;
 import de.metas.error.AdIssueId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -10,11 +10,11 @@ import org.compiere.model.I_AD_BusinessRule_Log;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BusinessRuleLogRepository
+class BusinessRuleLogRepository
 {
 	public void create(final BusinessRuleLogEntryRequest request)
 	{
-		final I_AD_BusinessRule_Log record = InterfaceWrapperHelper.newInstance(I_AD_BusinessRule_Log.class);
+		final I_AD_BusinessRule_Log record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_BusinessRule_Log.class);
 		record.setLevel(request.getLevel().toString());
 		record.setMsgText(request.getMessage());
 		record.setAD_Issue_ID(AdIssueId.toRepoId(request.getErrorId()));

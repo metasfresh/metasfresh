@@ -1,8 +1,8 @@
 package de.metas.business_rule.interceptor;
 
 import de.metas.business_rule.BusinessRuleService;
-import de.metas.business_rule.descriptor.BusinessRulesCollection;
-import de.metas.business_rule.descriptor.TriggerTiming;
+import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
