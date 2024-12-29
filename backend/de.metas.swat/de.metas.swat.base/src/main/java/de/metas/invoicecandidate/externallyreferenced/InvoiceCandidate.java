@@ -209,7 +209,7 @@ public class InvoiceCandidate
 	private final BankAccountId bankAccountId;
 
 	private final boolean taxIncluded;
-	
+
 	@Builder
 	private InvoiceCandidate(
 			@NonNull final OrgId orgId,

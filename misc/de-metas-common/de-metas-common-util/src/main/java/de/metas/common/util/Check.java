@@ -300,6 +300,7 @@ public final class Check
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
+	@NonNull
 	public static String assumeNotEmpty(@Nullable final String str, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
@@ -312,6 +313,7 @@ public final class Check
 	 * <p>
 	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
+	@NonNull
 	public static String assumeNotEmpty(@Nullable final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
@@ -328,7 +330,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+	public static <T extends Collection<?>> T assumeNotEmpty(
 			final T collection,
 			final String assumptionMessage,
 			final Object... params)
@@ -607,6 +609,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+	@Contract("null, _ ->true")
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		return EmptyUtil.isEmpty(str, trimWhitespaces);

@@ -42,7 +42,8 @@ import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { toNumberOrZero } from '../../../utils/numberUtils';
+import { toNumberOrZero } from '../../../utils/numbers';
+import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -245,6 +246,7 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
     isCloseTarget = false,
     isDone = true,
     resolvedBarcodeData,
+    barcodeType,
     ...others
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
@@ -266,8 +268,11 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
       ...others,
     });
 
-    if (expectedProductNo && productNo && String(expectedProductNo) !== String(productNo)) {
-      throw { messageKey: 'activities.picking.qrcode.differentProduct', context: { expectedProductNo, productNo } };
+    if (!isBarcodeProductNoMatching({ expectedProductNo, barcodeProductNo: productNo, barcodeType: barcodeType })) {
+      throw {
+        messageKey: 'activities.picking.qrcode.differentProduct',
+        context: { expectedProductNo, productNo, barcodeType },
+      };
     }
 
     return postStepPicked({

@@ -1,3 +1,7 @@
+DROP FUNCTION de_metas_endcustomer_fresh_reports.openitems_report(reference_date date,
+                                                                  switchdate     character varying)
+;
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.openitems_report(reference_date date DEFAULT now(), switchdate character varying DEFAULT 'N'::character varying) RETURNS SETOF de_metas_endcustomer_fresh_reports.openitems_report
     STABLE
     LANGUAGE sql

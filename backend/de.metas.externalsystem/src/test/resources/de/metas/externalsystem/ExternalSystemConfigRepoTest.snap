@@ -212,6 +212,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "childConfig": {
         "id": 100002,
         "parentId": 100001,
+        "pluFileDestination": "TCP",
         "pluFileExportAuditEnabled": false,
         "pluType": "CU",
         "productBaseFolderName": "productBaseFolderName",
@@ -233,6 +234,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
   {
     "id": 100002,
     "parentId": 100001,
+    "pluFileDestination": "TCP",
     "pluFileExportAuditEnabled": false,
     "pluType": "CU",
     "productBaseFolderName": "productBaseFolderName",
@@ -250,6 +252,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
+      "pluFileDestination": "TCP",
       "pluFileExportAuditEnabled": false,
       "pluType": "CU",
       "productBaseFolderName": "productBaseFolderName",
@@ -954,7 +957,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
+      "pluFileDestination": "DISK",
       "pluFileExportAuditEnabled": false,
+      "pluFileServerFolder": "/serverFolder",
       "pluType": "CU",
       "productBaseFolderName": "productBaseFolderName",
       "tcpHost": "tcpHost",

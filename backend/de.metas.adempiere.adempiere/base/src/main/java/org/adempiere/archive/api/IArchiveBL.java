@@ -43,7 +43,6 @@ import java.util.Optional;
  * Archive related business logic
  *
  * @author tsa
- *
  */
 public interface IArchiveBL extends ISingletonService
 {

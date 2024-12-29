@@ -431,7 +431,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
-	 * 
+	 *
 	 */
 	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 

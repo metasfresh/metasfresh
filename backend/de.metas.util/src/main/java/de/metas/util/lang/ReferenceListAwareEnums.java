@@ -318,7 +318,7 @@ public class ReferenceListAwareEnums
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+			return Check.isNotBlank(code) ? ofCode(code) : null;
 		}
 
 		public Optional<T> optionalOfNullableCode(@Nullable final String code)

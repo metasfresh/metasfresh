@@ -481,7 +481,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType, final int resultSetConcurrency)
+			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -496,9 +496,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType,
-											   final int resultSetConcurrency,
-											   final String trxName)
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -1004,10 +1004,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-													final Object[] params,
-							   @Nullable final String trxName,
-													final int timeOut,
-													final ISqlUpdateReturnProcessor updateReturnProcessor)
+			final Object[] params,
+			@Nullable final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -2087,7 +2087,6 @@ public class DB
 
 	/**
 	 * convenient method to close statement
-	 *
 	 */
 	public void close(@Nullable final Statement st)
 	{

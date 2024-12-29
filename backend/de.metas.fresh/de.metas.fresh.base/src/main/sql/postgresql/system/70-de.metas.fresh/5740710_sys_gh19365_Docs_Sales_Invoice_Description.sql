@@ -6,10 +6,10 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice
                                                                                              p_language character varying)
     RETURNS TABLE
             (
-                description        character varying,
-                documentno         character varying,
-                reference          character varying,
-                dateinvoiced       timestamp WITHOUT TIME ZONE,
+                description      character varying,
+                documentno       character varying,
+                reference        character varying,
+                dateinvoiced     timestamp WITHOUT TIME ZONE,
                 duedate          timestamp WITH TIME ZONE,
                 vataxid            character varying,
                 bp_value           character varying,

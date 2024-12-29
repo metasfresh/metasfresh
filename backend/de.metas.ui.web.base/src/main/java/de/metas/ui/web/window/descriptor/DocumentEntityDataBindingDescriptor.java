@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
-import javax.annotation.Nullable;
-
 import de.metas.ui.web.window.model.DocumentsRepository;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
