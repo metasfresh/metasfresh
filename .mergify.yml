@@ -18,8 +18,6 @@ pull_request_rules:
               # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_uat
-              - base=temporary_test202412_uat
-              - base=temporary_test990_uat
               - base=task_force_uat
               - base=electric_light_uat
               - base=feisty_sloth_uat
