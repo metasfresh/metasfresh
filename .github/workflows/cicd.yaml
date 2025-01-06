@@ -323,16 +323,6 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations \
           .
-      - name: build-db-preloaded
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.db-preloaded \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
-          .
       - name: push-images
         uses: nick-fields/retry@v3
         with:
