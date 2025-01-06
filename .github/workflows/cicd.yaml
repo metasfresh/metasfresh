@@ -370,7 +370,6 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | echo "${PIPESTATUS[0]}" > migration.exit-code
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker compose down
