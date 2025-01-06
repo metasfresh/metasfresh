@@ -1,0 +1,28 @@
+# docker-compose.yml file
+
+services:
+
+  db:
+    image: $mfregistry/metas-db:$mfversion
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  migration:
+    image: $mfregistry/metas-db:$mfversion-migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+
