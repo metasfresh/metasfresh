@@ -27,10 +27,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -41,6 +43,7 @@ import lombok.Value;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -54,10 +57,12 @@ public class PickingJobLine
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
+	@NonNull ProductCategoryId productCategoryId;
 	@NonNull ITranslatableString productName;
 	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
+	int orderLineSeqNo;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
@@ -80,28 +85,33 @@ public class PickingJobLine
 			@NonNull final PickingJobLineId id,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
+			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final Integer orderLineSeqNo,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
+			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
 		this.id = id;
 		this.productId = productId;
 		this.productNo = productNo;
+		this.productCategoryId = productCategoryId;
 		this.productName = productName;
 		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
+		this.orderLineSeqNo = orderLineSeqNo;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.catchUomId = catchUomId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
-		this.pickingUnit = computePickingUnit(this.catchUomId, this.packingInfo);
+		this.pickingUnit = pickingUnit;
 
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		this.qtyRejected = steps.stream().map(PickingJobStep::getQtyRejected).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
@@ -127,18 +137,7 @@ public class PickingJobLine
 		this.progress = computeProgress(this.steps, this.isManuallyClosed);
 	}
 
-	private static PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
-	{
-		// If catch weight, always pick at CU level because user has to weight the products
-		if (catchUomId != null)
-		{
-			return PickingUnit.CU;
-		}
-
-		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
-	}
-
-	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
+	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
 	{
 		if (isManuallyClosed)
 		{
@@ -223,5 +222,14 @@ public class PickingJobLine
 		return this.isManuallyClosed != isManuallyClosed
 				? toBuilder().isManuallyClosed(isManuallyClosed).build()
 				: this;
+	}
+
+	@NonNull
+	public List<HuId> getPickedHUIds()
+	{
+		return steps.stream()
+				.map(PickingJobStep::getPickedHUIds)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

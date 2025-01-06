@@ -63,6 +63,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.poi.ss.formula.functions.T;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -83,6 +84,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -379,33 +381,39 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
+	}
+	
+	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
+	{
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, modelMapper);
 	}
 
 	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwaresOutOfTrx(@NonNull final Collection<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
-	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	private static <RT, MT> List<MT> loadByIds(final Set<Integer> ids, final Class<RT> modelClass, final String trxName, final Function<RT, MT> modelMapper)
 	{
 		if (getInMemoryDatabaseForModel(modelClass) != null)
 		{
-			return POJOWrapper.loadByIds(ids, modelClass, trxName);
+			return POJOWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 		}
-		return POWrapper.loadByIds(ids, modelClass, trxName);
+		return POWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 	}
 
 	/**
@@ -515,6 +523,8 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
+	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */

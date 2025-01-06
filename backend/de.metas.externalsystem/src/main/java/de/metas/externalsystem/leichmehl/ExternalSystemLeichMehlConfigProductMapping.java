@@ -48,4 +48,7 @@ public class ExternalSystemLeichMehlConfigProductMapping
 
 	@NonNull
 	LeichMehlPluFileConfigGroup leichMehlPluFileConfigGroup;
+	
+	@NonNull
+	PLUType pluType;
 }

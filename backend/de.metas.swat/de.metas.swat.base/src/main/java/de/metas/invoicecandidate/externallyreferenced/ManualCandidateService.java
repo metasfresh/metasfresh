@@ -28,7 +28,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.ContractSpecificPrice;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
@@ -67,7 +67,7 @@ public class ManualCandidateService
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
 	 */
-	public InvoiceCandidate createInvoiceCandidate(@NonNull final NewInvoiceCandidate newIC)
+	public InvoiceCandidate upsertInvoiceCandidate(@NonNull final InvoiceCandidateUpsertRequest newIC)
 	{
 		final InvoiceCandidate.InvoiceCandidateBuilder candidate = InvoiceCandidate.createBuilder(newIC);
 
@@ -91,7 +91,6 @@ public class ManualCandidateService
 			candidate.pricingSystemId((contractSpecificPrice.getPricingSystemId()));
 			candidate.discount(Percent.ZERO);
 
-
 		}
 		else
 		{
@@ -105,12 +104,14 @@ public class ManualCandidateService
 							newIC.getSoTrx())
 					.setCountryId(countryId)
 					.setPriceDate(newIC.getDateOrdered())
+					.setPriceListVersionId(newIC.getPriceListVersionId())
 					.setFailIfNotCalculated();
 
 			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
 			candidate.pricingSystemId(pricingResult.getPricingSystemId());
 			candidate.priceListVersionId(pricingResult.getPriceListVersionId());
+			candidate.taxIncluded(pricingResult.isTaxIncluded());
 
 			final ProductPrice priceEntered = ProductPrice.builder()
 					.money(Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId()))
@@ -164,6 +165,8 @@ public class ManualCandidateService
 
 		candidate.descriptionBottom(newIC.getDescriptionBottom());
 		candidate.userInChargeId(newIC.getUserInChargeId());
+
+		candidate.bankAccountId(newIC.getBankAccountId());
 
 		return candidate.build();
 

@@ -85,7 +85,7 @@ Feature: accounting-purchase-harvesting-feature
       | l_1        | 0123456789011 | endvendor_1              | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              | harvesting_calendar                     | y2022                             |
+      | o_1        | N       | endvendor_1              | 2022-07-16  | 1000012              | po_ref_mock     | POO             | ps_1                              | harvesting_calendar                     | y2022                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -187,8 +187,8 @@ Feature: accounting-purchase-harvesting-feature
       | bp_moduleLogMR_Location | 5823098505483 | bp_po                    | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                              |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                          |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
       | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | Receipt                    |
@@ -197,8 +197,8 @@ Feature: accounting-purchase-harvesting-feature
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Costs          | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |
+      | Identifier          | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |

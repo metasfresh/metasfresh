@@ -752,7 +752,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(@NonNull final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, viewDataType, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen

@@ -45,6 +45,7 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   @NonNull TaxCategoryId taxCategoryId,
 								   @NonNull UomId uomId,
 								   boolean isScalePrice,
+								   boolean isAveragePrice,
 								   @Nullable BigDecimal minValue,
 								   SeqNo seqNo)
 {
@@ -55,6 +56,15 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 				.productId(productId())
 				.money(amount())
 				.uomId(uomId())
+				.build();
+	}
+
+	public ModCntrSpecificPrice updateProductPrice(@NonNull final ProductPrice productPrice)
+	{
+		return this.toBuilder()
+				.productId(productPrice.getProductId())
+				.amount(productPrice.toMoney())
+				.uomId(productPrice.getUomId())
 				.build();
 	}
 }

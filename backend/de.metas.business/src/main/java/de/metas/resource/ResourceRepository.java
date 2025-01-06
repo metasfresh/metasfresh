@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Repository
-class ResourceRepository
+public class ResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -74,7 +74,7 @@ class ResourceRepository
 	/**
 	 * Used for legacy purposes
 	 */
-	static I_S_Resource retrieveRecordById(@NonNull final ResourceId id)
+	public static I_S_Resource retrieveRecordById(@NonNull final ResourceId id)
 	{
 		final I_S_Resource resourceRecord = InterfaceWrapperHelper.load(id, I_S_Resource.class);
 		if (resourceRecord == null)
@@ -165,6 +165,7 @@ class ResourceRepository
 				.internalName(record.getInternalName())
 				.humanResourceTestGroupId(HumanResourceTestGroupId.ofRepoIdOrNull(record.getS_HumanResourceTestGroup_ID()))
 				.workplaceId(WorkplaceId.ofRepoIdOrNull(record.getC_Workplace_ID()))
+				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
 				.build();
 	}
 

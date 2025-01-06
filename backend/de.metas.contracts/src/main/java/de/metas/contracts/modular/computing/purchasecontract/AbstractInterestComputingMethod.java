@@ -23,28 +23,25 @@
 package de.metas.contracts.modular.computing.purchasecontract;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
-import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
@@ -54,20 +51,18 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractInterestComputingMethod implements IComputingMethodHandler
+public abstract class AbstractInterestComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractProvider contractProvider;
@@ -75,41 +70,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
-	{
-		if (!logEntryContractType.isModularContractType())
-		{
-			return false;
-		}
-		if (recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
-		{
-			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
-
-			final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
-			final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(salesOrder.getHarvesting_Year_ID(), salesOrder.getC_Harvesting_Calendar_ID());
-
-			return yearAndCalendarId != null;
-		}
-
-		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
-		{
-			final I_C_Invoice invoice = Optional.of(recordRef)
-					.map(lineRef -> lineRef.getIdAssumingTableName(I_C_InvoiceLine.Table_Name, InvoiceLineId::ofRepoId))
-					.map(invoiceBL::getLineById)
-					.map(I_C_InvoiceLine::getC_Invoice_ID)
-					.map(InvoiceId::ofRepoId)
-					.map(invoiceBL::getById)
-					.orElseThrow(() -> new AdempiereException("No C_Invoice found for line=" + recordRef));
-
-			return !invoice.isSOTrx() && invoiceBL.isDownPayment(invoice);
-		}
-
-		return false;
-	}
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
@@ -118,11 +79,16 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
-			return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
+			return contractProvider.streamPurchaseContractForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
 		}
 		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
 		{
 			return contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+		}
+
+		if (recordRef.tableNameEqualsTo(I_C_Flatrate_Term.Table_Name))
+		{
+			return contractProvider.streamModularPurchaseContractsForContract(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 		}
 
 		return Stream.empty();
@@ -131,8 +97,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings)
 	{
-		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId())
-				.isPresent();
+		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId()).isPresent() && settings.getSoTrx().isPurchase();
 	}
 
 	@NonNull
@@ -140,13 +105,19 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ImmutableSet.Builder<ModularContractLogEntryId> logEntryIdsCollector = ImmutableSet.builder();
+		final AtomicReference<Money> reconciledAmount = new AtomicReference<>(Money.zero(request.getCurrencyId()));
+		final AtomicReference<ModularContractLogEntryId> initialInterimContractId = new AtomicReference<>();
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
 					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
-					if (interestLog.getInterimInvoiceLogId() != null)
+					final ModularContractLogEntryId interimContractLogId = interestLog.getInterimContractLogId();
+					if (interimContractLogId != null)
 					{
-						logEntryIdsCollector.add(interestLog.getInterimInvoiceLogId());
+						logEntryIdsCollector.add(interimContractLogId);
+						initialInterimContractId.set(interimContractLogId);
+						reconciledAmount.set(reconciledAmount.get().add(interestLog.getAllocatedAmt()));
 					}
+
 				})
 				.map(ModularLogInterest::getFinalInterest)
 				.filter(Objects::nonNull)
@@ -157,9 +128,14 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 		final Quantity qty = amount.signum() == 0
 				? Quantity.of(BigDecimal.ZERO, stockUOM)
 				: Quantity.of(BigDecimal.ONE, stockUOM);
+		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
+		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
+
+		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId.get());
 		return ComputingResponse.builder()
-				.ids(logEntryIdsCollector.build())
+				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
 							   .money(amount.negate())
@@ -167,6 +143,22 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 							   .build())
 				.qty(qty)
 				.build();
+	}
+
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId initialInterimContractId)
+	{
+
+	}
+
+	private @NonNull ModularContractLogEntriesList getModularContractLogEntries(final @NonNull ComputingRequest request, final ImmutableSet<ModularContractLogEntryId> logEntryIds)
+	{
+		return modularContractLogService.getModularContractLogEntries(ModularContractLogQuery.builder()
+																			  .entryIds(logEntryIds)
+																			  .flatrateTermId(request.getFlatrateTermId())
+																			  .computingMethodType(getComputingMethodType())
+																			  .billable(true)
+																			  .processed(false)
+																			  .build());
 	}
 
 	@NonNull
@@ -190,4 +182,6 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 
 		return modularLogInterestRepository.streamInterestEntries(logInterestQuery);
 	}
+
+
 }

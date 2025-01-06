@@ -168,6 +168,9 @@ public class JsonRequestProduct
 	@Schema
 	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
 
+	@Schema
+	private List<JsonRequestUOMConversionUpsert> uomConversions;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -325,5 +328,10 @@ public class JsonRequestProduct
 	public void setProductTaxCategories(final List<JsonRequestProductTaxCategoryUpsert> productTaxCategories)
 	{
 		this.productTaxCategories = productTaxCategories;
+	}
+
+	public void setUomConversions(final List<JsonRequestUOMConversionUpsert> uomConversions)
+	{
+		this.uomConversions = uomConversions;
 	}
 }

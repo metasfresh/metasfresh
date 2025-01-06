@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_InvoiceLine
  *  @author metasfresh (generated) 
@@ -911,6 +912,27 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_InvoiceLine.class, "IsManualPrice", null);
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Hide price and amount on print.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHidePriceAndAmountOnPrint (boolean IsHidePriceAndAmountOnPrint);
+
+	/**
+	 * Get Hide price and amount on print.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHidePriceAndAmountOnPrint();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsHidePriceAndAmountOnPrint = new ModelColumn<>(I_C_InvoiceLine.class, "IsHidePriceAndAmountOnPrint", null);
+	String COLUMNNAME_IsHidePriceAndAmountOnPrint = "IsHidePriceAndAmountOnPrint";
 
 	/**
 	 * Set IsOrderLineReadOnly.

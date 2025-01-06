@@ -45,6 +45,7 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -63,6 +64,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -145,7 +147,7 @@ public interface IInvoiceBL extends ISingletonService {
      */
     boolean isCreditMemo(String docBaseType);
 
-	boolean isReversal(InvoiceId invoiceId);
+    boolean isReversal(InvoiceId invoiceId);
 
     /**
      * @return <code>true</code> if the given invoice is the reversal of another invoice.
@@ -161,7 +163,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
 
-    List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
@@ -169,7 +171,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
 
-	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+    I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 
@@ -385,9 +387,15 @@ public interface IInvoiceBL extends ISingletonService {
 
 	boolean isDownPayment(I_C_Invoice invoiceRecord);
 
-	boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
+    boolean isFinalInvoiceOrFinalCreditMemo(final InvoiceId invoiceId);
+
+    boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
 
 	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);
+
+    boolean isSalesFinalInvoiceOrFinalCreditMemo(final InvoiceId invoiceId);
+
+    boolean isSalesFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge
@@ -440,4 +448,11 @@ public interface IInvoiceBL extends ISingletonService {
 
 	@NonNull
 	PaymentTermId getPaymentTermId(@NonNull InvoiceId invoiceId);
+
+	@Nullable
+	String getPOReference(@NonNull InvoiceId invoiceId);
+
+	boolean isApply5CentCashRounding(@NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
+
+	BigDecimal roundTo5CentIfNeeded(@NonNull BigDecimal grandTotal, @NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
 }

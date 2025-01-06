@@ -398,9 +398,9 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
 
 	/**
-	 * Set Harvesting Calendar.
+	 * Set Contract Status.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -409,7 +409,7 @@ public interface I_C_Flatrate_Term
 	/**
 	 * Get Harvesting Calendar.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -570,6 +570,29 @@ public interface I_C_Flatrate_Term
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
+
+	/**
+	 * Get RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_RfQResponseLine_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
+	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
 
 	/**
 	 * Set Tax Category.
@@ -1017,7 +1040,29 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
-	 * Set Is ready for the definitive final invoice.
+	 * Set Final Invoice completed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinalInvoiced (boolean IsFinalInvoiced);
+
+	/**
+	 * Get Final Invoice completed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFinalInvoiced();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsFinalInvoiced = new ModelColumn<>(I_C_Flatrate_Term.class, "IsFinalInvoiced", null);
+	String COLUMNNAME_IsFinalInvoiced = "IsFinalInvoiced";
+
+	/**
+	 * Set Ready for definitive final invoice.
+	 * If true, this means that the current contract is ready for the definitive invoice to be created. No further final invoices can be created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1026,7 +1071,8 @@ public interface I_C_Flatrate_Term
 	void setIsReadyForDefinitiveInvoice (boolean IsReadyForDefinitiveInvoice);
 
 	/**
-	 * Get Is ready for the definitive final invoice.
+	 * Get Ready for definitive final invoice.
+	 * If true, this means that the current contract is ready for the definitive invoice to be created. No further final invoices can be created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1057,6 +1103,29 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsSimulation = new ModelColumn<>(I_C_Flatrate_Term.class, "IsSimulation", null);
 	String COLUMNNAME_IsSimulation = "IsSimulation";
+
+	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_C_Flatrate_Term.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
 	 * Set Tax Included.
@@ -1308,6 +1377,50 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
 
 	/**
+	 * Set Supply Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPMM_Product_ID (int PMM_Product_ID);
+
+	/**
+	 * Get Supply Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPMM_Product_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
+	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_POReference = new ModelColumn<>(I_C_Flatrate_Term.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
 	 * Set Prepare Closing.
 	 *
 	 * <br>Type: Button
@@ -1390,6 +1503,27 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_Term.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Qty Next Year.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
+
+	/**
+	 * Get Qty Next Year.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPlanned_NextYear();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
+	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
 
 	/**
 	 * Set Start Date.
@@ -1520,31 +1654,6 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Term.class, "Type_Flatrate", null);
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
-
-	/**
-	 * Set UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setUOMType (@Nullable java.lang.String UOMType);
-
-	/**
-	 * Get UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getUOMType();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Term.class, "UOMType", null);
-	String COLUMNNAME_UOMType = "UOMType";
 
 	/**
 	 * Get Updated.

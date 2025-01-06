@@ -10,6 +10,7 @@ import com.google.common.collect.SetMultimap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -168,7 +169,8 @@ public final class CollectionUtils
 			}
 		}
 
-		Check.assume(result.size() == 1, "One and only one matching element was expected but we got more or none: {}", result);
+		final int size = result.size();
+		Check.assume(size == 1, "One and only one matching element was expected but we got {}: {}", size, result);
 		return result.get(0);
 	}
 
@@ -269,6 +271,7 @@ public final class CollectionUtils
 	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Contract("_, !null -> !null")
 	@Nullable
 	public static <T> T singleElementOrDefault(@Nullable final Collection<T> collection, @Nullable final T defaultValue)
 	{
@@ -303,6 +306,7 @@ public final class CollectionUtils
 	/**
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,

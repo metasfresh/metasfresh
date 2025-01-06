@@ -91,13 +91,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=712836
 -- Field: Cost Type(541675,D) -> Cost Type(546807,D) -> Product
 -- Column: C_Cost_Type.M_Product_ID
 -- 2023-03-13T08:07:30.228Z
-UPDATE AD_Field SET DisplayLogic='@IsAllowInvoicing/X@=Y', IsAlwaysUpdateable='',Updated=TO_TIMESTAMP('2023-03-13 10:07:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712836
-;
-
--- Field: Cost Type(541675,D) -> Cost Type(546807,D) -> Product
--- Column: C_Cost_Type.M_Product_ID
--- 2023-03-13T08:07:34.857Z
-UPDATE AD_Field SET IsAlwaysUpdateable='',Updated=TO_TIMESTAMP('2023-03-13 10:07:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712836
+UPDATE AD_Field SET DisplayLogic='@IsAllowInvoicing/X@=Y', Updated=TO_TIMESTAMP('2023-03-13 10:07:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712836
 ;
 
 -- Field: Cost Type(541675,D) -> Cost Type(546807,D) -> Product

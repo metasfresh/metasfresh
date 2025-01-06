@@ -2,9 +2,13 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -21,6 +25,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -33,6 +38,9 @@ import java.util.stream.Stream;
 public class ModularContractLogEntriesList implements Iterable<ModularContractLogEntry>
 {
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
+
+	// compute with 12 digit precision, will be rounded on IC creation according to priceList precision
+	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 
 	public static final ModularContractLogEntriesList EMPTY = new ModularContractLogEntriesList(ImmutableList.of());
 	@NonNull private final ImmutableList<ModularContractLogEntry> list;
@@ -60,9 +68,32 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 
 	public ModularContractLogEntriesList subsetOf(@NonNull final LogEntryDocumentType documentType)
 	{
+		return subsetOf(ImmutableSet.of(documentType));
+	}
+
+	public ModularContractLogEntriesList subsetOf(@NonNull final Collection<LogEntryDocumentType> documentTypes)
+	{
+		return ModularContractLogEntriesList.ofCollection(
+				list.stream()
+						.filter(log -> documentTypes.contains(log.getDocumentType()))
+						.toList()
+		);
+	}
+
+	public ModularContractLogEntriesList subsetOfExcluding(@NonNull final Collection<LogEntryDocumentType> documentTypes)
+	{
+		return ModularContractLogEntriesList.ofCollection(
+				list.stream()
+						.filter(log -> !documentTypes.contains(log.getDocumentType()))
+						.toList()
+		);
+	}
+
+	public ModularContractLogEntriesList subsetOf(final boolean processed)
+	{
 		return ModularContractLogEntriesList.ofCollection(list.stream()
-				.filter(log -> documentType.equals(log.getDocumentType()))
-				.toList());
+																  .filter(log -> log.isProcessed() == processed)
+																  .toList());
 	}
 
 	@NotNull
@@ -101,6 +132,27 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public ProductId getSingleProductId()
 	{
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
+	}
+
+	public ModularContractModuleId getSingleModuleId()
+	{
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getModularContractModuleId);
+	}
+
+	@Nullable
+	public LocalDateAndOrgId getSingleTransactionDate()
+	{
+		if(list.isEmpty())
+		{
+			return null;
+		}
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getTransactionDate);
+	}
+
+	@Nullable
+	public InvoiceCandidateId getSingleInvoiceCandidateIdOrNull()
+	{
+		return CollectionUtils.extractSingleElementOrDefault(list, ModularContractLogEntry::getInvoiceCandidateId, null);
 	}
 
 	@NonNull
@@ -192,5 +244,61 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public ClientAndOrgId getSingleClientAndOrgId()
 	{
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getClientAndOrgId);
+	}
+
+	@NonNull
+	public Optional<ProductPrice> getAveragePrice(
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUOMId,
+			@NonNull final QuantityUOMConverter quantityUOMConverter,
+			@NonNull final BigDecimal tradeMargin)
+	{
+		if (list.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final Optional<Money> priceSum = getAmountSum();
+		final Quantity qtySum = getQtySum(targetUOMId, quantityUOMConverter);
+
+		if(priceSum.isEmpty() || qtySum.isZero())
+		{
+			return Optional.empty();
+		}
+
+		final Money priceAverage = priceSum.get().divide(qtySum.toBigDecimal(), precision).subtract(tradeMargin);
+
+		return Optional.of(ProductPrice.builder()
+								   .money(priceAverage)
+								   .productId(productId)
+								   .uomId(targetUOMId)
+								   .build()
+		);
+    }
+
+	@NonNull
+	public Optional<Quantity> getQtySum()
+	{
+		if (list.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return list.stream()
+				.map(ModularContractLogEntry::getQuantity)
+				.filter(Objects::nonNull)
+				.reduce(Quantity::add);
+	}
+
+	@NonNull
+	public Optional<Money> getAmountSum()
+	{
+		if (list.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return list.stream()
+				.map(ModularContractLogEntry::getAmount)
+				.filter(Objects::nonNull)
+				.reduce(Money::add);
 	}
 }

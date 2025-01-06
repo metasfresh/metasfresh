@@ -62,4 +62,9 @@ public class ExternalSystemConfigQRCode
 	{
 		return childConfigId.getType() + "-" + childConfigId.getRepoId();
 	}
+
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return ExternalSystemConfigQRCodeJsonConverter.isTypeMatching(globalQRCode);
+	}
 }

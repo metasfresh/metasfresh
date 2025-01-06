@@ -1,5 +1,6 @@
 package de.metas.product.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Product_PlanningSchema
  *  @author Adempiere (generated) 
@@ -760,4 +761,25 @@ public interface I_M_Product_PlanningSchema
     public static final org.adempiere.model.ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_Yield = new org.adempiere.model.ModelColumn<I_M_Product_PlanningSchema, Object>(I_M_Product_PlanningSchema.class, "Yield", null);
     /** Column name Yield */
     public static final String COLUMNNAME_Yield = "Yield";
+
+	/**
+	 * Set Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Manufacturing_Aggregation_ID (int C_Manufacturing_Aggregation_ID);
+
+	/**
+	 * Get Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Manufacturing_Aggregation_ID();
+
+	ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_C_Manufacturing_Aggregation_ID = new ModelColumn<>(I_M_Product_PlanningSchema.class, "C_Manufacturing_Aggregation_ID", null);
+	String COLUMNNAME_C_Manufacturing_Aggregation_ID = "C_Manufacturing_Aggregation_ID";
 }

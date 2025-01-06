@@ -22,9 +22,11 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -40,6 +42,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_Split_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
@@ -47,6 +50,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -59,9 +63,15 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -82,11 +92,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -118,6 +130,7 @@ public class M_InOut_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_ShipmentSchedule_Split_StepDefData shipmentScheduleSplitTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Warehouse_StepDefData warehouseTable;
@@ -134,6 +147,7 @@ public class M_InOut_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final String ignoredInoutType, @NonNull final DataTable table)
@@ -207,52 +221,88 @@ public class M_InOut_StepDef
 		softly.assertAll();
 	}
 
-	@And("'generate shipments' process is invoked")
-	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
+	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")
+	public void invokeGenerateShipmentsProcessIndividually(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> tableRow : dataTable)
 		{
-			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-
 			final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
 			final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 			final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
 
-			final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
-
-			final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
-
-			final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
-					.adPInstanceId(pinstanceDAO.createSelectionId())
-					.queryFilters(queryFilter)
-					.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
-					.completeShipments(isCompleteShipments)
-					.isShipmentDateToday(isShipToday);
-
-			if (qtyToDeliverOverride != null)
-			{
-				final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
-						ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
-				workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
-			}
-
-			final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-					.setContext(Env.getCtx(), Trx.TRXNAME_None)
-					.createWorkpackages(workPackageParametersBuilder.build());
-
-			assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+			invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, ImmutableList.of(tableRow));
 		}
 	}
 
-	@And("^after not more than (.*)s, M_InOut is found:$")
-	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("^'generate shipments' process is invoked with QuantityType=(.*), IsCompleteShipments=(true|false) and IsShipToday=(true|false)")
+	public void invokeGenerateShipmentsProcess(
+			@NonNull final String quantityType,
+			final boolean isCompleteShipments,
+			final boolean isShipToday,
+			@NonNull final DataTable table)
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final List<Map<String, String>> dataTable = table.asMaps();
+		invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, dataTable);
+	}
 
+	public void invokeGenerateShipmentsProcess0(
+			@NonNull final String quantityType,
+			final boolean isCompleteShipments,
+			final boolean isShipToday,
+			@NonNull final List<Map<String, String>> dataTable)
+	{
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> qtysToDeliverOverride = ImmutableMap.builder();
+		final ImmutableList.Builder<ShipmentScheduleId> schedIdsToEnqueue = ImmutableList.builder();
+		for (final Map<String, String> tableRow : dataTable)
+		{
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+			schedIdsToEnqueue.add(shipmentScheduleId);
+
+			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override);
+			if (qtyToDeliverOverride != null)
+			{
+				final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+				final I_M_Product productRecord = productDAO.getById(productId);
+				qtysToDeliverOverride.put(shipmentScheduleId, StockQtyAndUOMQty.builder()
+						.productId(productId)
+						.stockQty(Quantitys.of(qtyToDeliverOverride, UomId.ofRepoId(productRecord.getC_UOM_ID())))
+						.build());
+			}
+		}
+
+		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue.build());
+
+		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(pinstanceDAO.createSelectionId())
+				.queryFilters(queryFilter)
+				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
+				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
+				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
+				.isShipmentDateToday(StringUtils.toBoolean(isShipToday));
+
+		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
+				.setContext(Env.getCtx(), Trx.TRXNAME_None)
+				.createWorkpackages(workPackageParametersBuilder.build());
+
+		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
+	}
+
+	@And("^after not more than (.*)s, M_InOut is found:$")
+	public void shipmentsAreFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			findShipment(timeoutSec, tableRow);
+		}
+	}
+
+	private void findShipment(final int timeoutSec, final Map<String, String> tableRow) throws InterruptedException
+	{
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
@@ -291,6 +341,8 @@ public class M_InOut_StepDef
 					.map(InOutLineId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
+			final InOutId ioIdFromSplit = getInOutIdFromSplitOrNull(tableRow);
+
 			final Set<InOutId> inOutIds = queryBL
 					.createQueryBuilder(I_M_InOutLine.class)
 					.addOnlyActiveRecordsFilter()
@@ -299,6 +351,7 @@ public class M_InOut_StepDef
 					.stream()
 					.map(I_M_InOutLine::getM_InOut_ID)
 					.map(InOutId::ofRepoId)
+					.filter(ioId -> ioIdFromSplit == null || ioId.equals(ioIdFromSplit))
 					.collect(Collectors.toSet());
 
 			if (inOutIds.size() > 1)
@@ -313,7 +366,8 @@ public class M_InOut_StepDef
 			docStatus.map(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
 
 			final I_M_InOut shipment = shipmentQueryBuilder
-					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds.iterator().next().getRepoId())
+					.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds)
+					.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID)
 					.create()
 					.firstOnly(I_M_InOut.class);
 
@@ -337,6 +391,23 @@ public class M_InOut_StepDef
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
+	}
+
+	@Nullable
+	private InOutId getInOutIdFromSplitOrNull(final Map<String, String> tableRow)
+	{
+		final String shipmentScheduleSplitIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final InOutId ioIdFromSplit;
+		if (Check.isNotBlank(shipmentScheduleSplitIdentifier))
+		{
+			final I_M_ShipmentSchedule_Split shipmentScheduleSplit = shipmentScheduleSplitTable.get(shipmentScheduleSplitIdentifier);
+			ioIdFromSplit = InOutId.ofRepoIdOrNull(shipmentScheduleSplit.getM_InOut_ID());
+		}
+		else
+		{
+			ioIdFromSplit = null;
+		}
+		return ioIdFromSplit;
 	}
 
 	@And("^after not more than (.*)s, Customer Return is found:$")

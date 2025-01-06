@@ -30,10 +30,11 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -48,14 +49,17 @@ import de.metas.pricing.service.ScalePriceQtyFrom;
 import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantitys;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
@@ -64,22 +68,33 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import static de.metas.contracts.modular.ComputingMethodType.INITIAL_PRICE_FROM_CONTRACT_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.SCALE_PRICE_METHODS;
+
 @Service
 @RequiredArgsConstructor
 public class ModularContractPriceService
 {
-	private final ModularContractPriceRepository modularContractPriceRepository;
-	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	private final ProductScalePriceService productScalePriceService;
+	private static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
 
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+	@NonNull private final ProductScalePriceService productScalePriceService;
 
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+	public static ModularContractPriceService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractPriceService(
+				new ModularContractPriceRepository(),
+				new ModularContractSettingsRepository(),
+				ProductScalePriceService.newInstanceForUnitTesting()
+		);
+	}
 
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{
@@ -91,7 +106,12 @@ public class ModularContractPriceService
 		modularContractPriceRepository.deleteById(id);
 	}
 
-	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public boolean existsSimilarContractSpecificScalePrice(@NonNull final ModCntrSpecificPriceId id)
+	{
+		return modularContractPriceRepository.existsSimilarContractSpecificScalePrice(id);
+	}
+
+	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord, @NonNull final ModularContractComputingMethodHandlerRegistry handlerRegistry)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
 		if (modularContractPriceRepository.isSpecificPricesExistForFlatrateTermId(flatrateTermId))
@@ -99,18 +119,24 @@ public class ModularContractPriceService
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
 		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigsWithout(ComputingMethodType.INTERIM_CONTRACT);
 
 		for (final ModuleConfig config : moduleConfigs)
 		{
-			final IComputingMethodHandler handler = modularContractComputingMethodHandlerRegistry.getApplicableHandlerFor(config.getComputingMethodType());
-			handler.streamContractSpecificPricedProductIds(config.getId().getModularContractModuleId())
+			final IComputingMethodHandler handler = handlerRegistry.getApplicableHandlerFor(config.getComputingMethodType());
+			handler.streamContractSpecificPricedProductIds(config.getModularContractModuleId())
 					.forEach(productId -> {
 						setProductDataOnPricingContext(productId, pricingContextTemplate);
-						createModCntrSpecificPrices(flatrateTermRecord, productId, config, pricingContextTemplate);
+						createModCntrSpecificPrices(ModCntrSpecificPricesCreateRequest
+															.builder()
+															.flatrateTermRecord(flatrateTermRecord)
+															.productId(productId)
+															.moduleConfig(config)
+															.pricingContextTemplate(pricingContextTemplate)
+															.build());
 					});
 		}
 	}
@@ -123,7 +149,7 @@ public class ModularContractPriceService
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 		final ModuleConfig interimContractModule = settings.getSingleModuleConfig(ComputingMethodType.INTERIM_CONTRACT).orElse(null);
 		if (interimContractModule == null)
 		{
@@ -134,7 +160,13 @@ public class ModularContractPriceService
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 		final ProductId productId = settings.getRawProductId();
 		setProductDataOnPricingContext(productId, pricingContextTemplate);
-		createModCntrSpecificPrices(flatrateTermRecord, productId, interimContractModule, pricingContextTemplate);
+		createModCntrSpecificPrices(ModCntrSpecificPricesCreateRequest
+											.builder()
+											.flatrateTermRecord(flatrateTermRecord)
+											.productId(productId)
+											.moduleConfig(interimContractModule)
+											.pricingContextTemplate(pricingContextTemplate)
+											.build());
 
 	}
 
@@ -142,24 +174,27 @@ public class ModularContractPriceService
 	{
 		final I_M_Product product = productDAO.getById(productId);
 		pricingContextTemplate.setProductId(productId)
-				.setQty(Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(product.getC_UOM_ID()))));
+				.setQty(Quantitys.of(BigDecimal.ONE, UomId.ofRepoId(product.getC_UOM_ID())));
 	}
 
-	private void createModCntrSpecificPrices(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ProductId productId, @NonNull final ModuleConfig moduleConfig, final @NonNull IEditablePricingContext pricingContextTemplate)
+	private void createModCntrSpecificPrices(@NonNull final ModCntrSpecificPricesCreateRequest modCntrSpecificPricesCreateRequest)
 	{
-		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
+		final IPricingResult pricingResult = pricingBL.calculatePrice(modCntrSpecificPricesCreateRequest.getPricingContextTemplate());
 
+		final I_C_Flatrate_Term flatrateTermRecord = modCntrSpecificPricesCreateRequest.getFlatrateTermRecord();
+		final ModuleConfig moduleConfig = modCntrSpecificPricesCreateRequest.getModuleConfig();
+		final ProductId productId = modCntrSpecificPricesCreateRequest.getProductId();
 
 		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
+				.modularContractModuleId(moduleConfig.getModularContractModuleId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.uomId(pricingResult.getPriceUomId())
 				.amount(pricingResult.getPriceStdAsMoney())
 				.productId(productId)
 				.seqNo(moduleConfig.getSeqNo());
 
-		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
+		if (moduleConfig.isMatchingAnyOf(SCALE_PRICE_METHODS))
 		{
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
 			if (productPrice == null)
@@ -189,12 +224,24 @@ public class ModularContractPriceService
 				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
 						.stream()
 						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin())
-								.amount(Money.of(scale.getPriceStd(),pricingResult.getCurrencyId()))
+								.amount(Money.of(scale.getPriceStd(), pricingResult.getCurrencyId()))
 								.build())
 						.collect(ImmutableList.toImmutableList());
 
 				modularContractPriceRepository.saveAll(specificPrices);
 			}
+		}
+		else if (moduleConfig.isMatchingAnyOf(INITIAL_PRICE_FROM_CONTRACT_METHODS))
+		{
+			final Money priceFromContract = Money.of(flatrateTermRecord.getPriceActual(), CurrencyId.ofRepoId((flatrateTermRecord.getC_Currency_ID())));
+
+			final ModCntrSpecificPrice initialPrice = specificPriceTemplate.amount(priceFromContract)
+					.isScalePrice(false).minValue(null)
+					.uomId(UomId.ofRepoId(flatrateTermRecord.getC_UOM_ID()))
+					.taxCategoryId(TaxCategoryId.ofRepoId(flatrateTermRecord.getC_TaxCategory_ID()))
+					.build();
+
+			modularContractPriceRepository.save(initialPrice);
 		}
 		else
 		{
@@ -203,7 +250,7 @@ public class ModularContractPriceService
 
 	}
 
-	private IEditablePricingContext createPricingContextTemplate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractSettings settings)
+	public IEditablePricingContext createPricingContextTemplate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractSettings settings)
 	{
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID(), flatrateTermRecord.getBill_Location_ID());
@@ -228,4 +275,24 @@ public class ModularContractPriceService
 		return modularContractPriceRepository.cloneById(id, mapper);
 	}
 
+	@NonNull
+	public ModCntrSpecificPrice retrievePrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		return modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest);
+	}
+	
+	public void updateAveragePrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest, @NonNull final ProductPrice productPrice)
+	{
+		modularContractPriceRepository.save(retrievePrice(contractSpecificPriceRequest).updateProductPrice(productPrice).toBuilder().isAveragePrice(true).build());
+	}
+
+	@Builder
+	@Value
+	private static class ModCntrSpecificPricesCreateRequest
+	{
+		@NonNull I_C_Flatrate_Term flatrateTermRecord;
+		@NonNull ProductId productId;
+		@NonNull ModuleConfig moduleConfig;
+		@NonNull IEditablePricingContext pricingContextTemplate;
+	}
 }

@@ -117,10 +117,9 @@ public class AdempiereException extends RuntimeException
 
 	public static ITranslatableString extractMessageTrl(final Throwable throwable)
 	{
-		if (throwable instanceof AdempiereException)
+		if (throwable instanceof final AdempiereException ex)
 		{
-			final AdempiereException ex = (AdempiereException)throwable;
-			return ex.getMessageBuilt();
+            return ex.getMessageBuilt();
 		}
 
 		return TranslatableStrings.constant(extractMessage(throwable));
@@ -436,10 +435,9 @@ public class AdempiereException extends RuntimeException
 		{
 			appendParameters(message);
 			final Throwable cause = getCause();
-			if (cause instanceof AdempiereException)
+			if (cause instanceof final AdempiereException metasfreshCause)
 			{
-				final AdempiereException metasfreshCause = (AdempiereException)cause;
-				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
+                if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
 				{
 					metasfreshCause.appendParameters(message);
 				}
@@ -448,6 +446,7 @@ public class AdempiereException extends RuntimeException
 		return message.build();
 	}
 
+	@Nullable
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);

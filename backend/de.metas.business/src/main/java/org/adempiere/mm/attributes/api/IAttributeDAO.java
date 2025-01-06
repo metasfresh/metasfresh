@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -11,6 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -36,6 +38,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
 
+	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
+
 	I_M_Attribute getAttributeById(int attributeId);
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
@@ -44,18 +48,25 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
-	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributeIds ordered by M_AttributeUse.SeqNo
+	 */
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
-	/** @return attributes, ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributes, ordered by M_AttributeUse.SeqNo
+	 */
 	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
 
 	List<I_M_Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
 
+	@NonNull
+	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
+
 	/**
-	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
+	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeSetId#NONE}).
 	 */
 	I_M_AttributeSet retrieveNoAttributeSet();
 
@@ -67,6 +78,8 @@ public interface IAttributeDAO extends ISingletonService
 	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
 
 	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
+
+	List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull AttributeSetId attributeSetId);
 
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
 
@@ -82,7 +95,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
-	 *
 	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
 	 */
 	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);

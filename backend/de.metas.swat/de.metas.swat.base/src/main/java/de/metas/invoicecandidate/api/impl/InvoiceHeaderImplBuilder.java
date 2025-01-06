@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -55,9 +56,9 @@ public class InvoiceHeaderImplBuilder
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
-	@Setter
-	@Getter
-	private boolean takeDocTypeFromPool = false;
+
+	@Getter @Setter private boolean takeDocTypeFromPool = false;
+	@Getter @Setter private boolean isCreditedInvoiceReinvoicable = false;
 
 	private DocTypeId docTypeInvoiceId = null;
 
@@ -127,7 +128,7 @@ public class InvoiceHeaderImplBuilder
 	@Nullable
 	@Getter
 	private String invoiceAdditionalText;
-	
+
 	@Setter
 	@Getter
 	private boolean notShowOriginCountry;
@@ -138,12 +139,15 @@ public class InvoiceHeaderImplBuilder
 
 	private int auctionId;
 
+	private int orgBankAccountId;
+
 	@Getter
 	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
 	@Getter
 	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
 	@Getter
 	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
+	private int MODCNTR_Settings_ID = REPO_ID_UNSET_VALUE;
 
 	private Dimension dimension;
 
@@ -197,7 +201,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
 		invoiceHeader.setEMail(getEmail());
-		
+
 		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
@@ -221,8 +225,11 @@ public class InvoiceHeaderImplBuilder
 
 		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
+		invoiceHeader.setModularContractSettingsId(ModularContractSettingsId.ofRepoIdOrNull(getModularContractSettingsId()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+		invoiceHeader.setOrgBankAccountId(BankAccountId.ofRepoIdOrNull(getOrgBankAccount_ID()));
+		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
 	}
@@ -356,9 +363,19 @@ public class InvoiceHeaderImplBuilder
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
+	/**
+	 * Set the header to the given {@code overrideDueDate}, if it is after a previously set value.
+	 */
 	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
 	{
-		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
+		if (_overrideDueDate == null)
+		{
+			_overrideDueDate = overrideDueDate;
+		}
+		else if (overrideDueDate != null && overrideDueDate.isAfter(_overrideDueDate))
+		{
+			_overrideDueDate = overrideDueDate;
+		}
 	}
 
 	public void setAD_Org_ID(final int adOrgId)
@@ -557,8 +574,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + value
-												 + "\n New value: " + valueNew);
+					+ "\n Current value: " + value
+					+ "\n New value: " + valueNew);
 		}
 	}
 
@@ -579,8 +596,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + id
-												 + "\n New value: " + idNew);
+					+ "\n Current value: " + id
+					+ "\n New value: " + idNew);
 		}
 	}
 
@@ -613,8 +630,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-													+ "\n Model: " + model
-													+ "\n Model new: " + modelNew);
+					+ "\n Model: " + model
+					+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -631,8 +648,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-											 + "\n Current value: " + value
-											 + "\n New value: " + valueNew);
+				+ "\n Current value: " + value
+				+ "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(@Nullable final String externalIdStr)
@@ -728,6 +745,21 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
+	public int getModularContractSettingsId()
+	{
+		return MODCNTR_Settings_ID;
+	}
+
+	public void setModularContractSettingsId(final int modularContractSettingsId)
+	{
+		this.MODCNTR_Settings_ID = checkOverrideID("MODCNTR_Settings_ID", this.MODCNTR_Settings_ID, modularContractSettingsId);
+	}
+
+	public int getM_Warehouse_ID()
+	{
+		return M_Warehouse_ID;
+	}
+
 	public void setM_Warehouse_ID(final int warehouseId)
 	{
 		if (M_Warehouse_ID == REPO_ID_UNSET_VALUE)
@@ -748,5 +780,15 @@ public class InvoiceHeaderImplBuilder
 	public void setBankAccountId(final int bankAccountId)
 	{
 		this.bankAccountId = checkOverrideID("C_BP_BankAccount_ID", this.bankAccountId, bankAccountId);
+	}
+
+	public void setOrgBankAccountId(final int orgBankAccountId)
+	{
+		this.orgBankAccountId = checkOverrideID("Org_BP_Account_ID", this.orgBankAccountId, orgBankAccountId);
+	}
+
+	public int getOrgBankAccount_ID()
+	{
+		return orgBankAccountId;
 	}
 }

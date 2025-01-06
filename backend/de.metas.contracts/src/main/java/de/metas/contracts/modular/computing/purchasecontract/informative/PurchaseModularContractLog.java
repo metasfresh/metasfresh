@@ -23,14 +23,14 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import de.metas.contracts.modular.workpackage.impl.AbstractContractLog;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-class PurchaseModularContractLog extends AbstractPurchaseContractHandler
+class PurchaseModularContractLog extends AbstractContractLog
 {
 	@NonNull private final InformativeLogComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;

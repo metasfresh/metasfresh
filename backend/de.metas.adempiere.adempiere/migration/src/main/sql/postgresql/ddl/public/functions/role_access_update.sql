@@ -100,6 +100,12 @@ BEGIN
                     p_AD_Org_ID := r.AD_Org_ID,
                     p_CreatedBy := createdByEffective
                     );
+            PERFORM role_access_update_mobileApplications(
+                    p_AD_Role_ID := r.AD_Role_ID,
+                    p_AD_Client_ID := r.AD_Client_ID,
+                    p_AD_Org_ID := r.AD_Org_ID,
+                    p_CreatedBy := createdByEffective
+                    );
 
             --
             roleUpdated := TRUE;

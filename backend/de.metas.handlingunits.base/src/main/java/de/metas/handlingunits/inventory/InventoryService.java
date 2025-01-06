@@ -13,6 +13,7 @@ import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreate
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
@@ -23,6 +24,8 @@ import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
@@ -36,6 +39,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
@@ -47,6 +51,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -78,11 +83,13 @@ public class InventoryService
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	@NonNull @Getter private final InventoryRepository inventoryRepository;
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 
-	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
+	@NonNull private static final AdMessageKey MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE = AdMessageKey.of("de.metas.handlingunits.inventory.InventoryService.MsgCreatedVirtualInventoryForShipmentSchedule");
+	@NonNull private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
 	public static InventoryService newInstanceForUnitTesting()
 	{
@@ -103,7 +110,7 @@ public class InventoryService
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
@@ -295,14 +302,29 @@ public class InventoryService
 
 		final Inventory inventory = getById(inventoryId);
 
+		sendNotificationForCreatedVirtualInventory(inventoryId, req.getForRecordRef());
+
 		return CollectionUtils.singleElement(inventory.getHuIds());
+	}
+
+	private void sendNotificationForCreatedVirtualInventory(@NonNull final InventoryId inventoryId, @Nullable final TableRecordReference forRecordRef)
+	{
+		if (forRecordRef != null && forRecordRef.tableNameEqualsTo(I_M_ShipmentSchedule.Table_Name))
+		{
+			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+					.recipientUserId(Env.getLoggedUserId())
+					.contentADMessage(MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE)
+					.contentADMessageParam(forRecordRef.getRecord_ID())
+					.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
+					.build());
+		}
 	}
 
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
-				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.docSubType(InventoryDocSubType.VirtualInventory.getDocSubType())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());
@@ -319,5 +341,11 @@ public class InventoryService
 		{
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
+	}
+
+	@NonNull
+	public Set<InventoryId> getVirtualInventoryIdsByHUIds(@NonNull final Set<HuId> huIds, @NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return inventoryRepository.getIdsByHUIdsAndDocTypeId(huIds, getVirtualInventoryDocTypeId(clientId, orgId));
 	}
 }

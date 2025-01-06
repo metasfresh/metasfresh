@@ -42,6 +42,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "ephemeral": false,
         "handoverLocation": false,
         "metasfreshId": 1000000,
+        "name": "bpartnerRecord.name_updated",
         "poBox": "poBox",
         "postal": "5040",
         "remitTo": false,
@@ -265,6 +266,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "l1_city l1_address1 bPartner.name",
         "poBox": "l1_poBox",
         "postal": "l1_postal",
         "region": "l1_region",
@@ -310,6 +312,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "l2_city l2_address1 bPartner.name",
         "poBox": "l2_poBox",
         "postal": "l2_postal",
         "region": "l2_region",
@@ -550,6 +553,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "locationRecord.city locationRecord.address1 bpartnerRecord.name",
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
@@ -786,6 +790,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "locationRecord.city locationRecord.address1 bpartnerRecord.name",
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
@@ -987,6 +992,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "locationRecord.city locationRecord.address1 bpartnerRecord.name",
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
@@ -1188,6 +1194,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "locationRecord.city locationRecord.address1 bpartnerRecord.name",
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
@@ -1232,6 +1239,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipTo": false,
           "shipToDefault": false
         },
+        "name": "newLocation_city newLocation_address1 bpartnerRecord.name",
         "poBox": "newLocation_poBox",
         "postal": "newLocation_postal",
         "region": "newLocation_region",

@@ -109,6 +109,8 @@ public class InvoiceCandidateWithDetailsRepository
 		record.setC_UOM_ID(Quantity.toUomRepoId(qty));
 		record.setQty(Quantity.toBigDecimal(qty));
 		record.setDate(TimeUtil.asTimestamp(from.getDate(), timeZone));
+		record.setPriceActual(from.getPrice());
+		record.setPriceEntered(from.getPrice());
 	}
 
 	private List<I_C_Invoice_Detail> loadByInvoiceCandidateId(final @NonNull InvoiceCandidateId invoiceCandidateId)

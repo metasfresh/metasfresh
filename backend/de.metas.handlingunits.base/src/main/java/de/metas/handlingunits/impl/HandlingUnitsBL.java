@@ -31,10 +31,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
+import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
@@ -102,6 +104,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -140,6 +143,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -190,7 +194,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUStorageFactory getStorageFactory()
 	{
-		return storageFactory;
+		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
+		return huContext != null ? huContext.getHUStorageFactory() : storageFactory;
 	}
 
 	@Override
@@ -347,6 +352,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 					return IHUContextProcessor.NULL_RESULT;
 				});
+	}
+
+	@Override
+	public boolean isDestroyed(final HuId huId)
+	{
+		return isDestroyed(handlingUnitsRepo.getById(huId));
 	}
 
 	@Override
@@ -566,7 +577,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final List<I_M_HU_Item> huItems = handlingUnitsRepo.retrieveItems(hu);
-		if (huItems.size() == 0)
+		if (huItems.isEmpty())
 		{
 			return false; // we don't care
 		}
@@ -849,6 +860,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(huPackingInstructionsVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsId piId = getEffectivePackingInstructionsId(hu);
+		final I_M_HU_PI pi = getPI(piId);
+		return HuPackingInstructionsIdAndCaption.of(piId, pi.getName());
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -973,6 +992,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		else
 		{
 			// note: if hu is an aggregate HU, then there won't be an NPE here.
+			//noinspection DataFlowIssue
 			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 			if (parentPIItem == null)
 			{
@@ -995,6 +1015,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		//noinspection DataFlowIssue
 		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 		if (parentPIItem == null)
 		{
@@ -1133,7 +1154,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return;
 		}
 
-		setHUStatus(hus, createMutableHUContext(), huStatus);
+		IHUContext huContext = HUContextHolder.getCurrentOrNull();
+		if (huContext == null)
+		{
+			huContext = createMutableHUContext();
+		}
+
+		setHUStatus(hus, huContext, huStatus);
 	}
 
 	@Override
@@ -1154,6 +1181,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
 	{
 		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
+
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final String huStatus)
+	{
+		final IHUContext huContext = createMutableHUContext();
 
 		huStatusBL.setHUStatus(huContext, hu, huStatus);
 
@@ -1294,6 +1331,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isHUHierarchyCleared(@NonNull final I_M_HU hu)
+	{
+		return isWholeHierarchyCleared(getTopLevelParent(hu));
+	}
+
+	@Override
 	@NonNull
 	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{
@@ -1391,4 +1434,47 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.saveHU(hu);
 	}
 
+	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIs(tuPIItemIds, bpartnerId);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return handlingUnitsRepo.retrievePIInfo(piItemIds);
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI retrievePIDefaultForPicking()
+	{
+		return handlingUnitsRepo.retrievePIDefaultForPicking();
+	}
+
+	@Override
+	public boolean isTUIncludedInLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU expectedLU)
+	{
+		final I_M_HU actualLU = getLoadingUnitHU(tu);
+		return actualLU != null && actualLU.getM_HU_ID() == expectedLU.getM_HU_ID();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
+
+		final ImmutableSet<Integer> locatorIds = hus
+				.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorId -> locatorId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
+	}
 }

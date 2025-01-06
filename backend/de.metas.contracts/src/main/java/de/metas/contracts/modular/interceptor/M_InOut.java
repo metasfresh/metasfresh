@@ -22,14 +22,18 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.inout.IInOutDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -39,9 +43,12 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -57,33 +64,28 @@ import static de.metas.contracts.modular.ModelAction.REVERSED;
 import static de.metas.contracts.modular.ModelAction.VOIDED;
 
 @Component
+@RequiredArgsConstructor
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-	private final ModularContractService contractService;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-	public M_InOut(@NonNull final ModularContractService contractService, @NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
-	{
-		this.contractService = contractService;
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
-	}
+	@NonNull private final ModularContractService contractService;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+	@NonNull private final ModularContractLogService modularContractLogService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_InOut inOutRecord)
 	{
-		inOutDAO.retrieveAllLines(inOutRecord)
+		inOutBL.getLines(inOutRecord)
 				.forEach(line -> {
 					propagateFlatrateTerm(line);
 					propagateHarvestingDetails(line);
 				});
 
 		invokeHandlerForEachLine(inOutRecord, COMPLETED);
-
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
@@ -111,7 +113,7 @@ public class M_InOut
 		{
 			final I_M_ReceiptSchedule receiptScheduleRecord = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(lineAlloc.get(0).getM_ReceiptSchedule_ID()));
 			inOutLineRecord.setC_Flatrate_Term_ID(receiptScheduleRecord.getC_Flatrate_Term_ID());
-			inOutDAO.save(inOutLineRecord);
+			inOutBL.save(inOutLineRecord);
 		}
 	}
 
@@ -119,7 +121,7 @@ public class M_InOut
 			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModelAction modelAction)
 	{
-		inOutDAO.retrieveAllLines(inOutRecord).forEach(line -> contractService.scheduleLogCreation(
+		inOutBL.getLines(inOutRecord).forEach(line -> contractService.scheduleLogCreation(
 				DocStatusChangedEvent.builder()
 						.tableRecordReference(TableRecordReference.of(line))
 						.modelAction(modelAction)
@@ -130,12 +132,12 @@ public class M_InOut
 
 	private void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		final OrderId orderId = inOutDAO.getOrderIdForLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID())).orElse(null);
+		final OrderId orderId = inOutBL.getOrderIdForLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID())).orElse(null);
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
 		if (flatrateTermId != null)
 		{
-			final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+			final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateTermIdOrNull(flatrateTermId);
 			if (modularContractSettings != null)
 			{
 				final YearAndCalendarId harvestingYearAndCalendarId = modularContractSettings.getYearAndCalendarId();
@@ -155,7 +157,34 @@ public class M_InOut
 			inOutLineRecord.setHarvesting_Year_ID(-1);
 		}
 
-		inOutDAO.save(inOutLineRecord);
+		inOutBL.save(inOutLineRecord);
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = I_M_InOut.COLUMNNAME_IsInterimInvoiceable)
+	public void updateLogBillableStatus(@NonNull final I_M_InOut inOut)
+	{
+		if (inOut.isSOTrx())
+		{
+			return;
+		}
+
+		modularContractLogService.changeBillableStatus(createModularContractLogQuery(inOut), inOut.isInterimInvoiceable());
+	}
+
+	@NonNull
+	private ModularContractLogQuery createModularContractLogQuery(@NonNull final I_M_InOut inOut)
+	{
+		final ImmutableList<TableRecordReference> tableRecordReferences = inOutBL.getLines(inOut)
+				.stream()
+				.map(TableRecordReference::of)
+				.collect(ImmutableList.toImmutableList());
+
+		return ModularContractLogQuery.builder()
+				.referenceSet(TableRecordReferenceSet.of(tableRecordReferences))
+				.contractType(LogEntryContractType.INTERIM)
+				.build();
 	}
 }
 

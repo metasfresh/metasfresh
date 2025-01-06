@@ -53,6 +53,7 @@ import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -61,7 +62,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
 public class M_HU_Attribute_StepDef
@@ -186,9 +187,7 @@ public class M_HU_Attribute_StepDef
 						assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
 					});
 			row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
-					.ifPresent(valueNumber -> {
-						assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber);
-					});
+					.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber));
 			row.getAsOptionalBoolean(I_M_HU_Attribute.COLUMNNAME_ValueNumber + ".IsNull")
 					.ifPresent(expectedIsNull -> {
 						final boolean actualIsNull = InterfaceWrapperHelper.isNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
@@ -202,7 +201,8 @@ public class M_HU_Attribute_StepDef
 		}
 	}
 
-	private static String toString(final I_M_HU_Attribute huAttribute)
+	@Nullable
+	private static String toString(@Nullable final I_M_HU_Attribute huAttribute)
 	{
 		if (huAttribute == null)
 		{

@@ -6,8 +6,11 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -16,6 +19,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -24,9 +29,11 @@ import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,13 +58,17 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
+	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUQRCodesService huQRCodeService;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
@@ -68,11 +79,15 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public DefaultPickingJobLoaderSupportingServices(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
+			@NonNull final HUQRCodesService huQRCodeService,
+			@NonNull final WorkplaceService workplaceService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
 		this.huQRCodeService = huQRCodeService;
+		this.workplaceService = workplaceService;
+		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 	}
 
 	@Override
@@ -90,7 +105,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds)
+	public void warmUpSalesOrderDocumentNosCache(@NonNull final Collection<OrderId> orderIds)
 	{
 		CollectionUtils.getAllOrLoad(salesOrderDocumentNosCache, orderIds, orderBL::getDocumentNosByIds);
 	}
@@ -102,7 +117,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public void warmUpBPartnerNamesCache(@NonNull Set<BPartnerId> bpartnerIds)
+	public void warmUpBPartnerNamesCache(@NonNull final Set<BPartnerId> bpartnerIds)
 	{
 		CollectionUtils.getAllOrLoad(bpartnerNamesCache, bpartnerIds, bpartnerBL::getBPartnerNames);
 	}
@@ -133,6 +148,11 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId) {
+		return getProductInfo(productId).getProductCategoryId();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return getProductInfo(productId).getName();
@@ -143,12 +163,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		return productInfoCache.computeIfAbsent(productId, this::retrieveProductInfo);
 	}
 
+	@NonNull
 	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
+				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
 
@@ -158,6 +180,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsBL.getPI(piId).getName();
 	}
 
 	@Override
@@ -181,6 +209,18 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		);
 	}
 
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isCatchWeightTUPickingEnabled();
+	}
+
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return orderDAO.getOrderLineById(orderAndLineId).getLine();
+	}
+
 	//
 	//
 	//
@@ -191,6 +231,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
+		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}
 }

@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.OrderLineDimensionFactory;
@@ -261,7 +262,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
 
 		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
-		BPartnerContactId billToContactId;
+		final BPartnerContactId billToContactId;
 		if (orderBL.hasBillToContactId(order))
 		{
 			billToContactId = orderBL.getBillToContactId(order);
@@ -291,7 +292,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
 		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
-		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
+		final DocSubType docSubType = orderDocBaseTypeAndSubType.getDocSubType();
+		shipmentSchedule.setDocSubType(docSubType.getNullableCode());
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 

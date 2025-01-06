@@ -76,7 +76,7 @@ public class ModularContractLogEntry
 	ProductId initialProductId;
 	@NonNull
 	String productName;
-	@Nullable
+	@NonNull
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
@@ -112,6 +112,9 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	LocalDateAndOrgId physicalClearanceDate;
+
+	@Nullable
 	Integer storageDays;
 
 	@Nullable
@@ -143,7 +146,7 @@ public class ModularContractLogEntry
 			@Nullable final ProductId productId,
 			@Nullable final ProductId initialProductId,
 			@NonNull final String productName,
-			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final BPartnerId collectionPointBPartnerId,
 			@Nullable final BPartnerId producerBPartnerId,
@@ -155,6 +158,7 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
@@ -196,6 +200,7 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
@@ -206,6 +211,12 @@ public class ModularContractLogEntry
 		this.modularContractModuleId = modularContractModuleId;
 		this.userElementNumber1 = userElementNumber1;
 		this.userElementNumber2 = userElementNumber2;
+	}
+
+	@Nullable
+	public UomId getPriceActualUOMId()
+	{
+		return priceActual != null ? priceActual.getUomId() : null;
 	}
 
 	@NonNull
@@ -222,6 +233,12 @@ public class ModularContractLogEntry
 			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		final IModularContractLogHandler handler = logHandlerRegistry.getApplicableHandlerForOrError(this);
+
+		if(!handler.isSuitableForPriceUpdate())
+		{
+			return this;
+		}
+
 		final ProductPriceWithFlags productPriceWithFlags = handler.getPriceActualWithFlags(price, this);
 
 		return handler.calculateAmountWithNewPrice(this, productPriceWithFlags, uomConverter);

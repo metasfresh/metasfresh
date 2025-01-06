@@ -90,9 +90,11 @@ public class InvoiceCandidate
 	@Setter(AccessLevel.NONE)
 	private InvoicableQtyBasedOn invoicableQtyBasedOn;
 
+	@Nullable
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToInvoiceOverrideInStockUom;
 
+	@Nullable
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToInvoiceOverrideInUom;
 
@@ -404,7 +406,7 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
-				if (product.isStocked())
+				if (product.isItemType())
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();
 				}

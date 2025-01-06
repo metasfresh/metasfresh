@@ -1,6 +1,5 @@
 package de.metas.contracts.flatrate.impexp;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -18,17 +17,13 @@ import de.metas.contracts.modular.ModularContractPriceRepository;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
-import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
@@ -51,7 +46,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -103,18 +98,13 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 
-		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
-		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
-		final ModularContractLogService contractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
-		SpringContextHolder.registerJUnitBean(new ComputingMethodService(contractLogService));
+		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ProcessModularLogsEnqueuer.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ComputingMethodService.newInstanceForJUnitTesting());
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()),
-				new ModularContractSettingsDAO(),
-				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
-				new ComputingMethodService(contractLogService),
-				new ModularContractPriceRepository()));
+		SpringContextHolder.registerJUnitBean(ModularContractService.newInstanceForJUnitTesting());
 	}
 
 	@Test

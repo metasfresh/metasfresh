@@ -2,16 +2,18 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
+import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,7 +26,10 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 
 public class PickingJobCompleteCommand
 {
+	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -40,6 +45,7 @@ public class PickingJobCompleteCommand
 
 	@Builder
 	private PickingJobCompleteCommand(
+			final @NonNull PickingJobService pickingJobService,
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
@@ -50,6 +56,7 @@ public class PickingJobCompleteCommand
 			final boolean approveIfReadyToReview,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy)
 	{
+		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
@@ -63,7 +70,10 @@ public class PickingJobCompleteCommand
 
 	public static class PickingJobCompleteCommandBuilder
 	{
-		public PickingJob execute() {return build().execute();}
+		public PickingJob execute()
+		{
+			return build().execute();
+		}
 	}
 
 	public PickingJob execute()
@@ -76,7 +86,7 @@ public class PickingJobCompleteCommand
 		initialPickingJob.assertNotProcessed();
 		if (!initialPickingJob.getProgress().isDone())
 		{
-			throw new AdempiereException("Picking shall be DONE on all steps in order to complete the job");
+			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
 
 		PickingJob pickingJob = initialPickingJob;
@@ -96,8 +106,11 @@ public class PickingJobCompleteCommand
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
-		initialPickingJob.getPickingSlotId()
-				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, initialPickingJob.getId()));
+		pickingJob = pickingJobService.closeLUPickTarget(pickingJob);
+
+		final PickingJobId pickingJobId = pickingJob.getId();
+		pickingJob.getPickingSlotId()
+				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, pickingJobId));
 
 		pickingJobHUReservationService.releaseAllReservations(pickingJob);
 
@@ -113,14 +126,14 @@ public class PickingJobCompleteCommand
 		if (createShipmentPolicy.isCreateShipment())
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-					.scheduleIds(pickingJob.getShipmentScheduleIds())
-					.quantityTypeToUse(TYPE_PICKED_QTY)
-					.onTheFlyPickToPackingInstructions(true)
-					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
-					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
-					// since we are not going to immediately create invoices, we want to move on and to wait for shipments
-					.waitForShipments(false)
-					.build());
+																	.scheduleIds(pickingJob.getShipmentScheduleIds())
+																	.quantityTypeToUse(TYPE_PICKED_QTY)
+																	.onTheFlyPickToPackingInstructions(true)
+																	.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
+																	.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
+																	// since we are not going to immediately create invoices, we want to move on and to wait for shipments
+																	.waitForShipments(false)
+																	.build());
 		}
 	}
 }

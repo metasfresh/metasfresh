@@ -26,7 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
 import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ContractSpecificScalePriceRequest;
+import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -113,6 +114,7 @@ public class ModularContractPriceRepository
 		record.setPrice(from.amount().toBigDecimal());
 		record.setMinValue(from.minValue());
 		record.setIsScalePrice(from.isScalePrice());
+		record.setIsAveragePrice(from.isAveragePrice());
 		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
 		record.setC_UOM_ID(from.uomId().getRepoId());
 		record.setSeqNo(from.seqNo().toInt());
@@ -137,6 +139,7 @@ public class ModularContractPriceRepository
 				.create();
 	}
 
+	@Nullable
 	public ModCntrSpecificPrice retrieveScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
 	{
 		return retrieveOptionalScalePriceForProductAndContract(contractSpecificScalePriceRequest)
@@ -191,6 +194,7 @@ public class ModularContractPriceRepository
 				.uomId(UomId.ofRepoId(modCntrSpecificPrice.getC_UOM_ID()))
 				.minValue(modCntrSpecificPrice.getMinValue())
 				.isScalePrice(modCntrSpecificPrice.isScalePrice())
+				.isAveragePrice(modCntrSpecificPrice.isAveragePrice())
 				.productId(ProductId.ofRepoId(modCntrSpecificPrice.getM_Product_ID()))
 				.amount(Money.of(modCntrSpecificPrice.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPrice.getC_Currency_ID())))
 				.seqNo(SeqNo.ofInt(modCntrSpecificPrice.getSeqNo()))
@@ -236,6 +240,23 @@ public class ModularContractPriceRepository
 	{
 		final I_ModCntr_Specific_Price record = load(id, I_ModCntr_Specific_Price.class);
 		deleteRecord(record);
+	}
+
+	public boolean existsSimilarContractSpecificScalePrice(@NonNull final ModCntrSpecificPriceId id)
+	{
+		final ModCntrSpecificPrice specificPrice = getById(id);
+
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, specificPrice.flatrateTermId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, specificPrice.isScalePrice())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, specificPrice.productId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, specificPrice.uomId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, specificPrice.amount().getCurrencyId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, specificPrice.modularContractModuleId())
+				.addNotEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID, id)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	public Optional<TaxCategoryId> retrieveOptionalContractSpecificTaxCategory(final ContractSpecificPriceRequest contractSpecificPriceRequest)

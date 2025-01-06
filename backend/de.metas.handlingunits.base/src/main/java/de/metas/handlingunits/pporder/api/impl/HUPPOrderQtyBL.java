@@ -110,6 +110,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	}
 
 	@Override
+	@NonNull
 	public DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull final PPOrderId ppOrderId)
 	{
 		Quantity finishedGood_QtyReceived = null;

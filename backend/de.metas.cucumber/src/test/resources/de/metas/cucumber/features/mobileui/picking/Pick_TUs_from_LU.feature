@@ -155,8 +155,98 @@ Feature: mobileUI Picking - Pick TUs from LU
       | asi                       | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
       | asi                       | Lot-Nummer        | 9876                  |
 
+
+
+
+
+
+
+
+
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Pick TUs from LU with aggregated TUs - into a new LU
+    When transform CU to new LU
+      | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU | pickFromAggregatedLU | TU       | 4           | 10          |
+    And M_HU are validated:
+      | M_HU_ID              | HUStatus |
+      | pickFromAggregatedLU | A        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product                 | 160        | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product               | pickFromAggregatedLU | 3         | 1           | N                     | 2027-03-01     | 9876  |
+    And expect current picking target
+      | Existing_LU |
+      | lu          |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID  | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 12        | tus_agg | 3     | tus_agg    | 1     | lu         | N         |
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | tus_agg | S        |
+      | lu      | S        |
+
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID  | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 12        | tus_agg | 3     | tus_agg    | 1     | lu         | Y         | shipmentLine   |
+
+    And validate the created shipment lines by id
+      | Identifier   | M_Product_ID | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | shipmentLine | product      | 12          |                   | 3            | TUx4                    | asi                       |
+
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | tus_agg | E        |
+      | lu      | E        |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID     | M_Attribute_ID.Value | Value | ValueDate  |
+      | tus_agg, lu | HU_BestBeforeDate    |       | 2027-03-01 |
+      | tus_agg, lu | Lot-Nummer           | 9876  |            |
+
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
+      | asi                       | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
+      | asi                       | Lot-Nummer        | 9876                  |
+
+    
+    
+    
     
 
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -169,7 +259,7 @@ Feature: mobileUI Picking - Pick TUs from LU
   @from:cucumber
   Scenario: Pick TUs from LU with TUs (not-aggregated)
     When transform CU to new TUs
-      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs                                              |
+      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                              |
       | pickFromCU | 20    | TUx4                    | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 |
     And aggregate TUs to new LU
       | sourceTUs                                                   | newLUs     |

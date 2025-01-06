@@ -28,9 +28,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG_DEPRECAT
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ImportLogModularContractHandler implements IComputingMethodHandler
+public class ImportLogModularContractHandler extends AbstractComputingMethodHandler
 {
 	@NonNull final ModularContractLogService modularContractLogService;
 
@@ -65,6 +66,12 @@ public class ImportLogModularContractHandler implements IComputingMethodHandler
 							YearId.ofRepoIdOrNull(importLogRecord.getHarvesting_Year_ID()) != null &&
 							FlatrateTermId.ofRepoIdOrNull(importLogRecord.getC_Flatrate_Term_ID()) != null;
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
 		return false;
 	}
 

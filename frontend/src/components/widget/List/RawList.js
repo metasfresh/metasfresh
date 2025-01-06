@@ -237,7 +237,7 @@ export class RawList0 extends PureComponent {
       this.props;
 
     if (e.key === 'Tab') {
-      if (list.length === 0 && !readonly && !loading) {
+      if (isToggled && list.length === 0 && !readonly && !loading) {
         onSelect(null);
       }
     } else if (e.key === 'ArrowDown') {
@@ -415,7 +415,7 @@ export class RawList0 extends PureComponent {
                       readOnly
                       tabIndex={-1}
                       placeholder={placeholder}
-                      value={value}
+                      value={value ? value.replace(/\n/g, ' ') : ''}
                       disabled={readonly || disabled}
                     />
                   </div>

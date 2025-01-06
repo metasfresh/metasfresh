@@ -31,9 +31,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.eevolution.api.impl.ProductBOM;
 import org.eevolution.api.impl.ProductBOMRequest;
-import org.compiere.model.I_M_Product;
-import org.eevolution.api.impl.ProductBOM;
-import org.eevolution.api.impl.ProductBOMRequest;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -100,8 +97,6 @@ public interface IProductBOMBL extends ISingletonService
 	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
 
 	void verifyDefaultBOMProduct(@NonNull ProductId productId);
-
-	void verifyDefaultBOMProduct(@NonNull I_M_Product product);
 
 	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest request);
 

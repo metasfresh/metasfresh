@@ -152,6 +152,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Free Storage Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFreeStorageCostDays (int FreeStorageCostDays);
+
+	/**
+	 * Get Free Storage Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getFreeStorageCostDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_FreeStorageCostDays = new ModelColumn<>(I_ModCntr_Settings.class, "FreeStorageCostDays", null);
+	String COLUMNNAME_FreeStorageCostDays = "FreeStorageCostDays";
+
+	/**
 	 * Set Interest rate.
 	 *
 	 * <br>Type: Number
@@ -171,6 +192,29 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Settings.class, "InterestRate", null);
 	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
+	 * Set Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterimPricePercent (BigDecimal InterimPricePercent);
+
+	/**
+	 * Get Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterimPricePercent();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterimPricePercent = new ModelColumn<>(I_ModCntr_Settings.class, "InterimPricePercent", null);
+	String COLUMNNAME_InterimPricePercent = "InterimPricePercent";
 
 	/**
 	 * Set Active.
@@ -199,21 +243,21 @@ public interface I_ModCntr_Settings
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOTrx (boolean IsSOTrx);
+	void setIsSOTrx (java.lang.String IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSOTrx();
+	java.lang.String getIsSOTrx();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
@@ -360,6 +404,29 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_StorageCostStartDate = new ModelColumn<>(I_ModCntr_Settings.class, "StorageCostStartDate", null);
 	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
+
+	/**
+	 * Set Trade Margin.
+	 * Average Prices will be reduced by given value.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTradeMargin (BigDecimal TradeMargin);
+
+	/**
+	 * Get Trade Margin.
+	 * Average Prices will be reduced by given value.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTradeMargin();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_TradeMargin = new ModelColumn<>(I_ModCntr_Settings.class, "TradeMargin", null);
+	String COLUMNNAME_TradeMargin = "TradeMargin";
 
 	/**
 	 * Get Updated.

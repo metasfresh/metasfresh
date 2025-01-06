@@ -1,10 +1,15 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
+import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
@@ -19,18 +24,22 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLauncher;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Optional;
 
-class MobileUIPickingClient
+import static org.assertj.core.api.Assertions.*;
+
+public class MobileUIPickingClient
 {
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingClient.class);
 	private final WorkflowRestController workflowRestController = SpringContextHolder.instance.getBean(WorkflowRestController.class);
 	private final PickingRestController pickingRestController = SpringContextHolder.instance.getBean(PickingRestController.class);
+	private final PickingJobService pickingJobService = SpringContextHolder.instance.getBean(PickingJobService.class);
 
 	public JsonWFProcess startJobBySalesDocumentNo(@NonNull final String salesOrderDocumentNo)
 	{
@@ -83,9 +92,23 @@ class MobileUIPickingClient
 		return wfProcess;
 	}
 
+	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, LUPickingTarget pickingTarget)
+	{
+		return pickingRestController.setTarget(wfProcessId, JsonLUPickingTarget.of(pickingTarget));
+	}
+
+	public Optional<LUPickingTarget> getPickingTarget(@NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		return pickingJob.getLuPickTarget();
+
+	}
+
 	public JsonWFProcess pickLine(JsonPickingStepEvent request)
 	{
-		Check .assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
+		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);
 	}
 

@@ -1,6 +1,60 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
+import { useEffect, useState } from 'react';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
+
+export const usePickTargets = ({ wfProcessId }) => {
+  const [loading, setLoading] = useState(false);
+  const [targets, setTargets] = useState([]);
+  const [tuTargets, setTuTargets] = useState([]);
+
+  useEffect(() => {
+    setLoading(true);
+    getPickTargets({ wfProcessId })
+      .then((data) => {
+        setTargets(data.targets);
+        setTuTargets(data.tuTargets);
+      })
+      .finally(() => setLoading(false));
+  }, [wfProcessId]);
+
+  return {
+    isTargetsLoading: loading,
+    targets,
+    tuTargets,
+  };
+};
+
+const getPickTargets = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/target/available`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const setPickTarget = ({ wfProcessId, target }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target`, target)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const setTUPickTarget = ({ wfProcessId, target }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, target)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const closePickTarget = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/close`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const closeTUPickTarget = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/tu/close`)
+    .then((response) => unboxAxiosResponse(response));
+};
 
 export const postStepPicked = ({
   wfProcessId,
@@ -18,7 +72,11 @@ export const postStepPicked = ({
   bestBeforeDate,
   setLotNo,
   lotNo,
+  isCloseTarget = false,
 }) => {
+  const realRejectedQtyReason =
+    qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
+
   return postEvent({
     wfProcessId,
     wfActivityId: activityId,
@@ -27,7 +85,7 @@ export const postStepPicked = ({
     type: 'PICK',
     huQRCode,
     qtyPicked,
-    qtyRejectedReasonCode,
+    qtyRejectedReasonCode: realRejectedQtyReason,
     qtyRejected,
     catchWeight,
     pickWholeTU,
@@ -36,6 +94,7 @@ export const postStepPicked = ({
     bestBeforeDate,
     setLotNo,
     lotNo,
+    isCloseTarget,
   });
 };
 
@@ -64,5 +123,17 @@ export const closePickingJobLine = ({ wfProcessId, lineId }) => {
 export const openPickingJobLine = ({ wfProcessId, lineId }) => {
   return axios
     .post(`${apiBasePath}/picking/openLine`, { wfProcessId, pickingLineId: lineId })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getClosedLUs = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/closed-lu`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getHUInfoForIds = ({ huIds }) => {
+  return axios
+    .get(`${apiBasePath}/material/handlingunits/byIds?M_HU_IDs=${huIds.join(',')}`)
     .then((response) => unboxAxiosResponse(response));
 };

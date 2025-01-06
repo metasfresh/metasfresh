@@ -222,6 +222,7 @@ class Modal extends Component {
       parentSelection,
       isAdvanced,
       viewId,
+      viewOrderBy,
       modalViewDocumentIds,
       activeTabId,
       childViewId,
@@ -292,6 +293,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
+            viewOrderBy,
             documentType,
             ids: viewId
               ? modalViewDocumentIds
@@ -406,7 +408,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType, dispatch } = this.props;
+    const { modalSaveStatus, modalType } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -415,7 +417,6 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
-    dispatch(resetPrintingOptions());
   };
 
   /**
@@ -486,8 +487,13 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
-    const { windowId, modalViewDocumentIds, dataId, printingOptions } =
-      this.props;
+    const {
+      windowId,
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+      dispatch,
+    } = this.props;
     const documentId = dataId;
     const documentNo = modalViewDocumentIds[0] ?? documentId;
 
@@ -503,7 +509,10 @@ class Modal extends Component {
       options,
     });
 
-    this.handleClose();
+    this.closeModal(true);
+    dispatch(resetPrintingOptions());
+
+    return true; // stopPropagation to avoid calling the global alt-P handler
   };
 
   /**
@@ -742,7 +751,11 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
+            <ModalContextShortcuts
+              done={applyHandler}
+              cancel={cancelHandler}
+              isBindPrintActionAsDone={staticModalType === 'printing'}
+            />
           )}
         </div>
       </div>
@@ -932,6 +945,7 @@ const mapStateToProps = (state, props) => {
     indicator: state.windowHandler.indicator,
     parentViewId,
     parentId,
+    viewOrderBy: parentView?.orderBy,
     printingOptions: state.windowHandler.printingOptions,
   };
 };

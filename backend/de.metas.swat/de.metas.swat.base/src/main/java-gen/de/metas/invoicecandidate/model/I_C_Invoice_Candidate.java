@@ -2017,6 +2017,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoicingErrorMsg = "InvoicingErrorMsg";
 
 	/**
+	 * Set Invoice Line Group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingGroup (@Nullable java.lang.String InvoicingGroup);
+
+	/**
+	 * Get Invoice Line Group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicingGroup();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingGroup", null);
+	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -2059,6 +2080,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsDeliveryClosed", null);
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
+	 * Set Document to be sent via EDI.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEdiEnabled (boolean IsEdiEnabled);
+
+	/**
+	 * Get Document to be sent via EDI.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEdiEnabled();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
+	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
 
 	/**
 	 * Set EDI INVOIC Receipient.
@@ -2145,6 +2187,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsGroupCompensationLine", null);
 	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
+
+	/**
+	 * Set Hide price and amount on print.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHidePriceAndAmountOnPrint (boolean IsHidePriceAndAmountOnPrint);
+
+	/**
+	 * Get Hide price and amount on print.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHidePriceAndAmountOnPrint();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsHidePriceAndAmountOnPrint = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsHidePriceAndAmountOnPrint", null);
+	String COLUMNNAME_IsHidePriceAndAmountOnPrint = "IsHidePriceAndAmountOnPrint";
 
 	/**
 	 * Set In Dispute.
@@ -2591,6 +2654,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -2618,6 +2708,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
+	 * Set Material Tracking ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
+
+	/**
+	 * Get Material Tracking ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Material_Tracking_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_Material_Tracking_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_Material_Tracking_ID", null);
+	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
+
+	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: TableDir
@@ -2637,6 +2748,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ModCntr_Module_ID", null);
 	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
+
+	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ModCntr_Settings_ID", null);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
 	 * Set Price List Version.
@@ -2860,6 +2992,26 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Note = new ModelColumn<>(I_C_Invoice_Candidate.class, "Note", null);
 	String COLUMNNAME_Note = "Note";
+
+	/**
+	 * Set Organization Bank account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
+
+	/**
+	 * Get Organization Bank account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOrg_BP_Account_ID();
+
+	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
 
 	/**
 	 * Set Packing Material.
@@ -3211,6 +3363,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
+	 * Set Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductName (@Nullable java.lang.String ProductName);
+
+	/**
+	 * Get Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductName();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductName = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
+
+	/**
 	 * Set Product Type.
 	 * Type of product
 	 *
@@ -3299,6 +3474,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEntered = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEntered", null);
 	String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEnteredTU", null);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
 
 	/**
 	 * Set Quantity Invoiced.
@@ -3557,8 +3753,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoiceInUOM_Override = "QtyToInvoiceInUOM_Override";
 
 	/**
-	 * Set Zu berechn. Menge abw..
-	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
+	 * Set Qty to invoice override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3707,6 +3902,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
 
 	/**
+	 * Set Quality Discount %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityDiscountPercent_ReceiptSchedule (@Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule);
+
+	/**
+	 * Get Quality Discount %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQualityDiscountPercent_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityDiscountPercent_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityDiscountPercent_ReceiptSchedule", null);
+	String COLUMNNAME_QualityDiscountPercent_ReceiptSchedule = "QualityDiscountPercent_ReceiptSchedule";
+
+	/**
 	 * Set Rechnungspositionsart.
 	 *
 	 * <br>Type: List
@@ -3726,6 +3946,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityInvoiceLineGroupType = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityInvoiceLineGroupType", null);
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
+
+	/**
+	 * Set Quality Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
+
+	/**
+	 * Get Quality Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getQualityNote_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityNote_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityNote_ReceiptSchedule", null);
+	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
 
 	/**
 	 * Set Quality Discount Reason.
@@ -4166,49 +4411,4 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set Invoicing group.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInvoicingGroup (@Nullable String InvoicingGroup);
-
-	/**
-	 * Get Invoicing group.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getInvoicingGroup();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingGroup", null);
-	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
-
-
-	/**
-	 * Set Product Name.
-	 * Name of the Product
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setProductName (@Nullable String ProductName);
-
-	/**
-	 * Get Product Name.
-	 * Name of the Product
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getProductName();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductName = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductName", null);
-	String COLUMNNAME_ProductName = "ProductName";
 }

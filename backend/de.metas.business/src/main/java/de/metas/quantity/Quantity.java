@@ -3,6 +3,7 @@ package de.metas.quantity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.uom.UOMPrecision;
@@ -20,6 +21,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -81,6 +83,7 @@ public final class Quantity implements Comparable<Quantity>
 		return QTY_INFINITE.compareTo(qty) == 0;
 	}
 
+	@Nullable
 	public static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
 	{
 		if (qty1 == null)
@@ -167,6 +170,7 @@ public final class Quantity implements Comparable<Quantity>
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
+	@NonNull
 	private final BigDecimal sourceQty;
 
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
@@ -330,6 +334,7 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	@NonNull
 	public UomId getUomId()
 	{
 		return UomId.ofRepoId(uom.getC_UOM_ID());
@@ -348,6 +353,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quantity; never null
 	 */
+	@NonNull
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
@@ -757,6 +763,12 @@ public final class Quantity implements Comparable<Quantity>
 				sourceUom);
 	}
 
+	public Quantity divide(final int divisor)
+	{
+		final UOMPrecision precision = getUOMPrecision();
+		return divide(BigDecimal.valueOf(divisor), precision.toInt(), precision.getRoundingMode());
+	}
+
 	public Quantity multiply(final int multiplicand)
 	{
 		return multiply(BigDecimal.valueOf(multiplicand));
@@ -787,7 +799,7 @@ public final class Quantity implements Comparable<Quantity>
 	private Quantity multiply(
 			@NonNull final Percent percent,
 			final int precision,
-			@NonNull RoundingMode roundingMode)
+			@NonNull final RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
 
@@ -836,7 +848,7 @@ public final class Quantity implements Comparable<Quantity>
 		assertSameUOM(this, whole);
 		return Percent.of(toBigDecimal(), whole.toBigDecimal());
 	}
-	
+
 	private void assertUOMOrSourceUOM(@NonNull final UomId uomId)
 	{
 		if (!getUomId().equals(uomId) && !getSourceUomId().equals(uomId))
@@ -847,12 +859,45 @@ public final class Quantity implements Comparable<Quantity>
 					.setParameter("assertUOM", uomId);
 		}
 	}
-	
+
 	@NonNull
 	public BigDecimal toBigDecimalAssumingUOM(@NonNull final UomId uomId)
 	{
 		assertUOMOrSourceUOM(uomId);
-		
+
 		return getUomId().equals(uomId) ? toBigDecimal() : getSourceQty();
+	}
+
+	public List<Quantity> spreadEqually(final int count)
+	{
+		if (count <= 0)
+		{
+			throw new AdempiereException("count shall be greater than zero, but it was " + count);
+		}
+		else if (count == 1)
+		{
+			return ImmutableList.of(this);
+		}
+		else // count > 1
+		{
+			final ImmutableList.Builder<Quantity> result = ImmutableList.builder();
+			final Quantity qtyPerPart = divide(count);
+			Quantity qtyRemainingToSpread = this;
+			for (int i = 1; i <= count; i++)
+			{
+				final boolean isLast = i == count;
+				if (isLast)
+				{
+					result.add(qtyRemainingToSpread);
+				}
+				else
+				{
+					result.add(qtyPerPart);
+					qtyRemainingToSpread = qtyRemainingToSpread.subtract(qtyPerPart);
+				}
+			}
+
+			return result.build();
+		}
 	}
 }

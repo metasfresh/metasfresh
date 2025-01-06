@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -32,6 +33,8 @@ import org.adempiere.warehouse.LocatorId;
 
 class PickingJobCreateRepoHelper
 {
+	private final static AdMessageKey PACKING_TO_GENERIC_PACKING_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.repository.PACKING_TO_GENERIC_PACKING_ERROR_MSG");
+
 	private final PickingJobLoaderAndSaver loader;
 
 	public PickingJobCreateRepoHelper(@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
@@ -82,8 +85,8 @@ class PickingJobCreateRepoHelper
 		record.setIsPickingReviewRequired(request.isPickingReviewRequired());
 		record.setIsReadyToReview(false);
 		record.setIsApproved(false);
-		record.setHandover_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
-		record.setHandover_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
+		record.setHandOver_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
+		record.setHandOver_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);
@@ -163,7 +166,9 @@ class PickingJobCreateRepoHelper
 					@Override
 					public Void packToGenericHU(final HuPackingInstructionsId genericPackingInstructionsId)
 					{
-						throw new AdempiereException("Packing to generic packing instructions is not supported: " + genericPackingInstructionsId);
+						throw new AdempiereException(PACKING_TO_GENERIC_PACKING_ERROR_MSG)
+								.appendParametersToMessage()
+								.setParameter("GenericPackingInstructionsId", genericPackingInstructionsId);
 					}
 				});
 

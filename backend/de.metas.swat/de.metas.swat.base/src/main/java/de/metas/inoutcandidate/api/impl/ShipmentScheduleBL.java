@@ -24,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -77,6 +78,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
@@ -183,6 +185,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IWarehouseBL warehouseBL =Services.get(IWarehouseBL.class);
+
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -252,8 +256,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
+	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
 	{
+		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
+		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
+		{
+			return false;
+		}
+
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
@@ -380,6 +391,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.addBPartnerId(null)
 				.addBPartnerId(bpartnerId)
 				.addWarehouseIds(warehouseIds)
 				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
@@ -571,7 +583,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule schedule)
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		return scheduleEffectiveBL.getPreparationDate(schedule);
 	}
@@ -981,7 +993,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				this,
 				orderBL,
 				SpringContextHolder.instance.getBean(DocTypeService.class),
-				SpringContextHolder.instance.getBean(IDocumentLocationBL.class)
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
+				warehouseBL
 		);
 	}
 
@@ -993,5 +1006,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
 			shipmentSchedulePA.save(shipmentSchedule);
 		});
+	}
+
+	@NonNull
+	@Override
+	public List<I_M_ShipmentSchedule> getByFilter(final IQueryFilter<I_M_ShipmentSchedule> filter)
+	{
+		return shipmentSchedulePA.getByFilter(filter);
 	}
 }

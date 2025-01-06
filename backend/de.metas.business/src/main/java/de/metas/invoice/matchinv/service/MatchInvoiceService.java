@@ -29,6 +29,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,9 @@ public class MatchInvoiceService
 	}
 
 	public MatchInv getById(final MatchInvId matchInvId) {return matchInvoiceRepository.getById(matchInvId);}
+
+
+	public I_M_MatchInv getRecordByIdOurOfTrx(final MatchInvId matchInvId) {return matchInvoiceRepository.getRecordByIdOutOfTrx(matchInvId);}
 
 	public Set<MatchInvId> getIdsProcessedButNotPostedByInOutLineIds(final Set<InOutLineId> inoutLineIds) {return matchInvoiceRepository.getIdsProcessedButNotPostedByInOutLineIds(inoutLineIds);}
 
@@ -142,7 +146,7 @@ public class MatchInvoiceService
 		}
 	}
 
-	public Optional<InvoiceAndLineId> suggestMaterialInvoiceLineId(@NonNull final InOutLineId inoutLineId, @NonNull AttributeSetInstanceId asiId)
+	public Optional<InvoiceAndLineId> suggestMaterialInvoiceLineId(@NonNull final InOutLineId inoutLineId, @NonNull final AttributeSetInstanceId asiId)
 	{
 		return matchInvoiceRepository.first(
 						MatchInvQuery.builder()

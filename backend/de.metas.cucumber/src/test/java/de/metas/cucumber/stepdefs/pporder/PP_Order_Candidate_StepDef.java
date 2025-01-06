@@ -22,13 +22,15 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
@@ -37,18 +39,21 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -60,6 +65,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -75,7 +81,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.productioncandidate.async.EnqueuePPOrderCandidateRequest;
@@ -88,96 +94,78 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
+@RequiredArgsConstructor
 public class PP_Order_Candidate_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(PP_Order_Candidate_StepDef.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final IdentifierIds_StepDefData identifierIdsTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_Maturing_Configuration_StepDefData maturingConfigTable;
-	private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
-	private final M_HU_StepDefData huTable;
-
-	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
-	private final PPOrderCandidateService ppOrderCandidateService;
-
+	@NonNull
+	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
+	@NonNull
+	private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
+	@NonNull
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	@NonNull
+	private final M_Product_StepDefData productTable;
+	@NonNull
+	private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull
+	private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull
+	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull
+	private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull
+	private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull
+	private final M_Maturing_Configuration_StepDefData maturingConfigTable;
+	@NonNull
+	private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
+	@NonNull
+	private final M_HU_StepDefData huTable;
+	@NonNull
+	private final S_Resource_StepDefData resourceTable;
 
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
-	public PP_Order_Candidate_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Maturing_Configuration_StepDefData maturingConfigTable,
-			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable,
-			@NonNull final M_HU_StepDefData huTable)
-	{
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.maturingConfigTable = maturingConfigTable;
-		this.maturingConfigLineTable = maturingConfigLineTable;
-		this.huTable = huTable;
-		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
-		this.ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
-
-		this.productTable = productTable;
-		this.productBOMTable = productBOMTable;
-		this.productPlanningTable = productPlanningTable;
-		this.ppOrderCandidateTable = ppOrderCandidateTable;
-		this.warehouseTable = warehouseTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.identifierIdsTable = identifierIdsTable;
-		this.orderLineTable = orderLineTable;
-	}
-
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
-	public void validatePP_Order_Candidate(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			validatePP_Order_Candidate(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
+				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
 	}
 
 	@And("update PP_Order_Candidates")
 	public void updatePPOrderCandidate(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			updatePPOrderCandidate(row);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
+				.forEach(this::updatePPOrderCandidate);
 	}
 
 	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
@@ -189,64 +177,40 @@ public class PP_Order_Candidate_StepDef
 	@And("the following PP_Order_Candidates are re-opened")
 	public void reOpenPP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			ppOrderCandidateService.reopenCandidate(getPPOrderCandidate(row));
-		}
+		DataTableRows.of(dataTable).forEach(row -> ppOrderCandidateService.reopenCandidate(getPPOrderCandidate(row)));
 	}
 
 	@When("the following PP_Order_Candidates are closed")
 	public void close_PP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			ppOrderCandidateService.closeCandidate(getPPOrderCandidate(row));
-		}
+		DataTableRows.of(dataTable).forEach(row -> ppOrderCandidateService.closeCandidate(getPPOrderCandidate(row)));
 	}
 
 	@Then("the following PP_Order_Candidates are closed and cannot be re-opened")
-	public void validate_closed_PP_Order_Candidate_cannot_be_reopened(@NonNull final DataTable dataTable)
+	public void validate_closed_PP_Order_Candidates_cannot_be_reopened(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			try
-			{
-				final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(row);
+		DataTableRows.of(dataTable).forEach(this::validate_closed_PP_Order_Candidate_cannot_be_reopened);
+	}
 
-				assertThat(orderCandidateRecord.isClosed()).isTrue();
-
-				ppOrderCandidateService.reopenCandidate(orderCandidateRecord);
-
-				assertThat(false).as("reopenCandidate should throw error").isTrue();
-			}
-			catch (final AdempiereException adempiereException)
-			{
-				assertThat(adempiereException.getMessage()).contains("Cannot reopen a closed candidate!");
-			}
-		}
+	private void validate_closed_PP_Order_Candidate_cannot_be_reopened(@NonNull final DataTableRow row)
+	{
+		final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(row);
+		assertThat(orderCandidateRecord.isClosed()).isTrue();
+		assertThatThrownBy(() -> ppOrderCandidateService.reopenCandidate(orderCandidateRecord))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Cannot reopen a closed candidate!");
 	}
 
 	@Then("update PP_Order_Candidate's qty to process to more than left to be processed expecting exception")
 	public void update_qtyToProcess_to_invalid_qty(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			updateQtyToProcessAndExpectForException(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateQtyToProcessAndExpectForException);
 	}
 
 	@Then("update PP_Order_Candidate's qty entered to less than processed expecting exception")
-	public void update_qty_to_invalid_qty(@NonNull final DataTable dataTable)
+	public void update_qtyEntered_to_invalid_qty(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			updateQtyEnteredAndExpectForException(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateQtyEnteredAndExpectForException);
 	}
 
 	@Given("metasfresh contains PP_Order_Candidates")
@@ -267,7 +231,7 @@ public class PP_Order_Candidate_StepDef
 				.create()
 				.count();
 
-		assertThat(noOfRecords).isEqualTo(0);
+		assertThat(noOfRecords).isZero();
 	}
 
 	@And("^no PP_Order_Candidate found for orderLine (.*)$")
@@ -278,7 +242,7 @@ public class PP_Order_Candidate_StepDef
 
 		try
 		{
-			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+			assertThat(getQueryByOrderLineId(orderLineId).count()).isZero();
 		}
 		catch (final Throwable throwable)
 		{
@@ -298,7 +262,7 @@ public class PP_Order_Candidate_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-				.first());
+																											   .first());
 
 		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
@@ -312,188 +276,184 @@ public class PP_Order_Candidate_StepDef
 			final boolean autoProcessCandidate,
 			@NonNull final DataTable table)
 	{
-		final List<PPOrderCandidateId> ppOrderCandidatesId = table.asMaps()
-				.stream()
-				.map(this::getPPOrderCandidate)
-				.map(I_PP_Order_Candidate::getPP_Order_Candidate_ID)
-				.map(PPOrderCandidateId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
+		final PInstanceId selectionId = ppOrderCandidateEnqueuer.createSelection(getPPOrderCandidateIds(table));
+		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer.enqueueSelection(
+				EnqueuePPOrderCandidateRequest.builder()
+						.adPInstanceId(selectionId)
+						.ctx(Env.getCtx())
+						.isCompleteDocOverride(isDocComplete)
+						.autoProcessCandidatesAfterProduction(autoProcessCandidate)
+						.build()
+		);
 
-		final PInstanceId pInstanceId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidatesId)
-				.create()
-				.createSelection();
-
-		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
-				.adPInstanceId(pInstanceId)
-				.ctx(Env.getCtx())
-				.isCompleteDocOverride(isDocComplete)
-				.autoProcessCandidatesAfterProduction(autoProcessCandidate)
-				.build();
-
-		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
-				.enqueueSelection(enqueuePPOrderCandidateRequest);
-
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+		assertThat(result.getEnqueuedPackagesCount()).isOne();
 	}
 
-	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
+	private void updatePPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Order_Candidate ppOrderCandidateRecord = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
-
-		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
-		final BigDecimal openQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
-
-		if (dateStartSchedule != null)
-		{
-			ppOrderCandidateRecord.setDateStartSchedule(TimeUtil.asTimestampNotNull(dateStartSchedule));
-		}
-
-		if (qtyEntered != null)
-		{
-			ppOrderCandidateRecord.setQtyEntered(qtyEntered);
-		}
-
-		if (openQty != null)
-		{
-			ppOrderCandidateRecord.setQtyToProcess(openQty);
-		}
-
-		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_SeqNo);
-		if (seqNo != null)
-		{
-			ppOrderCandidateRecord.setSeqNo(seqNo);
-		}
-
-		saveRecord(ppOrderCandidateRecord);
+		final I_PP_Order_Candidate record = row.getAsIdentifier().lookupIn(ppOrderCandidateTable);
+		row.getAsOptionalInstantTimestamp(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule).ifPresent(record::setDateStartSchedule);
+		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).ifPresent(record::setQtyEntered);
+		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).ifPresent(record::setQtyToProcess);
+		row.getAsOptionalInt(I_PP_Order_Candidate.COLUMNNAME_SeqNo).ifPresent(record::setSeqNo);
+		saveRecord(record);
 	}
 
-	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final Map<String, String> tableRow)
+	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		return ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
+		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIn(ppOrderCandidateTable);
 	}
 
-	private void validatePP_Order_Candidate(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private Set<PPOrderCandidateId> getPPOrderCandidateIds(final @NonNull DataTable table)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		return DataTableRows.of(table).stream().map(this::getPPOrderCandidateId).collect(ImmutableSet.toImmutableSet());
+	}
 
-		final String productBOMIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_BOM productBOMRecord = productBOMTable.get(productBOMIdentifier);
+	private PPOrderCandidateId getPPOrderCandidateId(@NonNull final DataTableRow row)
+	{
+		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
+	}
 
-		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "PP_Product_Planning_ID." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
+	private void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row))
+				.validateUsingConsumer((record) -> validatePP_Order_Candidate(record, row))
+				.logContext(() -> toTabularStringForProductIdentifier(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID)))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 
-		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
-		final int qtyEntered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
-		final int qtyToProcess = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
-		final int qtyProcessed = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed);
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderCandidateTable.putOrReplace(identifier, ppOrderCandidate));
+	}
 
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-
-		final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
-		final Instant dateStartSchedule = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
-		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_Processed);
-		final Boolean isClosed = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_IsClosed);
-		final Boolean isMaturing = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_IsMaturing);
-		final String maturingConfigIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String maturingConfigLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String issueHUIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanning.getId())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, qtyProcessed)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, datePromised)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule, dateStartSchedule)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, isProcessed)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, isClosed);
-
-		if (isMaturing != null)
-		{
-			builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing);
-		}
-		Optional.ofNullable(maturingConfigIdentifier)
-				.map(maturingConfigTable::get)
-				.ifPresent(maturingConfig -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_ID, maturingConfig.getM_Maturing_Configuration_ID()));
-		Optional.ofNullable(maturingConfigLineIdentifier)
-				.map(maturingConfigLineTable::get)
-				.ifPresent(maturingConfigLine -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID, maturingConfigLine.getM_Maturing_Configuration_Line_ID()));
-		Optional.ofNullable(issueHUIdentifier)
-				.map(huTable::get)
-				.ifPresent(hu -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID()));
-
-		final IQuery<I_PP_Order_Candidate> candidateQuery = builder
-				.create();
-
-		final I_PP_Order_Candidate locatedPPOrderCandidate =
-				StepDefUtil.tryAndWaitForItem(timeoutSec,
-						500,
-						() -> locatePPOrderCandidate(candidateQuery),
-						() -> getPPOrderCandidateContextForProductId(ProductId.ofRepoId(productRecord.getM_Product_ID())));
-
-		final String orderCandidateRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order_Candidate.Table_Name);
-
-		ppOrderCandidateTable.putOrReplace(orderCandidateRecordIdentifier, locatedPPOrderCandidate);
-
-		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(orderCandidateRecordIdentifier);
-
+	private void validatePP_Order_Candidate(@NonNull final I_PP_Order_Candidate actual, @NonNull final DataTableRow row)
+	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		//validate asi
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(
-					attributeSetInstanceIdentifier);
-			softly.assertThat(expectedASI).isNotNull();
+		row.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_M_Product_ID)
+				.map(productTable::getId)
+				.ifPresent(productId -> softly.assertThat(actual.getM_Product_ID()).as("M_Product_ID").isEqualTo(productId.getRepoId()));
+		row.getAsOptionalIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
+				.map(productBOMTable::getId)
+				.ifPresent(bomId -> softly.assertThat(actual.getPP_Product_BOM_ID()).as("PP_Product_BOM_ID").isEqualTo(bomId.getRepoId()));
+		row.getAsOptionalIdentifier("PP_Product_Planning_ID")
+				.map(productPlanningTable::getId)
+				.ifPresent(productPlanningId -> softly.assertThat(actual.getPP_Product_Planning_ID()).as("PP_Product_Planning_ID").isEqualTo(productPlanningId.getRepoId()));
 
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey ppOrderCandAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderCandidate.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(expectedASIId -> {
+					final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedASIId).orElse(AttributesKey.NONE);
+					final AttributesKey ppOrderCandidateAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(actual.getM_AttributeSetInstance_ID())).orElse(AttributesKey.NONE);
+					softly.assertThat(ppOrderCandidateAttributesKeys).as("AttributeKeys").isEqualTo(expectedAttributesKeys);
+				});
 
-			softly.assertThat(ppOrderCandAttributesKeys).isEqualTo(expectedAttributesKeys);
-		}
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.ifPresent(itemProductIdentifier -> {
+					final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
+							.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
 
-		final String itemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+					softly.assertThat(actual.getM_HU_PI_Item_Product_ID()).as("M_HU_PI_Item_Product_ID").isEqualTo(huPiItemProductId.getRepoId());
+				});
 
-		if (Check.isNotBlank(itemProductIdentifier))
-		{
-			final Integer huPiItemProductRecordID = huPiItemProductTable.getOptional(itemProductIdentifier)
-					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-					.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
+		row.getAsOptionalInt("SeqNo")
+				.ifPresent(seqNo -> softly.assertThat(actual.getSeqNo()).as("SeqNo").isEqualTo(seqNo));
 
-			softly.assertThat(ppOrderCandidate.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
-		}
+		row.getAsOptionalIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID)
+				.ifPresent(resourceIdentifier -> {
+					final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
+					softly.assertThat(actual.getS_Resource_ID()).as("S_Resource_ID").isEqualTo(resourceId.getRepoId());
+				});
 
-		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + "SeqNo");
-		if (seqNo != null)
-		{
-			softly.assertThat(ppOrderCandidate.getSeqNo()).isEqualTo(seqNo);
-		}
+		row.getAsOptionalQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355)
+				.ifPresent(qtyEntered -> {
+					softly.assertThat(actual.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered.toBigDecimal());
+					softly.assertThat(actual.getC_UOM_ID()).as("C_UOM_ID").isEqualByComparingTo(qtyEntered.getUomId().getRepoId());
+				});
+		row.getAsOptionalQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355)
+				.ifPresent(qtyToProcess -> {
+					softly.assertThat(actual.getQtyToProcess()).as("QtyToProcess").isEqualByComparingTo(qtyToProcess.toBigDecimal());
+					softly.assertThat(actual.getC_UOM_ID()).as("C_UOM_ID").isEqualByComparingTo(qtyToProcess.getUomId().getRepoId());
+				});
+		row.getAsOptionalQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355)
+				.ifPresent(qtyProcessed -> {
+					softly.assertThat(actual.getQtyProcessed()).as("QtyProcessed").isEqualByComparingTo(qtyProcessed.toBigDecimal());
+					softly.assertThat(actual.getC_UOM_ID()).as("C_UOM_ID").isEqualByComparingTo(qtyProcessed.getUomId().getRepoId());
+				});
 
+		row.getAsOptionalInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised)
+				.ifPresent(date -> softly.assertThat(actual.getDatePromised().toInstant()).as("DatePromised").isEqualTo(date));
+		row.getAsOptionalInstant(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule)
+				.ifPresent(date -> softly.assertThat(actual.getDateStartSchedule().toInstant()).as("DateStartSchedule").isEqualTo(date));
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_Processed)
+				.ifPresent(processed -> softly.assertThat(actual.isProcessed()).as("Processed").isEqualTo(processed));
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed)
+				.ifPresent(isClosed -> softly.assertThat(actual.isClosed()).as("IsClosed").isEqualTo(isClosed));
+
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
+				.ifPresent(isMaturing -> softly.assertThat(actual.isMaturing()).as("IsMaturing").isEqualTo(isMaturing));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_ID)
+				.map(maturingConfigTable::getId)
+				.ifPresent(maturingConfigId -> softly.assertThat(actual.getM_Maturing_Configuration_ID()).as("M_Maturing_Configuration_ID").isEqualTo(maturingConfigId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.map(maturingConfigLineTable::getId)
+				.ifPresent(maturingConfigLineId -> softly.assertThat(actual.getM_Maturing_Configuration_Line_ID()).as("M_Maturing_Configuration_Line_ID").isEqualTo(maturingConfigLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID)
+				.map(huTable::getId)
+				.ifPresent(huId -> softly.assertThat(actual.getIssue_HU_ID()).as("Issue_HU_ID").isEqualTo(huId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID)
+				.map(ppOrderCandidateTable::getId)
+				.ifPresent(ppOrderCandidateId -> softly.assertThat(actual.getPP_Order_Candidate_Parent_ID()).as("PP_Order_Candidate_Parent_ID").isEqualTo(ppOrderCandidateId.getRepoId()));
+		
 		softly.assertAll();
 	}
 
-	private void updateQtyEnteredAndExpectForException(@NonNull final Map<String, String> tableRow)
+	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row)
 	{
-		final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(tableRow);
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier().orElse(null);
+		if (identifier != null && ppOrderCandidateTable.isPresent(identifier))
+		{
+			final PPOrderCandidateId id = ppOrderCandidateTable.getId(identifier);
+			return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_PP_Order_Candidate_ID, id)
+					.create();
+		}
 
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
+		final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+		final ProductBOMId bomId = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
+		final ProductPlanningId productPlanningId = row.getAsIdentifier("PP_Product_Planning_ID").lookupIdIn(productPlanningTable);
 
+		final StepDefDataIdentifier resourceIdentifier = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID);
+		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
+
+		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, bomId)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId);
+
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
+				.ifPresent(isMaturing -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_ID)
+				.map(maturingConfigTable::get)
+				.ifPresent(maturingConfig -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_ID, maturingConfig.getM_Maturing_Configuration_ID()));
+
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.map(maturingConfigLineTable::get)
+				.ifPresent(maturingConfigLine -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID, maturingConfigLine.getM_Maturing_Configuration_Line_ID()));
+
+		return builder.create();
+	}
+
+	private void updateQtyEnteredAndExpectForException(@NonNull final DataTableRow row)
+	{
+		final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(row);
+
+		final BigDecimal qtyEntered = row.getAsBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
 		assertThat(qtyEntered).isLessThan(orderCandidateRecord.getQtyProcessed());
 
 		orderCandidateRecord.setQtyEntered(qtyEntered);
@@ -512,18 +472,18 @@ public class PP_Order_Candidate_StepDef
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-					qtyEnteredColumnTrl,
-					qtyProcessedColumnTrl);
+																			 qtyEnteredColumnTrl,
+																			 qtyProcessedColumnTrl);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 		}
 	}
 
-	private void updateQtyToProcessAndExpectForException(@NonNull final Map<String, String> tableRow)
+	private void updateQtyToProcessAndExpectForException(@NonNull final DataTableRow row)
 	{
-		final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(tableRow);
+		final I_PP_Order_Candidate orderCandidateRecord = getPPOrderCandidate(row);
 
-		final BigDecimal qtyToProcess = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
+		final BigDecimal qtyToProcess = row.getAsBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
 
 		final BigDecimal actualQtyLeft = orderCandidateRecord.getQtyEntered().subtract(orderCandidateRecord.getQtyProcessed());
 		assertThat(qtyToProcess).isGreaterThan(actualQtyLeft);
@@ -567,9 +527,9 @@ public class PP_Order_Candidate_StepDef
 
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(productPlanning.getIdNotNull().getRepoId());
 
-		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
-
-		ppOrderCandidateRecord.setS_Resource_ID(resourceId);
+		final StepDefDataIdentifier resourceIdentifier = StepDefDataIdentifier.ofString(DataTableUtil.extractStringForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID));
+		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
+		ppOrderCandidateRecord.setS_Resource_ID(resourceId.getRepoId());
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
 
@@ -651,56 +611,7 @@ public class PP_Order_Candidate_StepDef
 	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
 	{
 		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-				.orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
-	}
-
-	@NonNull
-	private ItemProvider.ProviderResult<I_PP_Order_Candidate> locatePPOrderCandidate(@NonNull final IQuery<I_PP_Order_Candidate> locateCandidateQuery)
-	{
-		final I_PP_Order_Candidate candidate = locateCandidateQuery.firstOnly(I_PP_Order_Candidate.class);
-
-		if (candidate != null)
-		{
-			return ItemProvider.ProviderResult.resultWasFound(candidate);
-		}
-		else
-		{
-			final String queryUsed = locateCandidateQuery.toString();
-
-			return ItemProvider.ProviderResult.resultWasNotFound("See query used: " + queryUsed);
-		}
-	}
-
-	@NonNull
-	private String getPPOrderCandidateContextForProductId(@NonNull final ProductId productId)
-	{
-		final List<I_PP_Order_Candidate> candidatesForProductId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.listImmutable(I_PP_Order_Candidate.class);
-
-		final StringBuilder messageBuilder = new StringBuilder("\n");
-		candidatesForProductId
-				.forEach(candidate ->
-						messageBuilder.append(" -> PP_Order_Candidate_ID: ")
-								.append(candidate.getPP_Order_Candidate_ID())
-								.append(" M_Product_ID: ")
-								.append(candidate.getM_Product_ID())
-								.append(" QtyEntered: ")
-								.append(candidate.getQtyEntered())
-								.append(" QtyProcessed: ")
-								.append(candidate.getQtyProcessed())
-								.append(" C_UOM_ID: ")
-								.append(candidate.getC_UOM_ID())
-								.append(" DatePromised: ")
-								.append(candidate.getDatePromised())
-								.append(" DateStartSchedule: ")
-								.append(candidate.getDateStartSchedule())
-								.append(" PP_Product_Planning_ID: ")
-								.append(candidate.getPP_Product_Planning_ID())
-								.append("\n"));
-
-		return "Current PP_Order_Candidates available for M_Product_ID:\n\n" + messageBuilder;
+												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 
 	@And("after not more than {int}s, no PP_Order_Candidates are found for Issue_HU_ID: {string}")
@@ -708,11 +619,45 @@ public class PP_Order_Candidate_StepDef
 			final int timeoutSec,
 			final String issueHuIdentifier) throws InterruptedException
 	{
-		final I_M_HU hu = huTable.get(issueHuIdentifier);
+		final HuId huId = huTable.getId(issueHuIdentifier);
 
 		final IQuery<I_PP_Order_Candidate> query = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, huId)
 				.create();
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> !query.anyMatch());
+
+		StepDefUtil.tryAndWaitForItem()
+				.workerFromBooleanSupplier(query::noneMatch)
+				.logContextUsingRunnable(null)
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+	}
+
+	private String toTabularStringForProductIdentifier(@NonNull final StepDefDataIdentifier productIdentifier)
+	{
+		final ProductId productId = productTable.getId(productIdentifier);
+
+		return "PP_Order_Candidates available for M_Product_ID `" + productIdentifier + "`:"
+				+ "\n\n" + toTabularString(productId);
+	}
+
+	private String toTabularString(@NonNull final ProductId productId)
+	{
+		final List<I_PP_Order_Candidate> candidates = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.listImmutable(I_PP_Order_Candidate.class);
+
+		return getTabularConverter().toTabularString(candidates);
+	}
+
+	private PPOrderCandidateToTabularStringConverter getTabularConverter()
+	{
+		return PPOrderCandidateToTabularStringConverter.builder()
+				.ppOrderCandidateTable(ppOrderCandidateTable)
+				.productTable(productTable)
+				.productPlanningTable(productPlanningTable)
+				.resourceTable(resourceTable)
+				.productBOMTable(productBOMTable)
+				.build();
 	}
 }

@@ -2,11 +2,11 @@ package de.metas.document;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
-import java.util.Date;
-
 import javax.annotation.Nullable;
+import java.util.Date;
 
 /**
  * DAO methods for retrieving DocumentNo sequence informations.
@@ -16,11 +16,12 @@ import javax.annotation.Nullable;
  */
 public interface IDocumentSequenceDAO extends ISingletonService
 {
-	DocumentSequenceInfo getOrCreateDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
+	DocumentSequenceInfo getOrCreateDocumentSequenceInfo(@NonNull String sequenceName, int adClientId, int adOrgId);
 
 	@Nullable
 	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
 
+	@Nullable
 	@Deprecated
 	default DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceRepoId)
 	{
@@ -31,6 +32,8 @@ public interface IDocumentSequenceDAO extends ISingletonService
 	String retrieveDocumentNoByYear(int AD_Sequence_ID, Date date);
 
 	String retrieveDocumentNoByYearAndMonth(int AD_Sequence_ID, Date date);
+
+	String retrieveDocumentNoByYearMonthAndDay(final int AD_Sequence_ID, java.util.Date date);
 
 	/** @return document type sequence map */
 	DocTypeSequenceList retrieveDocTypeSequenceList(I_C_DocType docType);

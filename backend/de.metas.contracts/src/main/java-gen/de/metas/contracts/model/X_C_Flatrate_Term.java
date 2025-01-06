@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -792729881L;
+	private static final long serialVersionUID = 1958962592L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -500,6 +500,21 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public void setC_RfQResponseLine_ID (final int C_RfQResponseLine_ID)
+	{
+		if (C_RfQResponseLine_ID < 1) 
+			set_Value (COLUMNNAME_C_RfQResponseLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_RfQResponseLine_ID, C_RfQResponseLine_ID);
+	}
+
+	@Override
+	public int getC_RfQResponseLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_RfQResponseLine_ID);
+	}
+
+	@Override
 	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
 		if (C_TaxCategory_ID < 1) 
@@ -869,6 +884,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public void setIsFinalInvoiced (final boolean IsFinalInvoiced)
+	{
+		set_Value (COLUMNNAME_IsFinalInvoiced, IsFinalInvoiced);
+	}
+
+	@Override
+	public boolean isFinalInvoiced() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFinalInvoiced);
+	}
+
+	@Override
 	public void setIsReadyForDefinitiveInvoice (final boolean IsReadyForDefinitiveInvoice)
 	{
 		set_Value (COLUMNNAME_IsReadyForDefinitiveInvoice, IsReadyForDefinitiveInvoice);
@@ -890,6 +917,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isSimulation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulation);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override
@@ -1062,6 +1101,33 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public void setPMM_Product_ID (final int PMM_Product_ID)
+	{
+		if (PMM_Product_ID < 1) 
+			set_Value (COLUMNNAME_PMM_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_PMM_Product_ID, PMM_Product_ID);
+	}
+
+	@Override
+	public int getPMM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
 	public void setPrepareClosing (final @Nullable java.lang.String PrepareClosing)
 	{
 		set_Value (COLUMNNAME_PrepareClosing, PrepareClosing);
@@ -1108,6 +1174,19 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setQtyPlanned_NextYear (final BigDecimal QtyPlanned_NextYear)
+	{
+		set_Value (COLUMNNAME_QtyPlanned_NextYear, QtyPlanned_NextYear);
+	}
+
+	@Override
+	public BigDecimal getQtyPlanned_NextYear() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPlanned_NextYear);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1261,6 +1340,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TYPE_FLATRATE_NONE = "NONE";
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
+	/** Reported Quantity = RPTD */
+	public static final String TYPE_FLATRATE_ReportedQuantity = "RPTD";
 	@Override
 	public void setType_Flatrate (final @Nullable java.lang.String Type_Flatrate)
 	{
@@ -1270,25 +1351,5 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getType_Flatrate() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
-	}
-
-	/** 
-	 * UOMType AD_Reference_ID=540262
-	 * Reference name: UOM Type Flatrate
-	 */
-	public static final int UOMTYPE_AD_Reference_ID=540262;
-	/** Gesundheitswesen = HC */
-	public static final String UOMTYPE_Gesundheitswesen = "HC";
-	/** Abrechnungsgenauigkeit = TD */
-	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
-	@Override
-	public void setUOMType (final @Nullable java.lang.String UOMType)
-	{
-		throw new IllegalArgumentException ("UOMType is virtual column");	}
-
-	@Override
-	public java.lang.String getUOMType() 
-	{
-		return get_ValueAsString(COLUMNNAME_UOMType);
 	}
 }

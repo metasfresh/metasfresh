@@ -40,6 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.InOutAndLineId;
@@ -124,17 +125,18 @@ public class ShipmentScheduleWithHU
 	@Getter private final boolean adviseManualPackingMaterial;
 
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services,
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse,
+			@Nullable final ShipmentScheduleSplit split)
 	{
 		this.services = services;
 		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = allocRecord;
 		this.shipmentSchedule = InterfaceWrapperHelper.create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		this.split = null;
+		this.split = split;
 
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
@@ -158,7 +160,7 @@ public class ShipmentScheduleWithHU
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
 	 */
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services, 
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
@@ -186,14 +188,15 @@ public class ShipmentScheduleWithHU
 			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentScheduleSplit split)
+			@NonNull final ShipmentScheduleSplit split,
+			@NonNull final Quantity qtyToAllocate)
 	{
 		this.services = services;
 		this.huContext = huContext;
 		this.shipmentSchedule = shipmentSchedule;
 		this.split = split;
 
-		this.pickedQty = split.getQtyToDeliver();
+		this.pickedQty = qtyToAllocate;
 		this.catchQty = Optional.empty();
 
 		this.vhu = null; // no VHU
@@ -470,32 +473,38 @@ public class ShipmentScheduleWithHU
 			return IHandlingUnitsBL.extractPIItemProductOrNull(tuOrVhu);
 		}
 
-		final ImmutableList<I_M_HU_Item> huMaterialItems = services.getMaterialHUItems(tuOrVhu);
-		if (huMaterialItems.isEmpty())
+		final I_M_HU_PI_Item materialPIItem;
+		if (services.isAggregateHU(tuOrVhu))
 		{
-			return retrievePiipForReferencedRecord();
+			final I_M_HU_PI_Version tuPIVersion = services.getEffectivePIVersion(tuOrVhu);
+			materialPIItem = services.getPIItemMaterial(tuPIVersion);
+		}
+		else
+		{
+			final ImmutableList<I_M_HU_Item> huMaterialItems = services.getMaterialHUItems(tuOrVhu);
+			if (huMaterialItems.isEmpty())
+			{
+				return retrievePiipForReferencedRecord();
+			}
+
+			Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
+			final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
+			materialPIItem = services.getPIItem(huMaterialItem);
 		}
 
-		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
-		final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
-
-		final BPartnerId bpartnerId = services.getBPartnerId(shipmentSchedule);
-		final ZonedDateTime preparationDate = services.getPreparationDate(shipmentSchedule);
-
-		final I_M_HU_PI_Item huPIItem = services.getPIItem(huMaterialItem);
-		if (huPIItem == null)
+		if (materialPIItem != null)
 		{
-			return services.getVirtualPIMaterialItemProduct();
-		}
-
-		final I_M_HU_PI_Item_Product matchingPiip = services.retrievePIMaterialItemProduct(
-				huPIItem,
-				bpartnerId,
-				getProductId(),
-				preparationDate);
-		if (matchingPiip != null)
-		{
-			return matchingPiip;
+			final BPartnerId bpartnerId = services.getBPartnerId(shipmentSchedule);
+			final ZonedDateTime preparationDate = services.getPreparationDate(shipmentSchedule);
+			final I_M_HU_PI_Item_Product matchingPiip = services.retrievePIMaterialItemProduct(
+					materialPIItem,
+					bpartnerId,
+					getProductId(),
+					preparationDate);
+			if (matchingPiip != null)
+			{
+				return matchingPiip;
+			}
 		}
 
 		// could not find a packing instruction; return "No Packing Item"
@@ -533,6 +542,7 @@ public class ShipmentScheduleWithHU
 		return dimension;
 	}
 
+	@Nullable
 	public ShipmentScheduleSplitId getSplitId() {return split != null ? split.getIdNotNull() : null;}
 
 	public Optional<LocalDate> getDeliveryDate()

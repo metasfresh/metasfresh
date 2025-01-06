@@ -384,9 +384,13 @@ public class ProcessPickingCandidatesCommand
 			}
 
 			final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+			final ProductId productId = ProductId.ofRepoId(shipmentSchedulesCache.getById(shipmentScheduleId).getM_Product_ID());
 
 			return packToHUsProducer.extractPackToInfo(
+					productId,
 					packToSpec,
+					null,
+					null,
 					shipmentSchedulesCache.getShipToBPLocationId(shipmentScheduleId),
 					shipmentSchedulesCache.getShipFromLocatorId(shipmentScheduleId));
 		}
@@ -401,15 +405,19 @@ public class ProcessPickingCandidatesCommand
 			final PackToInfo packToInfo = getPackToInfo(pickingCandidateId);
 			final boolean checkIfAlreadyPacked = isOnlyOnePickingCandidatePackedTo(packToInfo);
 			final List<I_M_HU> packedToHUs = packToHUsProducer.packToHU(
-					huContext,
-					pickFromHUId,
-					packToInfo,
-					productId,
-					qtyPicked,
-					null,
-					pickingCandidateId.toTableRecordReference(),
-					checkIfAlreadyPacked,
-					false);
+							PackToHUsProducer.PackToHURequest.builder()
+									.huContext(huContext)
+									.pickFromHUId(pickFromHUId)
+									.packToInfo(packToInfo)
+									.productId(productId)
+									.qtyPicked(qtyPicked)
+									.catchWeight(null)
+									.documentRef(pickingCandidateId.toTableRecordReference())
+									.checkIfAlreadyPacked(checkIfAlreadyPacked)
+									.createInventoryForMissingQty(false)
+									.build()
+					)
+					.getAllTURecords();
 
 			if (packedToHUs.isEmpty())
 			{

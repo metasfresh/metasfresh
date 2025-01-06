@@ -8,6 +8,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -27,6 +28,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupport
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
@@ -76,7 +78,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.TODAY;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -305,7 +307,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
 			schedule.setDeliveryDate(TimeUtil.asTimestamp(deliveryDate));
 			InterfaceWrapperHelper.save(schedule);
-			
+
 			return shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 					schedule,
 					StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("100"), productId),
@@ -431,12 +433,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 			Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 			Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
+			SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of()));
 
 			trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 			Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH); // needed for notifications
 
-			createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialDelivery));
+			createDocType(DocBaseAndSubType.of(DocBaseType.Shipment));
 			bpartnerAndLocationId = bpartnerAndLocation("BP");
 			warehouseId = warehouse("WH");
 
@@ -495,12 +498,12 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-					.ctx(Env.getCtx())
-					.name(docBaseAndSubType.toString())
-					.docBaseType(docBaseAndSubType.getDocBaseType())
-					.docSubType(docBaseAndSubType.getDocSubType())
-					.glCategoryId(GLCategoryId.ofRepoId(123))
-					.build());
+											 .ctx(Env.getCtx())
+											 .name(docBaseAndSubType.toString())
+											 .docBaseType(docBaseAndSubType.getDocBaseType())
+											 .docSubType(docBaseAndSubType.getDocSubType())
+											 .glCategoryId(GLCategoryId.ofRepoId(123))
+											 .build());
 		}
 
 		private OrderId order()

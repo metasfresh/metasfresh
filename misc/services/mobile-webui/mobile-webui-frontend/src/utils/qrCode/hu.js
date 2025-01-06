@@ -20,21 +20,28 @@
  * #L%
  */
 
-import { QRCODE_SEPARATOR } from './common';
+import {
+  ATTR_barcodeType,
+  ATTR_bestBeforeDate,
+  ATTR_displayable,
+  ATTR_isTUToBePickedAsWhole,
+  ATTR_lotNo,
+  ATTR_productId,
+  ATTR_productNo,
+  ATTR_weightNet,
+  ATTR_weightNetUOM,
+  BARCODE_TYPE_HU,
+  BARCODE_TYPE_LMQ,
+  QRCODE_SEPARATOR,
+  toLocalDateString,
+} from './common';
 import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
+import { parseGS1CodeString } from './gs1';
+import { parseEAN13CodeString } from './ean13';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
-
-const ATTR_productId = 'productId';
-const ATTR_productNo = 'productNo';
-const ATTR_weightNet = 'weightNet';
-const ATTR_weightNetUOM = 'weightNetUOM';
-const ATTR_bestBeforeDate = 'bestBeforeDate';
-const ATTR_lotNo = 'lotNo';
-const ATTR_displayable = 'displayable';
-const ATTR_isTUToBePickedAsWhole = 'isTUToBePickedAsWhole';
 
 export const toQRCodeDisplayable = (qrCode) => {
   //
@@ -128,6 +135,42 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
 export const parseQRCodeString = (string, returnFalseOnError) => {
+  console.trace('parseQRCodeString', { string, returnFalseOnError });
+  const allResults = {};
+
+  let result = parseGS1CodeString(string);
+  allResults['gs1'] = result;
+
+  if (result?.error) {
+    result = parseEAN13CodeString(string);
+    allResults['ean13'] = result;
+  }
+
+  if (result?.error) {
+    result = parseQRCodeString_GlobalQRCode(string);
+    allResults['globalQRCode'] = result;
+  }
+
+  //
+  if (result && !result.error) {
+    return { ...result, code: string };
+  } else if (returnFalseOnError) {
+    return false;
+  } else {
+    const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
+    console.log(`parseQRCodeString: ${errorMsg}`, { string, allResults });
+    throw errorMsg;
+  }
+};
+
+const parseQRCodeString_GlobalQRCode = (string) => {
+  if (!string) {
+    return {
+      error: trl('error.qrCode.invalid'),
+      errorDetail: 'empty string',
+    };
+  }
+
   let remainingString = string;
 
   //
@@ -136,11 +179,10 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
-      if (returnFalseOnError) {
-        return false;
-      }
-      console.log('parseQRCodeString: Cannot extract type from QRCode', { remainingString, string });
-      throw trl('error.qrCode.invalid');
+      return {
+        error: trl('error.qrCode.invalid'),
+        errorDetail: 'cannot extract type from Global QRCode',
+      };
     }
     type = remainingString.substring(0, idx);
     remainingString = remainingString.substring(idx + 1);
@@ -152,29 +194,26 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
-      if (returnFalseOnError) {
-        return false;
-      }
-      console.log('parseQRCodeString: Cannot extract version from QRCode', { remainingString, string });
-      throw trl('error.qrCode.invalid');
+      return {
+        error: trl('error.qrCode.invalid'),
+        errorDetail: 'cannot extract version from Global QRCode',
+      };
     }
     version = remainingString.substring(0, idx);
     remainingString = remainingString.substring(idx + 1);
   }
 
-  let payloadParsed;
   if (type === QRCODE_TYPE_HU && version === '1') {
     const jsonPayload = JSON.parse(remainingString);
-    payloadParsed = parseQRCodePayload_HU_v1(jsonPayload);
+    return parseQRCodePayload_HU_v1(jsonPayload);
   } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
-    payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
+    return parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
-    console.log('parseQRCodeString: Unknown QR Code type', { type, version, string });
-    throw trl('error.qrCode.invalid');
+    return {
+      error: trl('error.qrCode.invalid'),
+      errorDetail: 'unknown Global QRCode',
+    };
   }
-  //console.log('parseQRCodeString', { payloadParsed });
-
-  return { ...payloadParsed, code: string };
 };
 
 // NOTE to dev: keep in sync with:
@@ -194,6 +233,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
   }
 
   const result = { displayable };
+  result[ATTR_barcodeType] = BARCODE_TYPE_HU;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
@@ -224,6 +264,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 const LMQ_BEST_BEFORE_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
+  result[ATTR_barcodeType] = BARCODE_TYPE_LMQ;
 
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {
@@ -235,7 +276,7 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   }
   if (parts.length >= 2) {
     const [, day, month, year] = LMQ_BEST_BEFORE_DATE_FORMAT.exec(parts[1]);
-    result[ATTR_bestBeforeDate] = `${year}-${month}-${day}`;
+    result[ATTR_bestBeforeDate] = toLocalDateString({ year, month, day });
   }
   if (parts.length >= 3) {
     result[ATTR_lotNo] = parts[2];

@@ -40,6 +40,7 @@ import de.metas.security.permissions.UserMenuInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
@@ -77,6 +78,7 @@ class UserRolePermissionsBuilder
 				.setWorkflowPermissions(permissions.getWorkflowPermissions())
 				.setFormPermissions(permissions.getFormPermissions())
 				.setMiscPermissions(permissions.getMiscPermissions())
+				.setMobileApplicationAccesses(permissions.getMobileApplicationPermissions())
 				//
 				.setConstraints(permissions.getConstraints());
 	}
@@ -108,6 +110,7 @@ class UserRolePermissionsBuilder
 	private ElementPermissions taskAccesses;
 	private ElementPermissions workflowAccesses;
 	private ElementPermissions formAccesses;
+	@Getter private ElementPermissions mobileApplicationAccesses;
 
 	private GenericPermissions miscPermissions;
 	private Constraints constraints;
@@ -166,6 +169,10 @@ class UserRolePermissionsBuilder
 		{
 			formAccesses = userRolePermissionsRepo.getFormPermissions(adRoleId);
 		}
+		if (mobileApplicationAccesses == null)
+		{
+			mobileApplicationAccesses = userRolePermissionsRepo.getMobileApplicationPermissions(adRoleId);
+		}
 
 		if (miscPermissions == null)
 		{
@@ -195,6 +202,7 @@ class UserRolePermissionsBuilder
 			final ElementPermissions.Builder taskAccessesBuilder = taskAccesses.asNewBuilder();
 			final ElementPermissions.Builder workflowAccessesBuilder = workflowAccesses.asNewBuilder();
 			final ElementPermissions.Builder formAccessesBuilder = formAccesses.asNewBuilder();
+			final ElementPermissions.Builder mobileApplicationAccessesBuilder = mobileApplicationAccesses.asNewBuilder();
 
 			UserRolePermissionsInclude lastIncludedPermissionsRef = null;
 			for (final UserRolePermissionsInclude includedPermissionsRef : userRolePermissionsToInclude)
@@ -204,7 +212,7 @@ class UserRolePermissionsBuilder
 				CollisionPolicy collisionPolicy = CollisionPolicy.Merge;
 				//
 				// If roles have same SeqNo, then, the second role will override permissions from first role
-				if (lastIncludedPermissionsRef != null && includedPermissionsRef.getSeqNo() >= 0
+				if (lastIncludedPermissionsRef != null 
 						&& includedPermissionsRef.getSeqNo() >= 0
 						&& lastIncludedPermissionsRef.getSeqNo() == includedPermissionsRef.getSeqNo())
 				{
@@ -219,6 +227,7 @@ class UserRolePermissionsBuilder
 				taskAccessesBuilder.addPermissions(includedPermissions.getTaskPermissions(), collisionPolicy);
 				workflowAccessesBuilder.addPermissions(includedPermissions.getWorkflowPermissions(), collisionPolicy);
 				formAccessesBuilder.addPermissions(includedPermissions.getFormPermissions(), collisionPolicy);
+				mobileApplicationAccessesBuilder.addPermissions(includedPermissions.getMobileApplicationAccesses(), collisionPolicy);
 
 				// add it to the list of included permissions.
 				userRolePermissionsIncludedBuilder.add(includedPermissionsRef);
@@ -234,6 +243,7 @@ class UserRolePermissionsBuilder
 			taskAccesses = taskAccessesBuilder.build();
 			workflowAccesses = workflowAccessesBuilder.build();
 			formAccesses = formAccessesBuilder.build();
+			mobileApplicationAccesses = mobileApplicationAccessesBuilder.build();
 		}
 
 		userRolePermissionsIncluded = userRolePermissionsIncludedBuilder.build();
@@ -467,6 +477,12 @@ class UserRolePermissionsBuilder
 		return this;
 	}
 
+	public UserRolePermissionsBuilder setMobileApplicationAccesses(final ElementPermissions mobileApplicationAccesses)
+	{
+		this.mobileApplicationAccesses = mobileApplicationAccesses;
+		return this;
+	}
+
 	UserRolePermissionsBuilder setMiscPermissions(final GenericPermissions permissions)
 	{
 		Check.assumeNull(miscPermissions, "permissions not already configured");
@@ -493,6 +509,7 @@ class UserRolePermissionsBuilder
 		return constraints;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public UserRolePermissionsBuilder includeUserRolePermissions(final UserRolePermissions userRolePermissions, final int seqNo)
 	{
 		userRolePermissionsToInclude.add(UserRolePermissionsInclude.of(userRolePermissions, seqNo));

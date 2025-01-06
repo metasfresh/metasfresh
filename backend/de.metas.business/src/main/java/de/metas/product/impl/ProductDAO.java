@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -57,6 +58,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -666,13 +668,40 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
 
 	@Override
@@ -816,4 +845,30 @@ public class ProductDAO implements IProductDAO
 						.create()
 						.anyMatch();
 	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.setLimit(limit)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
+
+		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
 }

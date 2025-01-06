@@ -23,7 +23,10 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DeleteDDOrderCandidateAllocQuery;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ResourceId;
@@ -44,8 +47,15 @@ class DD_OrderLine
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final DDOrderLowLevelService ddOrderLowLevelService;
+	private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 
-	DD_OrderLine(final DDOrderLowLevelService ddOrderLowLevelService) {this.ddOrderLowLevelService = ddOrderLowLevelService;}
+	DD_OrderLine(
+			final DDOrderLowLevelService ddOrderLowLevelService,
+			final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository)
+	{
+		this.ddOrderLowLevelService = ddOrderLowLevelService;
+		this.ddOrderCandidateAllocRepository = ddOrderCandidateAllocRepository;
+	}
 
 	@Init
 	public void init()
@@ -86,13 +96,16 @@ class DD_OrderLine
 		if (plantFromId == null)
 		{
 			final LiberoException ex = new LiberoException("@NotFound@ @PP_Plant_ID@"
-					+ "\n @M_Marehouse_ID@: " + ddOrderLine.getM_Locator_ID()
+					+ "\n @M_Locator_ID@: " + ddOrderLine.getM_Locator_ID()
 					+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product_ID()
 					+ "\n @DD_OrderLine_ID@: " + ddOrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		else
+		{
+			ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -115,5 +128,13 @@ class DD_OrderLine
 	public void setUOMInDDOrderLine(final I_DD_OrderLine ddOrderLine)
 	{
 		ddOrderLowLevelService.updateUomFromProduct(ddOrderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_DD_OrderLine record)
+	{
+		ddOrderCandidateAllocRepository.deleteByQuery(DeleteDDOrderCandidateAllocQuery.builder()
+															  .ddOrderLineId(DDOrderLineId.ofRepoId(record.getDD_OrderLine_ID()))
+															  .build());
 	}
 }

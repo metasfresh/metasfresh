@@ -156,6 +156,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		setAmount(Doc.AMTTYPE_Gross, invoice.getGrandTotal());
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
+		setAmount(Doc.AMTTYPE_CashRounding, invoice.getCashRoundingAmt());
 
 		setDocLines(loadLines());
 	}
@@ -315,26 +316,26 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** ARI, ARF
 		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.ARInvoice.equals(docBaseType)
-				|| DocBaseType.ARProFormaInvoice.equals(docBaseType))
+		if (DocBaseType.SalesInvoice.equals(docBaseType)
+				|| DocBaseType.SalesProformaInvoice.equals(docBaseType))
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DocBaseType.ARCreditMemo.equals(docBaseType))
+		else if (DocBaseType.SalesCreditMemo.equals(docBaseType))
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DocBaseType.APInvoice.equals(docBaseType)
+		else if (DocBaseType.PurchaseInvoice.equals(docBaseType)
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.APCreditMemo.equals(docBaseType))
+		else if (DocBaseType.PurchaseCreditMemo.equals(docBaseType))
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}
@@ -375,6 +376,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
 		}
+
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, cashRoundingAmt)
+					.buildAndAdd();
+		}
+
 
 		//
 		// TaxDue CR
@@ -489,6 +501,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(cashRoundingAmt, null)
+					.buildAndAdd();
+		}
+
+
 		//
 		// TaxDue DR
 		for (final DocTax docTax : getTaxes())
@@ -600,6 +623,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
 					.setCurrencyId(currencyId)
 					.setAmtSource(chargeAmt, null)
+					.buildAndAdd();
+		}
+
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(cashRoundingAmt, null)
 					.buildAndAdd();
 		}
 
@@ -771,6 +804,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
 					.setCurrencyId(currencyId)
 					.setAmtSource(null, chargeAmt)
+					.buildAndAdd();
+		}
+
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, cashRoundingAmt)
 					.buildAndAdd();
 		}
 

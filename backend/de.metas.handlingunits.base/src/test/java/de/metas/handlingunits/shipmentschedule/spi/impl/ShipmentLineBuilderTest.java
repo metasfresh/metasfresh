@@ -186,6 +186,45 @@ public class ShipmentLineBuilderTest
 	}
 
 	@Test
+	public void createSplitShipmentLine_shipmentScheduleWithoutHu_QtyTU()
+	{
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
+				.qtyCUsPerTU(8)
+				.qtyTUsCalculated(new BigDecimal("100"))
+				.build();
+
+		// create partial shipment line
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+				shipmentSchedule,
+				oneWithoutCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		// create split shipment line
+		final ShipmentScheduleWithHU splitShipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+				shipmentSchedule,
+				oneWithoutCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_SPLIT_SHIPMENT);
+
+		final ShipmentLineBuilder splitShipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+		splitShipmentLineBuilder.setManualPackingMaterial(true);
+
+		splitShipmentLineBuilder.add(splitShipmentScheduleWithoutHu);
+		final I_M_InOutLine splitShipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		// both lines should have the same QtyTU_Override
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualTo("1");
+		assertThat(splitShipmentLine.getQtyTU_Override()).isEqualTo("1");
+	}
+
+	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_qtyZero_noCatchQty()
 	{
 		final StockQtyAndUOMQty zeroWithoutCatch = StockQtyAndUOMQtys.createZero(huTestHelper.pTomatoProductId, null);

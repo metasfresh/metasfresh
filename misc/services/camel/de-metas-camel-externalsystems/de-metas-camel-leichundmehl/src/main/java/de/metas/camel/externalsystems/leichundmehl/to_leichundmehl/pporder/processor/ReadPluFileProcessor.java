@@ -28,7 +28,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XML
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file.FileUpdater;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
@@ -62,7 +62,7 @@ public class ReadPluFileProcessor implements Processor
 		final String content = updatePluFile(context);
 
 		final DispatchMessageRequest request = DispatchMessageRequest.builder()
-				.connectionDetails(context.getConnectionDetails())
+				.destinationDetails(context.getDestinationDetails())
 				.payload(content)
 				.build();
 
@@ -72,7 +72,7 @@ public class ReadPluFileProcessor implements Processor
 	@NonNull
 	private String updatePluFile(@NonNull final ExportPPOrderRouteContext context)
 	{
-		final String productBaseFolderName = context.getProductBaseFolderName();
+		final String productBaseFolderName = context.getPluTemplateFileBaseFolderName();
 		final JsonExternalSystemLeichMehlConfigProductMapping mapping = context.getProductMapping();
 
 		try
@@ -93,7 +93,7 @@ public class ReadPluFileProcessor implements Processor
 
 			context.setJsonPluFileAudit(jsonPluFileAudit);
 			context.setPluFileXmlContent(xmlRootFile);
-			context.setFilename(filePath.getFileName().toString());
+			context.setPluTemplateFilename(filePath.getFileName().toString());
 
 			return xmlRootFile;
 		}

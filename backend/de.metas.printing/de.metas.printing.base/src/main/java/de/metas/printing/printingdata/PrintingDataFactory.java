@@ -97,8 +97,18 @@ public class PrintingDataFactory
 		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 		final ArchiveId archiveId = ArchiveId.ofRepoId(queueItem.getAD_Archive_ID());
-		final I_AD_Archive archiveRecord = archiveDAO.getArchiveRecordById(archiveId);
-		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archiveRecord));
+		final I_AD_Archive archiveRecord = archiveDAO.getRecordById(archiveId);
+		final List<I_C_Doc_Outbound_Log> outboundLogRecords = outboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archiveRecord));
+
+		I_C_Doc_Outbound_Log outboundLogRecord = null;
+
+		for (final I_C_Doc_Outbound_Log log : outboundLogRecords)
+		{
+			if (log.getAD_Archive_ID() == archiveRecord.getAD_Archive_ID())
+			{
+				outboundLogRecord = log;
+			}
+		}
 
 		final String pdfFileName;
 		if (outboundLogRecord != null)

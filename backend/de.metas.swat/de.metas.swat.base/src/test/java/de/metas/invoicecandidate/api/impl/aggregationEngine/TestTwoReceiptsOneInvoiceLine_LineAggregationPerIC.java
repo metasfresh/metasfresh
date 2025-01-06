@@ -22,24 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.aggregation.model.C_Aggregation_Builder;
@@ -57,6 +39,24 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Test case:
@@ -229,7 +229,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(java.util.List<I_C_Invoice_Candidate> invoiceCandidates, java.util.List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(java.util.@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, java.util.@NonNull List<I_M_InOutLine> inOutLines)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 

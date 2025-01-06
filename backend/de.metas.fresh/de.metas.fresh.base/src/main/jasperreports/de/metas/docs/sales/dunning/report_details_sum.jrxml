@@ -20,14 +20,14 @@
 	<field name="openamt" class="java.math.BigDecimal"/>
 	<field name="feeamt" class="java.math.BigDecimal"/>
 	<field name="totalamt" class="java.math.BigDecimal"/>
-	<field name="iso_code" class="java.lang.String"/>
+	<field name="currency" class="java.lang.String"/>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="currency" class="java.lang.String">
-		<variableExpression><![CDATA[$F{iso_code}]]></variableExpression>
-		<initialValueExpression><![CDATA[$F{iso_code}]]></initialValueExpression>
+		<variableExpression><![CDATA[$F{currency}]]></variableExpression>
+		<initialValueExpression><![CDATA[$F{currency}]]></initialValueExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -61,7 +61,7 @@
 				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-3" mode="Transparent" x="288" y="0" width="30" height="11" uuid="87f02c05-d602-42de-b08b-d1df5e033b5a"/>
+				<reportElement key="textField-3" mode="Transparent" x="277" y="0" width="35" height="11" uuid="87f02c05-d602-42de-b08b-d1df5e033b5a"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,10 +71,10 @@
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-1" mode="Transparent" x="501" y="0" width="45" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
+				<reportElement key="textField-1" mode="Transparent" x="500" y="0" width="45" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -87,7 +87,7 @@
 				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-1" mode="Transparent" x="450" y="0" width="52" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
+				<reportElement key="textField-1" mode="Transparent" x="451" y="0" width="50" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -100,7 +100,7 @@
 				<textFieldExpression><![CDATA[$F{feeamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-1" mode="Transparent" x="411" y="0" width="39" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
+				<reportElement key="textField-1" mode="Transparent" x="412" y="0" width="39" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -113,7 +113,7 @@
 				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-13" mode="Transparent" x="373" y="0" width="38" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
+				<reportElement key="textField-13" mode="Transparent" x="371" y="0" width="41" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -121,12 +121,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-13" mode="Transparent" x="319" y="0" width="54" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
+				<reportElement key="textField-13" mode="Transparent" x="322" y="0" width="48" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

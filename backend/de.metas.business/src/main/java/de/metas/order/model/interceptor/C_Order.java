@@ -105,7 +105,7 @@ public class C_Order
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
-	
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -120,6 +120,7 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
@@ -175,6 +176,25 @@ public class C_Order
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
 		order.setIsTaxIncluded(pl.isTaxIncluded());
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
+			I_C_Order.COLUMNNAME_C_DocType_ID
+	})
+	public void removeFlatRateConditionsForCallOrderAndProformaOrder(final I_C_Order order)
+	{
+		if (orderBL.isCallOrder(order) || orderBL.isProformaSO(order))
+		{
+			orderDAO.retrieveOrderLines(order)
+					.forEach(line -> {
+						line.setC_Flatrate_Conditions_ID(-1);
+						orderDAO.save(line);
+					});
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

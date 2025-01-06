@@ -119,7 +119,7 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Checks if this handler, <b>in particular</b>, can create invoice candidates for the given {@code model}.
-	 *
+	 * <p>
 	 * Invoice candidate handlers usually need to implement this method,
 	 * because they need to make sure that the given {@code model} does not have an invoice candidate yet, before they can return {@code true}.
 	 * <p>
@@ -342,7 +342,6 @@ public interface IInvoiceCandidateHandler
 		TaxCategoryId taxCategoryId;
 
 		BigDecimal compensationGroupBaseAmt;
-
 	}
 
 }

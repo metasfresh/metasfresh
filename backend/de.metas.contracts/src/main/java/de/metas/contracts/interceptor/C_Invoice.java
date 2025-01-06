@@ -1,14 +1,14 @@
 package de.metas.contracts.interceptor;
 
+import de.metas.contracts.impl.CustomerRetentionRepository;
+import de.metas.invoice.InvoiceId;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.contracts.impl.CustomerRetentionRepository;
-import de.metas.invoice.InvoiceId;
 
 /*
  * #%L
@@ -34,15 +34,16 @@ import de.metas.invoice.InvoiceId;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice
 {
+	@NonNull private final CustomerRetentionRepository customerRetentionRepo;
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateCustomerRetention(final I_C_Invoice invoice)
 	{
-		final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
 		customerRetentionRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
-
 	}
 }

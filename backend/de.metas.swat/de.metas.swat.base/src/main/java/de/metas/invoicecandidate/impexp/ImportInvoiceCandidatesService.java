@@ -29,7 +29,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
@@ -44,6 +44,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -91,13 +92,13 @@ public class ImportInvoiceCandidatesService
 	@NonNull
 	public InvoiceCandidateId createInvoiceCandidate(@NonNull final I_I_Invoice_Candidate record)
 	{
-		final NewInvoiceCandidate newInvoiceCandidate = createManualInvoiceCand(record);
+		final InvoiceCandidateUpsertRequest invoiceCandidateUpsertRequest = createManualInvoiceCand(record);
 
-		return invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
+		return invoiceCandidateRepository.save(manualCandidateService.upsertInvoiceCandidate(invoiceCandidateUpsertRequest));
 	}
 
 	@NonNull
-	private NewInvoiceCandidate createManualInvoiceCand(@NonNull final I_I_Invoice_Candidate record)
+	private InvoiceCandidateUpsertRequest createManualInvoiceCand(@NonNull final I_I_Invoice_Candidate record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -128,7 +129,7 @@ public class ImportInvoiceCandidatesService
 		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(billPartnerInfo.getBpartnerId(), soTrx);
 		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
 
-		return NewInvoiceCandidate.builder()
+		return InvoiceCandidateUpsertRequest.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
 				.poReference(record.getPOReference())
@@ -158,6 +159,7 @@ public class ImportInvoiceCandidatesService
 				.paymentTermId(paymentTermId)
 				.isManual(true)
 				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(ManualCandidateHandler.class))
+				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
 				.build();
 	}
 

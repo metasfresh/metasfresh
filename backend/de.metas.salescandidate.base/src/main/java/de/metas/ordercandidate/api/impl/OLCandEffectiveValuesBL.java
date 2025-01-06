@@ -13,15 +13,20 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -30,6 +35,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -41,7 +47,9 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(@NonNull final I_C_OLCand olCand)
@@ -65,11 +73,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public ZonedDateTime getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return CoalesceUtil.coalesceSuppliers(
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate()));
+		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
+
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate(), tz));
 	}
 
 	@Override
@@ -126,6 +136,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
 		final ProductId productId = getM_Product_Effective_ID(olCand);
@@ -137,6 +148,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public UomId getEffectiveUomId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		return olCandRecord.isManualPrice()
@@ -162,7 +174,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		}
 
 		// only if we have nothing else to work with, we go with our internal stock-UOM
-		return productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return productBL.getStockUOMId(getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@NonNull
@@ -172,8 +184,8 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final BigDecimal result = olCandRecord.isManualQtyItemCapacity()
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
-		
-		return Quantitys.of(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+
+		return Quantitys.of(result, getM_Product_Effective_ID(olCandRecord));
 	}
 
 	@Override
@@ -257,6 +269,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
@@ -265,6 +278,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerId getBillBPartnerEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return coalesceSuppliers(
@@ -287,6 +301,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerContactId getBillContactEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
 		return BPartnerContactId.ofRepoIdOrNull(
@@ -354,6 +369,18 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 			return HUPIItemProductId.ofRepoId(olCand.getM_HU_PI_Item_Product_Override_ID());
 		}
 		return HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID());
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal getEffectiveQtyEntered(@NonNull final I_C_OLCand olCand)
+	{
+		if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyEntered_Override))
+		{
+			return olCand.getQtyEntered();
+		}
+
+		return olCand.getQtyEntered_Override();
 	}
 
 	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(
@@ -424,5 +451,39 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getHandOver_Partner_Override_ID(), olCand.getHandOver_Location_Override_ID(), olCand.getHandOver_Location_Override_Value_ID()),
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getHandOver_Partner_ID(), olCand.getHandOver_Location_ID(), olCand.getHandOver_Location_Value_ID()),
 				() -> getLocationAndCaptureEffectiveId(olCand, Type.SHIP_TO));
+	}
+
+	@Override
+	public Optional<StockQtyAndUOMQty> getQtyShipped(final I_C_OLCand olCand)
+	{
+		if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+		{
+			return Optional.empty();
+		}
+
+		final Quantity qtyShipped = Quantity.of(olCand.getQtyShipped(), getC_UOM_Effective(olCand));
+		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
+		final Quantity qtyShippedProductUOM = uomConversionBL.convertToProductUOM(qtyShipped, productId);
+
+		final StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder builder = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyShippedProductUOM);
+
+		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(olCand.getQtyShipped_CatchWeight_UOM_ID());
+		if (catchWeightUomId != null)
+		{
+			final Quantity catchWeight = Quantity.of(olCand.getQtyShipped_CatchWeight(), uomDAO.getById(catchWeightUomId));
+			builder.uomQty(catchWeight);
+		}
+
+		return Optional.of(builder.build());
+	}
+
+	@Override
+	public Optional<BigDecimal> getManualQtyInPriceUOM(final @NonNull I_C_OLCand record)
+	{
+		return !InterfaceWrapperHelper.isNull(record, I_C_OLCand.COLUMNNAME_ManualQtyInPriceUOM)
+				? Optional.of(record.getManualQtyInPriceUOM())
+				: Optional.empty();
 	}
 }

@@ -25,10 +25,10 @@ package de.metas.contracts.modular.computing.purchasecontract.manufacturing.copr
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingCoReceipt;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class PPCoComputingMethod implements IComputingMethodHandler
+public class PPCoComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
 	@NonNull private final ModularContractProvider contractProvider;
@@ -83,7 +83,8 @@ public class PPCoComputingMethod implements IComputingMethodHandler
 		{
 			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingCoReceipt.getManufacturingOrderId());
 			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId())
-					&& ProductId.equals(manufacturingCoReceipt.getCoProductId(), settings.getCoProductId());
+					&& ProductId.equals(manufacturingCoReceipt.getCoProductId(), settings.getCoProductId())
+					&& settings.getSoTrx().isPurchase();
 		}
 		return false;
 	}
@@ -110,6 +111,7 @@ public class PPCoComputingMethod implements IComputingMethodHandler
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(pricePerStockUOM)
 				.qty(qtyInStockUOM)
 				.build();

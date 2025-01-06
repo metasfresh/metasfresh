@@ -34,14 +34,16 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.money.CurrencyId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS;
 import static de.metas.contracts.modular.ModCntrInvoiceType.Definitive;
-import static de.metas.contracts.modular.ModCntrInvoiceType.Final;
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
 
@@ -53,15 +55,15 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 
 	@Override
 	@NonNull
-	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term flatrateTerm)
+	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term term)
 	{
-		if (!flatrateTerm.isReadyForDefinitiveInvoice())
+		if (!term.isReadyForDefinitiveInvoice())
 		{
 			return DONT;
 		}
 		final boolean finalInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-				.computingMethodTypes(Final.getComputingMethodTypes())
+				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+				.computingMethodTypes(PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
 				.processed(false)
 				.billable(true)
 				.build());
@@ -71,11 +73,11 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 		}
 
 		final boolean definitiveInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+				.computingMethodTypes(getModCntrInvoiceType(false).getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.build());
 
 		return definitiveInvoiceBillableLogsExist ? CREATE_CANDIDATES_AND_INVOICES
@@ -87,8 +89,12 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 	{
 		if (!computingResponse.getIds().isEmpty())
 		{
-			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(
+					ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()),
+					CurrencyId.ofRepoId(invoiceCandidate.getC_Currency_ID()),
+					UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()))
+			);
 		}
 	}
 
@@ -100,8 +106,8 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				.add(term)
 				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-						.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
-						.isComputingMethodTypeActive(false)
+						.computingMethodTypes(getModCntrInvoiceType(false).getComputingMethodTypes())
+						.isOnlyActiveComputingMethodTypes(false)
 						.processed(false)
 						.billable(true)
 						.build()))
@@ -109,7 +115,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 	}
 
 	@Override
-	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType()
+	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType(final boolean isSOTrx)
 	{
 		return Definitive;
 	}

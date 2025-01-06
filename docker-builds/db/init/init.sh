@@ -53,24 +53,24 @@ find /docker-entrypoint-initdb.d/migrations -type f -printf '%f\n' | sort | whil
     *.sql)
         readarray -t parts < <( echo "${f//'---'/$'\n'}" );
         printf "${parts[0]} in ${parts[1]%.sql}: ";
-        
+
         exists=`psql -U metasfresh -tc "select exists(select 1 from ad_migrationscript where name = '${parts[1]%.sql}' || '->' || '${parts[0]}' || '.sql')"`;
         if [ $exists = 't' ]; then
             echo "skipped";
             continue;
         fi
-        
+
         psql --username=metasfresh -v ON_ERROR_STOP=ON -q1f "/docker-entrypoint-initdb.d/migrations/${f}" > /tmp/migration.log 2>&1 || {
           echo "failed";
           cat /tmp/migration.log
-          exit 1            
+          exit 1
         };
-        
+
         cat /tmp/scripts/mark-migration-as-applied.sql | awk "{gsub(\"##project##\",\"${parts[1]%.sql}\");gsub(\"##file##\",\"${parts[0]}\");print}" | psql -v ON_ERROR_STOP=ON -q1 --username=metasfresh || {
           echo "failed marking";
           exit 1
         };
-        
+
         echo "applied" ;
         ;;
     *)

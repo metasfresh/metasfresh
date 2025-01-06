@@ -26,13 +26,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
@@ -42,8 +45,8 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
-import de.metas.invoicecandidate.NewInvoiceCandidate.NewInvoiceCandidateBuilder;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -100,6 +103,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
@@ -110,19 +114,19 @@ import static java.math.BigDecimal.ZERO;
 @Service
 public class CreateInvoiceCandidatesService
 {
-	private final DocTypeService docTypeService;
-	private final CurrencyService currencyService;
-
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final ManualCandidateService manualCandidateService;
-	private final ExternalIdentifierResolver externalIdentifierResolver;
-	private final BPRelationsService bpRelationsService;
-	private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository;
+	@NonNull private final ManualCandidateService manualCandidateService;
+	@NonNull private final ExternalIdentifierResolver externalIdentifierResolver;
+	@NonNull private final BPRelationsService bpRelationsService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CurrencyService currencyService;
 
 	public CreateInvoiceCandidatesService(
 			@NonNull final DocTypeService docTypeService,
@@ -151,23 +155,23 @@ public class CreateInvoiceCandidatesService
 				exitingCandidates = invoiceCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
-		final ImmutableList.Builder<NewInvoiceCandidate> candidatesToSave = ImmutableList.builder();
+		final ImmutableList.Builder<InvoiceCandidateUpsertRequest> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> keyWithItem : lookupKey2Item.entrySet())
 		{
 			final JsonCreateInvoiceCandidatesRequestItem item = keyWithItem.getValue();
-			final NewInvoiceCandidate candidate = createCandidate(item);
+			final InvoiceCandidateUpsertRequest candidate = createCandidate(item);
 
 			candidatesToSave.add(candidate);
 		}
 
 		final JsonCreateInvoiceCandidatesResponseBuilder result = JsonCreateInvoiceCandidatesResponse.builder();
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
-		for (final NewInvoiceCandidate candidateToSave : candidatesToSave.build())
+		for (final InvoiceCandidateUpsertRequest candidateToSave : candidatesToSave.build())
 		{
 			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
 			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
-			final InvoiceCandidateId candidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
+			final InvoiceCandidateId candidateId = invoiceCandidateRepository.save(manualCandidateService.upsertInvoiceCandidate(candidateToSave));
 			invoiceCandidateIds.add(candidateId);
 			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
@@ -189,9 +193,9 @@ public class CreateInvoiceCandidatesService
 		}
 	}
 
-	private NewInvoiceCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+	private InvoiceCandidateUpsertRequest createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		final NewInvoiceCandidateBuilder candidate = NewInvoiceCandidate.builder();
+		final InvoiceCandidateUpsertRequestBuilder candidate = InvoiceCandidateUpsertRequest.builder();
 
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
 		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
@@ -199,6 +203,8 @@ public class CreateInvoiceCandidatesService
 		syncBPartnerToCandidate(candidate, orgId, item);
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
+
+		syncBankAccountIdToCandidate(candidate, item, orgId);
 
 		syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride());
 
@@ -305,7 +311,7 @@ public class CreateInvoiceCandidatesService
 
 	@Nullable
 	private ProductId syncProductToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -327,7 +333,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private OrgId syncOrgIdToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
 		final OrgId orgId;
@@ -368,7 +374,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncTargetDocTypeToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@Nullable final JsonDocTypeInfo docType)
 	{
@@ -382,7 +388,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncBPartnerToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -452,21 +458,21 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncDiscountOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@Nullable final BigDecimal discountOverride)
 	{
 		candidate.discountOverride(Percent.ofNullable(discountOverride));
 	}
 
 	private void syncInvoiceRuleOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
 		candidate.invoiceRuleOverride(BPartnerCompositeRestUtils.getInvoiceRule(invoiceRuleOverride));
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -476,6 +482,33 @@ public class CreateInvoiceCandidatesService
 		candidate.priceEnteredOverride(price);
 
 	}
+
+	private void syncBankAccountIdToCandidate(
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final OrgId orgId)
+	{
+		if (Check.isNotBlank(item.getBankAccountIdentifier()))
+		{
+
+			final Optional<BPartnerId> orgBPartnerIdOptional = partnerOrgBL.retrieveLinkedBPartnerId(orgId);
+			if (orgBPartnerIdOptional.isPresent())
+			{
+				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(String.valueOf(BPartnerId.toRepoId(orgBPartnerIdOptional.get())));
+
+				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(orgId,
+						bpartnerIdentifier,
+						ExternalIdentifier.of(item.getBankAccountIdentifier()));
+
+				if (metasfreshId.isPresent())
+				{
+					final BankAccountId bankAccountId = BankAccountId.ofRepoId(metasfreshId.get().getValue());
+					candidate.bankAccountId(bankAccountId);
+				}
+			}
+		}
+	}
+
 
 	@Nullable
 	private ProductPrice createProductPriceOrNull(
@@ -495,12 +528,11 @@ public class CreateInvoiceCandidatesService
 				productId,
 				item);
 
-		final ProductPrice price = ProductPrice.builder()
+        return ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
 				.productId(productId)
 				.uomId(priceUomId)
 				.build();
-		return price;
 	}
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)

@@ -3,7 +3,7 @@ package de.metas.handlingunits.weighting;
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -65,7 +65,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -99,7 +99,7 @@ public class WeightHUCommandTest
 	public void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
@@ -144,7 +144,7 @@ public class WeightHUCommandTest
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docSubType(InventoryDocSubType.SingleHUInventory.getDocSubType())
 				.name("inventory")
 				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());

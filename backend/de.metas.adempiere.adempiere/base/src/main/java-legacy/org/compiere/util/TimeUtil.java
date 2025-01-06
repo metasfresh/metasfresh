@@ -3,6 +3,7 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -12,6 +13,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -24,9 +26,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Period;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
@@ -594,7 +598,7 @@ public class TimeUtil
 	{
 		return (int)LocalDateAndOrgId.daysBetween(start, end);
 	}
-	
+
 	/**
 	 * Calculate the number of days between start and end.
 	 *
@@ -1224,6 +1228,11 @@ public class TimeUtil
 		return asTimestamp(obj, null);
 	}
 
+	public static Timestamp asTimestamp(@Nullable final ZonedDateTime zdt)
+	{
+		return zdt != null ? asTimestampNotNull(zdt) : null;
+	}
+
 	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1241,6 +1250,10 @@ public class TimeUtil
 		else if (obj instanceof LocalDateTime)
 		{
 			return Timestamp.valueOf((LocalDateTime)obj);
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)obj).toInstant());
 		}
 		else
 		{
@@ -1878,6 +1891,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static Instant asInstant(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;
@@ -1953,7 +1967,7 @@ public class TimeUtil
 		{
 			return null;
 		}
-		else if (String.valueOf(obj).equals(String.valueOf((Object)null)))
+		else if (StringUtils.asStringAndTrimBlankToNull(obj) == null)
 		{
 			return null;
 		}
@@ -1973,20 +1987,17 @@ public class TimeUtil
 		{
 			return ((Date)obj).toInstant();
 		}
-		else if (obj instanceof LocalDateTime)
+		else if (obj instanceof final LocalDateTime localDateTime)
 		{
-			final LocalDateTime localDateTime = (LocalDateTime)obj;
-			return localDateTime.atZone(zoneId).toInstant();
+            return localDateTime.atZone(zoneId).toInstant();
 		}
-		else if (obj instanceof LocalDate)
+		else if (obj instanceof final LocalDate localDate)
 		{
-			final LocalDate localDate = (LocalDate)obj;
-			return localDate.atStartOfDay(zoneId).toInstant();
+            return localDate.atStartOfDay(zoneId).toInstant();
 		}
-		else if (obj instanceof LocalTime)
+		else if (obj instanceof final LocalTime localTime)
 		{
-			final LocalTime localTime = (LocalTime)obj;
-			return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
+            return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof XMLGregorianCalendar)
 		{
@@ -2007,10 +2018,6 @@ public class TimeUtil
 		{
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
-		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else
 		{
@@ -2336,4 +2343,48 @@ public class TimeUtil
 
 		return !range1.intersection(range2).isEmpty();
 	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
+	{
+		if(from.isEqual(to))
+		{
+			return 0;
+		}
+		if (to.isBefore(from))
+		{
+			return getDaysBetween360(to, from) * -1;
+		}
+		ZonedDateTime dayFrom = from;
+		ZonedDateTime dayTo = to;
+
+		if (dayFrom.getDayOfMonth() == 31)
+		{
+			dayFrom = dayFrom.withDayOfMonth(30);
+		}
+		if (dayTo.getDayOfMonth() == 31)
+		{
+			dayTo = dayTo.withDayOfMonth(30);
+		}
+
+		final long months = ChronoUnit.MONTHS.between(
+				YearMonth.from(dayFrom), YearMonth.from(dayTo));
+
+		final int daysLeft = dayTo.getDayOfMonth() - dayFrom.getDayOfMonth();
+
+		return 30 * months + daysLeft;
+	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final Instant from, @NonNull final Instant to)
+	{
+		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
+	}
+
 }    // TimeUtil

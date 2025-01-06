@@ -23,20 +23,24 @@ package de.metas.edi.sscc18;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
-import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
-import de.metas.inout.impl.InOutBL;
+import de.metas.handlingunits.generichumodel.PackagingCodeId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -74,10 +78,10 @@ public class DesadvLineSSCC18Generator
 	// services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final InOutBL inOutBL = Services.get(InOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
 	private final IDesadvBL desadvBL;
-	private final EDIDesadvPackRepository ediDesadvPackRepository;
+	private final EDIDesadvPackService ediDesadvPackService;
 
 	//
 	// Parameters
@@ -85,6 +89,11 @@ public class DesadvLineSSCC18Generator
 	 * For an {@link I_EDI_DesadvLine}, shall we also print the existing labels?
 	 */
 	private final boolean printExistingLabels;
+
+	/**
+	 * Needed because we need to set the packing-GTIN according to this bpartner's packing-material
+	 */
+	private final BPartnerId bpartnerId;
 
 	//
 	// status
@@ -97,13 +106,15 @@ public class DesadvLineSSCC18Generator
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
 			@NonNull final IDesadvBL desadvBL,
-			@NonNull final EDIDesadvPackRepository ediDesadvPackRepository,
-			final boolean printExistingLabels)
+			final boolean printExistingLabels,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final EDIDesadvPackService ediDesadvPackService)
 	{
 		this.sscc18CodeBL = sscc18CodeService;
 		this.desadvBL = desadvBL;
-		this.ediDesadvPackRepository = ediDesadvPackRepository;
 		this.printExistingLabels = printExistingLabels;
+		this.bpartnerId = bpartnerId;
+		this.ediDesadvPackService = ediDesadvPackService;
 	}
 
 	/**
@@ -142,11 +153,12 @@ public class DesadvLineSSCC18Generator
 			else
 			{
 				final I_EDI_DesadvLine desadvLine = desadvLineLabels.getEDI_DesadvLine();
+				final I_M_HU_PI_Item_Product tuPIItemProduct = desadvLineLabels.getTuPIItemProduct();
 
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys);
+				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvPack);
 			}
 		}
@@ -199,7 +211,10 @@ public class DesadvLineSSCC18Generator
 	 * <p>
 	 * The SSCC18 code will be generated.
 	 */
-	private EDIDesadvPack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private EDIDesadvPack generateDesadvLineSSCC(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final LUQtys luQtys,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
@@ -207,23 +222,30 @@ public class DesadvLineSSCC18Generator
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
 		// Create SSCC record
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys);
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys, tuPIItemProduct);
+
+		// PackagingCodes and PackagingGTINs
+		final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
+				.seqNo(1)
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)
+				.huPackagingCodeID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID))
+				.gtinPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback())
 				.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequest)
 				.build();
 
-		return ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
+		return ediDesadvPackService.createDesadvPack(createEDIDesadvPackRequest);
 	}
 
 	@NonNull
-	private CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
+	private CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
 			@NonNull final I_EDI_DesadvLine desadvLine,
-			@NonNull final LUQtys luQtys)
+			@NonNull final LUQtys luQtys,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		final UomId stockUOMId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
 		final Quantity qtyCUsPerTU = Quantitys.of(luQtys.getQtyCUsPerTU(), stockUOMId);
@@ -269,14 +291,19 @@ public class DesadvLineSSCC18Generator
 			qtyCUPerLUinInvoiceUOM = null;
 		}
 
-		return CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
+				.line(desadvLine.getLine())
 				.qtyCUsPerTU(qtyCUsPerTU.toBigDecimal())
 				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
 				.qtyCUsPerLU(qtyCUsPerLU.toBigDecimal())
 				.movementQtyInStockUOM(qtyCUsPerLU.toBigDecimal())
 				.qtyCUPerTUinInvoiceUOM(qtyCUPerTUinInvoiceUOM)
-				.qtyCUsPerLUinInvoiceUOM(qtyCUPerLUinInvoiceUOM)
+				.qtyCUsPerLUinInvoiceUOM(qtyCUPerLUinInvoiceUOM);
+
+		ediDesadvPackService.setPackRecordPackagingCodeAndGTIN(createEDIDesadvPackItemRequestBuilder, tuPIItemProduct, bpartnerId, desadvLine);
+
+		return createEDIDesadvPackItemRequestBuilder
 				.build();
 	}
 

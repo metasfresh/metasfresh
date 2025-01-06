@@ -31,7 +31,6 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
@@ -40,6 +39,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -55,7 +55,6 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -74,8 +73,6 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 
-	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -90,6 +87,17 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		this.notificationService = notificationService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.contractLogDAO = contractLogDAO;
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest createLogRequest)
+	{
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final ShippingNotificationId shippingNotificationId = ShippingNotificationId.ofRepoId(notificationLine.getM_Shipping_Notification_ID());
+
+		final boolean isProforma = notificationService.isProformaShippingNotification(shippingNotificationId);
+		return (getLogEntryDocumentType().isShippingNotification() && !isProforma) || (getLogEntryDocumentType().isProformaShippingNotification() && isProforma);
 	}
 
 	@Override
@@ -111,13 +119,13 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 
 		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
-		final LocalDateAndOrgId transactionDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
+		final LocalDateAndOrgId physiscalClearanceDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(createLogRequest.getModularContractSettings().getRawProductId(), yearAndCalendarId)
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
+		final ProductPrice productPrice = getProductPrice(createLogRequest, OrderLineId.ofRepoId(notificationLine.getC_OrderLine_ID()));
 
 		final BPartnerId warehouseBPartnerId = wrapper.getWarehouseBPartnerId(warehouseDAO);
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -128,22 +136,34 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 				.invoicingBPartnerId(warehouseBPartnerId)
 				.warehouseId(wrapper.getWarehouseId())
 				.initialProductId(productId)
-				.productId(contractSpecificPrice.getProductId())
+				.productId(productPrice.getProductId())
 				.productName(createLogRequest.getProductName())
 				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
 				.soTrx(getSOTrx())
 				.processed(false)
+				.isBillable(isBillable())
 				.quantity(quantity)
-				.transactionDate(transactionDate)
+				.transactionDate(physiscalClearanceDate)
+				.physicalClearanceDate(physiscalClearanceDate)
 				.year(wrapper.getHarvestingYearId())
 				.description(description)
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId)
-				.priceActual(contractSpecificPrice)
-				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
+				.priceActual(productPrice)
+				.amount(productPrice.computeAmount(quantity, uomConversionBL))
 				.build());
+	}
+
+	protected ProductPrice getProductPrice(@NonNull final CreateLogRequest createLogRequest, @NonNull final OrderLineId orderLineId)
+	{
+		return getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
+	}
+
+	protected boolean isBillable()
+	{
+		return true;
 	}
 
 	@Override
@@ -171,7 +191,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 						.build());
 	}
 
-	public abstract SOTrx getSOTrx();
+	protected abstract SOTrx getSOTrx();
 
 	private record NotificationAndLineWrapper(
 			@NonNull I_M_Shipping_Notification notification,
@@ -185,11 +205,6 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		public ProductId getProductId()
 		{
 			return ProductId.ofRepoId(notificationLine.getM_Product_ID());
-		}
-
-		public BPartnerId getBPartnerId()
-		{
-			return BPartnerId.ofRepoId(notification.getC_BPartner_ID());
 		}
 
 		public TableRecordReference getLineReference()

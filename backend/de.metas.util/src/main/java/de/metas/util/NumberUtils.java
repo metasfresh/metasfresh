@@ -45,6 +45,9 @@ public final class NumberUtils
 	{
 	}
 
+	private static final BigDecimal TWENTY = new BigDecimal("20");
+
+
 	/**
 	 * Remove trailing zeros after decimal separator
 	 *
@@ -146,6 +149,7 @@ public final class NumberUtils
 		return asBigDecimal(value, defaultValue, failIfUnparsable);
 	}
 
+	@Nullable
 	private static BigDecimal asBigDecimal(
 			@Nullable final Object value,
 			@Nullable final BigDecimal defaultValue,
@@ -368,4 +372,11 @@ public final class NumberUtils
 		return 0;
 	}
 
+	@NonNull
+	public static BigDecimal roundTo5Cent(@NonNull final BigDecimal initialValue)
+	{
+		final BigDecimal multiplyBy20 = initialValue.multiply(TWENTY);
+		final BigDecimal intPart = multiplyBy20.setScale(0, RoundingMode.HALF_UP);
+		return intPart.divide(TWENTY);
+	}
 }

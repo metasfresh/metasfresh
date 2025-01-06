@@ -6,6 +6,7 @@ Feature: Call order contract
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned
 
     And metasfresh contains M_PricingSystems
       | Identifier             |
@@ -38,12 +39,12 @@ Feature: Call order contract
       | bpartnerLocation_1 | 1234312345487 | bpartner_1               | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
-      | callOrderConditions                 | CallOrderTest_so | CallOrder       | callOrderPricingSystem            | Ca                       |
+      | Identifier          | Name             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
+      | callOrderConditions | CallOrderTest_so | CallOrder       | callOrderPricingSystem            | Ca                       |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.C_BPartner_Location_ID.Identifier |
-      | order_1    | true    | bpartner_1               | 2022-03-03  | SOO             | SO             | bpartnerLocation_1                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.C_BPartner_Location_ID.Identifier |OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-03  | SOO             | SO             | bpartnerLocation_1                    |testPOReference |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | orderLine_1 | order_1               | call_order_product      | 1000       | callOrderConditions                     |
@@ -59,8 +60,8 @@ Feature: Call order contract
       | orderLine_1               | order_1               | 2022-03-03  | call_order_product      | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual |
-      | callOrder_contract_1          | callOrderConditions                 | bpartner_1                  | call_order_product      | orderLine_1                        | order_1                        | call_order_product          | PCE                   | 1000                  | 2.00            |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual |OPT.POReference|
+      | callOrder_contract_1          | callOrderConditions                 | bpartner_1                  | call_order_product      | orderLine_1                        | order_1                        | call_order_product          | PCE                   | 1000                  | 2.00            |testPOReference|
 
     And validate created C_CallOrderSummary:
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | IsSOTrx |
@@ -95,6 +96,10 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 2              |
 
+    And after not more than 120s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_1 | callOrderLine_1           | N             |
+
     When the order identified by callOrder_1 is reactivated
 
     Then validate C_CallOrderDetail for callOrderSummary_1:
@@ -111,12 +116,12 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
-    When 'generate shipments' process is invoked
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | schedule_1                       | D            | false               | false       | 2                                                |
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | schedule_1                       | D            | false               | false       | 2                                               |
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | schedule_1                       | shipment_1            |
@@ -164,7 +169,7 @@ Feature: Call order contract
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_1                       | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -318,8 +323,8 @@ Feature: Call order contract
       | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
-      | callOrderConditions_PO              | callOrderConditions_po | CallOrder       | callOrderPricingSystem            | Ca                       |
+      | Identifier             | Name                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
+      | callOrderConditions_PO | callOrderConditions_po | CallOrder       | callOrderPricingSystem            | Ca                       |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference         |
@@ -375,6 +380,10 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_po              | callOrderLine_po              | 2              |
 
+    And after not more than 120s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSchedule_PO              | callOrder_po          | callOrderLine_po          | bp_callOrderPO           | bp_callOrderPO_Location           | call_order_product_PO   | 2          | warehouseStd              |
+
     When the order identified by callOrder_po is reactivated
 
     Then validate C_CallOrderDetail for callOrderSummary_1:
@@ -391,12 +400,12 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_po              | callOrderLine_po              | 8              |
 
-    And after not more than 60s, M_ReceiptSchedule are found:
+    And after not more than 120s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | callOrder_po          | callOrderLine_po          | bp_callOrderPO           | bp_callOrderPO_Location           | call_order_product_PO   | 8          | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | hu                 | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 6     | huItemPurchaseProduct              | huPackingLU                  |
+      | huLuTuConfig                          | hu                 | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 6           | huItemPurchaseProduct              | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu                 | receiptSchedule_PO              | material_receipt_1    |
@@ -442,7 +451,7 @@ Feature: Call order contract
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | hu_1               | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 8     | huItemPurchaseProduct              | huPackingLU                  |
+      | huLuTuConfig                          | hu_1               | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 8           | huItemPurchaseProduct              | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_1               | receiptSchedule_PO              | material_receipt_3    |

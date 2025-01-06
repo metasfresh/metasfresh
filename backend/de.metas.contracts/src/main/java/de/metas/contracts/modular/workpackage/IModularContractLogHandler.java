@@ -28,6 +28,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ProductPriceWithFlags;
+import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -52,6 +53,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 public interface IModularContractLogHandler
 {
@@ -100,6 +103,11 @@ public interface IModularContractLogHandler
 				.amount(priceActual.computeAmount(logEntryQuantity, uomConverter))
 				.priceActual(priceActual)
 				.build();
+	}
+
+	default boolean isSuitableForPriceUpdate()
+	{
+		return true;
 	}
 
 	@NonNull
@@ -167,15 +175,16 @@ public interface IModularContractLogHandler
 			return moduleConfig.isCostsType();
 		}
 
-		public boolean isServicesType()
-		{
-			return moduleConfig.isServicesType();
-		}
-
 		@NonNull
 		public ProductId getProductId()
 		{
 			return moduleConfig.getProductId();
+		}
+
+		@Nullable
+		public ColumnOption getColumnOption()
+		{
+			return getModuleConfig().getModularContractType().getColumnOption();
 		}
 	}
 

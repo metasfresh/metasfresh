@@ -1,7 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for ModCntr_Specific_Price
  *  @author metasfresh (generated) 
@@ -190,6 +192,27 @@ public interface I_ModCntr_Specific_Price
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Average Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAveragePrice (boolean IsAveragePrice);
+
+	/**
+	 * Get Average Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAveragePrice();
+
+	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_IsAveragePrice = new ModelColumn<>(I_ModCntr_Specific_Price.class, "IsAveragePrice", null);
+	String COLUMNNAME_IsAveragePrice = "IsAveragePrice";
+
+	/**
 	 * Set Scale Price.
 	 *
 	 * <br>Type: YesNo
@@ -210,15 +233,26 @@ public interface I_ModCntr_Specific_Price
 	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_IsScalePrice = new ModelColumn<>(I_ModCntr_Specific_Price.class, "IsScalePrice", null);
 	String COLUMNNAME_IsScalePrice = "IsScalePrice";
 
+	/**
+	 * Set Min Value.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMinValue (@Nullable BigDecimal MinValue);
 
-	/** Column name MinValue */
-	public static final String COLUMNNAME_MinValue = "MinValue";
+	/**
+	 * Get Min Value.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMinValue();
 
-	/** Set Min Value	  */
-	public void setMinValue (BigDecimal MinValue);
-
-	/** Get Min Value	  */
-	public BigDecimal getMinValue();
+	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_MinValue = new ModelColumn<>(I_ModCntr_Specific_Price.class, "MinValue", null);
+	String COLUMNNAME_MinValue = "MinValue";
 
 	/**
 	 * Set Modules.

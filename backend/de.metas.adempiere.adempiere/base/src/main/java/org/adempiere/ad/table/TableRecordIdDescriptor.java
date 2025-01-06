@@ -4,7 +4,6 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.table.api.TableAndColumnName;
 import org.jetbrains.annotations.NotNull;
 
 /*
@@ -73,18 +72,6 @@ public class TableRecordIdDescriptor
 				.recordIdColumnName(recordIdColumnName)
 				.build();
 	}
-
-	public static TableRecordIdDescriptor of(
-			@NonNull final String originTableName,
-			@NonNull final TableAndColumnName tableAndRecordIdColumnName)
-	{
-		return builder()
-				.originTableName(originTableName)
-				.targetTableName(tableAndRecordIdColumnName.getTableNameAsString())
-				.recordIdColumnName(tableAndRecordIdColumnName.getColumnNameAsString())
-				.build();
-	}
-
 
 	@NonNull String originTableName;
 	@NonNull String recordIdColumnName;

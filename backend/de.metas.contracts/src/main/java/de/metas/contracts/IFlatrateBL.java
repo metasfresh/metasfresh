@@ -35,8 +35,8 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -121,6 +121,12 @@ public interface IFlatrateBL extends ISingletonService
 
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
+	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
+
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
 	/**
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
@@ -187,7 +193,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return the newly created and completed term; never returns <code>null</code>
 	 * @throws AdempiereException in case of any error
 	 */
-	I_C_Flatrate_Term createTerm(CreateFlatrateTermRequest createFlatrateTermRequest);
+	I_C_Flatrate_Term createTerm(@NonNull CreateFlatrateTermRequest createFlatrateTermRequest);
 
 	/**
 	 * Complete given contract.
@@ -262,6 +268,9 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@Nullable
+	ProductPrice extractPriceActualById(@NonNull FlatrateTermId flatrateTermId);
 
 	@Nullable
 	ProductPrice extractPriceActual(@NonNull I_C_Flatrate_Term contract);

@@ -22,17 +22,20 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
-import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
+import de.metas.contracts.modular.interim.invoice.service.impl.InterimFlatrateTermService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineQuery;
@@ -56,16 +59,17 @@ import static de.metas.contracts.modular.ModelAction.COMPLETED;
 @RequiredArgsConstructor
 public class C_Flatrate_Term
 {
-	private final BPartnerInterimContractService bPartnerInterimContractService;
-	private final ModularContractService modularContractService;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	private final ModularContractPriceService modularContractPriceService;
+	@NonNull private final BPartnerInterimContractService bPartnerInterimContractService;
+	@NonNull private final ModularContractService modularContractService;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+	@NonNull private final ModularContractPriceService modularContractPriceService;
+	@NonNull private final InterimFlatrateTermService interimFlatrateTermService;
+	@NonNull private final ModularContractComputingMethodHandlerRegistry computingMethodHandlerRegistry;
 
-	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
+	@NonNull private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInterimContractIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
@@ -81,21 +85,21 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
 		if (!settings.getSoTrx().isPurchase())
 		{
 			return;
 		}
 
-		if (!settings.isMatching(ComputingMethodType.INTERIM_CONTRACT))
+		if (!settings.contains(ComputingMethodType.INTERIM_CONTRACT))
 		{
 			return;
 		}
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
-				flatrateTermRecord.getStartDate(),
-				flatrateTermRecord.getEndDate()
+		interimFlatrateTermService.create(flatrateTermRecord,
+										  flatrateTermRecord.getStartDate(),
+										  flatrateTermRecord.getEndDate()
 		);
 	}
 
@@ -131,6 +135,7 @@ public class C_Flatrate_Term
 						.tableRecordReference(TableRecordReference.of(inoutLine))
 						.modelAction(COMPLETED)
 						.userInChargeId(Env.getLoggedUserId())
+						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
 						.build())
 				);
 	}
@@ -172,7 +177,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord);
+		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord, computingMethodHandlerRegistry);
 	}
 
 }

@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -113,6 +114,8 @@ import java.util.Optional;
 
 	@Setter
 	private boolean isTakeDocTypeFromPool;
+	@Getter @Setter
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	// 06630
 	@Setter
@@ -178,10 +181,16 @@ import java.util.Optional;
 	YearId yearId;
 
 	@Setter @Getter @Nullable
+	ModularContractSettingsId modularContractSettingsId;
+
+	@Setter @Getter @Nullable
 	WarehouseId warehouseId;
 
 	@Getter @Setter @Nullable
 	private AuctionId auctionId;
+
+	@Getter @Setter @Nullable
+	private BankAccountId orgBankAccountId;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -306,7 +315,7 @@ import java.util.Optional;
 	}
 
 	@Override
-	@Nullable
+	@NonNull
 	public Optional<DocTypeId> getDocTypeInvoiceId()
 	{
 		return Optional.ofNullable(docTypeInvoiceId);

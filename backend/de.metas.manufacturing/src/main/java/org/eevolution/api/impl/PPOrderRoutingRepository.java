@@ -15,6 +15,7 @@ import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -291,6 +292,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()), PPAlwaysAvailableToUser.DEFAULT))
 				//
 				.scannedQRCode(GlobalQRCode.ofNullableString(record.getScannedQRCode()))
+				//
+				.rawMaterialsIssueStrategy(RawMaterialsIssueStrategy.ofCodeOrDefault(record.getRawMaterialsIssueStrategy()))
 				//
 				.build();
 	}
@@ -590,6 +593,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
 
 		record.setScannedQRCode(from.getScannedQRCode() != null ? from.getScannedQRCode().getAsString() : null);
+
+		record.setRawMaterialsIssueStrategy(RawMaterialsIssueStrategy.toCode(from.getRawMaterialsIssueStrategy()));
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 768966789L;
+	private static final long serialVersionUID = -1741344544L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -34,6 +34,27 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+	/** 
+	 * ColumnName AD_Reference_ID=541871
+	 * Reference name: UserElementNumberX
+	 */
+	public static final int COLUMNNAME_AD_Reference_ID=541871;
+	/** UserElementNumber1 = UserElementNumber1 */
+	public static final String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+	/** UserElementNumber2 = UserElementNumber2 */
+	public static final String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+	@Override
+	public void setColumnName (final @Nullable java.lang.String ColumnName)
+	{
+		set_Value (COLUMNNAME_ColumnName, ColumnName);
+	}
+
+	@Override
+	public java.lang.String getColumnName() 
+	{
+		return get_ValueAsString(COLUMNNAME_ColumnName);
+	}
+
 	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
@@ -44,6 +65,18 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override
@@ -68,42 +101,6 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final int MODULARCONTRACTHANDLERTYPE_AD_Reference_ID=541838;
 	/** Interim_Contract = Interim */
 	public static final String MODULARCONTRACTHANDLERTYPE_Interim_Contract = "Interim";
-	/** InventoryLine_Modular_NotUsed = InventoryLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_InventoryLine_Modular_NotUsed = "InventoryLine_Modular";
-	/** MaterialReceiptLine_Interim_NotUsed = MaterialReceiptLine_Interim */
-	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Interim_NotUsed = "MaterialReceiptLine_Interim";
-	/** MaterialReceiptLine_Modular_NotUsed = MaterialReceiptLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Modular_NotUsed = "MaterialReceiptLine_Modular";
-	/** PPCostCollector_Modular_NotUsed = PPCostCollector_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_PPCostCollector_Modular_NotUsed = "PPCostCollector_Modular";
-	/** PurchaseInvoiceLine_Interim_NotUsed = PurchaseInvoiceLine_Interim */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseInvoiceLine_Interim_NotUsed = "PurchaseInvoiceLine_Interim";
-	/** PurchaseModularContract_NotUsed = PurchaseModularContract */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseModularContract_NotUsed = "PurchaseModularContract";
-	/** PurchaseOrderLine_Modular_NotUsed = PurchaseOrderLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseOrderLine_Modular_NotUsed = "PurchaseOrderLine_Modular";
-	/** SOLineForPO_Modular_NotUsed = SOLineForPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SOLineForPO_Modular_NotUsed = "SOLineForPO_Modular";
-	/** SalesContractProForma_Modular_NotUsed = SalesContractProForma_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesContractProForma_Modular_NotUsed = "SalesContractProForma_Modular";
-	/** SalesInvoiceLine_Modular_NotUsed = SalesInvoiceLine_Modular_NotUsed */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesInvoiceLine_Modular_NotUsed = "SalesInvoiceLine_Modular_NotUsed";
-	/** SalesModularContract_NotUsed = SalesModularContract */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesModularContract_NotUsed = "SalesModularContract";
-	/** SalesOrderLine_Modular_NotUsed = SalesOrderLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLine_Modular_NotUsed = "SalesOrderLine_Modular";
-	/** SalesOrderLineProForma_Modular_NotUsed = SalesOrderLineProForma_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProForma_Modular_NotUsed = "SalesOrderLineProForma_Modular";
-	/** SalesOrderLineProFormaPO_Modular_NotUsed = SalesOrderLineProFormaPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProFormaPO_Modular_NotUsed = "SalesOrderLineProFormaPO_Modular";
-	/** ShipmentLineForPO_Modular_NotUsed = ShipmentLineForPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForPO_Modular_NotUsed = "ShipmentLineForPO_Modular";
-	/** ShipmentLineForSO_Modular_NotUsed = ShipmentLineForSO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForSO_Modular_NotUsed = "ShipmentLineForSO_Modular";
-	/** ShippingNotificationForPurchase_Modular_NotUsed = ShippingNotificationForPurchase_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular_NotUsed = "ShippingNotificationForPurchase_Modular";
-	/** ShippingNotificationForSales_Modular_NotUsed = ShippingNotificationForSales_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular_NotUsed = "ShippingNotificationForSales_Modular";
 	/** ImportLog_NotUsed = ImportLog */
 	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed = "ImportLog";
 	/** Receipt = Receipt */
@@ -136,7 +133,25 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceRawProduct = "DefinitiveInvoiceRawProduct";
 	/** DefinitiveInvoiceProcessedProduct = DefinitiveInvoiceProcessedProduct */
 	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct = "DefinitiveInvoiceProcessedProduct";
-    @Override
+	/** SalesInformativeLogs = SalesInformativeLogs */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesInformativeLogs = "SalesInformativeLogs";
+	/** Sales = Sales */
+	public static final String MODULARCONTRACTHANDLERTYPE_Sales = "Sales";
+	/** SalesAV = SalesAV */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesAV = "SalesAV";
+	/** SalesStorageCost = SalesStorageCost */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesStorageCost = "SalesStorageCost";
+	/** SalesAverageAVOnShippedQty = SalesAverageAVOnShippedQty */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesAverageAVOnShippedQty = "SalesAverageAVOnShippedQty";
+	/** SalesOnRawProductShippedQty = SalesOnRawProductShippedQty */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnRawProductShippedQty = "SalesOnRawProductShippedQty";
+	/** SalesOnProcessedProductShippedQty = SalesOnProcessedProductShippedQty */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnProcessedProductShippedQty = "SalesOnProcessedProductShippedQty";
+	/** DefinitiveInvoiceAverageAVOnShippedQty = DefinitiveInvoiceAverageAVOnShippedQty */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceAverageAVOnShippedQty = "DefinitiveInvoiceAverageAVOnShippedQty";
+	/** DefinitiveInvoiceStorageCost = DefinitiveInvoiceStorageCost */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceStorageCost = "DefinitiveInvoiceStorageCost";
+	@Override
 	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);
@@ -170,28 +185,5 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
-	}
-
-
-	/**
-	 * ColumnName  AD_Reference_ID=541871
-	 * Reference name: ColumnName
-	 */
-	public static final int ColumnName_AD_Reference_ID=541871;
-	/** UserElementNumber1 = UserElementNumber1 */
-	public static final String ColumnName_UserElementNumber1 = "UserElementNumber1";
-	/** UserElementNumber2 = UserElementNumber2 */
-	public static final String ColumnName_UserElementNumber2 = "UserElementNumber2";
-
-	@Override
-	public void setColumnName(final java.lang.String ColumnName)
-	{
-		set_Value(COLUMNNAME_ColumnName, ColumnName);
-	}
-
-	@Override
-	public final java.lang.String getColumnName()
-	{
-		return get_ValueAsString(COLUMNNAME_ColumnName);
 	}
 }

@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -181,8 +182,24 @@ public class ShipmentScheduleWithHUSupportingServices
 		return huShipmentScheduleBL().getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
 	}
 
-	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huMaterialItem)
+	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item item)
 	{
-		return handlingUnitsBL.getPIItem(huMaterialItem);
+		return handlingUnitsBL.getPIItem(item);
 	}
+
+	public I_M_HU_PI_Item getPIItemMaterial(final I_M_HU_PI_Version tuPIVersion)
+	{
+		return handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion);
+	}
+
+	public boolean isAggregateHU(final I_M_HU tuOrVhu)
+	{
+		return handlingUnitsBL.isAggregateHU(tuOrVhu);
+	}
+
+	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU tuOrVhu)
+	{
+		return handlingUnitsBL.getEffectivePIVersion(tuOrVhu);
+	}
+
 }

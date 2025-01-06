@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -21,7 +22,7 @@ public interface I_C_OrderLine
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -55,7 +56,7 @@ public interface I_C_OrderLine
 	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -65,7 +66,7 @@ public interface I_C_OrderLine
 	 * Get Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -77,7 +78,7 @@ public interface I_C_OrderLine
 	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -87,7 +88,7 @@ public interface I_C_OrderLine
 	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -161,7 +162,7 @@ public interface I_C_OrderLine
 	 * Set Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -171,7 +172,7 @@ public interface I_C_OrderLine
 	 * Get Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -202,7 +203,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -211,7 +212,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -222,7 +223,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -231,7 +232,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -267,7 +268,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set C_BPartner_Vendor_ID.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -276,7 +277,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get C_BPartner_Vendor_ID.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -288,7 +289,7 @@ public interface I_C_OrderLine
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -298,7 +299,7 @@ public interface I_C_OrderLine
 	 * Get Campaign.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -314,7 +315,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Costs.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -323,7 +324,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Costs.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -389,7 +390,7 @@ public interface I_C_OrderLine
 	 * Set Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -399,7 +400,7 @@ public interface I_C_OrderLine
 	 * Get Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -410,7 +411,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Contract Terms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -419,7 +420,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Contract Terms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -431,7 +432,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -440,7 +441,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -551,7 +552,7 @@ public interface I_C_OrderLine
 	 * Set Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -561,7 +562,7 @@ public interface I_C_OrderLine
 	 * Get Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -573,7 +574,7 @@ public interface I_C_OrderLine
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -583,7 +584,7 @@ public interface I_C_OrderLine
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -595,7 +596,7 @@ public interface I_C_OrderLine
 	 * Set Project Phase.
 	 * Phase of a Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -605,7 +606,7 @@ public interface I_C_OrderLine
 	 * Get Project Phase.
 	 * Phase of a Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -622,7 +623,7 @@ public interface I_C_OrderLine
 	 * Set Project Task.
 	 * Actual Project Task in a Phase
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -632,7 +633,7 @@ public interface I_C_OrderLine
 	 * Get Project Task.
 	 * Actual Project Task in a Phase
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -662,7 +663,7 @@ public interface I_C_OrderLine
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -674,7 +675,7 @@ public interface I_C_OrderLine
 	 * Set Tax Category.
 	 * Tax Category
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -684,7 +685,7 @@ public interface I_C_OrderLine
 	 * Get Tax Category.
 	 * Tax Category
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -696,7 +697,7 @@ public interface I_C_OrderLine
 	 * Set Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -706,7 +707,7 @@ public interface I_C_OrderLine
 	 * Get Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -717,7 +718,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set BPartner UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -726,7 +727,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get BPartner UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -738,7 +739,7 @@ public interface I_C_OrderLine
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -748,7 +749,7 @@ public interface I_C_OrderLine
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1398,6 +1399,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
+	 * Set Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInPriceUOM (boolean IsManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualQtyInPriceUOM = new ModelColumn<>(I_C_OrderLine.class, "IsManualQtyInPriceUOM", null);
+	String COLUMNNAME_IsManualQtyInPriceUOM = "IsManualQtyInPriceUOM";
+
+	/**
 	 * Set Goods on consignment.
 	 *
 	 * <br>Type: YesNo
@@ -1737,7 +1759,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Promotion.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1746,7 +1768,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Promotion.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1788,7 +1810,7 @@ public interface I_C_OrderLine
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1798,7 +1820,7 @@ public interface I_C_OrderLine
 	 * Get Shipper.
 	 * Method or manner of product delivery
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1814,7 +1836,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Destination warehouse locator.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1823,7 +1845,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Destination warehouse locator.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1835,7 +1857,7 @@ public interface I_C_OrderLine
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1845,7 +1867,7 @@ public interface I_C_OrderLine
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1967,7 +1989,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Manufacturing Cost Collector.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1976,7 +1998,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Manufacturing Cost Collector.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2210,7 +2232,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set Price Unit.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2219,7 +2241,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get Price Unit.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2291,6 +2313,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_ProfitPriceActual = new ModelColumn<>(I_C_OrderLine.class, "ProfitPriceActual", null);
 	String COLUMNNAME_ProfitPriceActual = "ProfitPriceActual";
+
+	/**
+	 * Set Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchase_Modular_Flatrate_Term_ID (int Purchase_Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract Purchase.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchase_Modular_Flatrate_Term_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Purchase_Modular_Flatrate_Term_ID = new ModelColumn<>(I_C_OrderLine.class, "Purchase_Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Purchase_Modular_Flatrate_Term_ID = "Purchase_Modular_Flatrate_Term_ID";
 
 	/**
 	 * Set Shipped Qty.
@@ -2719,7 +2762,7 @@ public interface I_C_OrderLine
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -2731,7 +2774,7 @@ public interface I_C_OrderLine
 	 * Set User List 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2741,7 +2784,7 @@ public interface I_C_OrderLine
 	 * Get User List 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2752,7 +2795,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set User 2.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2761,7 +2804,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get User 2.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

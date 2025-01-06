@@ -32,7 +32,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -45,6 +44,7 @@ import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -79,7 +79,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -134,16 +133,16 @@ public class C_Flatrate_Term
 	@Init
 	public void initialize(final IModelValidationEngine engine)
 	{
-		if (Ini.isSwingClient() == false) // 03429: we only need to check this on server startup
+		if (!Ini.isSwingClient()) // 03429: we only need to check this on server startup
 		{
-			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
-			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
-			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
-			ensureDocTypesExist(I_C_DocType.DocSubType_CallOrder);
+			ensureDocTypesExist(DocSubType.Subscription);
+			ensureDocTypesExist(DocSubType.HoldingFee);
+			ensureDocTypesExist(DocSubType.FlatFee);
+			ensureDocTypesExist(DocSubType.CallOrder);
 		}
 	}
 
-	private void ensureDocTypesExist(final String docSubType)
+	private void ensureDocTypesExist(@NonNull final DocSubType docSubType)
 	{
 
 		final ClientId clientId = ClientId.METASFRESH;
@@ -169,30 +168,29 @@ public class C_Flatrate_Term
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
 							.docBaseType(DocBaseType.CustomerContract)
-							.docSubType(docSubType)
-							.adClientId(org.getAD_Client_ID())
-							.adOrgId(org.getAD_Org_ID())
-							.build());
+											 .docSubType(docSubType)
+											 .adClientId(org.getAD_Client_ID())
+											 .adOrgId(org.getAD_Org_ID())
+											 .build());
 			if (existingDocType.isPresent())
 			{
 				continue;
 			}
 
-			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
-			final String name = adReferenceService.retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+			final String name = adReferenceService.retrieveListNameTrl(DocSubType.AD_REFERENCE_ID, docSubType.getCode())
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
-					.ctx(localCtx)
-					.adOrgId(org.getAD_Org_ID())
-					.entityType(Contracts_Constants.ENTITY_TYPE)
-					.name(name)
-					.printName(name)
+											 .ctx(localCtx)
+											 .adOrgId(org.getAD_Org_ID())
+											 .entityType(Contracts_Constants.ENTITY_TYPE)
+											 .name(name)
+											 .printName(name)
 					.docBaseType(DocBaseType.CustomerContract)
-					.docSubType(docSubType)
-					.isSOTrx(true)
-					.newDocNoSequenceStartNo(10000)
+											 .docSubType(docSubType)
+											 .isSOTrx(true)
+											 .newDocNoSequenceStartNo(10000)
 					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
-					.build());
+											 .build());
 		}
 	}
 
@@ -269,7 +267,7 @@ public class C_Flatrate_Term
 			if (periodsOfTerm.isEmpty())
 			{
 				errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
-						new Object[] { term.getStartDate(), term.getEndDate() }));
+										new Object[] { term.getStartDate(), term.getEndDate() }));
 			}
 			else
 			{
@@ -277,7 +275,7 @@ public class C_Flatrate_Term
 				if (firstPeriodStartDate.compareTo(startDate) > 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-							new Object[] { term.getStartDate(), invoicingCal.getName() }));
+											new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
 
 				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
@@ -441,7 +439,9 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
+		final boolean isFlatFee = X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions());
+		final boolean isRepordedQty = X_C_Flatrate_Term.TYPE_FLATRATE_ReportedQuantity.equals(term.getType_Flatrate());
+		if (isFlatFee && !isRepordedQty)
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
 			{
@@ -482,7 +482,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void afterComplete(final I_C_Flatrate_Term term)
+	public void afterComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))

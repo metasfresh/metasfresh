@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interest.log;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.model.I_ModCntr_Log;
@@ -53,13 +54,13 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getModularContractLogEntryId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 
@@ -75,13 +76,13 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 
@@ -93,6 +94,16 @@ public class ModularLogInterestRepository
 	public void deleteByQuery(@NonNull final LogInterestQuery query)
 	{
 		getQueryBuilder(query).create().delete();
+	}
+
+	public void deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
+	{
+		queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+				.setJoinOr()
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimContract_ModCntr_Log_ID, logId)
+				.create()
+				.delete();
 	}
 
 	@NonNull
@@ -117,11 +128,11 @@ public class ModularLogInterestRepository
 				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
 				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
 				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
-				.interimInvoiceLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimInvoice_ModCntr_Log_ID()))
+				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimContract_ModCntr_Log_ID()))
 
 				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
 
-				.interestDays(interest.getInterestDays())
+				.interestDays((long)interest.getInterestDays())
 				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
 				.build();
 	}
@@ -133,6 +144,18 @@ public class ModularLogInterestRepository
 				.create()
 				.iterateAndStream()
 				.map(ModularLogInterestRepository::ofRecord);
+	}
+
+	@VisibleForTesting
+	public List<ModularLogInterest> getModularLogInterestsForRun(@NonNull final InterestRunId interestRunId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, interestRunId)
+				.create()
+				.stream()
+				.map(ModularLogInterestRepository::ofRecord)
+				.toList();
 	}
 
 	@NonNull

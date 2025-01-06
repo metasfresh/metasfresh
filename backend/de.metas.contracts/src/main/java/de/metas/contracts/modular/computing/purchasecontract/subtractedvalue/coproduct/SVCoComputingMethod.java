@@ -24,8 +24,9 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.co
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,13 +36,19 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class SVCoComputingMethod implements IComputingMethodHandler
+public class SVCoComputingMethod extends AbstractComputingMethodHandler
 {
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isPurchase();
 	}
 
 	@Override

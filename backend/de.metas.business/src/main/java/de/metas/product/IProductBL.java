@@ -24,14 +24,18 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -41,9 +45,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -81,6 +82,8 @@ public interface IProductBL extends ISingletonService
 	boolean isStocked(I_M_Product product);
 
 	boolean isStocked(@Nullable ProductId productId);
+
+	boolean isItemType(@Nullable ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 
@@ -207,7 +210,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
@@ -220,4 +232,22 @@ public interface IProductBL extends ISingletonService
 	@NonNull ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 
 	Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull ProductId productId);
+
+	/**
+	 * @return true if product is used in orders, invoices or shipments
+	 */
+    boolean isProductUsed(@NonNull ProductId productId);
+
+	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
+	Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull String queryString,
+			@NonNull ClientId clientId,
+			@NonNull QueryLimit limit);
 }

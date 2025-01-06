@@ -9,6 +9,7 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -233,9 +234,10 @@ public class HUTransformServiceReceiptCandidatesTests
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(tuToSplit,
-						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						QtyTU.ofString("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
 						data.piLU_Item_IFCO,
-						isOwnPackingMaterials);
+						isOwnPackingMaterials)
+				.getLURecords();
 
 		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
 		// data.helper.commitAndDumpHU(newLUs.get(0));
@@ -424,7 +426,6 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/1177
-	 *
 	 */
 	@Test
 	public void testMultipleActionsIssue1177()
@@ -517,7 +518,8 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		// "Split off 2 TUs on new LU" (from the screenshot we know that the new LU has the same PI as the existing one)
 		final List<I_M_HU> secondLUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.tuToNewLUs(aggregateTU, new BigDecimal("2"), piLU_Item_10_IFCOs, false);
+				.tuToNewLUs(aggregateTU, QtyTU.ofString("2"), piLU_Item_10_IFCOs, false)
+				.getLURecords();
 		assertThat(secondLUs.size(), is(1));
 		final I_M_HU secondLU = secondLUs.get(0);
 		// secondLU contains 2 x 4kg = 8kg
@@ -529,7 +531,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU);
 
 		// "Split off 1 TU on its own, without new LU"
-		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, BigDecimal.ONE);
+		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, QtyTU.ONE).getAllTURecords();
 		assertThat(singleNewTUs.size(), is(1));
 		final I_M_HU singleNewTU = singleNewTUs.get(0);
 		verifyQuantities(new BigDecimal("4"), new BigDecimal("1"), singleNewTU);
@@ -549,10 +551,6 @@ public class HUTransformServiceReceiptCandidatesTests
 	 * Iterates the given {@code hus} and verifies that the contained CU and TU quantities match the given {@code expectedQtyCU} and {@code expectedQtyTU}.
 	 * The method makes sure to count each HU and HU-storage only once.
 	 * The method also verifies that {@link I_M_ReceiptSchedule_Alloc} quantities match the CU qtys
-	 *
-	 * @param expectedQtyCU
-	 * @param expectedQtyTU
-	 * @param hus
 	 */
 	private void verifyQuantities(final BigDecimal expectedQtyCU, final BigDecimal expectedQtyTU, final I_M_HU... hus)
 	{

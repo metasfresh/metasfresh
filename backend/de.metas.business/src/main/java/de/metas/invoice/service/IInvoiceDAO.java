@@ -36,6 +36,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -83,6 +85,8 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
+
+	Amount retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
 
@@ -194,7 +198,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(SingleInvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
@@ -202,12 +206,17 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
-	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
-
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	@Nullable
 	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
+
+	ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull InvoiceMultiQuery multiQuery);
+	/**
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
+	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
+	 */
+	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 }

@@ -28,9 +28,10 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -40,6 +41,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -51,12 +53,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.InformativeLogs;
-
 @Component
 @RequiredArgsConstructor
-public class InformativeLogComputingMethod
-		implements IComputingMethodHandler
+public class InformativeLogComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -64,11 +63,7 @@ public class InformativeLogComputingMethod
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ModularContractProvider contractProvider;
 
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return InformativeLogs;
-	}
+	@NonNull @Getter private final ComputingMethodType computingMethodType = ComputingMethodType.PurchaseInformativeLogs;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)
@@ -111,6 +106,12 @@ public class InformativeLogComputingMethod
 			}
 			default -> {return false;}
 		}
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isPurchase();
 	}
 
 	@Override

@@ -39,6 +39,7 @@ public enum OutputType implements ReferenceListAwareEnum
 	Attach(X_AD_PrinterHW.OUTPUTTYPE_Attach),
 	Queue(X_AD_PrinterHW.OUTPUTTYPE_Queue),
 	Store(X_AD_PrinterHW.OUTPUTTYPE_Store),
+	Frontend(X_AD_PrinterHW.OUTPUTTYPE_Frontend),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<OutputType> index = ReferenceListAwareEnums.index(values());
@@ -52,4 +53,6 @@ public enum OutputType implements ReferenceListAwareEnum
 	public static boolean equals(@Nullable final OutputType type1, @Nullable final OutputType type2) {return Objects.equals(type1, type2);}
 
 	public boolean isStore() {return this == Store;}
+
+	public boolean isFrontend() {return this == Frontend;}
 }

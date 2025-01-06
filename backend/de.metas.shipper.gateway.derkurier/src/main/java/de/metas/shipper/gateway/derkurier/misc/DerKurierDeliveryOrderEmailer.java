@@ -3,8 +3,8 @@ package de.metas.shipper.gateway.derkurier.misc;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
@@ -15,6 +15,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,9 @@ public class DerKurierDeliveryOrderEmailer
 		{
 			return;
 		}
-		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxOrNull();
+		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxId()
+				.map(mailService::getMailboxById)
+				.orElseThrow(() -> new AdempiereException("No mailbox defined: " + shipperConfig));
 
 		sendAttachmentAsEmail(deliveryOrderMailBox, emailAddress, attachmentEntry);
 	}
@@ -119,15 +122,13 @@ public class DerKurierDeliveryOrderEmailer
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 		final String message = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage, new Object[] { csvDataString });
 
-		final EMail eMail = mailService.createEMail(
-				mailBox,
-				mailTo,
-				subject,
-				message,
-				false // html=false
-		);
-
-		mailService.send(eMail);
+		mailService.sendEMail(EMailRequest.builder()
+				.mailbox(mailBox)
+				.to(mailTo)
+				.subject(subject)
+				.message(message)
+				.html(false)
+				.build());
 
 		// we don't have an AD_Archive..
 		// final I_AD_User user = loadOutOfTrx(Env.getAD_User_ID(), I_AD_User.class);

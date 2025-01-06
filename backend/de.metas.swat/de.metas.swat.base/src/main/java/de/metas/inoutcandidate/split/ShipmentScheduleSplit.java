@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.split;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -51,4 +52,9 @@ public class ShipmentScheduleSplit
 		this.processed = true;
 		this.shipmentLineId = shipmentLineId;
 	}
+
+	@Nullable
+	public InOutId getShipmentId() {return shipmentLineId != null ? shipmentLineId.getInOutId() : null;}
+
+	public boolean isNotProcessed() {return !isProcessed();}
 }

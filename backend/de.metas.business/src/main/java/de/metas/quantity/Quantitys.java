@@ -163,7 +163,7 @@ public class Quantitys
 
 	/**
 	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
-	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
+	 * @return the sum of the given quantities; the result has the UOM of the first augent; conversion of the second augent is done as required.
 	 */
 	public Quantity add(
 			@Nullable final UOMConversionContext conversionCtx,
@@ -205,9 +205,20 @@ public class Quantitys
 	@Nullable
 	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
 	{
+		return toBigDecimalOr(quantity, null);
+	}
+
+	@NonNull
+	public static BigDecimal toBigDecimalOrZero(@Nullable final Quantity quantity)
+	{
+		return toBigDecimalOr(quantity, BigDecimal.ZERO);
+	}
+
+	private static BigDecimal toBigDecimalOr(@Nullable final Quantity quantity, @Nullable final BigDecimal defaultValue)
+	{
 		if (quantity == null)
 		{
-			return null;
+			return defaultValue;
 		}
 		return quantity.toBigDecimal();
 	}

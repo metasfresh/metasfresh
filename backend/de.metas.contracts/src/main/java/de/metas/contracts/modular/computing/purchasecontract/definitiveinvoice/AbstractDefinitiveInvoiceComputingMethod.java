@@ -23,11 +23,13 @@
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
@@ -36,8 +38,11 @@ import de.metas.inout.InOutLineId;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -47,6 +52,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
@@ -54,16 +60,19 @@ import org.compiere.model.I_M_InventoryLine;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_SALES_METHODS;
+
 @RequiredArgsConstructor
-public abstract class AbstractDefinitiveInvoiceComputingMethod implements IComputingMethodHandler
+public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractComputingMethodHandler
 {
+	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
-
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final ModularContractPriceService modularContractPriceService;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -84,6 +93,12 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 					.orElseThrow(() -> new AdempiereException("No M_Inventory found for line=" + recordRef));
 
 			return !inventoryBL.isReversal(inventory);
+		}
+		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
+		{
+			return computingMethodService.isFinalInvoiceLineForComputingMethod(
+					InvoiceLineId.ofRepoId(recordRef.getRecord_ID()),
+					PURCHASE_SALES_METHODS);
 		}
 
 		return false;
@@ -107,6 +122,7 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		{
 			case I_M_InOutLine.Table_Name -> getContractStreamForInOut(recordRef);
 			case I_M_InventoryLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInventory(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 			default -> Stream.empty();
 		};
 	}
@@ -129,37 +145,45 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		final ModularContractLogEntriesList productionLogs = logs.subsetOf(getSourceLogEntryDocumentType());
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
-		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
-		final UomId uomId = productPrice.getUomId();
+		final ModularContractLogEntriesList invoiceLineLogs = logs.subsetOf(LogEntryDocumentType.FINAL_INVOICE);
+		final ProductId productId = request.getProductId();
+		final UomId uomId = productBL.getStockUOMId(productId);
+		final ProductPrice productPrice = modularContractPriceService.retrievePrice(
+				ContractSpecificPriceRequest.builder()
+						.modularContractModuleId(request.getModularContractModuleId())
+						.flatrateTermId(request.getFlatrateTermId())
+						.build()
+		).getProductPrice();
 
-		final Quantity producedQty = productionLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity invoicedQty = invoiceLineLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
-		final Quantity qtyDifference = shippedQty.subtract(producedQty);
-		if (qtyDifference.isZero())
+		final Quantity qtyDifference = shippedQty.subtract(invoicedQty);
+		final ComputingResponse.ComputingResponseBuilder responseBuilder = ComputingResponse.builder()
+				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull());
+
+		final boolean proformaLogsExists = !logs.subsetOf(LogEntryDocumentType.PROFORMA_SHIPMENT).isEmpty();
+		if (qtyDifference.isZero() && proformaLogsExists)
 		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice.toZero())
-					.qty(qtyDifference.toOne())
+					.qty(qtyDifference.toOne()) // with 0 no IC would be created, but we want to have it on the invoice, if other corrections exist
 					.build();
 		}
 		if (!qtyDifference.isPositive())
 		{
 			// always ensure the qty is positive and unit price is negative
 			// because the price and amt will later be negated in de.metas.invoicecandidate.api.impl.InvoiceLineImpl.negateAmounts
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice.negate())
 					.qty(qtyDifference.negate())
 					.build();
 		}
 		else
 		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice)
 					.qty(qtyDifference)
 					.build();

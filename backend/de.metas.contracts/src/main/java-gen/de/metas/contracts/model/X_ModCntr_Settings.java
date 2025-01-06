@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -569725144L;
+	private static final long serialVersionUID = -316277356L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -102,6 +102,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
+	public void setFreeStorageCostDays (final int FreeStorageCostDays)
+	{
+		set_Value (COLUMNNAME_FreeStorageCostDays, FreeStorageCostDays);
+	}
+
+	@Override
+	public int getFreeStorageCostDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FreeStorageCostDays);
+	}
+
+	@Override
 	public void setInterestRate (final BigDecimal InterestRate)
 	{
 		set_Value (COLUMNNAME_InterestRate, InterestRate);
@@ -115,15 +127,37 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setIsSOTrx (final boolean IsSOTrx)
+	public void setInterimPricePercent (final BigDecimal InterimPricePercent)
+	{
+		set_Value (COLUMNNAME_InterimPricePercent, InterimPricePercent);
+	}
+
+	@Override
+	public BigDecimal getInterimPricePercent() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterimPricePercent);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * IsSOTrx AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISSOTRX_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISSOTRX_Yes = "Y";
+	/** No = N */
+	public static final String ISSOTRX_No = "N";
+	@Override
+	public void setIsSOTrx (final java.lang.String IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
 	@Override
-	public boolean isSOTrx() 
+	public java.lang.String getIsSOTrx() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override
@@ -223,5 +257,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public java.sql.Timestamp getStorageCostStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
+	}
+
+	@Override
+	public void setTradeMargin (final BigDecimal TradeMargin)
+	{
+		set_Value (COLUMNNAME_TradeMargin, TradeMargin);
+	}
+
+	@Override
+	public BigDecimal getTradeMargin() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TradeMargin);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

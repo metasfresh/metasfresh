@@ -39,6 +39,7 @@ import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -95,6 +96,7 @@ public class ModularContractLogDAO
 
 	private final static AdMessageKey ERR_MSG_ON_REVERSE_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.reverseNotAllowedIfProcessed");
 
+	@NonNull
 	public ModularContractLogEntry getById(@NonNull final ModularContractLogEntryId id)
 	{
 		return fromRecord(load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));
@@ -119,6 +121,12 @@ public class ModularContractLogDAO
 		log.setProcessed(request.isProcessed());
 		log.setIsBillable(request.isBillable());
 		log.setDateTrx(request.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
+
+		final LocalDateAndOrgId physicalClearanceDate = request.getPhysicalClearanceDate();
+		if (physicalClearanceDate != null)
+		{
+			log.setPhysicalClearanceDate(physicalClearanceDate.toTimestamp(orgDAO::getTimeZone));
+		}
 
 		final InvoiceCandidateId invoiceCandidateId = request.getInvoiceCandidateId();
 		if (invoiceCandidateId != null)
@@ -204,6 +212,7 @@ public class ModularContractLogDAO
 				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
+				.physicalClearanceDate(LocalDateAndOrgId.ofNullableTimestamp(record.getPhysicalClearanceDate(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
 				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber1))
 				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber2))
@@ -212,18 +221,27 @@ public class ModularContractLogDAO
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
+				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();
 	}
 
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
+		final I_ModCntr_Log oldLog = reverseOldLog(request);
+
+		final I_ModCntr_Log reversedLog = createReverseLog(oldLog, request.description());
+
+		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
+	}
+
+	private @NonNull I_ModCntr_Log reverseOldLog(final @NonNull LogEntryReverseRequest request)
+	{
 		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.flatrateTermId(request.flatrateTermId())
 				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
 				.contractType(request.logEntryContractType())
 				.contractModuleId(request.contractModuleId());
-
 		if (request.id() != null)
 		{
 			queryBuilder.entryId(request.id());
@@ -239,7 +257,11 @@ public class ModularContractLogDAO
 
 		oldLog.setIsBillable(false);
 		saveRecord(oldLog);
+		return oldLog;
+	}
 
+	private static @NonNull I_ModCntr_Log createReverseLog(@NonNull final I_ModCntr_Log oldLog, final @Nullable String description)
+	{
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
 		copyValues(oldLog, reversedLog);
 
@@ -253,15 +275,14 @@ public class ModularContractLogDAO
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
 
-		if (request.description() != null)
+		if (description != null)
 		{
-			reversedLog.setDescription(request.description());
+			reversedLog.setDescription(description);
 		}
 
 		reversedLog.setIsBillable(false);
 		saveRecord(reversedLog);
-
-		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
+		return reversedLog;
 	}
 
 	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
@@ -335,9 +356,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.getEntryIds());
 		}
 
-		if (query.getFlatrateTermId() != null)
+		if (!query.getFlatrateTermIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermIds());
 		}
 
 		if (query.getModularContractTypeId() != null)
@@ -359,7 +380,7 @@ public class ModularContractLogDAO
 		{
 			final IQueryBuilder<I_ModCntr_Type> modCntrTypeBuilder = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes());
-			if (query.isComputingMethodTypeActive())
+			if (query.isOnlyActiveComputingMethodTypes())
 			{
 				modCntrTypeBuilder.addOnlyActiveRecordsFilter();
 			}
@@ -370,9 +391,9 @@ public class ModularContractLogDAO
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
 		}
-		if (query.getInvoiceCandidateId() != null)
+		if (!query.getInvoiceCandidateIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateIds());
 		}
 
 		if (query.getBillable() != null)
@@ -390,9 +411,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID, query.getInvoicingGroupId());
 		}
 
-		if (query.getLogEntryDocumentType() != null)
+		if (!query.getLogEntryDocumentTypes().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType, query.getLogEntryDocumentType().getCode());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType, query.getLogEntryDocumentTypes());
 		}
 
 		if (query.isOnlyIfAmountIsSet())
@@ -495,16 +516,65 @@ public class ModularContractLogDAO
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
-		sqlQuery.updateDirectly()
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
-				.setExecuteDirectly(true)
-				.execute();
-		if (sqlQuery.anyMatch())
+
+		final ImmutableSet<ModularContractLogEntryId> logEntryIds = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIds.isEmpty())
 		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
+					.setExecuteDirectly(true)
+					.execute();
 			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
 					I_ModCntr_Log.Table_Name,
-					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+					logEntryIds));
+		}
+	}
+
+	public void unprocessLogs(@NonNull final ModularContractLogQuery query)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
+				.create();
+		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIDs.isEmpty())
+		{
+			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(sqlQuery.copy().first(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, Integer.class));
+			unprocessUninvoicedZeroPricedLogsForContractId(query.toBuilder()
+					.flatrateTermId(flatrateTermId)
+					.clearInvoiceCandidateIds()
+					.build());
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, false)
+					.setExecuteDirectly(true)
+					.execute();
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					logEntryIDs));
+		}
+	}
+
+	/**
+	 * Logs having price 0 will be marked as processed when an invoice is generated for them, however there will be no I_C_Invoice_Line_Alloc.
+	 * As such, when unprocessing logs for some computing method types, we should also unprocess logs of the same computing method types, that are linked to unprocessed ICs.
+	 */
+	private void unprocessUninvoicedZeroPricedLogsForContractId(final @NonNull ModularContractLogQuery query)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
+				.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+						.create())
+				.create();
+		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIDs.isEmpty())
+		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, false)
+					.setExecuteDirectly(true)
+					.execute();
+
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					logEntryIDs));
 		}
 	}
 

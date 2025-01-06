@@ -43,6 +43,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -61,6 +62,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
+ * <p>
  * Tests from {@link I_C_Invoice_Candidate}s to {@link IInvoiceHeader}s.
  */
 public abstract class AbstractNewAggregationEngineTests extends AbstractAggregationEngineTestBase
@@ -143,7 +145,9 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	/**
 	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterward, the ICs will be updated/revalidated once again.
 	 */
-	protected void step_updateInvoiceCandidates(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_updateInvoiceCandidates(
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		// nothing; override if you need to do something with the ICs after the inoutLines were created
 	}
@@ -151,7 +155,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	/**
 	 * PErform guard tests before the actual call to the aggregation engine under test is made.
 	 */
-	protected abstract void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines);
+	protected abstract void step_validate_before_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> inOutLines);
 
 	protected abstract void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices);
 

@@ -64,6 +64,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
@@ -73,7 +74,6 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
@@ -115,6 +115,7 @@ public class ProductRestService
 
 	private final ProductPriceRestService productPriceRestService;
 	private final ProductTaxCategoryService productTaxCategoryService;
+	private final UomConversionRestService uomConversionRestService;
 	
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
@@ -126,7 +127,8 @@ public class ProductRestService
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final ProductPriceRestService productPriceRestService,
-			@NonNull final ProductTaxCategoryService productTaxCategoryService)
+			@NonNull final ProductTaxCategoryService productTaxCategoryService,
+			@NonNull final UomConversionRestService uomConversionRestService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
@@ -139,6 +141,7 @@ public class ProductRestService
 
 		this.productPriceRestService = productPriceRestService;
 		this.productTaxCategoryService = productTaxCategoryService;
+		this.uomConversionRestService = uomConversionRestService;
 	}
 
 	@NonNull
@@ -198,6 +201,7 @@ public class ProductRestService
 				productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 				
 				createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), product.getId(), effectiveSyncAdvise);
+				uomConversionRestService.createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), product.getId(), effectiveSyncAdvise);
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
@@ -216,6 +220,7 @@ public class ProductRestService
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 			productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 			createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), productId, effectiveSyncAdvise);
+			uomConversionRestService.createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), productId, effectiveSyncAdvise);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}

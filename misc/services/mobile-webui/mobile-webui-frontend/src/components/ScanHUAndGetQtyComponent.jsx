@@ -43,10 +43,12 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   isShowBestBeforeDate = false,
   isShowLotNo = false,
+  isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  getConfirmationPromptForQty,
   onResult,
   onClose: onCloseCallback,
 }) => {
@@ -232,20 +234,24 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     lotNo,
     productNo,
+    barcodeType,
+    isCloseTarget = false,
     isDone = true,
   }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      barcodeType,
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
       bestBeforeDate,
       lotNo,
       productNo,
+      isCloseTarget,
       isDone,
     });
   };
@@ -301,7 +307,9 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
+          isShowCloseTargetButton={isShowCloseTargetButton}
           //
+          getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
@@ -341,12 +349,14 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   isShowBestBeforeDate: PropTypes.bool,
   isShowLotNo: PropTypes.bool,
+  isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
   //
   // Functions
+  getConfirmationPromptForQty: PropTypes.func,
   onResult: PropTypes.func,
   onClose: PropTypes.func,
 };

@@ -155,6 +155,7 @@ class OLCandOrderFactory
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -232,9 +233,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -508,9 +509,15 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
+		final boolean isNewOrderLine;
 		if (currentOrderLine == null)
 		{
 			currentOrderLine = newOrderLine(candidate);
+			isNewOrderLine = true;
+		}
+		else
+		{
+			isNewOrderLine = false;
 		}
 
 		setExternalBPartnerInfo(currentOrderLine, candidate);
@@ -532,6 +539,25 @@ class OLCandOrderFactory
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);
+		}
+
+		// Quantity in price UOM
+		{
+			final boolean isManualQtyInPriceUOM = candidate.getManualQtyInPriceUOM() != null;
+
+			if (isNewOrderLine)
+			{
+				currentOrderLine.setIsManualQtyInPriceUOM(isManualQtyInPriceUOM);
+			}
+			else if (currentOrderLine.isManualQtyInPriceUOM() != isManualQtyInPriceUOM)
+			{
+				throw new AdempiereException("Aggregating with different IsManualQtyInPriceUOM is not allowed");
+			}
+			
+			if (isManualQtyInPriceUOM)
+			{
+				currentOrderLine.setQtyEnteredInPriceUOM(currentOrderLine.getQtyEnteredInPriceUOM().add(candidate.getManualQtyInPriceUOM()));
+			}
 		}
 
 		//
@@ -745,7 +771,7 @@ class OLCandOrderFactory
 		return null;
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -758,7 +784,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }

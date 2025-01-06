@@ -34,6 +34,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
@@ -89,6 +90,15 @@ public class S_Issue_StepDef
 	public void add_S_Issue(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			addIssue(row);
+		}
+	}
+
+	private void addIssue(@NonNull final Map<String, String> row)
+	{
+		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		try
 		{
 			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
 			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Name);
@@ -163,9 +173,12 @@ public class S_Issue_StepDef
 			}
 
 			saveRecord(issue);
-
-			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
 			sIssueTable.put(issueIdentifier, issue);
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("S_Issue_ID.Identifier", issueIdentifier);
 		}
 	}
 
@@ -236,7 +249,7 @@ public class S_Issue_StepDef
 	}
 
 	@And("S_IssueLabel is removed:")
-	public void removed_S_IssueLabel(@NonNull final DataTable dataTable) throws InterruptedException
+	public void removed_S_IssueLabel(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

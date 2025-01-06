@@ -54,30 +54,43 @@ public class ModCntr_Type_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			createModCntrTypes(tableRow);
+			upsertModCntrTypes(tableRow);
 		}
 	}
 
-	private void createModCntrTypes(@NonNull final Map<String, String> tableRow)
+	private void upsertModCntrTypes(@NonNull final Map<String, String> tableRow)
 	{
-		final String value = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Value);
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Name);
 		final ComputingMethodType handlerType = ComputingMethodType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
+		final String columnName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Type.COLUMNNAME_ColumnName);
 
 		final I_ModCntr_Type modCntrTypeRecord = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, handlerType.getCode())
+				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ColumnName, columnName)
 				.create()
 				.firstOnlyOptional()
-				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Type.class));
+				.orElseGet(() -> createModCntrType(tableRow));
+
+		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
+		modCntrTypeTable.putOrReplace(modCntrTypeIdentifier, modCntrTypeRecord);
+	}
+
+	private static I_ModCntr_Type createModCntrType(final @NonNull Map<String, String> tableRow)
+	{
+		final I_ModCntr_Type modCntrTypeRecord = InterfaceWrapperHelper.newInstance(I_ModCntr_Type.class);
+
+		final String value = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Value);
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Name);
+		final ComputingMethodType handlerType = ComputingMethodType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
+		final String columnName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Type.COLUMNNAME_ColumnName);
 
 		modCntrTypeRecord.setValue(value);
 		modCntrTypeRecord.setName(name);
 		modCntrTypeRecord.setModularContractHandlerType(handlerType.getCode());
+		modCntrTypeRecord.setColumnName(columnName);
 
 		InterfaceWrapperHelper.saveRecord(modCntrTypeRecord);
 
-		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
-		modCntrTypeTable.putOrReplace(modCntrTypeIdentifier, modCntrTypeRecord);
+		return modCntrTypeRecord;
 	}
 }

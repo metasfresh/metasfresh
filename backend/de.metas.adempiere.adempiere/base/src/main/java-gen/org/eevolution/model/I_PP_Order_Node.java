@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order_Node
  *  @author metasfresh (generated) 
@@ -779,6 +780,29 @@ public interface I_PP_Order_Node
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_QueuingTime = new ModelColumn<>(I_PP_Order_Node.class, "QueuingTime", null);
 	String COLUMNNAME_QueuingTime = "QueuingTime";
+
+	/**
+	 * Set Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRawMaterialsIssueStrategy (@Nullable java.lang.String RawMaterialsIssueStrategy);
+
+	/**
+	 * Get Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRawMaterialsIssueStrategy();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_RawMaterialsIssueStrategy = new ModelColumn<>(I_PP_Order_Node.class, "RawMaterialsIssueStrategy", null);
+	String COLUMNNAME_RawMaterialsIssueStrategy = "RawMaterialsIssueStrategy";
 
 	/**
 	 * Set Scanned QR Code.

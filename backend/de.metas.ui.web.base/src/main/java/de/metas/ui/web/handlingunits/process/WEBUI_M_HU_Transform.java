@@ -7,6 +7,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -36,7 +37,7 @@ import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
 import java.math.BigDecimal;
@@ -82,9 +83,9 @@ public class WEBUI_M_HU_Transform
 		IProcessDefaultParametersProvider
 {
 	// Services
-	@Autowired private DocumentCollection documentsCollection;
-	@Autowired private ADReferenceService adReferenceService;
-	@Autowired private LookupDataSourceFactory lookupDataSourceFactory;
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final ADReferenceService adReferenceService = SpringContextHolder.instance.getBean(ADReferenceService.class);
+	private final LookupDataSourceFactory lookupDataSourceFactory = SpringContextHolder.instance.getBean(LookupDataSourceFactory.class);
 
 	private final HUTransformService huTransformService = HUTransformService.newInstance();
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -256,7 +257,7 @@ public class WEBUI_M_HU_Transform
 				.tuHU(p_M_TU_HU)
 				.luHU(p_M_LU_HU)
 				.qtyCU(p_QtyCUsPerTU)
-				.qtyTU(p_QtyTU)
+				.qtyTU(p_QtyTU != null ? QtyTU.ofBigDecimal(p_QtyTU) : null)
 				.huPlanningReceiptOwnerPM_TU(ActionType.valueOf(p_Action).equals(ActionType.TU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_TU)
 				.huPlanningReceiptOwnerPM_LU(ActionType.valueOf(p_Action).equals(ActionType.LU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_LU)
 				.build();
@@ -384,7 +385,7 @@ public class WEBUI_M_HU_Transform
 	private void onParameterChanged_ActionTUToNewLUs(final String parameterName)
 	{
 		@SuppressWarnings("ConstantConditions") // at this point i don't think the HU can be null.
-		final BigDecimal realTUQty = huTransformService.getMaximumQtyTU(getSingleSelectedRow().getM_HU());
+		final BigDecimal realTUQty = huTransformService.getMaximumQtyTU(getSingleSelectedRow().getM_HU()).toBigDecimal();
 
 		if (PARAM_Action.equals(parameterName))
 		{

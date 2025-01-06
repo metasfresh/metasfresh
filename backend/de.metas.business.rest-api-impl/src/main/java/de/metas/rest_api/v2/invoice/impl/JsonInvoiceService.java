@@ -35,6 +35,7 @@ import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -46,10 +47,10 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoice.ManualInvoice;
 import de.metas.invoice.ManualInvoiceService;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
@@ -677,18 +678,10 @@ public class JsonInvoiceService
 			@NonNull final JsonDocTypeInfo invoiceDocType,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final DocTypeId docTypeId = docTypeService.getDocTypeId(
+		return docTypeService.getDocTypeId(
 				DocBaseType.ofCode(invoiceDocType.getDocBaseType()),
-				invoiceDocType.getDocSubType(),
+				DocSubType.ofNullableCode(invoiceDocType.getDocSubType()),
 				clientAndOrgId.getOrgId());
-
-		return Optional.ofNullable(docTypeId)
-				.orElseThrow(() -> new AdempiereException("No DocumentType found!")
-						.appendParametersToMessage()
-						.setParameter("ClientId", clientAndOrgId.getClientId())
-						.setParameter("OrgId", clientAndOrgId.getOrgId())
-						.setParameter("DocBaseType", invoiceDocType.getDocBaseType())
-						.setParameter("DocSubType", invoiceDocType.getDocSubType()));
 	}
 
 	/**
@@ -700,7 +693,7 @@ public class JsonInvoiceService
 			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
 			@NonNull final ProductMasterDataProvider.ProductInfo productInfo)
 	{
-		if (STORAGE_UOM.equals(jsonLine.getPriceUomCode()))
+		if (STORAGE_UOM.equals(jsonLine.getUomCode()))
 		{
 			return productInfo.getUomId();
 		}
@@ -908,7 +901,7 @@ public class JsonInvoiceService
 		@NonNull
 		private Tuple<InvoiceId, JsonPaymentAllocationLine.InvoiceIdentifier> getInvoiceId(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier identifier)
 		{
-			final InvoiceQuery invoiceQuery = createInvoiceQuery(identifier);
+			final SingleInvoiceQuery invoiceQuery = createInvoiceQuery(identifier);
 			final InvoiceId invoiceId = invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery)
 					.orElseThrow(() -> new AdempiereException("No Invoice found for query=" + invoiceQuery));
 
@@ -916,9 +909,9 @@ public class JsonInvoiceService
 		}
 
 		@NonNull
-		private InvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
+		private SingleInvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
 		{
-			final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
+			final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 					.orgId(orgId)
 					.docType(getDocType(invoiceIdentifier))
 					.docStatuses(DocStatus.completedOrClosedStatuses());

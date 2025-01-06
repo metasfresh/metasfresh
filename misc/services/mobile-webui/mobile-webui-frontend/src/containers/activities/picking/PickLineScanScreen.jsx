@@ -41,6 +41,9 @@ import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { toNumberOrZero } from '../../../utils/numbers';
+import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -68,7 +71,10 @@ const PickLineScanScreen = () => {
     uom,
     qtyRejectedReasons,
     catchWeightUom,
+    isShowPromptWhenOverPicking,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+
+  const pickTarget = useCurrentPickTarget({ wfProcessId, activityId });
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -86,6 +92,16 @@ const PickLineScanScreen = () => {
 
   const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, expectedProductNo: productNo, onClose });
 
+  const getConfirmationPromptForQty = useCallback(
+    (qtyInput) => {
+      if (qtyToPickRemaining !== undefined && toNumberOrZero(qtyInput) > qtyToPickRemaining) {
+        return trl('activities.picking.overPickConfirmationPrompt');
+      }
+      return undefined;
+    },
+    [qtyToPickRemaining]
+  );
+
   return (
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
@@ -101,10 +117,12 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       isShowBestBeforeDate={isShowBestBeforeDate}
       isShowLotNo={isShowLotNo}
+      isShowCloseTargetButton={!!pickTarget}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
       onClose={onClose}
+      getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
     />
   );
 };
@@ -128,6 +146,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     uom: line.uom,
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,
+    isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
   };
 };
 
@@ -224,8 +243,10 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
     bestBeforeDate = null,
     lotNo = null,
     productNo,
+    isCloseTarget = false,
     isDone = true,
     resolvedBarcodeData,
+    barcodeType,
     ...others
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
@@ -247,8 +268,11 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
       ...others,
     });
 
-    if (expectedProductNo && productNo && String(expectedProductNo) !== String(productNo)) {
-      throw { messageKey: 'activities.picking.qrcode.differentProduct', context: { expectedProductNo, productNo } };
+    if (!isBarcodeProductNoMatching({ expectedProductNo, barcodeProductNo: productNo, barcodeType: barcodeType })) {
+      throw {
+        messageKey: 'activities.picking.qrcode.differentProduct',
+        context: { expectedProductNo, productNo, barcodeType },
+      };
     }
 
     return postStepPicked({
@@ -267,6 +291,7 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
       bestBeforeDate,
       setLotNo: isShowLotNo,
       lotNo,
+      isCloseTarget,
     })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => isDone && onClose());

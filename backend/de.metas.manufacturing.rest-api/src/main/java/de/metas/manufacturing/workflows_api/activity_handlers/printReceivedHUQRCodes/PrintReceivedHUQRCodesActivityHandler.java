@@ -35,6 +35,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 @Component
+@RequiredArgsConstructor
 public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.printReceivedHUQRCodes");
@@ -55,19 +57,14 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 	private final ManufacturingJobService manufacturingJobService;
 	private final HULabelService huLabelService;
-	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	public PrintReceivedHUQRCodesActivityHandler(
-			@NonNull final ManufacturingJobService manufacturingJobService,
-			@NonNull final HULabelService huLabelService)
-	{
-		this.manufacturingJobService = manufacturingJobService;
-		this.huLabelService = huLabelService;
-	}
-
 	@Override
-	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
+	public WFActivityType getHandledActivityType()
+	{
+		return HANDLED_ACTIVITY_TYPE;
+	}
 
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
@@ -119,7 +116,7 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 	private ImmutableList<HUToReport> getHusToPrint(final PPOrderId ppOrderId)
 	{
-		final Set<HuId> huIds = huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderId);
+		final Set<HuId> huIds = manufacturingJobService.getFinishedGoodsReceivedHUIds(ppOrderId);
 		if (huIds.isEmpty())
 		{
 			throw new AdempiereException(MSG_NoFinishedGoodsAvailableForLabeling)
@@ -169,7 +166,10 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 		private final HashMap<HULabelConfigQuery, ExplainedOptional<HULabelConfig>> cache = new HashMap<>();
 
-		private HULabelConfigProvider(final HULabelService huLabelService) {this.huLabelService = huLabelService;}
+		private HULabelConfigProvider(final HULabelService huLabelService)
+		{
+			this.huLabelService = huLabelService;
+		}
 
 		private HULabelConfig getLabelConfig(final @NonNull HUToReport hu)
 		{
@@ -194,7 +194,10 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 		private final ArrayList<BatchToPrint> batches = new ArrayList<>();
 		private final HashSet<HuId> huIdsCollected = new HashSet<>();
 
-		private BatchToPrintCollector(final HULabelConfigProvider huLabelConfigProvider) {this.labelConfigProvider = huLabelConfigProvider;}
+		private BatchToPrintCollector(final HULabelConfigProvider huLabelConfigProvider)
+		{
+			this.labelConfigProvider = huLabelConfigProvider;
+		}
 
 		public void addAllRecursive(@NonNull final List<HUToReport> hus)
 		{
@@ -246,16 +249,24 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 	@Getter
 	private static class BatchToPrint
 	{
-		@NonNull private final AdProcessId printFormatProcessId;
-		@NonNull private final ArrayList<HUToReport> hus = new ArrayList<>();
+		@NonNull
+		private final AdProcessId printFormatProcessId;
+		@NonNull
+		private final ArrayList<HUToReport> hus = new ArrayList<>();
 
-		private BatchToPrint(final @NonNull AdProcessId printFormatProcessId) {this.printFormatProcessId = printFormatProcessId;}
+		private BatchToPrint(final @NonNull AdProcessId printFormatProcessId)
+		{
+			this.printFormatProcessId = printFormatProcessId;
+		}
 
 		public boolean isMatching(@NonNull final HULabelConfig labelConfig)
 		{
 			return AdProcessId.equals(printFormatProcessId, labelConfig.getPrintFormatProcessId());
 		}
 
-		public void addHU(@NonNull final HUToReport hu) {this.hus.add(hu);}
+		public void addHU(@NonNull final HUToReport hu)
+		{
+			this.hus.add(hu);
+		}
 	}
 }

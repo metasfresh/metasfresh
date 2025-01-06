@@ -1,9 +1,9 @@
 package de.metas.acct.api;
 
+import de.metas.acct.Account;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.acct.Account;
 
 /*
  * #%L
@@ -49,6 +49,10 @@ public class AcctSchemaGeneralLedger
 	
 	@NonNull
 	Account purchasePriceVarianceOffsetAcct;
+
+
+	@NonNull
+	Account cashRoundingAcct;
 
 	@NonNull
 	public Account getDueToAcct(final AcctSchemaElementType segment)

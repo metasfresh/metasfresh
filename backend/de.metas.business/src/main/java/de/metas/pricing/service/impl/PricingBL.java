@@ -305,6 +305,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
+					pricingCtx.getPriceListId(),
 					pricingCtx.getCountryId(),
 					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
@@ -354,7 +355,7 @@ public class PricingBL implements IPricingBL
 			{
 				// NOTE: don't fail here because it could be a valid case and some particular pricing rules can handle it.
 				// NOTE2: also pls keep in mind that if we would fail here the whole pricing calculation would fail.
-				logger.info("Skip setting pricing context's price list version because it was not found", e);
+				logger.debug("Skip setting pricing context's price list version because it was not found", e);
 			}
 		}
 
@@ -365,7 +366,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
-			logger.info("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
+			logger.debug("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
 			pricingCtx.setPriceListId(PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID()));
 		}
 
@@ -376,7 +377,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
-			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
+			logger.debug("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
 			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone));
 		}
 
@@ -385,7 +386,7 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPriceListId() != null && pricingCtx.getCurrencyId() == null)
 		{
 			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
-			logger.info("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
+			logger.debug("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
 
@@ -393,7 +394,7 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPriceListId() != null && pricingCtx.getPricingSystemId() == null)
 		{
 			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
-			logger.info("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
+			logger.debug("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
 			pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 
 		}

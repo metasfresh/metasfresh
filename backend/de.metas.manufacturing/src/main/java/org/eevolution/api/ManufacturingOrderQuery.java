@@ -2,6 +2,7 @@ package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.dao.ValueRestriction;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.product.ResourceId;
@@ -48,7 +49,7 @@ public class ManufacturingOrderQuery
 	@NonNull @Singular ImmutableSet<ResourceId> onlyWorkstationIds;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
-	@Nullable Instant datePromisedDay;
+	@Nullable Instant dateStartScheduleDay;
 	@NonNull @Singular ImmutableSet<PPOrderId> onlyIds;
 
 	@Nullable APIExportStatus exportStatus;
@@ -57,6 +58,8 @@ public class ManufacturingOrderQuery
 	boolean onlyDrafted;
 
 	@NonNull @Singular ImmutableSet<PPOrderPlanningStatus> onlyPlanningStatuses;
+
+	@Nullable FlatrateTermId modularFlatrateTermId;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 	@NonNull @Singular ImmutableList<SortingOption> sortingOptions;

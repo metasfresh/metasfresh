@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,14 +46,14 @@ public class MoveHUCommand
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
-	private final List<MoveHURequestItem> requestItems;
+	private final ImmutableSet<MoveHURequestItem> requestItems;
 	private final GlobalQRCode targetQRCode;
 	private final boolean placeAggHusOnNewLUsWhenMoving;
 
 	@Builder
 	private MoveHUCommand(
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final List<MoveHURequestItem> requestItems,
+			@NonNull final Set<MoveHURequestItem> requestItems,
 			@NonNull final GlobalQRCode targetQRCode)
 	{
 		this.huTransformService = HUTransformService.builder()
@@ -60,7 +61,7 @@ public class MoveHUCommand
 				.build();
 
 		this.huQRCodesService = huQRCodesService;
-		this.requestItems = requestItems;
+		this.requestItems = ImmutableSet.copyOf(requestItems);
 		this.targetQRCode = targetQRCode;
 		this.placeAggHusOnNewLUsWhenMoving = shouldPlaceAggTUsOnNewLUAfterMove(targetQRCode, warehouseDAO);
 	}
