@@ -371,11 +371,8 @@ jobs:
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migrations.log && echo "${PIPESTATUS[0]}" > migration.exit-code
           docker compose ps -a
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-          docker compose down
-      - name: tag images
-        run: |
-          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+          docker compose down
       - name: push images
         uses: nick-fields/retry@v3
         with:
