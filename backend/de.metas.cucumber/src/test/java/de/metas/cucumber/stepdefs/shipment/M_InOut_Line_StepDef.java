@@ -140,6 +140,8 @@ public class M_InOut_Line_StepDef
 				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
+		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
+		lineQueryBuilder.addEqualsFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty, movementqty);
 
 		final I_M_InOutLine shipmentLineRecord = getSingleShipmentLine(lineQueryBuilder.create());
 		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);

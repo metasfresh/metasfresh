@@ -18,6 +18,27 @@ public interface I_C_Doc_Outbound_Log
 
 
 	/**
+	 * Set Archive.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Archive_ID (int AD_Archive_ID);
+
+	/**
+	 * Get Archive.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Archive_ID();
+
+	String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
+
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -438,7 +459,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFileName (@Nullable java.lang.String FileName);
+	void setFileName (@Nullable String FileName);
 
 	/**
 	 * Get File Name.
@@ -448,7 +469,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getFileName();
+	@Nullable String getFileName();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
 	String COLUMNNAME_FileName = "FileName";
@@ -551,25 +572,21 @@ public interface I_C_Doc_Outbound_Log
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setPOReference (@Nullable java.lang.String POReference);
+	void setPOReference (@Nullable String POReference);
 
 	/**
 	 * Get Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	@Nullable java.lang.String getPOReference();
+	@Nullable String getPOReference();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";

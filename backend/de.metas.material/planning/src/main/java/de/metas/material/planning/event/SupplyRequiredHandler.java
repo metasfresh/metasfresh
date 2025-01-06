@@ -4,31 +4,31 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
-import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.impl.MaterialPlanningContext;
-import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Env;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 
 /*
  * #%L
@@ -62,26 +63,16 @@ import java.util.List;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
+@RequiredArgsConstructor
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
 	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
-
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
-	private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
-
-	private final PostMaterialEventService postMaterialEventService;
-
-	public SupplyRequiredHandler(
-			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
-			@NonNull final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator,
-			@NonNull final PostMaterialEventService fireMaterialEventService)
-	{
-		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;
-		this.ppOrderCandidateAdvisedEventCreator = ppOrderCandidateAdvisedEventCreator;
-		this.postMaterialEventService = fireMaterialEventService;
-	}
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final PostMaterialEventService postMaterialEventService;
+	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
+	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
@@ -95,52 +86,56 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		handleSupplyRequiredEvent(event.getSupplyRequiredDescriptor());
 	}
 
-	/**
-	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as DistributionAdvisedOrCreatedEvent
-	 */
-	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
+	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		if(descriptor.getMaterialDescriptor().getQuantity().signum() != 0)
+		final ArrayList<MaterialEvent> events = new ArrayList<>();
+
+		final MaterialPlanningContext context = createContextOrNull(descriptor);
+		if (context != null)
 		{
-			SupplyRequiredHandlerUtils.updateMainData(descriptor);
+			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
+			{
+				events.addAll(advisor.createAdvisedEvents(descriptor, context));
+			}
 		}
 
-		final IMaterialPlanningContext mrpContext = createMRPContextOrNull(descriptor);
-		if (mrpContext == null)
+		if (events.isEmpty())
 		{
-			return; // nothing to do
+			final NoSupplyAdviceEvent noSupplyAdviceEvent = NoSupplyAdviceEvent.of(descriptor.withNewEventId());
+			Loggables.addLog("No advice events were created. Firing {}", noSupplyAdviceEvent);
+
+			postMaterialEventService.enqueueEventNow(noSupplyAdviceEvent);
 		}
-
-		final List<MaterialEvent> events = new ArrayList<>();
-
-		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
-
-		events.forEach(postMaterialEventService::enqueueEventNow);
+		else
+		{
+			events.forEach(postMaterialEventService::enqueueEventNow);
+		}
 	}
 
 	@Nullable
-	private IMaterialPlanningContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
+	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		final EventDescriptor eventDescr = materialDemandEvent.getEventDescriptor();
+		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
-		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
+		final WarehouseId warehouseId = supplyRequiredDescriptor.getWarehouseId();
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-
-		final ResourceId plantId = productPlanningDAO.findPlantId(
-				eventDescr.getOrgId().getRepoId(),
-				warehouseDAO.getById(materialDescr.getWarehouseId()),
-				materialDescr.getProductId(),
-				materialDescr.getAttributeSetInstanceId());
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(supplyRequiredDescriptor.getAttributeSetInstanceId());
+		final ResourceId plantId = productPlanningDAO.findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId).orElse(null);
+		if (plantId == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No plant found for {}, {}, {}, {}", orgId, warehouse, productId, attributeSetInstanceId);
+			return null;
+		}
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(eventDescr.getOrgId())
-				.warehouseId(materialDescr.getWarehouseId())
+				.orgId(orgId)
+				.warehouseId(warehouseId)
 				.plantId(plantId)
-				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
+				.productId(productId)
 				.includeWithNullProductId(false)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
 		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
@@ -150,20 +145,15 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return null;
 		}
 
-		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
+		final I_AD_Org org = orgDAO.getById(orgId);
 
-		mrpContext.setProductId(ProductId.ofRepoId(materialDescr.getProductId()));
-		mrpContext.setAttributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescr.getAttributeSetInstanceId()));
-		mrpContext.setWarehouseId(materialDescr.getWarehouseId());
-		//mrpContext.setDate(TimeUtil.asDate(materialDescr.getDate()));
-		mrpContext.setCtx(Env.getCtx());
-		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
-
-		mrpContext.setProductPlanning(productPlanning);
-		mrpContext.setPlantId(plantId);
-
-		mrpContext.setClientId(eventDescr.getClientId());
-		mrpContext.setOrgId(eventDescr.getOrgId());
-		return mrpContext;
+		return MaterialPlanningContext.builder()
+				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.warehouseId(warehouseId)
+				.productPlanning(productPlanning)
+				.plantId(plantId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.build();
 	}
 }

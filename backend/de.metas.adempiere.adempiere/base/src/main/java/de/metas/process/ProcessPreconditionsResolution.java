@@ -62,6 +62,11 @@ public final class ProcessPreconditionsResolution
 		return REJECTED_UnknownReason;
 	}
 
+	public static ProcessPreconditionsResolution reject(@NonNull final AdMessageKey adMessageKey)
+	{
+		return reject(TranslatableStrings.adMessage(adMessageKey));
+	}
+
 	/**
 	 * Convenience method to flag a process as not available in a particular context, giving the user a short reason about why the process is unavailable.
 	 */

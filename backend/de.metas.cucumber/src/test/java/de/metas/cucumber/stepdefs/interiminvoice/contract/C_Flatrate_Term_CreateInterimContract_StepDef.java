@@ -23,14 +23,14 @@
 package de.metas.cucumber.stepdefs.interiminvoice.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
+import de.metas.contracts.modular.interim.invoice.service.impl.InterimFlatrateTermService;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Flatrate_Term_CreateInterimContract_StepDef
 {
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
-	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
+	private final InterimFlatrateTermService interimInvoiceFlatrateTermBL  = SpringContextHolder.instance.getBean(InterimFlatrateTermService.class);
 
 	public C_Flatrate_Term_CreateInterimContract_StepDef(
 			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)

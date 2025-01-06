@@ -41,6 +41,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.OptionalInt;
 import java.util.Properties;
@@ -378,10 +379,15 @@ class ClientSetup
 		return setCompanyAddress(companyAddress);
 	}
 
-	public ClientSetup setCompanyLogo(final I_AD_Image companyLogo)
+	public ClientSetup setCompanyLogo(final @Nullable I_AD_Image companyLogo)
 	{
 		if (companyLogo == null || companyLogo.getAD_Image_ID() <= 0)
 		{
+			adClientInfo.setLogo_ID(-1);
+			adClientInfo.setLogoReport_ID(-1);
+			adClientInfo.setLogoWeb_ID(-1);
+			adOrgInfoChangeRequest.logoImageId(OptionalInt.of(-1));
+			orgBPartner.setLogo_ID(-1);
 			return this;
 		}
 
@@ -400,7 +406,7 @@ class ClientSetup
 	{
 		if (adImageId <= 0)
 		{
-			return this;
+			return setCompanyLogo(null);
 		}
 
 		final I_AD_Image companyLogo = InterfaceWrapperHelper.create(getCtx(), adImageId, I_AD_Image.class, ITrx.TRXNAME_ThreadInherited);

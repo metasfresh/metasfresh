@@ -2,7 +2,12 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -12,14 +17,22 @@ import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_Order;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.model.I_PP_Order;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 class DistributionWorkflowLaunchersProvider
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final DistributionRestService distributionRestService;
 
 	public DistributionWorkflowLaunchersProvider(
@@ -86,10 +99,19 @@ class DistributionWorkflowLaunchersProvider
 				.build();
 	}
 
+	@NonNull
 	private WorkflowLauncherCaption computeCaption(@NonNull final DDOrderReference ddOrderReference)
 	{
+		final TranslatableStringBuilder translatableStringBuilder = TranslatableStrings.builder();
+		getSourceDocumentTypeAndNo(ddOrderReference)
+				.ifPresent(sourceDocTypeAndNo -> translatableStringBuilder
+						.append(sourceDocTypeAndNo.getLeft())
+						.append(" ")
+						.append(sourceDocTypeAndNo.getRight())
+						.append(" | "));
+
 		return WorkflowLauncherCaption.of(
-				TranslatableStrings.builder()
+				translatableStringBuilder
 						.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
 						.append(" > ")
 						.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
@@ -99,4 +121,27 @@ class DistributionWorkflowLaunchersProvider
 		);
 	}
 
+	@NonNull
+	private Optional<ImmutablePair<ITranslatableString, String>> getSourceDocumentTypeAndNo(@NonNull final DDOrderReference ddOrderReference)
+	{
+		final ITranslatableString docTypeName;
+		final String documentNo;
+		if (ddOrderReference.getSalesOrderId() != null)
+		{
+			final I_C_Order order = orderBL.getById(ddOrderReference.getSalesOrderId());
+			docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			documentNo = order.getDocumentNo();
+		}
+		else if (ddOrderReference.getPpOrderId() != null) {
+			final I_PP_Order ppOrder = ppOrderBL.getById(ddOrderReference.getPpOrderId());
+			docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
+			documentNo = ppOrder.getDocumentNo();
+		}
+		else
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(ImmutablePair.of(docTypeName, documentNo));
+	}
 }

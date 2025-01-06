@@ -25,6 +25,7 @@ package de.metas.dunning.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.DunningDocId;
@@ -42,10 +43,12 @@ import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import de.metas.bpartner.service.IBPartnerBL;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -60,9 +63,10 @@ import java.util.Properties;
 public class DefaultDunningProducer implements IDunningProducer
 {
 	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	private IDunningContext dunningContext;
 
 	private final CompositeDunningAggregator dunningAggregators = new CompositeDunningAggregator();
@@ -166,7 +170,10 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
-		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
+		// because things might have changed between the moment when the dunning candidate was created and when the actual dunning doc is created
+		doc.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(candidate.getC_BPartner_ID()))
+				.map(UserId::getRepoId)
+				.orElse(candidate.getC_Dunning_Contact_ID()));
 
 		doc.setPOReference(getPOReferenceToUse(candidate));
 		doc.setIsActive(true);

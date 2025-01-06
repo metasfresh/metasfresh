@@ -237,7 +237,7 @@ export class RawList0 extends PureComponent {
       this.props;
 
     if (e.key === 'Tab') {
-      if (list.length === 0 && !readonly && !loading) {
+      if (isToggled && list.length === 0 && !readonly && !loading) {
         onSelect(null);
       }
     } else if (e.key === 'ArrowDown') {
@@ -415,7 +415,7 @@ export class RawList0 extends PureComponent {
                       readOnly
                       tabIndex={-1}
                       placeholder={placeholder}
-                      value={value}
+                      value={value ? value.replace(/\n/g, ' ') : ''}
                       disabled={readonly || disabled}
                     />
                   </div>
@@ -456,12 +456,13 @@ export class RawList0 extends PureComponent {
   };
 
   renderMultiSelectDropdown = () => {
-    const { listHash, loading } = this.props;
+    const { listHash, loading, hasMoreResults } = this.props;
 
     return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
+        hasMoreResults={hasMoreResults}
         loading={loading}
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
@@ -525,6 +526,7 @@ RawList0.propTypes = {
   clearable: PropTypes.bool,
   list: PropTypes.array,
   listHash: PropTypes.string,
+  hasMoreResults: PropTypes.bool,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,

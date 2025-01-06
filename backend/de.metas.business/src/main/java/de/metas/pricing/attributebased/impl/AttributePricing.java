@@ -10,14 +10,14 @@ import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
@@ -26,7 +26,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,6 +53,7 @@ public class AttributePricing implements IPricingRule
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
@@ -63,9 +63,8 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
 	 */
-	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
@@ -134,7 +133,7 @@ public class AttributePricing implements IPricingRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
-		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
+		final I_M_PriceList priceList = priceListDAO.getById(PriceListId.ofRepoId(pricelistVersion.getM_PriceList_ID()));
 
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
@@ -273,14 +272,14 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersionId)
 				.setProductId(pricingCtx.getProductId())
 				.onlyValidPrices(true)
 				.matching(_defaultMatchers)

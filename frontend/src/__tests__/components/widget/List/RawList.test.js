@@ -111,7 +111,7 @@ describe('RawList component', () => {
         .find('.input-dropdown-container')
         .simulate('keyDown', { ...eventProps, key: 'Tab' });
 
-      expect(onSelectSpy).toHaveBeenCalledWith(null);
+      expect(onSelectSpy).toHaveBeenCalledTimes(0);
 
       wrapper
         .find('.input-dropdown-container')

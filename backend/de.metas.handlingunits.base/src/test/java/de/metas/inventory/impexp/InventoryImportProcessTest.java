@@ -50,7 +50,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -261,7 +261,7 @@ public class InventoryImportProcessTest
 					.ctx(Env.getCtx())
 					.name("Inventory DocType for " + orgId)
 					.docBaseType(DocBaseType.MaterialPhysicalInventory)
-					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
+					.docSubType(InventoryDocSubType.AggregatedHUInventory.getDocSubType())
 					.adOrgId(orgId.getRepoId())
 					.glCategoryId(GLCategoryId.ofRepoId(123))
 					.build());

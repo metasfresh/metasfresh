@@ -24,12 +24,10 @@ package org.eevolution.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocBaseType;
-import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

@@ -94,7 +94,7 @@ public class ReceiptScheduleEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
@@ -109,11 +109,12 @@ public class ReceiptScheduleEventHandler
 			@NonNull final MainDataRecordIdentifier identifier,
 			@NonNull final ZoneId timeZone)
 	{
-		if (event.getOrderedQuantityDelta().signum() == 0
+		if ((event instanceof ReceiptScheduleUpdatedEvent) 
+				&& event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog(
-					"Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
+					"Skipping this ReceiptScheduleUpdatedEvent because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
 

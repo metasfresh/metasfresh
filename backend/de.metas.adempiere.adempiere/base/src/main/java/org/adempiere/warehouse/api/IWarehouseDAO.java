@@ -3,6 +3,7 @@ package org.adempiere.warehouse.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
@@ -170,6 +171,11 @@ public interface IWarehouseDAO extends ISingletonService
 
 	ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(@NonNull LocationId locationId);
 
+	ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorId);
+
 	@Value
 	class WarehouseQuery
 	{
@@ -230,6 +236,9 @@ public interface IWarehouseDAO extends ISingletonService
 
 	void save(@NonNull Warehouse warehouse);
 
+	/**
+	 * Create a warehouse and a default locator.
+	 */
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
 

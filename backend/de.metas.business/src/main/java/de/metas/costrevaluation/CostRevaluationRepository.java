@@ -196,7 +196,7 @@ public class CostRevaluationRepository
 		return CostRevaluationLine.builder()
 				.id(extractCostRevaluationLineId(record))
 				.costSegmentAndElement(extractCostSegmentAndElement(record))
-				.currentQty(Quantitys.create(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.currentQty(Quantitys.of(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.currentCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
 				.newCostPrice(CostAmount.of(record.getNewCostPrice(), currencyId))
 				.isRevaluated(record.isRevaluated())

@@ -11,7 +11,6 @@ import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
@@ -26,8 +25,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -151,24 +148,24 @@ public class HUReservationRepository
 					return null;
 				}
 			});
+		}
 
-			final ICompositeQueryFilter<I_M_HU_Reservation> documentRefFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
-			if (!salesOrderLineIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineIds);
-			}
-			if (!projectIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectIds);
-			}
-			if (!pickingJobStepIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_M_Picking_Job_Step_ID, pickingJobStepIds);
-			}
-			if(!ddOrderLineIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds);
-			}
+		final ICompositeQueryFilter<I_M_HU_Reservation> documentRefFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+		if (!salesOrderLineIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineIds);
+		}
+		if (!projectIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectIds);
+		}
+		if (!pickingJobStepIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_M_Picking_Job_Step_ID, pickingJobStepIds);
+		}
+		if (!ddOrderLineIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds);
 		}
 
 		return queryBuilder;
@@ -190,7 +187,7 @@ public class HUReservationRepository
 				.documentRef(extractDocumentRef(record))
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
 				.vhuId(HuId.ofRepoId(record.getVHU_ID()))
-				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), uomId))
 				.build();
 	}
 
@@ -338,7 +335,10 @@ public class HUReservationRepository
 
 	public ImmutableList<HUReservationEntry> getEntriesByVHUIds(@NonNull final Collection<HuId> vhuIds)
 	{
-		if (vhuIds.isEmpty()) {return ImmutableList.of();}
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return entriesByVhuId.getAllOrLoad(vhuIds, this::retrieveEntriesByVHUId)
 				.stream()
@@ -348,7 +348,10 @@ public class HUReservationRepository
 
 	private Map<HuId, Optional<HUReservationEntry>> retrieveEntriesByVHUId(@NonNull final Collection<HuId> vhuIds)
 	{
-		if (vhuIds.isEmpty()) {return ImmutableMap.of();} // shall not happen
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		} // shall not happen
 
 		final HashMap<HuId, Optional<HUReservationEntry>> result = new HashMap<>(vhuIds.size());
 		vhuIds.forEach(huId -> result.put(huId, Optional.empty()));

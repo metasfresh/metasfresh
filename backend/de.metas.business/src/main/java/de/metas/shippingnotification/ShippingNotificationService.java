@@ -24,17 +24,26 @@ package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -50,8 +59,15 @@ import java.util.stream.Stream;
 public class ShippingNotificationService
 {
 	// services
-	private final ShippingNotificationRepository shippingNotificationRepository;
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
+	public static ShippingNotificationService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ShippingNotificationService(ShippingNotificationRepository.newInstanceForJUnitTesting());
+	}
 
 	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
@@ -68,6 +84,11 @@ public class ShippingNotificationService
 	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id)
 	{
 		return shippingNotificationRepository.getRecordById(id);
+	}
+
+	public I_M_Shipping_NotificationLine getLineRecordByLineId(@NonNull final ShippingNotificationLineId id)
+	{
+		return shippingNotificationRepository.getLineRecordByLineId(id);
 	}
 
 	@NonNull
@@ -157,5 +178,54 @@ public class ShippingNotificationService
 	public Stream<ShippingNotificationId> streamIds(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
 	{
 		return shippingNotificationRepository.streamIds(shippingNotificationFilter);
+	}
+
+
+	public String getLocationEmail(@NonNull final ShippingNotificationId shippingNotificationId)
+	{
+		final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
+
+		final ShippingNotification shippingNotification = getById(shippingNotificationId);
+
+		final BPartnerId bpartnerId = shippingNotification.getBPartnerId();
+		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdEvenInactive(shippingNotification.getBpartnerAndLocationId());
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId shippingNotificationContactId = shippingNotification.getContactId();
+
+		if (shippingNotificationContactId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User shippingNotificationContactRecord = partnersRepo.getContactById(shippingNotificationContactId);
+
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, shippingNotificationContactRecord.getC_BPartner_Location_ID());
+		if (contactLocationId != null)
+		{
+			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdEvenInactive(contactLocationId);
+			if (contactLocationRecord == null)
+			{
+				return null;
+			}
+			final String contactLocationEmail = contactLocationRecord.getEMail();
+			if (!Check.isEmpty(contactLocationEmail))
+			{
+				return contactLocationEmail;
+			}
+
+		}
+
+		return null;
+	}
+
+	public boolean isProformaShippingNotification(@NonNull final ShippingNotificationId shippingNotificationId)
+	{
+		return docTypeBL.isProformaShippingNotification(getById(shippingNotificationId).getDocTypeId());
 	}
 }

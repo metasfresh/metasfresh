@@ -18,6 +18,7 @@ import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductTaxCategoryUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestUOMConversionUpsert;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
@@ -97,7 +98,7 @@ public class ProductUpsertProcessor implements Processor
 		final JsonRequestProduct jsonRequestProduct = new JsonRequestProduct();
 
 		jsonRequestProduct.setName(product.getName());
-		jsonRequestProduct.setCode(product.getValue());
+		jsonRequestProduct.setCode(product.getValue() + "_" + product.getBpartnerIdentifier());
 		jsonRequestProduct.setDescription(StringUtils.trimBlankToNull(product.getDescription()));
 		jsonRequestProduct.setUomCode(DEFAULT_UOM_X12DE355_CODE);
 		jsonRequestProduct.setType(DEFAULT_PRODUCT_TYPE);
@@ -108,6 +109,10 @@ public class ProductUpsertProcessor implements Processor
 		getProductTaxCategoryUpsertRequest(product)
 				.map(ImmutableList::of)
 				.ifPresent(jsonRequestProduct::setProductTaxCategories);
+
+		getUOMConversionUpsertRequest(product)
+				.map(ImmutableList::of)
+				.ifPresent(jsonRequestProduct::setUomConversions);
 
 		return Optional.of(jsonRequestProduct);
 	}
@@ -143,6 +148,31 @@ public class ProductUpsertProcessor implements Processor
 		request.setCountryCode(DEFAULT_COUNTRY_CODE);
 		request.setValidFrom(Instant.now().minus(365, ChronoUnit.DAYS));
 		request.setActive(true);
+
+		return Optional.of(request);
+	}
+
+	@NonNull
+	public Optional<JsonRequestUOMConversionUpsert> getUOMConversionUpsertRequest(@NonNull final ProductRow productRow)
+	{
+		if (productRow.getQty() == null)
+		{
+			return Optional.empty();
+		}
+
+		final String toUomCode = UOMCodeEnum.getX12DE355CodeByPCMCode(productRow.getUomCode())
+				.orElse(productRow.getUomCode());
+
+		if (DEFAULT_UOM_X12DE355_CODE.equals(toUomCode))
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestUOMConversionUpsert request = new JsonRequestUOMConversionUpsert();
+
+		request.setFromUomCode(DEFAULT_UOM_X12DE355_CODE);
+		request.setToUomCode(toUomCode);
+		request.setFromToMultiplier(productRow.getQty());
 
 		return Optional.of(request);
 	}

@@ -14,6 +14,17 @@ import { trl } from '../../utils/translations';
 
 const ApplicationsListScreen = () => {
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
+  const applicationsDisplayed = applications.filter((app) => !!app.showInMainMenu);
+
+  //
+  // If there is only one application displayed then start it automatically
+  useEffect(() => {
+    if (applicationsDisplayed.length === 1) {
+      const singleApplicationId = applicationsDisplayed[0].id;
+      console.log(`Automatically starting single application ${singleApplicationId}`);
+      handleAppClick(singleApplicationId);
+    }
+  }, [applications]);
 
   useEffect(() => {
     document.title = 'mobile UI';
@@ -39,16 +50,14 @@ const ApplicationsListScreen = () => {
     <div className="applications-list">
       <LogoHeader />
       <div className="section">
-        {applications
-          .filter((app) => !!app.showInMainMenu)
-          .map((app) => (
-            <ApplicationButton
-              key={app.id}
-              caption={app.caption}
-              iconClassNames={app.iconClassNames}
-              onClick={() => handleAppClick(app.id)}
-            />
-          ))}
+        {applicationsDisplayed.map((app) => (
+          <ApplicationButton
+            key={app.id}
+            caption={app.caption}
+            iconClassNames={app.iconClassNames}
+            onClick={() => handleAppClick(app.id)}
+          />
+        ))}
         <br />
         <ApplicationButton
           key="logout"

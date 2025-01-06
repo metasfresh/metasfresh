@@ -28,10 +28,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAndItemsDAO;
@@ -43,7 +47,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -55,6 +58,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
@@ -65,20 +69,16 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -317,7 +317,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_Item existingItem = getHUAndItemsDAO()
 				.retrieveItem(
 						Preconditions.checkNotNull(hu, "Param 'hu' may not be null"),
-						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"));
+						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"))
+				.orElse(null);
 
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
@@ -356,19 +357,37 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public @NonNull I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		return retrieveItemIfExists(hu, piItem)
+				.orElseThrow(() -> new AdempiereException("No HU Item found for " + hu + " and " + piItem));
+	}
+
+	@Override
+	public Optional<I_M_HU_Item> retrieveItemIfExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		return getHUAndItemsDAO().retrieveItem(hu, piItem);
 	}
 
 	@Override
-	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public I_M_HU_Item retrieveAggregatedItem(final I_M_HU hu)
+	{
+		final I_M_HU_Item huItem = retrieveAggregatedItemOrNull(hu);
+		if (huItem == null)
+		{
+			throw new AdempiereException("No aggregated HU item found for " + hu);
+		}
+		return huItem;
+	}
+
+	@Override
+	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveAggregatedItemOrNull(hu);
 	}
 
 	@Override
-	public List<I_M_HU_Item> retrieveItemsNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Item> retrieveAllItemsNoCache(final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -377,13 +396,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item.class)
 				.addInArrayFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU> retrieveIncludedHUsNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU> retrieveAllIncludedHUsNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -392,13 +411,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU.class)
 				.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -407,13 +426,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item_Storage.class)
 				.addInArrayFilter(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Storage> retrieveStoragesNoCache(final Set<HuId> huIds)
+	public List<I_M_HU_Storage> retrieveAllStoragesNoCache(final Set<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -422,7 +441,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
 				.addInArrayFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
@@ -467,6 +486,28 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@Nullable String itemType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
@@ -479,6 +520,33 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrievePIItems(version, null, bpartnerId, null);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		final List<I_M_HU_PI_Item> materialItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_Material, null, null);
+		if (materialItems.isEmpty())
+		{
+			throw new AdempiereException("No material items found for " + version);
+		}
+		else if (materialItems.size() == 1)
+		{
+			return materialItems.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("More than one material item found for " + version + ": " + materialItems);
+		}
+	}
+
+	private List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable String expectedItemType,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final HuPackingInstructionsId includedPIId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -495,7 +563,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				continue;
 			}
 
+			// Skip if item type does not match
 			final String itemType = piItem.getItemType();
+			if (expectedItemType != null && !expectedItemType.equals(itemType))
+			{
+				continue;
+			}
 
 			//
 			// In case item is of type HandlingUnit, we need to filter by BPartner
@@ -530,6 +603,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				{
 					// accept it
 					// does not matter if we were asked for a specific partner because this is a generic item
+				}
+
+				if (includedPIId != null)
+				{
+					final HuPackingInstructionsId itemIncludedPIId = HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID());
+					if (!HuPackingInstructionsId.equals(includedPIId, itemIncludedPIId))
+					{
+						// don't accept it
+						continue;
+					}
 				}
 			}
 
@@ -746,10 +829,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have set our BPartner or who don't have set a BPartner at all
 		// ... and put first those with specific partner
-		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+		piItemsQueryBuilder.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
-				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
 		//
@@ -820,6 +903,118 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.first();
 	}
 
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		if (piItemIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final HashSet<HuPackingInstructionsVersionId> luPIVersionIds = new HashSet<>();
+
+		//
+		// Iterate PIs, level by level, up to the top and collect LU PI Versions
+		Set<HuPackingInstructionsId> piIdsToCheck = retrievePIIdsByPIItemIds(piItemIds);
+		while (!piIdsToCheck.isEmpty())
+		{
+			final HashSet<HuPackingInstructionsVersionId> parentPIVersionIdsToCheck = new HashSet<>();
+
+			queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piIdsToCheck)
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId)
+					.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.stream()
+					.forEach(piVersion -> {
+						final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+
+						if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(piVersion.getHU_UnitType()))
+						{
+							luPIVersionIds.add(piVersionId);
+						}
+						else
+						{
+							parentPIVersionIdsToCheck.add(piVersionId);
+						}
+					});
+
+			if (!parentPIVersionIdsToCheck.isEmpty())
+			{
+				piIdsToCheck = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID, parentPIVersionIdsToCheck)
+						.create()
+						.listIds(HuPackingInstructionsId::ofRepoId);
+			}
+			else
+			{
+				piIdsToCheck = ImmutableSet.of();
+			}
+		}
+
+		if (luPIVersionIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		//
+		// Get all identified LU PIs and their caption
+		return queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Version.COLUMN_M_HU_PI_Version_ID, luPIVersionIds)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMN_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit)
+				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(HandlingUnitsDAO::extractHuPackingInstructionsIdAndCaption)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return retrievePIIdsByPIItemIds(piItemIds)
+				.stream()
+				.map(this::getPackingInstructionById)
+				.map(huPi -> HuPackingInstructionsIdAndCaption.of(
+						HuPackingInstructionsId.ofRepoId(huPi.getM_HU_PI_ID()),
+						huPi.getName()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Set<HuPackingInstructionsId> retrievePIIdsByPIItemIds(final Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		if (piItemIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, piItemIds)
+				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(HuPackingInstructionsId::ofRepoId);
+
+	}
+
+	private static HuPackingInstructionsIdAndCaption extractHuPackingInstructionsIdAndCaption(final I_M_HU_PI huPI)
+	{
+		return HuPackingInstructionsIdAndCaption.of(
+				HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID()),
+				huPI.getName());
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
@@ -876,9 +1071,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		final HUReservationRepository huReservationRepository = getHUReservationRepository();
-		final AgeAttributesService ageAttributesService = getAgeAttributeService();
-		return new HUQueryBuilder(huReservationRepository, ageAttributesService);
+		return new HUQueryBuilder(getHUReservationRepository(),
+								  getAgeAttributeService(),
+								  getDDOrderMoveScheduleRepository());
 	}
 
 	private HUReservationRepository getHUReservationRepository()
@@ -899,6 +1094,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			return new AgeAttributesService();
 		}
 		return SpringContextHolder.instance.getBean(AgeAttributesService.class);
+	}
+
+	private DDOrderMoveScheduleRepository getDDOrderMoveScheduleRepository()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new DDOrderMoveScheduleRepository();
+		}
+		return SpringContextHolder.instance.getBean(DDOrderMoveScheduleRepository.class);
 	}
 
 	@Override
@@ -977,30 +1182,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.firstOnly(I_M_HU_PI.class);
 
-	}
-
-	@Override
-	public I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(
-			final @CacheCtx Properties ctx,
-			final I_M_Product product_NOTUSED,
-			final @CacheTrx String trxName)
-	{
-		return retrieveEmptiesDistributionNetwork(ctx, trxName);
-	}
-
-	@Cached(cacheName = I_DD_NetworkDistribution.Table_Name
-			+ "#by"
-			+ "#" + I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed)
-	@Nullable
-	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(
-			final @CacheCtx Properties ctx,
-			final @CacheTrx String trxName)
-	{
-		return queryBL.createQueryBuilder(I_DD_NetworkDistribution.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter()
-				.filter(new EqualsQueryFilter<>(I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed, true))
-				.create()
-				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
 	@Override

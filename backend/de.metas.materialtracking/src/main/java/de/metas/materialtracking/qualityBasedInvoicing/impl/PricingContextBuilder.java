@@ -22,19 +22,13 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -42,6 +36,12 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
 
 /**
  * Helper class used to create the inital pricing context when invoicing.
@@ -53,6 +53,7 @@ public class PricingContextBuilder
 {
 	// Services
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	//
 	// Parameters
@@ -66,7 +67,7 @@ public class PricingContextBuilder
 		Check.assumeNotNull(plv,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
-		final I_M_PriceList pl = plv.getM_PriceList();
+		final I_M_PriceList pl = priceListDAO.getById(PriceListId.ofRepoId(plv.getM_PriceList_ID()));
 		Check.assumeNotNull(pl,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
@@ -82,7 +83,7 @@ public class PricingContextBuilder
 	/**
 	 * @return vendor invoicing info; never return null
 	 */
-	private final IVendorInvoicingInfo getVendorInvoicingInfo()
+	private IVendorInvoicingInfo getVendorInvoicingInfo()
 	{
 		Check.assumeNotNull(_vendorInvoicingInfo, "_vendorInvoicingInfo not null");
 		return _vendorInvoicingInfo;
@@ -154,6 +155,7 @@ public class PricingContextBuilder
 		pricingCtx.setPricingSystemId(pricingSytemId);
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom())); // just to drive home this point
+		pricingCtx.setCountryId(vendorInvoicingInfo.getCountryId());
 	}
 
 }

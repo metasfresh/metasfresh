@@ -53,7 +53,7 @@ public class PickingJobRepository
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 
-	public void save(final PickingJob pickingJob)
+	public void save(@NonNull final PickingJob pickingJob)
 	{
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}

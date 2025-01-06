@@ -155,12 +155,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
-import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
 import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
 @ToString
 public class JsonPersisterService
@@ -541,7 +541,7 @@ public class JsonPersisterService
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBPartnerComposite.isPresent())
+		if (optBPartnerComposite.isEmpty())
 		{
 			return Optional.empty(); // 404
 		}
@@ -613,7 +613,7 @@ public class JsonPersisterService
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBPartnerComposite.isPresent())
+		if (optBPartnerComposite.isEmpty())
 		{
 			return Optional.empty(); // 404
 		}
@@ -1007,7 +1007,7 @@ public class JsonPersisterService
 		if (bpartner.getGroupId() == null)
 		{
 			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
-			if (!optionalBPGroup.isPresent())
+			if (optionalBPGroup.isEmpty())
 			{
 				throw MissingResourceException.builder()
 						.resourceName("group")
@@ -1684,6 +1684,7 @@ public class JsonPersisterService
 		}
 
 		return result.build();
+
 	}
 
 	private JsonResponseUpsertItemBuilder syncJsonBankAccount(
@@ -1691,64 +1692,73 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermBankAccountIndex shortTermIndex)
 	{
-		final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
-
-		final BPartnerBankAccount existingBankAccount = jsonRetrieverService
-				.resolveBankAccountId(ExternalIdentifier.of(jsonBankAccount.getIdentifier()), shortTermIndex.getBpartnerComposite())
-				.map(shortTermIndex::extract)
-				.orElseGet(() -> shortTermIndex.extractOrNull(jsonBankAccount.getIban()));
-
-		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
-				.identifier(jsonBankAccount.getIdentifier());
-
-		final SyncOutcome syncOutcome;
-		final BPartnerBankAccount bankAccount;
-		if (existingBankAccount != null)
+		try
 		{
-			bankAccount = existingBankAccount;
-			shortTermIndex.remove(existingBankAccount.getId());
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
 
-			syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
-		}
-		else
-		{
-			if (effectiveSyncAdvise.isFailIfNotExists())
+			final BPartnerBankAccount existingBankAccount = jsonRetrieverService
+					.resolveBankAccountId(ExternalIdentifier.of(jsonBankAccount.getIdentifier()), shortTermIndex.getBpartnerComposite())
+					.map(shortTermIndex::extract)
+					.orElseGet(() -> shortTermIndex.extractOrNull(jsonBankAccount.getIban()));
+
+			final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
+					.identifier(jsonBankAccount.getIdentifier());
+
+			final SyncOutcome syncOutcome;
+			final BPartnerBankAccount bankAccount;
+			if (existingBankAccount != null)
 			{
-				throw MissingResourceException.builder().resourceName("bankAccount")
-						.resourceIdentifier(jsonBankAccount.getIdentifier())
-						.parentResource(jsonBankAccount)
-						.build()
-						.setParameter("syncAdvise", effectiveSyncAdvise);
+				bankAccount = existingBankAccount;
+				shortTermIndex.remove(existingBankAccount.getId());
+
+				syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
+			}
+			else
+			{
+				if (effectiveSyncAdvise.isFailIfNotExists())
+				{
+					throw MissingResourceException.builder().resourceName("bankAccount")
+							.resourceIdentifier(jsonBankAccount.getIdentifier())
+							.parentResource(jsonBankAccount)
+							.build()
+							.setParameter("syncAdvise", effectiveSyncAdvise);
+				}
+
+				final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+				if (currencyId == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("bankAccount.currencyId")
+							.resourceIdentifier(jsonBankAccount.getCurrencyCode())
+							.parentResource(jsonBankAccount)
+							.build()
+							.setParameter("syncAdvise", effectiveSyncAdvise);
+				}
+
+				bankAccount = shortTermIndex.newBankAccount(jsonBankAccount.getIban(), currencyId);
+				syncOutcome = SyncOutcome.CREATED;
 			}
 
-			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
-			if (currencyId == null)
+			if (syncOutcome != SyncOutcome.NOTHING_DONE)
 			{
-				throw MissingResourceException.builder()
-						.resourceName("bankAccount.currencyId")
-						.resourceIdentifier(jsonBankAccount.getCurrencyCode())
-						.parentResource(jsonBankAccount)
-						.build()
-						.setParameter("syncAdvise", effectiveSyncAdvise);
+				syncJsonToBankAccount(jsonBankAccount, bankAccount);
 			}
 
-			bankAccount = shortTermIndex.newBankAccount(jsonBankAccount.getIban(), currencyId);
-			syncOutcome = SyncOutcome.CREATED;
+			return resultBuilder.syncOutcome(syncOutcome);
 		}
-
-		if (syncOutcome != SyncOutcome.NOTHING_DONE)
+		catch (final Exception e)
 		{
-			syncJsonToBankAccount(jsonBankAccount, bankAccount);
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("bankAccount.iban", jsonBankAccount.getIban())
+					.setParameter("bankAccount.identifier", jsonBankAccount.getIdentifier());
 		}
-
-		return resultBuilder.syncOutcome(syncOutcome);
 	}
 
 	private void syncJsonToBankAccount(
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
 			@NonNull final BPartnerBankAccount bankAccount)
 	{
-		bankAccount.setIban(bankAccount.getIban());
+		bankAccount.setIban(jsonBankAccount.getIban());
 
 		// active
 		if (jsonBankAccount.isActiveSet())

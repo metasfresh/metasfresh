@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inventory;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -31,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -48,4 +50,6 @@ public class CreateVirtualInventoryWithQtyReq
 	@NonNull ZonedDateTime movementDate;
 	@Nullable AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable PickingJobId pickingJobId;
+	@Nullable FlatrateTermId modularContractId;
+	@Nullable TableRecordReference forRecordRef;
 }

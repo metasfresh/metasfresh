@@ -3,18 +3,15 @@ package de.metas.ui.web.mail;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.EmailAttachment;
-import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
-import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
-import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
 import de.metas.ui.web.mail.WebuiMailRepository.WebuiEmailRemovedEvent;
@@ -34,16 +31,15 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.event.EventListener;
@@ -58,6 +54,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -93,15 +91,14 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 @RestController
 @RequestMapping(MailRestController.ENDPOINT)
 @Schema(description = "Outbound email endpoint")
+@RequiredArgsConstructor
 public class MailRestController
 {
 	private static final Logger logger = LogManager.getLogger(MailRestController.class);
 
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
-	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final UserSession userSession;
 	private final WebuiMailRepository mailRepo;
 	private final WebuiMailAttachmentsRepository mailAttachmentsRepo;
@@ -116,25 +113,9 @@ public class MailRestController
 	private static final String PATCH_FIELD_TemplateId = "templateId";
 	private static final Set<String> PATCH_FIELD_ALL = ImmutableSet.of(PATCH_FIELD_To, PATCH_FIELD_Subject, PATCH_FIELD_Message, PATCH_FIELD_Attachments, PATCH_FIELD_TemplateId);
 
-	public MailRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final WebuiMailRepository mailRepo,
-			@NonNull final WebuiMailAttachmentsRepository mailAttachmentsRepo,
-			@NonNull final MailService mailService,
-			@NonNull final DocumentCollection documentCollection,
-			@NonNull final MailRestService mailRestService)
-	{
-		this.userSession = userSession;
-		this.mailRepo = mailRepo;
-		this.mailAttachmentsRepo = mailAttachmentsRepo;
-		this.mailService = mailService;
-		this.documentCollection = documentCollection;
-		this.mailRestService = mailRestService;
-	}
-
 	private void assertReadable(final WebuiEmail email)
 	{
-		// Make sure current logged in user is the owner
+		// Make sure current logged-in user is the owner
 		if (!userSession.isLoggedInAs(email.getOwnerUserId()))
 		{
 			throw new AdempiereException("No credentials to change the email")
@@ -162,17 +143,35 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserId adUserId = userSession.getLoggedUserId();
-		userBL.assertCanSendEMail(adUserId);
+		final UserId fromUserId = userSession.getLoggedUserId();
+		mailService.findMailbox(mailboxQuery(fromUserId)); // i.e. assert can send mails / mailbox is valid
 
-		final IntegerLookupValue from = IntegerLookupValue.of(adUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
+
+		final IntegerLookupValue from = IntegerLookupValue.of(fromUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 
 		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(contextDocumentPath);
+
+		final List<LookupValue> lookupValues = new ArrayList<>();
 		final Integer toUserId = attributes.getAD_User_ID();
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
+		if (to != null)
+		{
+			lookupValues.add(to);
+		}
 
-		final String emailId = mailRepo.createNewEmail(adUserId, from, to, contextDocumentPath).getEmailId();
+		final Integer ccUserId = attributes.getCC_User_ID();
+		if (ccUserId != null && ccUserId > 0) // avoid user System
+		{
+			final LookupValue cc = mailRepo.getToByUserId(ccUserId);
+			if (cc != null)
+			{
+				lookupValues.add(cc);
+			}
+		}
+		final LookupValuesList emailsTo = LookupValuesList.fromCollection(lookupValues);
+
+		final String emailId = mailRepo.createNewEmail(fromUserId, from, emailsTo, contextDocumentPath).getEmailId();
 
 		if (contextDocumentPath != null)
 		{
@@ -184,8 +183,8 @@ public class MailRestController
 				{
 					final Supplier<LookupValue> attachmentProducer = () -> mailAttachmentsRepo
 							.createAttachment(emailId,
-											  attachment.getFilename(),
-											  new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
+									attachment.getFilename(),
+									new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
 
 					attachFile(emailId, attachmentProducer);
 				}
@@ -221,69 +220,46 @@ public class MailRestController
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
-		final String emailId = webuiEmail.getEmailId();
-
-		//
-		// Create the email object
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(userSession.getClientId());
-		final EMailCustomType mailCustomType = null;
-
-		final UserId fromUserId = webuiEmail.getFrom().getIdAs(UserId::ofRepoId);
-		final UserEMailConfig userEmailConfig = userBL.getEmailConfigById(fromUserId);
-
-		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
+		final List<EMailAddress> toList = extractEMailAddresses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
 			throw new FillMandatoryException("To");
 		}
-		final EMailAddress to = toList.get(0);
-		final String subject = webuiEmail.getSubject();
-		final String message = webuiEmail.getMessage();
-		final boolean html = false;
-		final EMail email = mailService.createEMail(
-				tenantEmailConfig,
-				mailCustomType,
-				userEmailConfig,
-				to,
-				subject,
-				message,
-				html);
-		toList.stream().skip(1).forEach(email::addTo);
 
-		webuiEmail.getAttachments()
-				.stream()
-				.map(webuiAttachment -> {
-					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
-					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
-				})
-				.forEach(email::addAttachment);
-
-		//
-		// Actually send the email
-		final EMailSentStatus sentStatus = email.send();
-		if (!sentStatus.isSentOK())
-		{
-			throw new AdempiereException("Failed sending the email: " + sentStatus.getSentMsg());
-		}
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(webuiEmail.getFromUserId()))
+				.toList(toList)
+				.subject(webuiEmail.getSubject())
+				.message(webuiEmail.getMessage())
+				.html(false)
+				.attachments(extractEMailAttachments(webuiEmail))
+				.build());
 
 		//
 		// Delete temporary attachments
-		mailAttachmentsRepo.deleteAttachments(emailId, webuiEmail.getAttachments());
+		mailAttachmentsRepo.deleteAttachments(webuiEmail.getEmailId(), webuiEmail.getAttachments());
 
 		// Mark the webui email as sent
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
-	private Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
+	private MailboxQuery mailboxQuery(final @NonNull UserId fromUserId)
 	{
+		return MailboxQuery.builder()
+				.clientId(userSession.getClientId())
+				.fromUserId(fromUserId)
+				.build();
+	}
 
+	private Stream<EMailAddress> extractEMailAddresses(final LookupValuesList users)
+	{
 		return users.stream()
 				.map(this::extractEMailAddress);
 	}
 
 	private EMailAddress extractEMailAddress(final LookupValue userLookupValue)
 	{
-		final UserId adUserId = userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		final UserId adUserId = extractUserIdOrNull(userLookupValue);
 		if (adUserId == null)
 		{
 			// consider the email as the DisplayName
@@ -291,13 +267,33 @@ public class MailRestController
 		}
 		else
 		{
-			final I_AD_User adUser = userDAO.getById(adUserId);
-			final String email = adUser.getEMail();
-			if (Check.isEmpty(email, true))
-			{
-				throw new AdempiereException("User " + adUser.getName() + " does not have email");
-			}
-			return EMailAddress.ofString(email);
+			return userBL.getEMailAddressById(adUserId).orElseThrow();
+		}
+	}
+
+	private ImmutableList<EMailAttachment> extractEMailAttachments(final WebuiEmail webuiEmail)
+	{
+		final String emailId = webuiEmail.getEmailId();
+
+		return webuiEmail.getAttachments()
+				.stream()
+				.map(webuiAttachment -> {
+					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
+					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private static UserId extractUserIdOrNull(final LookupValue userLookupValue)
+	{
+		try
+		{
+			return userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		}
+		catch (final Exception ex)
+		{
+			return null;
 		}
 	}
 
@@ -345,14 +341,8 @@ public class MailRestController
 		final String fieldName = event.getPath();
 		if (PATCH_FIELD_To.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonTo = (List<Object>)event.getValue();
+			newEmailBuilder.to(extractStringLookupValuesList(event));
 
-			@SuppressWarnings("unchecked") final LookupValuesList to = jsonTo.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::integerLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.to(to);
 		}
 		else if (PATCH_FIELD_Subject.equals(fieldName))
 		{
@@ -366,18 +356,17 @@ public class MailRestController
 		}
 		else if (PATCH_FIELD_Attachments.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonAttachments = (List<Object>)event.getValue();
-
-			@SuppressWarnings("unchecked") final LookupValuesList attachments = jsonAttachments.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::stringLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.attachments(attachments);
+			newEmailBuilder.attachments(extractStringLookupValuesList(event));
 		}
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+
+			if (templateId == null)
+			{
+				throw new AdempiereException("Invalid " + PATCH_FIELD_TemplateId + ": " + event.getValue());
+			}
+
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
@@ -387,6 +376,29 @@ public class MailRestController
 					.setParameter("fieldName", fieldName)
 					.setParameter("availablePaths", PATCH_FIELD_ALL);
 		}
+	}
+
+	private static LookupValuesList extractStringLookupValuesList(final JSONDocumentChangedEvent event)
+	{
+		@SuppressWarnings("unchecked") final List<Object> jsonList = (List<Object>)event.getValue();
+		//noinspection unchecked
+		return jsonList.stream()
+				.map(value -> toStringLookupValue(value))
+				.collect(LookupValuesList.collect());
+	}
+
+	private static LookupValue.StringLookupValue toStringLookupValue(final Object value)
+	{
+		if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.stringLookupValueFromJsonMap(map);
+		}
+		else
+		{
+			return LookupValue.StringLookupValue.of((String)value, (String)value);
+		}
+
 	}
 
 	@EventListener
@@ -402,7 +414,20 @@ public class MailRestController
 	public JSONLookupValuesPage getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
-		return toJson(mailRepo.getToTypeahead(emailId, query));
+		final LookupValuesPage toTypeahead = mailRepo.getToTypeahead(emailId, query);
+		if (!toTypeahead.isEmpty())
+		{
+			return toJson(toTypeahead);
+		}
+		else if (!Check.isEmpty(query))
+		{
+			final String email = query.trim();
+			return toJson(LookupValuesPage.ofNullable(LookupValue.StringLookupValue.of(email, email)));
+		}
+		else
+		{
+			return toJson(LookupValuesPage.EMPTY.EMPTY);
+		}
 	}
 
 	private JSONLookupValuesPage toJson(final LookupValuesPage page)
@@ -459,6 +484,11 @@ public class MailRestController
 	{
 		final Properties ctx = Env.getCtx();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
+
+		if (boilerPlate == null)
+		{
+			throw new AdempiereException("No template found for " + templateId);
+		}
 
 		//
 		// Attributes

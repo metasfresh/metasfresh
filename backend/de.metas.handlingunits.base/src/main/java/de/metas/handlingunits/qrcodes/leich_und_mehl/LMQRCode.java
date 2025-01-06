@@ -23,15 +23,12 @@
 package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
 import de.metas.global_qrcodes.GlobalQRCode;
-import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -49,6 +46,7 @@ public class LMQRCode implements IHUQRCode
 	@NonNull BigDecimal weightInKg;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable String lotNumber;
+	@Nullable String productNo;
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -67,23 +65,14 @@ public class LMQRCode implements IHUQRCode
 	}
 
 	@Override
-	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
-	{
-		if (AttributeCode.equals(attributeCode, Weightables.ATTR_WeightNet))
-		{
-			return Optional.of(weightInKg.toString());
-		}
-		else if (AttributeCode.equals(attributeCode, AttributeConstants.ATTR_BestBeforeDate))
-		{
-			return bestBeforeDate != null ? Optional.of(bestBeforeDate.toString()) : Optional.empty();
-		}
-		else if (AttributeCode.equals(attributeCode, AttributeConstants.ATTR_LotNumber))
-		{
-			return StringUtils.trimBlankToOptional(lotNumber);
-		}
-		else
-		{
-			return Optional.empty();
-		}
-	}
+	public Optional<BigDecimal> getWeightInKg() {return Optional.of(weightInKg);}
+
+	@NonNull
+	public BigDecimal getWeightInKgNotNull() {return weightInKg;}
+
+	@Override
+	public Optional<LocalDate> getBestBeforeDate() {return Optional.ofNullable(bestBeforeDate);}
+
+	@Override
+	public Optional<String> getLotNumber() {return StringUtils.trimBlankToOptional(lotNumber);}
 }

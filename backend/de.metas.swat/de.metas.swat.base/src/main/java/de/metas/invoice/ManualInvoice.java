@@ -92,6 +92,11 @@ public class ManualInvoice
 	@Getter(AccessLevel.NONE)
 	BigDecimal totalLines;
 
+
+	@NonNull
+	@Getter(AccessLevel.NONE)
+	BigDecimal cashRoundingAmt;
+
 	@Nullable
 	BPartnerContactId billContactId;
 
@@ -123,6 +128,7 @@ public class ManualInvoice
 			@NonNull final CurrencyId currencyId,
 			@NonNull final BigDecimal grandTotal,
 			@NonNull final BigDecimal totalLines,
+			@NonNull final BigDecimal cashRoundingAmt,
 			@Nullable final BPartnerContactId billContactId,
 			@Nullable final String poReference,
 			@Nullable final String externalHeaderId,
@@ -141,6 +147,7 @@ public class ManualInvoice
 		this.soTrx = soTrx;
 		this.currencyId = currencyId;
 		this.grandTotal = grandTotal;
+		this.cashRoundingAmt = cashRoundingAmt;
 		this.totalLines = totalLines;
 		this.billContactId = billContactId;
 		this.poReference = poReference;
@@ -152,7 +159,7 @@ public class ManualInvoice
 	}
 
 	@NonNull
-	public InvoiceLineId getRepoIdByExternalLineId(@NonNull final String externalLineId)
+	public InvoiceAndLineId getRepoIdByExternalLineId(@NonNull final String externalLineId)
 	{
 		return Optional.ofNullable(externalLineId2Line.get(externalLineId))
 				.map(ManualInvoiceLine::getId)
@@ -173,6 +180,12 @@ public class ManualInvoice
 		return Money.of(grandTotal, currencyId);
 	}
 
+	@NonNull
+	public Money getCashRoundingAmt()
+	{
+		return Money.of(cashRoundingAmt, currencyId);
+	}
+
 	public void validateGrandTotal(@NonNull final Money grandTotalToTest)
 	{
 		final Money grandTotal = getGrandTotal();
@@ -190,8 +203,9 @@ public class ManualInvoice
 	{
 		final Money grandTotal = getGrandTotal();
 		final Money totalLines = getTotalLines();
+		final Money cashRoundingAmt = getCashRoundingAmt();
 
-		final Money taxTotal = grandTotal.subtract(totalLines);
+		final Money taxTotal = grandTotal.subtract(totalLines).subtract(cashRoundingAmt);
 		if (!taxTotal.equals(taxTotalToTest))
 		{
 			throw new AdempiereException("Given Tax Amount does not match the result from the invoice lines!")
@@ -200,4 +214,5 @@ public class ManualInvoice
 					.setParameter("Invoice.TaxTotal", taxTotal);
 		}
 	}
+
 }

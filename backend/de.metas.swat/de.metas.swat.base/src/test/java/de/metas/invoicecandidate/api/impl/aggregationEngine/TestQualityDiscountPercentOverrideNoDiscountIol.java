@@ -35,7 +35,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
@@ -83,7 +83,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> inOutLines, @NonNull List<IInvoiceHeader> invoices)
 	{
 		super.step_validate_after_aggregation(invoiceCandidates, inOutLines, invoices);
 

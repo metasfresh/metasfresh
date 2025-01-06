@@ -44,11 +44,6 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	/**
-	 *
-	 * @param candidateChangeHandler
-	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
-	 */
 	public PurchaseCandidateCreatedOrUpdatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
@@ -77,7 +72,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		else
 		{
 			candidateBuilder = createInitialBuilder()
-					.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId());
+					.clientAndOrgId(event.getClientAndOrgId());
 			purchaseDetailBuilder = PurchaseDetail.builder();
 		}
 

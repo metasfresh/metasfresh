@@ -1044,6 +1044,29 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
+	 * Set Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRawMaterialsIssueStrategy (@Nullable java.lang.String RawMaterialsIssueStrategy);
+
+	/**
+	 * Get Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRawMaterialsIssueStrategy();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_RawMaterialsIssueStrategy = new ModelColumn<>(I_AD_WF_Node.class, "RawMaterialsIssueStrategy", null);
+	String COLUMNNAME_RawMaterialsIssueStrategy = "RawMaterialsIssueStrategy";
+
+	/**
 	 * Set Setup Time.
 	 * Setup time before starting Production
 	 *
@@ -1156,6 +1179,27 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SubflowExecution = new ModelColumn<>(I_AD_WF_Node.class, "SubflowExecution", null);
 	String COLUMNNAME_SubflowExecution = "SubflowExecution";
+
+	/**
+	 * Set Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTargetPlanningStatus (@Nullable java.lang.String TargetPlanningStatus);
+
+	/**
+	 * Get Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTargetPlanningStatus();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_TargetPlanningStatus = new ModelColumn<>(I_AD_WF_Node.class, "TargetPlanningStatus", null);
+	String COLUMNNAME_TargetPlanningStatus = "TargetPlanningStatus";
 
 	/**
 	 * Set Units by Cycles.

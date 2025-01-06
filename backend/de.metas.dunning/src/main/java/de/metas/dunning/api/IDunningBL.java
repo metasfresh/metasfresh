@@ -35,7 +35,6 @@ import de.metas.util.ISingletonService;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 

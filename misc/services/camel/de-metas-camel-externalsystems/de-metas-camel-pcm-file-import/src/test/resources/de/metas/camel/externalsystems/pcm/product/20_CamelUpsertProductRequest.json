@@ -7,7 +7,7 @@
         "externalVersion": null,
         "externalReferenceUrl": null,
         "requestProduct": {
-          "code": "productValue",
+          "code": "productValue_bpartnerIdentifier_1",
           "codeSet": true,
           "name": "productName",
           "nameSet": true,
@@ -66,6 +66,17 @@
               "excludedFromPurchaseSet": false,
               "exclusionFromPurchaseReason": null,
               "exclusionFromPurchaseReasonSet": false
+            }
+          ],
+          "productTaxCategories": null,
+          "uomConversions": [
+            {
+              "fromUomCode": "PCE",
+              "toUomCode": "mm",
+              "fromToMultiplier": 4250,
+              "fromToMultiplierSet": true,
+              "catchUOMForProduct": null,
+              "catchUOMForProductSet": false
             }
           ]
         },

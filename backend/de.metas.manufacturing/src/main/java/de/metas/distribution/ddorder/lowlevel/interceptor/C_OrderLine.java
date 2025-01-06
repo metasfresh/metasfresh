@@ -23,8 +23,10 @@
 package de.metas.distribution.ddorder.lowlevel.interceptor;
 
 import de.metas.distribution.ddorder.material_dispo.SimulatedDDOrderCleanUpService;
+import de.metas.distribution.ddordercandidate.material_dispo.SimulatedDDOrderCandidateCleanUpService;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_OrderLine;
@@ -33,19 +35,17 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_OrderLine.class)
 @Component
+@RequiredArgsConstructor
 public class C_OrderLine
 {
-	@NonNull
-	private final SimulatedDDOrderCleanUpService simulatedDDOrderCleanUpService;
-
-	public C_OrderLine(final @NonNull SimulatedDDOrderCleanUpService simulatedDDOrderCleanUpService)
-	{
-		this.simulatedDDOrderCleanUpService = simulatedDDOrderCleanUpService;
-	}
+	@NonNull private final SimulatedDDOrderCleanUpService simulatedDDOrderCleanUpService;
+	@NonNull private final SimulatedDDOrderCandidateCleanUpService simulatedDDOrderCandidateCleanUpService;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void removeSimulatedDDOrder(final I_C_OrderLine orderLine)
 	{
-		simulatedDDOrderCleanUpService.deleteSimulatedDDOrderFor(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		simulatedDDOrderCleanUpService.deleteSimulatedDDOrderFor(salesOrderLineId);
+		simulatedDDOrderCandidateCleanUpService.deleteSimulatedBySalesOrderLineId(salesOrderLineId);
 	}
 }

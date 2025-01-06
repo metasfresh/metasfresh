@@ -1,7 +1,6 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -10,8 +9,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -151,8 +150,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  */
 
 @ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
-public class
-OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
+public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
 					.atTime(LocalTime.parse("23:07:16.193"))
@@ -193,7 +191,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
@@ -303,7 +301,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		@Override
 		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
+			return Optional.of(Quantitys.zero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 
@@ -500,8 +498,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final List<JsonOLCand> olCands = response.getResult();
 			assertThat(olCands).hasSize(1);
 
-			final JsonOLCand olCand = olCands.get(0);
-			return olCand;
+            return olCands.get(0);
 		}
 	}
 
@@ -1066,7 +1063,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final JsonOLCandCreateRequest request = JsonOLCandUtil.loadJsonOLCandCreateRequest(RESOURCE_PATH + "OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
@@ -1098,7 +1095,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
 		testMasterdata.createSalesRep("ABC-DEF-12345");
-		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+		testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesInvoice));
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
 				.orgId(defaultOrgId)

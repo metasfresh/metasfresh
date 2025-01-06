@@ -18,9 +18,11 @@
     "classnames": "^2.3.1",
     "connected-react-router": "^6.9.1",
     "counterpart": "^0.18.6",
+    "gs1-barcode-parser-mod": "^1.0.7",
     "immer": "9.0.7",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
+    "print-js": "^1.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-error-boundary": "^4.0.12",
@@ -29,6 +31,7 @@
     "react-router": "^5.2.1",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
+    "react-toastify": "7.0.0",
     "redux-localstorage-simple": "^2.4.1",
     "reselect": "^4.0.0",
     "sockjs-client": "^1.5.2",
@@ -49,7 +52,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "cross-env GENERATE_SOURCEMAP=true react-scripts build",
+    "build": "react-scripts build",
     "lint": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --quiet",
     "lintfix": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --fix",
     "test": "react-scripts test",
@@ -78,16 +81,14 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.15.0",
+    "@babel/core": "^7.16.0",
     "@babel/eslint-parser": "7.15.0",
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
     "@babel/plugin-transform-regenerator": "^7.14.5",
     "@babel/preset-env": "^7.15.0",
-    "@babel/preset-react": "7.14.5",
     "@babel/register": "7.15.3",
     "@babel/runtime": "7.15.3",
     "babel-plugin-dynamic-import-node": "2.3.3",
-    "cross-env": "^7.0.3",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.24.0",
     "eslint-plugin-jest": "24.4.0",
@@ -97,6 +98,9 @@
     "prettier": "2.3.2",
     "react-hot-loader": "4.13.0",
     "sass": "^1.46.0"
+  },
+  "resolutions": {
+    "@babel/core": "^7.16.0"
   },
   "homepage": "/mobile"
 }

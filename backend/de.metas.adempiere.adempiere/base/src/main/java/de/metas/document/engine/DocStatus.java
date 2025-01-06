@@ -1,10 +1,11 @@
 package de.metas.document.engine;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_C_Order;
 
@@ -37,25 +38,26 @@ import java.util.Set;
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public enum DocStatus implements ReferenceListAwareEnum
 {
-	Drafted(IDocument.STATUS_Drafted), //
-	Completed(IDocument.STATUS_Completed),//
-	Approved(IDocument.STATUS_Approved),//
-	Invalid(IDocument.STATUS_Invalid),//
-	NotApproved(IDocument.STATUS_NotApproved),//
-	Voided(IDocument.STATUS_Voided),//
-	Reversed(IDocument.STATUS_Reversed),//
-	Closed(IDocument.STATUS_Closed),//
-	Unknown(IDocument.STATUS_Unknown),//
-	InProgress(IDocument.STATUS_InProgress),//
-	WaitingPayment(IDocument.STATUS_WaitingPayment),//
-	WaitingConfirmation(IDocument.STATUS_WaitingConfirmation) //
+	Drafted(IDocument.STATUS_Drafted),
+	Completed(IDocument.STATUS_Completed),
+	Approved(IDocument.STATUS_Approved),
+	Invalid(IDocument.STATUS_Invalid),
+	NotApproved(IDocument.STATUS_NotApproved),
+	Voided(IDocument.STATUS_Voided),
+	Reversed(IDocument.STATUS_Reversed),
+	Closed(IDocument.STATUS_Closed),
+	Unknown(IDocument.STATUS_Unknown),
+	InProgress(IDocument.STATUS_InProgress),
+	WaitingPayment(IDocument.STATUS_WaitingPayment),
+	WaitingConfirmation(IDocument.STATUS_WaitingConfirmation),
 	;
 
 	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_Order.DOCSTATUS_AD_Reference_ID); // 131
 
 	private static final ImmutableSet<DocStatus> COMPLETED_OR_CLOSED_STATUSES = ImmutableSet.of(Completed, Closed);
 
-	@Getter
+	private static final ReferenceListAwareEnums.ValuesIndex<DocStatus> index = ReferenceListAwareEnums.index(values());
+
 	private final String code;
 
 	DocStatus(final String code)
@@ -70,6 +72,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 	}
 
 	@Nullable
+	@JsonCreator
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
@@ -82,17 +85,16 @@ public enum DocStatus implements ReferenceListAwareEnum
 		return docStatus != null ? docStatus : Unknown;
 	}
 
-	public static DocStatus ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
+	public static DocStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	public static String toCodeOrNull(@Nullable final DocStatus docStatus)
 	{
 		return docStatus != null ? docStatus.getCode() : null;
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<DocStatus> index = ReferenceListAwareEnums.index(values());
+	@Override
+	@JsonValue
+	public String getCode() {return code;}
 
 	public boolean isDrafted()
 	{
@@ -182,6 +184,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 				|| this == Invalid;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDraftedInProgressOrCompleted()
 	{
 		return this == Drafted

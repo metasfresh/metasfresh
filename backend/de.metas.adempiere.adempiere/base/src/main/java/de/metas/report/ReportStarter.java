@@ -12,6 +12,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.RunOutOfTrx;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
 import de.metas.report.server.OutputType;
 import de.metas.util.Check;
@@ -30,6 +31,7 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -60,7 +62,6 @@ public abstract class ReportStarter extends JavaProcess
 
 	private final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
 	private final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	protected abstract ExecuteReportStrategy getExecuteReportStrategy();
 
@@ -72,6 +73,7 @@ public abstract class ReportStarter extends JavaProcess
 	 * </ul>
 	 */
 	@Override
+	@RunOutOfTrx // IMPORTANT: run out of trx because in case we are creating some T_Selection, and then we want to call the jasper server, we need that selection to be commited
 	protected final String doIt()
 	{
 		final ProcessInfo pi = getProcessInfo();
@@ -223,7 +225,7 @@ public abstract class ReportStarter extends JavaProcess
 		final String reportContentType = outputType.getContentType();
 
 		final String reportFilename;
-		if (Check.isNotBlank(result.getFilename()))
+		if (Check.isNotBlank(result.getFilename()) && !isDocument(processInfo)) // in case of documents we use DocumentInfo as filename
 		{
 			reportFilename = result.getFilename();
 			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
@@ -231,7 +233,7 @@ public abstract class ReportStarter extends JavaProcess
 		else
 		{
 			reportFilename = extractReportFilename(processInfo, outputType);
-			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
+			logger.debug("executeReport's result has a blank filename or the record is a document; -> use extracted filename={} for the exported file", reportFilename);
 		}
 
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
@@ -242,7 +244,7 @@ public abstract class ReportStarter extends JavaProcess
 		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
-				() -> pi.getTitle(),
+				pi::getTitle,
 				() -> "report_" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0));
 
 		final String fileExtension = outputType.getFileExtension();
@@ -252,7 +254,21 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	@Nullable
-	private String extractReportBasename_IfDocument(final ProcessInfo pi)
+	private String extractReportBasename_IfDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.map(IDocument::getDocumentInfo)
+				.orElse(null);
+	}
+
+	private static boolean isDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.isPresent();
+	}
+
+	@Nullable
+	private static IDocument getDocument(@NonNull final ProcessInfo pi)
 	{
 		final TableRecordReference recordRef = pi.getRecordRefOrNull();
 		if (recordRef == null)
@@ -262,13 +278,8 @@ public abstract class ReportStarter extends JavaProcess
 
 		final Object record = recordRef.getModel();
 
-		final IDocument document = documentBL.getDocumentOrNull(record);
-		if (document == null)
-		{
-			return null;
-		}
-
-		return document.getDocumentInfo();
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		return documentBL.getDocumentOrNull(record);
 	}
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)

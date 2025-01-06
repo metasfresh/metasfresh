@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.strategy.impl;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
 public final class CopyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
@@ -38,7 +39,7 @@ public final class CopyHUAttributeTransferStrategy implements IHUAttributeTransf
 	@Override
 	public void transferAttribute(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
-		final IAttributeStorage attributesFrom = request.getAttributesFrom();
+		final IAttributeSet attributesFrom = request.getAttributesFrom();
 		final Object value = attributesFrom.getValue(attribute);
 
 		final IAttributeStorage attributesTo = request.getAttributesTo();

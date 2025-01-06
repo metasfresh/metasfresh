@@ -24,38 +24,8 @@
 		<defaultValueExpression><![CDATA[new BigDecimal(1000000)]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
--- metas: org
-COALESCE(org_bp.name,'') 	AS org_name,
-COALESCE(c_location.address1,'')AS org_address1,
-COALESCE(c_location.postal,'') 	AS org_postal,
-COALESCE(c_location.city,'') 	AS org_city,
-COALESCE(bpb.accountno,'')	AS org_bank_acct,
-COALESCE(bank.name,'')		AS org_bank_name,
-COALESCE(bpb.routingno,'') 	AS org_bank_blz,
-COALESCE(bpb.iban,'')		AS org_bank_iban,
-COALESCE(bank.swiftcode,'')	AS org_bank_swift,
-trim(
-case when org_bp.name is null 		then '' else org_bp.name     	 || ', ' end ||
-case when c_location.address1 is null 	then '' else c_location.address1 || ', ' end ||
-case when c_location.postal is null 	then '' else c_location.postal   || ', ' end ||
-case when c_location.city is null 	then '' else c_location.city	 || ', ' end
-)as org_addressline,
-org_bp.description as description
-
-FROM
---org info
-     ad_org ad_org
-     JOIN c_bpartner org_bp		ON ad_org.ad_org_id	   = org_bp.ad_orgbp_id AND org_bp.isActive = 'Y'
-     JOIN c_bpartner_location org_bpl 	ON org_bp.c_bpartner_id    = org_bpl.c_bpartner_id AND org_bpl.isActive = 'Y'
-LEFT JOIN c_location c_location 	ON org_bpl.c_location_id   = c_location.c_location_id AND c_location.isActive = 'Y'
-LEFT JOIN c_country c_country 		ON c_location.c_country_id = c_country.c_country_id AND c_country.isActive = 'Y'
-LEFT JOIN c_bp_bankaccount bpb		ON org_bp.c_bpartner_id	   = bpb.c_bpartner_id  and bpb.isActive='Y'
-LEFT JOIN c_bank bank			ON bpb.c_bank_id	   = bank.c_bank_id AND bank.isActive = 'Y'
-
-WHERE
-ad_org.ad_org_id = $P{org_id} AND ad_org.isActive = 'Y'
-ORDER BY bpb.isDefault DESC
+		<![CDATA[SELECT * 
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String"/>

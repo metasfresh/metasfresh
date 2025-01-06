@@ -26,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -35,11 +36,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
-	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
+	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
+
+	I_M_HU_PI_Item_Product getRecordById(HUPIItemProductId id);
 
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
 
@@ -72,6 +77,9 @@ public interface IHUPIItemProductBL extends ISingletonService
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);
 
 	ITranslatableString getDisplayName(HUPIItemProductId piItemProductId);
+
+	@Nullable
+	I_M_HU_PI_Item_Product getDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime dateTime);
 
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_PI_Item_Product itemProduct)
 	{

@@ -109,7 +109,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
 			assertThat(records).hasSize(rows.size());
 
-			DataTableRows.of(dataTable).forEach((expected, index) -> {
+			rows.forEach((expected, index) -> {
 				final I_M_ShipmentSchedule_QtyPicked actual = records.get(index);
 				SharedTestContext.put("actual", actual);
 
@@ -164,7 +164,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 	private void validateHuId(@NonNull final StepDefDataIdentifier expectedHuIdentifier, @Nullable final HuId actualHuId)
 	{
-		final String description = "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId;
+		final String actualHuIdentifier = actualHuId != null
+				? huTable.getFirstIdentifierById(actualHuId).map(StepDefDataIdentifier::getAsString).orElse("?NEW?")
+				: null;
+
+		final String description = "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId + ", actualHuIdentifier=" + actualHuIdentifier;
 
 		if (expectedHuIdentifier.isNullPlaceholder())
 		{

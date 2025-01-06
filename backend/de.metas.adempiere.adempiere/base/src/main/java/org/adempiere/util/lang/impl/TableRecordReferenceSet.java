@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 @ToString
 public final class TableRecordReferenceSet implements Iterable<TableRecordReference>
 {
+	@NonNull
 	public static TableRecordReferenceSet of(final Collection<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())

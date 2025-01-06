@@ -4,7 +4,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "docBaseType": "MMI",
       "docSubType": "IAH"
     },
-    "docStatus": "Drafted",
+    "docStatus": "DR",
     "documentNo": "documentNo",
     "id": 1000000,
     "inventoryType": "PHYSICAL",
@@ -95,7 +95,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "docBaseType": "MMI",
       "docSubType": "IAH"
     },
-    "docStatus": "Drafted",
+    "docStatus": "DR",
     "documentNo": "documentNo",
     "id": 1000001,
     "inventoryType": "PHYSICAL",
@@ -171,7 +171,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
-    "docStatus": "Drafted",
+    "docStatus": "DR",
     "documentNo": "documentNo",
     "id": 1000000,
     "inventoryType": "PHYSICAL",

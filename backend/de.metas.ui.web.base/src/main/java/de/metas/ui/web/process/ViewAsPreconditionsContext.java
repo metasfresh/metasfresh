@@ -13,6 +13,7 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
@@ -81,6 +82,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	IView view;
 	ViewProfileId viewProfileId;
+	@Nullable DocumentQueryOrderByList viewOrderBys;
 	String tableName;
 	AdWindowId adWindowId;
 
@@ -96,6 +98,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private ViewAsPreconditionsContext(
 			@NonNull final IView view,
 			@Nullable final ViewProfileId viewProfileId,
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
 			final ViewRowIdsSelection childViewRowIdsSelection,
@@ -103,6 +106,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		this.view = view;
 		this.viewProfileId = viewProfileId;
+		this.viewOrderBys = viewOrderBys;
 		this.adWindowId = view.getViewId().getWindowId().toAdWindowIdOrNull();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;

@@ -40,6 +40,8 @@ import java.util.Optional;
 @Value
 public class BPartnerId implements RepoIdAware
 {
+	public final static BPartnerId NONE = BPartnerId.ofRepoId(Integer.MAX_VALUE);
+	
 	int repoId;
 
 	public static BPartnerId ofRepoId(final int repoId)

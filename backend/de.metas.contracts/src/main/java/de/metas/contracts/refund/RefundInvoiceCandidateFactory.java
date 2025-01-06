@@ -10,6 +10,7 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
@@ -34,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -213,20 +213,20 @@ public class RefundInvoiceCandidateFactory
 
 		if (soTrx)
 		{
-			docTypeQueryBuilder.docBaseType(DocBaseType.ARCreditMemo);
+			docTypeQueryBuilder.docBaseType(DocBaseType.SalesCreditMemo);
 		}
 		else
 		{
-			docTypeQueryBuilder.docBaseType(DocBaseType.APCreditMemo);
+			docTypeQueryBuilder.docBaseType(DocBaseType.PurchaseCreditMemo);
 		}
 
 		switch (refundInvoiceType)
 		{
 			case INVOICE:
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+				docTypeQueryBuilder.docSubType(DocSubType.RefundInvoice);
 				break;
 			case CREDITMEMO:
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift);
+				docTypeQueryBuilder.docSubType(DocSubType.RefundCreditMemo);
 				break;
 			default:
 				Check.fail("The current refundConfig has an ussupported invoice type={}", refundInvoiceType);

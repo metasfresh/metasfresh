@@ -17,7 +17,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -82,7 +82,7 @@ public class GetBPartnerFromFileRouteBuilder extends IdAwareRouteBuilder
 					.end()
 				.endDoTry()
 				.doCatch(Throwable.class)
-					.to(direct(MF_ERROR_ROUTE_ID))
+					.to(direct(ERROR_WRITE_TO_ADISSUE))
 				.end()
 			.end();
 		//@formatter:on

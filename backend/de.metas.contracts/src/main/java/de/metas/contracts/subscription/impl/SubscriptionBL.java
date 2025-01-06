@@ -107,6 +107,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -281,7 +282,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
 
-		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCandRecord.getQtyEntered()));
+		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord)));
 		newTerm.setStartDate(olCandRecord.getDateCandidate());
 
 		newTerm.setDeliveryRule(olCandRecord.getDeliveryRule());
@@ -966,6 +967,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// line's NetLineAmount in MOrderLine.beforeSave()
 		ol.setQtyOrdered(olQty);
 
+		ol.setIsManualQtyInPriceUOM(false);
 		ol.setQtyEnteredInPriceUOM(olQty);
 
 		// now compute the new prices

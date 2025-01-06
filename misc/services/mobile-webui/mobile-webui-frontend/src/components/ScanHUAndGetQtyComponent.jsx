@@ -27,6 +27,8 @@ const ScanHUAndGetQtyComponent = ({
   //
   userInfo,
   qtyCaption,
+  packingItemName,
+  qtyTargetCaption,
   qtyTarget,
   qtyMax,
   lineQtyToIssue,
@@ -41,10 +43,12 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   isShowBestBeforeDate = false,
   isShowLotNo = false,
+  isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  getConfirmationPromptForQty,
   onResult,
   onClose: onCloseCallback,
 }) => {
@@ -53,7 +57,9 @@ const ScanHUAndGetQtyComponent = ({
     lineId: null,
     userInfo,
     qtyCaption,
+    packingItemName,
     qtyTarget,
+    qtyTargetCaption,
     qtyMax,
     lineQtyToIssue,
     lineQtyIssued,
@@ -74,6 +80,8 @@ const ScanHUAndGetQtyComponent = ({
       lineId: prevState?.lineId,
       userInfo,
       qtyCaption,
+      packingItemName,
+      qtyTargetCaption,
       qtyTarget,
       qtyMax,
       lineQtyToIssue,
@@ -92,6 +100,8 @@ const ScanHUAndGetQtyComponent = ({
   }, [
     userInfo,
     qtyCaption,
+    packingItemName,
+    qtyTargetCaption,
     qtyTarget,
     qtyMax,
     lineQtyToIssue,
@@ -223,19 +233,25 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
     bestBeforeDate,
     lotNo,
+    productNo,
+    barcodeType,
+    isCloseTarget = false,
     isDone = true,
   }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      barcodeType,
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
       bestBeforeDate,
       lotNo,
+      productNo,
+      isCloseTarget,
       isDone,
     });
   };
@@ -273,8 +289,10 @@ const ScanHUAndGetQtyComponent = ({
       return (
         <GetQuantityDialog
           userInfo={resolvedBarcodeData.userInfo}
+          qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
           uom={resolvedBarcodeData.uom}
@@ -289,7 +307,9 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
+          isShowCloseTargetButton={isShowCloseTargetButton}
           //
+          getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
@@ -313,8 +333,10 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Props: Qty related
   userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
+  packingItemName: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
+  qtyTargetCaption: PropTypes.string,
   lineQtyToIssue: PropTypes.number,
   lineQtyIssued: PropTypes.number,
   qtyHUCapacity: PropTypes.number,
@@ -327,12 +349,14 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   isShowBestBeforeDate: PropTypes.bool,
   isShowLotNo: PropTypes.bool,
+  isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
   //
   // Functions
+  getConfirmationPromptForQty: PropTypes.func,
   onResult: PropTypes.func,
   onClose: PropTypes.func,
 };

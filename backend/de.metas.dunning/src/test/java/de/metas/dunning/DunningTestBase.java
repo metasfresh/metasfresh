@@ -73,7 +73,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -217,6 +216,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext()
 	{
 		final Properties ctx = getCtx();
+		ctx.setProperty("#AD_Client_ID", "1");
+		ctx.setProperty("#AD_Org_ID", "1");
+
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		final PlainDunningContext dunningContext = new PlainDunningContext(ctx, trxRunConfig);
 		final DunningConfig config = dunningContext.getDunningConfig();
@@ -229,8 +231,8 @@ public class DunningTestBase
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
-											  .map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
-											  .orElse(null));
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -294,8 +296,8 @@ public class DunningTestBase
 	protected OrgInfo createOrgInfo()
 	{
 		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.MAIN)
-											 .build());
+				.orgId(OrgId.MAIN)
+				.build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)

@@ -185,7 +185,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 		catch (final NoUOMConversionException exception)
 		{
 			//can't convert to EACH, so we don't have an exact number. Just put 1
-			packagedQuantity = Quantitys.create(1, UomId.EACH);
+			packagedQuantity = Quantitys.of(1, UomId.EACH);
 		}
 
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());

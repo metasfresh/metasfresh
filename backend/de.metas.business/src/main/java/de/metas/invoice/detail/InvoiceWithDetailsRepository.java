@@ -23,10 +23,11 @@
 package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -103,16 +104,16 @@ public class InvoiceWithDetailsRepository
 
 	private void createOrUpdateDetailItem(
 			@NonNull final OrgId orgId,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final InvoiceDetailItem invoiceDetailItem,
 			@NonNull final ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> detailRecords)
 	{
-		final I_C_Invoice_Detail existingRecordOrNull = detailRecords.get(StagingRecordKey.forItemOrNull(invoiceLineId, invoiceDetailItem));
+		final I_C_Invoice_Detail existingRecordOrNull = detailRecords.get(StagingRecordKey.forItemOrNull(invoiceAndLineId, invoiceDetailItem));
 
 		final I_C_Invoice_Detail recordToSave = syncToRecord(orgId, invoiceDetailItem, existingRecordOrNull);
 
-		recordToSave.setC_Invoice_ID(invoiceLineId.getInvoiceId().getRepoId());
-		recordToSave.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
+		recordToSave.setC_Invoice_ID(invoiceAndLineId.getInvoiceId().getRepoId());
+		recordToSave.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(recordToSave);
 	}
 
@@ -136,6 +137,12 @@ public class InvoiceWithDetailsRepository
 		recordToUpdate.setAD_Org_ID(orgId.getRepoId());
 		recordToUpdate.setLabel(invoiceDetailItem.getLabel());
 		recordToUpdate.setDescription(invoiceDetailItem.getDescription());
+		final Quantity qty = invoiceDetailItem.getQty();
+		if (qty != null)
+		{
+			recordToUpdate.setC_UOM_ID(qty.getUomId().getRepoId());
+			recordToUpdate.setQty(qty.toBigDecimal());
+		}
 		recordToUpdate.setDate(TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone));
 		return recordToUpdate;
 	}
@@ -146,15 +153,15 @@ public class InvoiceWithDetailsRepository
 		@Nullable
 		InvoiceId invoiceId;
 		@Nullable
-		InvoiceLineId invoiceLineId;
+		InvoiceAndLineId invoiceAndLineId;
 		@NonNull String label;
 
 		public static StagingRecordKey forRecordOrNull(@NonNull final I_C_Invoice_Detail detailRecord)
 		{
-			final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID(), detailRecord.getC_InvoiceLine_ID());
-			if (invoiceLineId != null)
+			final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID(), detailRecord.getC_InvoiceLine_ID());
+			if (invoiceAndLineId != null)
 			{
-				return new StagingRecordKey(null, invoiceLineId, detailRecord.getLabel());
+				return new StagingRecordKey(null, invoiceAndLineId, detailRecord.getLabel());
 			}
 
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(detailRecord.getC_Invoice_ID());
@@ -170,9 +177,9 @@ public class InvoiceWithDetailsRepository
 			return new StagingRecordKey(invoiceId, null, detailItem.getLabel());
 		}
 
-		public static StagingRecordKey forItemOrNull(@NonNull final InvoiceLineId invoiceLineId, @NonNull final InvoiceDetailItem detailItem)
+		public static StagingRecordKey forItemOrNull(@NonNull final InvoiceAndLineId invoiceAndLineId, @NonNull final InvoiceDetailItem detailItem)
 		{
-			return new StagingRecordKey(null, invoiceLineId, detailItem.getLabel());
+			return new StagingRecordKey(null, invoiceAndLineId, detailItem.getLabel());
 		}
 	}
 

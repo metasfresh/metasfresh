@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor7
-Feature: workflow rest controller tests
+Feature: picking rest controller tests
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,20 +8,20 @@ Feature: workflow rest controller tests
     And metasfresh has date and time 2022-08-18T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh contains M_PricingSystems
-      | Identifier                   | Name                             | Value                             | OPT.Description                         | OPT.IsActive |
-      | picking_pricing_system_17497 | picking_pricing_system_17497Name | picking_pricing_system_17497Value | picking_pricing_system_17497Description | true         |
+      | Identifier |
+      | PS         |
     And metasfresh contains M_PriceLists
-      | Identifier             | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                    | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | picking_picelist_17497 | picking_pricing_system_17497  | DE                        | EUR                 | picking_pricelist_17497 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | PL         | PS                 | DE                        | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier                     | M_PriceList_ID.Identifier | Name                               | ValidFrom  |
-      | picking_pricelistversion_17497 | picking_picelist_17497    | picking_pricelistversion_17497Name | 2021-04-01 |
+      | Identifier | M_PriceList_ID |
+      | PLV        | PL             |
     And metasfresh contains M_Products:
-      | Identifier            | Name                  |
-      | picking_product_17497 | picking_product_17497 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | Identifier           | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | workflowProductPrice | picking_pricelistversion_17497    | picking_product_17497   | 5.0      | PCE               | Normal                        |
+      | Identifier           | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | workflowProductPrice | PLV                    | product      | 5.0      | PCE               | Normal                        |
 
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
@@ -31,18 +31,18 @@ Feature: workflow rest controller tests
       | IsAllowPickingAnyHU | CreateShipmentPolicy |
       | N                   | CREATE_AND_COMPLETE  |
     And metasfresh contains C_BPartners without locations:
-      | Identifier            | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | pickingCustomer_17497 | pickingCustomer_17497 | N            | Y              | picking_pricing_system_17497  |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | PS                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier                    | GLN               | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | pickingCustomer_17497Location | picking_GLN_17497 | pickingCustomer_17497    | true                | true         |
+      | Identifier       | GLN               | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | customerLocation | picking_GLN_17497 | customer                 | true                | true         |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | pickingInventory_17497    | 2021-10-12   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | pickingInventory_17497    | pickingInventory_17497Line    | picking_product_17497   | 0       | 2        | PCE          |
+      | pickingInventory_17497    | pickingInventory_17497Line    | product                 | 0       | 2        | PCE          |
     And complete inventory with inventoryIdentifier 'pickingInventory_17497'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier     |
@@ -50,10 +50,10 @@ Feature: workflow rest controller tests
 
     And metasfresh contains C_Orders:
       | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | salesOrder_17497 | true    | pickingCustomer_17497    | 2021-04-15  |
+      | salesOrder_17497 | true    | customer                 | 2021-04-15  |
     And metasfresh contains C_OrderLines:
       | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | salesOrder_17497Line | salesOrder_17497      | picking_product_17497   | 2          |
+      | salesOrder_17497Line | salesOrder_17497      | product                 | 2          |
 
     And the order identified by salesOrder_17497 is completed
 
@@ -61,17 +61,24 @@ Feature: workflow rest controller tests
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | salesOrder_17497Line      | N             |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_1       | 063.1        | Y         |
+
   @from:cucumber
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
 
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -81,9 +88,6 @@ Feature: workflow rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate picking candidate for shipment schedule:
-      | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
-      | pickingShipmentSchedule          | 2         | A          |
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
@@ -97,13 +101,16 @@ Feature: workflow rest controller tests
   Scenario: start a fresh picking job, do the picking, log out, log back in with the same user, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
 
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -113,9 +120,6 @@ Feature: workflow rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate picking candidate for shipment schedule:
-      | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
-      | pickingShipmentSchedule          | 2         | A          |
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
@@ -151,12 +155,15 @@ Feature: workflow rest controller tests
       | testUser_17497        | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
 
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
@@ -166,9 +173,6 @@ Feature: workflow rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate picking candidate for shipment schedule:
-      | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
-      | pickingShipmentSchedule          | 2         | A          |
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
@@ -204,7 +208,7 @@ Feature: workflow rest controller tests
       | testUser_17497        | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
@@ -222,11 +226,14 @@ Feature: workflow rest controller tests
     And the existing user with login 'testUser_17497' receives a random a API token for the existing role with name 'WebUI'
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf2                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivityWf2  |
@@ -237,9 +244,6 @@ Feature: workflow rest controller tests
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       | 2         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
-    And validate picking candidate for shipment schedule:
-      | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
-      | pickingShipmentSchedule          | 2         | A          |
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf2/:CompletePickingActivityWf2/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
@@ -256,11 +260,14 @@ Feature: workflow rest controller tests
       | Y                   | CREATE_AND_COMPLETE  |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
+      | salesOrder_17497      | customer                 | customerLocation                  |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | wf1                        | a1                          | line1                  |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_1                        |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |

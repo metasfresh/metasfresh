@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Sequence_No extends org.compiere.model.PO implements I_AD_Sequence_No, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2106895063L;
+	private static final long serialVersionUID = 1919657103L;
 
     /** Standard Constructor */
     public X_AD_Sequence_No (final Properties ctx, final int AD_Sequence_No_ID, @Nullable final String trxName)
@@ -59,6 +59,18 @@ public class X_AD_Sequence_No extends org.compiere.model.PO implements I_AD_Sequ
 	public int getAD_Sequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
+	}
+
+	@Override
+	public void setCalendarDay (final @Nullable java.lang.String CalendarDay)
+	{
+		set_Value (COLUMNNAME_CalendarDay, CalendarDay);
+	}
+
+	@Override
+	public java.lang.String getCalendarDay() 
+	{
+		return get_ValueAsString(COLUMNNAME_CalendarDay);
 	}
 
 	@Override

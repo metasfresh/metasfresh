@@ -2,13 +2,15 @@ import { produce } from 'immer';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { activityUserConfirmationReducer } from './confirmation';
-import { pickingReducer } from './picking';
 import { distributionReducer } from './distribution';
 import { manufacturingReducer as manufacturingIssueReducer } from './manufacturing_issue';
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 import { toQRCodeString } from '../../utils/qrCode/hu';
+import { trl } from '../../utils/translations';
+
+export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
@@ -116,7 +118,18 @@ export const getNonIssuedStepByHuIdFromActivity = (activity, lineId, huId) => {
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {
-  return activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
+  let reasons = activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
+
+  if (reasons.length > 0 && activity?.dataStored?.isAllowSkippingRejectedReason) {
+    reasons = [
+      ...reasons,
+      {
+        key: QTY_REJECTED_REASON_TO_IGNORE_KEY,
+        caption: trl('activities.picking.qtyRejectedIgnoreReason'),
+      },
+    ];
+  }
+  return reasons;
 };
 
 export const getScaleDeviceFromActivity = (activity) => {
@@ -129,7 +142,7 @@ const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
   draftState = activityUserConfirmationReducer({ draftState, action });
-  draftState = pickingReducer({ draftState, action });
+  //draftState = pickingReducer({ draftState, action });
   draftState = distributionReducer({ draftState, action });
   draftState = generateHUQRCodesReducer({ draftState, action });
   draftState = manufacturingIssueReducer({ draftState, action });

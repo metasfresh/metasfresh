@@ -24,12 +24,11 @@ package de.metas.document.archive.api.impl;
 
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -38,85 +37,48 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.archive.api.ArchiveAction;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Properties;
+import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
 
-	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
-	// class without problems.
-	@Override
-	public final I_C_Doc_Outbound_Config retrieveConfig(final Properties ctx, final int tableId)
-	{
-		Check.assume(tableId > 0, "tableId > 0");
-
-		final int adClientId = Env.getAD_Client_ID(ctx);
-
-		I_C_Doc_Outbound_Config configSys = null;
-		I_C_Doc_Outbound_Config config = null;
-		for (final I_C_Doc_Outbound_Config currentConfig : retrieveAllConfigs())
-		{
-			if (currentConfig.getAD_Table_ID() == tableId)
-			{
-				if (currentConfig.getAD_Client_ID() == adClientId)
-				{
-					throwExceptionIfNotNull(config, tableId, adClientId, currentConfig);
-					config = currentConfig;
-				}
-				else if (currentConfig.getAD_Client_ID() == 0) // system
-				{
-					throwExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
-					configSys = currentConfig;
-				}
-			}
-		}
-		return coalesce(config, configSys);
-	}
-
-	private void throwExceptionIfNotNull(
-			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
-			final int tableId,
-			final int adClientId,
-			@NonNull final I_C_Doc_Outbound_Config currentConfig)
-	{
-		if (alreadyFoundConfig == null)
-		{
-			return;
-		}
-		final String msg = StringUtils.formatMessage(
-				"Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}",
-				tableId, adClientId, alreadyFoundConfig, currentConfig);
-
-		throw new AdempiereException(msg)
-				.markAsUserValidationError(); // this error message is not exactly nice, but we still need to inform the user
-	}
-
-	@Override
-	public final I_C_Doc_Outbound_Config retrieveConfigForModel(@NonNull final Object model)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-
-		return retrieveConfig(ctx, adTableId);
-	}
+	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_C_Doc_Outbound_Log getById(@NonNull final DocOutboundLogId docOutboundLogId)
 	{
 		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
+	}
+
+	@Override
+	public Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull final List<DocOutboundLogId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID, ids)
+				.create()
+				.stream()
+				.sorted(FixedOrderByKeyComparator.notMatchedAtTheEnd(ids, DocOutboundDAO::extractId));
+	}
+
+	private static DocOutboundLogId extractId(final I_C_Doc_Outbound_Log record)
+	{
+		return DocOutboundLogId.ofRepoId(record.getC_Doc_Outbound_Log_ID());
 	}
 
 	@Override
@@ -126,10 +88,10 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public void setPostFinanceExportStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final String exportStatus)
+	public void setPostFinanceExportStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final PostFinanceStatus exportStatus)
 	{
 		final I_C_Doc_Outbound_Log logRecord = getById(docOutboundLogId);
-		logRecord.setPostFinance_Export_Status(exportStatus);
+		logRecord.setPostFinance_Export_Status(exportStatus.getCode());
 		InterfaceWrapperHelper.save(logRecord);
 	}
 
@@ -142,13 +104,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 			return null;
 		}
 
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final Object contextProvider = log;
-
-		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, contextProvider)
+		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, log)
 				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_ID, log.getC_Doc_Outbound_Log_ID());
 		addPDFArchiveLogLineFilters(queryBuilder);
 
@@ -183,16 +139,12 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
 	{
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, AD_Table_ID);
 
 		// Order by
-		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
+		final IQueryOrderBy queryOrderBy = queryBL
 				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
 				.addColumnDescending(I_C_Doc_Outbound_Log.COLUMNNAME_Created)
 				.createQueryOrderBy();
@@ -204,36 +156,44 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
+	public List<I_C_Doc_Outbound_Log> retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		// Order by
+		final IQueryOrderBy queryOrderBy = queryBL
+				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
+				.addColumn(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Archive_ID)
+				.createQueryOrderBy();
+
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
-				.firstOnly(I_C_Doc_Outbound_Log.class);
+				.setOrderBy(queryOrderBy)
+				.list(I_C_Doc_Outbound_Log.class);
 	}
 
+	@Override
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		final List<I_C_Doc_Outbound_Log> docOutboundLogs = retrieveLog(recordReference);
+		if (Check.isEmpty(docOutboundLogs))
+		{
+			return;
+		}
+
+		docOutboundLogs.forEach(docOutboundLog -> {
+			docOutboundLog.setPOReference(poReference);
+
+			saveRecord(docOutboundLog);
+		});
+	}
+	
 	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)
 	{
 		return TableRecordReference.of(archive.getAD_Table_ID(), archive.getRecord_ID());
 	}
 
-	@Override
-	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
-	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-	}
-
-	@Override
-	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
-	{
-		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
-	}
 }

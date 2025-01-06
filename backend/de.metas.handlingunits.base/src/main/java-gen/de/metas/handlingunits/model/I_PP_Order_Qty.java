@@ -1,9 +1,8 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_Qty
  *  @author metasfresh (generated) 
@@ -121,6 +120,29 @@ public interface I_PP_Order_Qty
 
 	ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Order_Qty.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceipt (boolean IsReceipt);
+
+	/**
+	 * Get Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceipt();
+
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsReceipt = new ModelColumn<>(I_PP_Order_Qty.class, "IsReceipt", null);
+	String COLUMNNAME_IsReceipt = "IsReceipt";
 
 	/**
 	 * Set Handling Unit.

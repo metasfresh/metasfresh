@@ -22,11 +22,13 @@
 
 package de.metas.handlingunits.impl;
 
-import de.metas.common.util.time.SystemTime;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.inventory.Inventory;
@@ -38,17 +40,22 @@ import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inventory.AggregationType;
-import de.metas.inventory.InventoryDocSubType;
-import de.metas.organization.OrgId;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -63,26 +70,87 @@ public class HUQtyService
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Nullable
 	public Inventory updateQty(@NonNull final UpdateHUQtyRequest request)
 	{
-		final I_M_HU hu = handlingUnitsBL.getById(request.getHuId());
-		final ClientId clientId = ClientId.ofRepoId(hu.getAD_Client_ID());
-		final IHUProductStorage huProductStorage = getSingleStorage(hu);
-		final HuForInventoryLine inventoryLineCandidate = toHuForInventoryLine(hu, huProductStorage, request.getQty());
-		if (inventoryLineCandidate == null)
+		final Quantity newQty = request.getQty();
+
+		final LocatorId locatorId;
+		final ClientAndOrgId clientAndOrgId;
+		final ProductId productId;
+		final AttributesKey attributesKey;
+		final Quantity huQty;
+		final HuId huId = request.getHuId();
+		final HUQRCode huQRCode;
+		if (huId == null)
+		{
+			if (request.getLocatorId() == null)
+			{
+				throw new AdempiereException("locatorId must be set: " + request);
+			}
+			locatorId = request.getLocatorId();
+
+			clientAndOrgId = warehouseDAO.getClientAndOrgIdByLocatorId(locatorId);
+
+			huQRCode = request.getHuQRCode();
+			if (huQRCode == null)
+			{
+				throw new AdempiereException("huId or huQRCode must be set: " + request);
+			}
+
+			productId = huQRCode.getProductId();
+			final ImmutableAttributeSet attributes = extractAttributeSet(huQRCode);
+			attributesKey = handlingUnitsBL.getAttributesKeyForInventory(attributes);
+
+			huQty = newQty.toZero();
+		}
+		else
+		{
+			huQRCode = null;
+			final I_M_HU hu = handlingUnitsBL.getById(huId);
+			final IHUProductStorage singleProductStorage = getSingleStorage(hu);
+
+			locatorId = IHandlingUnitsBL.extractLocatorId(hu);
+			if (request.getLocatorId() != null && !LocatorId.equals(request.getLocatorId(), locatorId))
+			{
+				throw new AdempiereException("request locatorId is not matching the HU: " + request + ", " + hu);
+			}
+
+			clientAndOrgId = ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID());
+
+			productId = singleProductStorage.getProductId();
+			attributesKey = handlingUnitsBL.getAttributesKeyForInventory(hu);
+			huQty = singleProductStorage.getQty();
+		}
+
+		//
+		// No qty change
+		if (huQty.compareTo(newQty) == 0)
 		{
 			return null;
 		}
 
+		final HuForInventoryLine inventoryLineCandidate = HuForInventoryLine.builder()
+				.orgId(clientAndOrgId.getOrgId())
+				.huId(huId)
+				.huQRCode(huQRCode)
+				.quantityBooked(huQty)
+				.quantityCount(newQty)
+				.productId(productId)
+				.storageAttributesKey(attributesKey)
+				.locatorId(locatorId)
+				.markAsCounted(true)
+				.build();
+
 		final Inventory inventoryHeader = inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
-																						 .orgId(inventoryLineCandidate.getOrgId())
-																						 .docTypeId(getInventoryDocTypeId(clientId, inventoryLineCandidate.getOrgId()))
-																						 .movementDate(SystemTime.asZonedDateTime())
-																						 .warehouseId(inventoryLineCandidate.getLocatorId().getWarehouseId())
-																						 .description(request.getDescription())
-																						 .build());
+				.orgId(inventoryLineCandidate.getOrgId())
+				.docTypeId(getInventoryDocTypeId(clientAndOrgId))
+				.movementDate(request.getDate())
+				.warehouseId(inventoryLineCandidate.getLocatorId().getWarehouseId())
+				.description(request.getDescription())
+				.build());
 
 		final InventoryLinesCreationCtx inventoryLinesCreationCtx = InventoryLinesCreationCtx.builder()
 				.inventoryRepo(inventoryService.getInventoryRepository())
@@ -97,28 +165,20 @@ public class HUQtyService
 		return inventoryService.getById(inventoryHeader.getId());
 	}
 
-	@Nullable
-	public HuForInventoryLine toHuForInventoryLine(
-			final I_M_HU hu,
-			final IHUProductStorage huProductStorage,
-			final Quantity newQty)
+	private static ImmutableAttributeSet extractAttributeSet(@NonNull final HUQRCode huQRCode)
 	{
-		final Quantity huQty = huProductStorage.getQty();
-		if (huQty.compareTo(newQty) == 0)
+		final ImmutableList<HUQRCodeAttribute> huQRCodeAttributes = huQRCode.getAttributes();
+		if (huQRCodeAttributes.isEmpty())
 		{
-			return null;
+			return ImmutableAttributeSet.EMPTY;
 		}
 
-		return HuForInventoryLine.builder()
-				.orgId(OrgId.ofRepoId(hu.getAD_Org_ID()))
-				.huId(huProductStorage.getHuId())
-				.quantityBooked(huQty)
-				.quantityCount(newQty)
-				.productId(huProductStorage.getProductId())
-				.storageAttributesKey(handlingUnitsBL.getAttributesKeyForInventory(hu))
-				.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
-				.markAsCounted(true)
-				.build();
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+		for (final HUQRCodeAttribute huQRCodeAttribute : huQRCodeAttributes)
+		{
+			builder.attributeValue(huQRCodeAttribute.getCode(), huQRCodeAttribute.getValue());
+		}
+		return builder.build();
 	}
 
 	@NonNull
@@ -143,15 +203,13 @@ public class HUQtyService
 		}
 	}
 
-	private DocTypeId getInventoryDocTypeId(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
+	private DocTypeId getInventoryDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(DocBaseType.MaterialPhysicalInventory)
-											   .docSubType(InventoryDocSubType.SingleHUInventory.getCode())
-											   .adClientId(clientId.getRepoId())
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
+				.docSubType(DocSubType.SingleHUInventory)
+				.adClientId(clientAndOrgId.getClientId().getRepoId())
+				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
+				.build());
 	}
 }

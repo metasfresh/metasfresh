@@ -20,7 +20,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	//
 	// Methods implemented by StepDefData:
-	@NonNull RecordType get(@NonNull final StepDefDataIdentifier identifier);
+	@NonNull
+	RecordType get(@NonNull final StepDefDataIdentifier identifier);
 
 	Optional<RecordType> getOptional(@NonNull final StepDefDataIdentifier identifier);
 
@@ -33,6 +34,12 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return extractIdFromRecord(get(identifier));
 	}
 
+	@Nullable
+	default ID getIdOfNullable(@Nullable final StepDefDataIdentifier identifier)
+	{
+		return identifier == null || identifier.isNullPlaceholder() ? null : getId(identifier);
+	}
+
 	default ID getId(@NonNull final String identifier)
 	{
 		return getId(StepDefDataIdentifier.ofString(identifier));
@@ -42,6 +49,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getOptional(identifier).map(this::extractIdFromRecord);
 	}
+
+	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id) {return getFirstIdentifierById(id, null);}
 
 	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id, @Nullable final StepDefDataIdentifier excludeIdentifier)
 	{
@@ -64,6 +73,6 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	default Optional<StepDefDataIdentifier> getFirstIdentifierByRecord(@NonNull final RecordType record)
 	{
-		return getFirstIdentifierById(extractIdFromRecord(record), null);
+		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
 }

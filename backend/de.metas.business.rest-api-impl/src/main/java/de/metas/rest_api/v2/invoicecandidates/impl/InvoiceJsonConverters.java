@@ -73,6 +73,7 @@ public final class InvoiceJsonConverters
 				.ignoreInvoiceSchedule(request.getIgnoreInvoiceSchedule())
 				.poReference(request.getPoReference())
 				.updateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice())
+				.supplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds())
 				.build();
 	}
 

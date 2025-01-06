@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.async;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,14 @@ import java.util.List;
 public class OrderGenerateResult
 {
 	ImmutableList.Builder<I_PP_Order> ordersCollector = ImmutableList.builder();
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("orders", getOrders())
+				.toString();
+	}
 
 	public void addOrder(@NonNull final I_PP_Order order)
 	{

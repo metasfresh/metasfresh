@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 130660288L;
+	private static final long serialVersionUID = 1884912201L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -64,7 +64,7 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 
 	/** 
 	 * BPNameAndGreetingStrategy AD_Reference_ID=541338
-	 * Reference name: Individual business partner's name format
+	 * Reference name: Namensformat der Geschäftspartnerperson
 	 */
 	public static final int BPNAMEANDGREETINGSTRATEGY_AD_Reference_ID=541338;
 	/** First Contact = FC */
@@ -74,7 +74,7 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	/** Do Nothing = XX */
 	public static final String BPNAMEANDGREETINGSTRATEGY_DoNothing = "XX";
 	@Override
-	public void setBPNameAndGreetingStrategy (final @Nullable java.lang.String BPNameAndGreetingStrategy)
+	public void setBPNameAndGreetingStrategy (final java.lang.String BPNameAndGreetingStrategy)
 	{
 		set_Value (COLUMNNAME_BPNameAndGreetingStrategy, BPNameAndGreetingStrategy);
 	}
@@ -150,6 +150,27 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * InvoiceDelivery AD_Reference_ID=541874
+	 * Reference name: Invoice Delivery
+	 */
+	public static final int INVOICEDELIVERY_AD_Reference_ID=541874;
+	/** PostFinance = P */
+	public static final String INVOICEDELIVERY_PostFinance = "P";
+	/** Off = O */
+	public static final String INVOICEDELIVERY_Off = "O";
+	@Override
+	public void setInvoiceDelivery (final java.lang.String InvoiceDelivery)
+	{
+		set_Value (COLUMNNAME_InvoiceDelivery, InvoiceDelivery);
+	}
+
+	@Override
+	public java.lang.String getInvoiceDelivery() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceDelivery);
 	}
 
 	@Override
@@ -314,6 +335,12 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{

@@ -48,6 +48,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -525,6 +526,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.fieldName(PARAM_Barcode)
+							.operator(DocumentFilterParam.Operator.EQUAL)
 							.displayName(barcodeCaption)
 							.widgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))

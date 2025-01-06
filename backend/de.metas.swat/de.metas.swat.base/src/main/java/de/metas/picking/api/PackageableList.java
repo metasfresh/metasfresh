@@ -25,6 +25,7 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
@@ -103,6 +104,11 @@ public final class PackageableList implements Iterable<Packageable>
 	public ProductId getSingleProductId()
 	{
 		return getSingleValue(Packageable::getProductId).orElseThrow(() -> new AdempiereException("No single product found in " + list));
+	}
+
+	public HUPIItemProductId getSinglePackToHUPIItemProductId()
+	{
+		return getSingleValue(Packageable::getPackToHUPIItemProductId).orElseThrow(() -> new AdempiereException("No single PackToHUPIItemProductId found in " + list));
 	}
 
 	public Optional<UomId> getSingleCatchWeightUomIdIfUnique()

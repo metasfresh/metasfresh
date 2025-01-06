@@ -73,7 +73,6 @@ public interface I_S_Resource
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
-
 	/**
 	 * Set Capacity Per Production Cycle.
 	 *
@@ -250,6 +249,27 @@ public interface I_S_Resource
 
 	ModelColumn<I_S_Resource, Object> COLUMN_InternalName = new ModelColumn<>(I_S_Resource.class, "InternalName", null);
 	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
+	 * Set External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_Resource.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
 	 * Set Active.

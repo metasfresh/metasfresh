@@ -8,6 +8,7 @@ import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
 import { useApplicationInfo } from '../../reducers/applications';
+import { isApplicationFullScreen } from '../../apps';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -16,15 +17,11 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   // If the required process was not loaded,
   // then redirect to home
   const redirectToHome = isWFProcessRequiredButNotLoaded();
-  if (redirectToHome) {
-    useEffect(() => {
-      if (redirectToHome) {
-        history.push('/');
-      }
-    }, [redirectToHome]);
-
-    return null;
-  }
+  useEffect(() => {
+    if (redirectToHome) {
+      history.push('/');
+    }
+  }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });
   const homeLocation = useHomeLocation();
@@ -35,6 +32,19 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   useEffect(() => {
     document.title = caption;
   }, [caption]);
+
+  if (redirectToHome) {
+    return null;
+  }
+
+  if (isApplicationFullScreen(applicationId)) {
+    return (
+      <div className="app-container app-container-fullscreen">
+        <Component />
+        <ScreenToaster />
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">

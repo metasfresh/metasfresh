@@ -11,6 +11,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -18,6 +19,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -25,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -105,69 +108,109 @@ public class LocationDAO implements ILocationDAO
 	}
 
 	@Override
-	public LocationId createLocation(@NonNull final LocationCreateRequest request)
+	public LocationId createOrReuseLocation(@NonNull final LocationCreateRequest request0)
 	{
+		LocationCreateRequest requestEffective = request0;
+
+		//
+		// Resolve request's postalId if missing
+		if (requestEffective.getPostalId() == null)
+		{
+			final PostalId postalId = findPostalId(requestEffective.getPostal(), requestEffective.getCountryId(), requestEffective.getRegionId(), requestEffective.getCity()).orElse(null);
+			requestEffective = requestEffective.withPostalId(postalId);
+		}
+
+		//
+		// Check if the given request will produce any change in database
+		if (requestEffective.getExistingLocationId() != null)
+		{
+			final I_C_Location existingRecord = getById(requestEffective.getExistingLocationId());
+			if (existingRecord != null && LocationCreateRequest.equals(requestEffective, toLocationCreateRequest(existingRecord)))
+			{
+				// the request won't produce any change, so we can re-use existing ID 
+				return requestEffective.getExistingLocationId();
+			}
+		}
+
 		// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
 		// NOTE2: Don't create records OOT unless you really know what's going on and also know the possible contexts in which a method might be called.
 		// * this method is (also) called as part of a full bpartner-creation workflow we need to be able to roll it back, without leaving back this dangling C_Location.
 		// * more, as of writing this the getPostalId(..) method which is called below doesn't care about trx, so (by default) it's running within the thread-inherited trx
 		final I_C_Location locationRecord = newInstance(I_C_Location.class);
-		locationRecord.setAddress1(request.getAddress1());
-		locationRecord.setAddress2(request.getAddress2());
-		locationRecord.setAddress3(request.getAddress3());
-		locationRecord.setAddress4(request.getAddress4());
-
-		final PostalId postalId = getPostalId(request);
-		locationRecord.setC_Postal_ID(PostalId.toRepoId(postalId));
-		locationRecord.setPostal(request.getPostal());
-		locationRecord.setPostal_Add(request.getPostalAdd());
-
-		locationRecord.setCity(request.getCity());
-		locationRecord.setC_Region_ID(request.getRegionId());
-		locationRecord.setRegionName(request.getRegionName());
-		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
-		locationRecord.setPOBox(request.getPoBox());
-
-
+		updateRecord(locationRecord, requestEffective);
 		save(locationRecord);
 
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
 	}
 
-	@Nullable
-	private PostalId getPostalId(final LocationCreateRequest request)
+	private static void updateRecord(final I_C_Location record, final @NotNull LocationCreateRequest from)
 	{
-		if(request.getPostalId() != null)
+		record.setAddress1(from.getAddress1());
+		record.setAddress2(from.getAddress2());
+		record.setAddress3(from.getAddress3());
+		record.setAddress4(from.getAddress4());
+
+		record.setC_Postal_ID(PostalId.toRepoId(from.getPostalId()));
+		record.setPostal(from.getPostal());
+		record.setPostal_Add(from.getPostalAdd());
+
+		record.setCity(from.getCity());
+		record.setC_Region_ID(from.getRegionId());
+		record.setRegionName(from.getRegionName());
+		record.setC_Country_ID(from.getCountryId().getRepoId());
+
+		record.setPOBox(from.getPoBox());
+	}
+
+	private static LocationCreateRequest toLocationCreateRequest(final I_C_Location record)
+	{
+		return LocationCreateRequest.builder()
+				.existingLocationId(LocationId.ofRepoIdOrNull(record.getC_Location_ID()))
+				.address1(record.getAddress1())
+				.address2(record.getAddress2())
+				.address3(record.getAddress3())
+				.address4(record.getAddress4())
+				//
+				.postalId(PostalId.ofRepoIdOrNull(record.getC_Postal_ID()))
+				.postal(record.getPostal())
+				.postalAdd(record.getPostal_Add())
+				//
+				.city(record.getCity())
+				.regionId(record.getC_Region_ID())
+				.regionName(record.getRegionName())
+				.countryId(CountryId.ofRepoId(record.getC_Country_ID()))
+				//
+				.poBox(record.getPOBox())
+				//
+				.build();
+	}
+
+	private Optional<PostalId> findPostalId(
+			@Nullable final String postal,
+			@NonNull final CountryId countryId,
+			final int regionId,
+			@Nullable final String city)
+	{
+		final String postalNorm = StringUtils.trimBlankToNull(postal);
+		if (postalNorm == null)
 		{
-			return request.getPostalId();
+			return Optional.empty();
 		}
 
-		final String postalValue = request.getPostal();
-		if (Check.isEmpty(postalValue))
-		{
-			return null;
-		}
-
-		final IQueryBuilder<I_C_Postal> postalQuery = queryBL
-				.createQueryBuilder(I_C_Postal.class)
+		final IQueryBuilder<I_C_Postal> queryBuilder = queryBL.createQueryBuilder(I_C_Postal.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, request.getCountryId());
-
-		if (request.getRegionId() > 0)
+				.filter(PostalQueryFilter.of(postal))
+				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, countryId);
+		if (regionId > 0)
 		{
-			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
+			queryBuilder.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, regionId);
+		}
+		if (!Check.isEmpty(city))
+		{
+			queryBuilder.addEqualsFilter(I_C_Postal.COLUMNNAME_City, city);
 		}
 
-		if (!Check.isEmpty(request.getCity()))
-		{
-			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_City, request.getCity());
-		}
-
-		final int postalRepoId = postalQuery.filter(PostalQueryFilter.of(postalValue))
-				.create()
-				.firstIdOnly();
-
-		return PostalId.ofRepoIdOrNull(postalRepoId);
+		return queryBuilder.create().firstIdOnlyOptional(PostalId::ofRepoIdOrNull);
 	}
 
 	@Override

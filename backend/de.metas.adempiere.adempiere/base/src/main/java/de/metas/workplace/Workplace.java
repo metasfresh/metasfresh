@@ -22,6 +22,7 @@
 
 package de.metas.workplace;
 
+import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,5 +36,6 @@ public class Workplace
 {
 	@NonNull WorkplaceId id;
 	@NonNull String name;
-	@Nullable WarehouseId warehouseId;
+	@NonNull WarehouseId warehouseId;
+	@Nullable PickingSlotId pickingSlotId;
 }

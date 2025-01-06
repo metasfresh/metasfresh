@@ -271,6 +271,12 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
+	@NonNull
+	public DetailId getDetailIdNotNull()
+	{
+		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
+	}
+
 	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
@@ -775,6 +781,11 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
+		}
+
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> ignoredBuilderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
@@ -815,8 +826,8 @@ public class DocumentEntityDescriptor
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 
 			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly,
-									getReadonlyLogic().getParameterNames(),
-									DependencyType.DocumentReadonlyLogic);
+					getReadonlyLogic().getParameterNames(),
+					DependencyType.DocumentReadonlyLogic);
 
 			getFields().values().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
@@ -873,6 +884,12 @@ public class DocumentEntityDescriptor
 		public Optional<String> getTableName()
 		{
 			return _tableName;
+		}
+
+		@NonNull
+		public String getTableNameNotNull()
+		{
+			return _tableName.orElseThrow(() -> new AdempiereException("No main tablename determined"));
 		}
 
 		@Nullable

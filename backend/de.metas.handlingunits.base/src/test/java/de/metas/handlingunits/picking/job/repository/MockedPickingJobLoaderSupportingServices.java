@@ -3,17 +3,23 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -74,9 +80,43 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public String getProductNo(@NonNull final ProductId productId)
+	{
+		return "productNo-" + productId.getRepoId();
+	}
+
+	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
+	{
+		return ProductCategoryId.ofRepoId(1);
+	}
+
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return 0;
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
+	}
+
+	@Override
+	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		return HUPIItemProduct.builder()
+				.id(huPIItemProductId)
+				.name(TranslatableStrings.anyLanguage("infinite-" + huPIItemProductId.getRepoId()))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(123))
+				.build();
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return "PI-" + piId.getRepoId();
 	}
 
 	@Override
@@ -97,7 +137,16 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return ImmutableSetMultimap.of();
+	}
+
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return false;
+	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)
 	{

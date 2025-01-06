@@ -5,7 +5,7 @@ import ElementGroup from './ElementGroup';
 import EntryTable from '../table/EntryTable';
 
 const extractEntryTableColumnsArray = (elementGroupsArray) => {
-  return elementGroupsArray.reduce((columnsArray, elementGroup) => {
+  return elementGroupsArray.reduce((acc, elementGroup) => {
     const cols = [];
     elementGroup.elementsLine.forEach((line) => {
       if (line && line.elements && line.elements.length) {
@@ -13,12 +13,12 @@ const extractEntryTableColumnsArray = (elementGroupsArray) => {
       }
     });
 
-    columnsArray.push({
+    acc.push({
       cols,
       colsCount: elementGroup.columnCount,
     });
 
-    return columnsArray;
+    return acc;
   }, []);
 };
 
@@ -60,7 +60,7 @@ const Column = ({
             )}
           >
             <EntryTable
-              columns={extractEntryTableColumnsArray(elementGroups)}
+              rowsLayout={extractEntryTableColumnsArray(elementGroups)}
               windowId={windowId}
               documentId={dataId}
               tabId={tabId}

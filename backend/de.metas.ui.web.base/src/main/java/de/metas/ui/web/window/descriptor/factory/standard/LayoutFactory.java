@@ -201,6 +201,8 @@ public class LayoutFactory
 				.toString();
 	}
 
+	public String getTableName() {return descriptorsFactory.getTableName();}
+
 	public boolean isSkipAD_Tab_ID(final AdTabId adTabId)
 	{
 		return childAdTabIdsToSkip.contains(adTabId);

@@ -70,9 +70,10 @@ public class ShortTermBankAccountIndex
 	{
 		if (bpartnerComposite.getBpartner().getId() == null)
 		{
-			throw new AdempiereException("BPBankAccountId belongs to a different BPartner!")
+			throw new AdempiereException("Bank account exists, but enclosing bpartnerComposite does not exist in metasfresh yet!")
 					.appendParametersToMessage()
-					.setParameter("BPBankAccountId", metasfreshId.getValue());
+					.setParameter("BPBankAccountId", metasfreshId.getValue())
+					.setParameter("bpartnerComposite.bpartner.value", bpartnerComposite.getBpartner().getValue());
 		}
 
 		final BPartnerBankAccountId bPartnerBankAccountId = BPartnerBankAccountId.ofRepoId(bpartnerComposite.getBpartner().getId(),
@@ -82,9 +83,9 @@ public class ShortTermBankAccountIndex
 
 		if (bankAccount == null)
 		{
-			throw new AdempiereException("BPBankAccountId belongs to a different BPartner!")
+			throw new AdempiereException("No BPartnerBankAccount found for current BPartner-ID/BankAccount-ID combo!")
 					.appendParametersToMessage()
-					.setParameter("BPBankAccountId", metasfreshId.getValue());
+					.setParameter("BPartnerBankAccountId", bPartnerBankAccountId);
 		}
 
 		return bankAccount;

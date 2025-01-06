@@ -422,7 +422,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM fromUom = uomDAO.getById(quantity.getUomId());
 		final I_C_UOM toUom = uomDAO.getById(toUomId);
 
-		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.create(bigDecimal, toUomId));
+		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.of(bigDecimal, toUomId));
 	}
 
 	@Override
@@ -774,15 +774,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final UomId toUomId,
 			@NonNull final CurrencyPrecision pricePrecision)
 	{
-		if (price.getUomId().equals(toUomId))
-		{
-			return price;
-		}
-
-		final UOMConversionRate rate = getRate(price.getProductId(), toUomId, price.getUomId());
-		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal(), UOMPrecision.TWELVE));
-
-		return price.withValueAndUomId(priceConv, toUomId);
+		return price.convertToUom(toUomId, pricePrecision, this);
 	}
 
 	@Override

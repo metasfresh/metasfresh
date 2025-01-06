@@ -29,8 +29,8 @@ import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -123,7 +123,7 @@ public class CallOrderDetailService
 	{
 		final CallOrderDetailQuery query = CallOrderDetailQuery.builder()
 				.summaryId(summaryId)
-				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
 				.build();
 
 		final Optional<CallOrderDetailId> existingDetailId = detailRepo.getDetailByQuery(query)
@@ -156,7 +156,7 @@ public class CallOrderDetailService
 				.builder()
 				.summaryId(callOrderSummaryId)
 				.invoiceId(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()))
-				.invoiceLineId(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
 				.qtyInvoiced(qtyInvoiced)
 				.build();
 	}
@@ -165,7 +165,7 @@ public class CallOrderDetailService
 	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_C_OrderLine ol)
 	{
 		final UomId uomId = UomId.ofRepoId(ol.getC_UOM_ID());
-		final Quantity qtyEntered = Quantitys.create(ol.getQtyEntered(), uomId);
+		final Quantity qtyEntered = Quantitys.of(ol.getQtyEntered(), uomId);
 
 		return CallOrderDetailData
 				.builder()
