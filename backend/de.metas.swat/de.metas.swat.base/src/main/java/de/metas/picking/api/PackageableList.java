@@ -25,6 +25,7 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
@@ -37,7 +38,9 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,14 +57,16 @@ public final class PackageableList implements Iterable<Packageable>
 
 	private final ImmutableList<Packageable> list;
 
-	private PackageableList(@NonNull final ImmutableList<Packageable> list)
+	private PackageableList(@NonNull final Collection<Packageable> list)
 	{
-		this.list = list;
+		this.list = list.stream()
+				.sorted(Comparator.comparing(Packageable::getShipmentScheduleId)) // keep them ordered by shipmentScheduleId which is usually the order line ordering
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static PackageableList ofCollection(final Collection<Packageable> list)
 	{
-		return !list.isEmpty() ? new PackageableList(ImmutableList.copyOf(list)) : EMPTY;
+		return !list.isEmpty() ? new PackageableList(list) : EMPTY;
 	}
 
 	public static PackageableList of(final Packageable... arr)
@@ -85,7 +90,7 @@ public final class PackageableList implements Iterable<Packageable>
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
 	{
-		return list.stream().map(Packageable::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
+		return list.stream().map(Packageable::getShipmentScheduleId).sorted().collect(ImmutableSet.toImmutableSet());
 	}
 
 	public Optional<ShipmentScheduleId> getSingleShipmentScheduleIdIfUnique()
@@ -99,6 +104,11 @@ public final class PackageableList implements Iterable<Packageable>
 	public ProductId getSingleProductId()
 	{
 		return getSingleValue(Packageable::getProductId).orElseThrow(() -> new AdempiereException("No single product found in " + list));
+	}
+
+	public HUPIItemProductId getSinglePackToHUPIItemProductId()
+	{
+		return getSingleValue(Packageable::getPackToHUPIItemProductId).orElseThrow(() -> new AdempiereException("No single PackToHUPIItemProductId found in " + list));
 	}
 
 	public Optional<UomId> getSingleCatchWeightUomIdIfUnique()
@@ -154,7 +164,7 @@ public final class PackageableList implements Iterable<Packageable>
 	public Stream<PackageableList> groupBy(Function<Packageable, ?> classifier)
 	{
 		return list.stream()
-				.collect(Collectors.groupingBy(classifier, PackageableList.collect()))
+				.collect(Collectors.groupingBy(classifier, LinkedHashMap::new, PackageableList.collect()))
 				.values()
 				.stream();
 	}

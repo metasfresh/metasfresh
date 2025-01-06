@@ -35,7 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
@@ -77,7 +77,7 @@ public class C_Flatrate_Conditions
 	@NonNull
 	private final FlatrateTransitionService flatrateTransitionService;
 	@NonNull
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void onTransitionChange(final I_C_Flatrate_Conditions cond)
@@ -183,7 +183,7 @@ public class C_Flatrate_Conditions
 		}
 
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
+		final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateConditionsId(conditionsId);
 
 		final FlatrateTransitionId effectiveFlatrateTransitionId = flatrateTransitionService
 				.getOrCreateTransition(modularContractSettings.getYearAndCalendarId().calendarId(),

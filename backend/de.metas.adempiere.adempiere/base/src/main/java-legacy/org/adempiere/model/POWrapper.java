@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -214,7 +215,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return create(po, cl);
 	}
 
-	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	public static <RT, MT> List<MT> loadByIds(@NonNull final Set<Integer> ids, @NonNull final Class<RT> modelClass, @Nullable final String trxName, @NonNull final Function<RT, MT> modelMapper)
 	{
 		if (ids.isEmpty())
 		{
@@ -227,6 +228,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return tableModelLoader.getPOs(ctx, tableName, ids, trxName)
 				.stream()
 				.map(po -> create(po, modelClass))
+				.map(modelMapper)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -280,7 +282,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	/**
 	 * Method strictly gets the underlying PO if the wrapper supports it.
-	 *
+	 * <p>
 	 * Compared with {@link #getPO()}, this method will NOT try to load the PO from other wrappers.
 	 *
 	 * @param model
@@ -294,13 +296,11 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
 	 * @param model
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
 	 *                          the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
 	 *                          <code>null</code>.
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>PO
 	 *         <li>null if model is null
 	 *         <li>null if {@link POWrapper} does not support it and <code>checkOtherWrapper</code> is <code>false</code>.
@@ -829,9 +829,9 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * Reload underlying PO object in same transaction as it was
 	 *
 	 * @param model
-	 * @see #refresh(Object, String)
 	 * @throws IllegalArgumentException if model is null
 	 * @throws IllegalArgumentException if there is no underlying PO object (i.e. getPO(model) return null)
+	 * @see #refresh(Object, String)
 	 */
 	public static void refresh(@NonNull final Object model)
 	{

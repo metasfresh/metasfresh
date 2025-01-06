@@ -7,7 +7,7 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import * as api from '../api';
 import { toastError, toastNotification } from '../../../utils/toast';
 

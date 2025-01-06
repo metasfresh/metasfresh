@@ -9,29 +9,29 @@ Feature: Delivery planning processes interaction
     And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value                                  | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValueDPProcesses_03022023 | true         |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                              | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDPProcesses_03022023 | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_SO | pricingSystem      | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
+      | Identifier          | M_PriceList_ID |
+      | priceListVersion_SO | priceList_SO   |
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | product    | ProductNameDPProcesses_03022023 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | productPrice_SO | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO    | product      | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | CustomerDPProcesses_03022023 | N            | Y              | pricingSystem                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1234568110599 | customer                 | true                | true                |
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name |
-      | shipper_DHL             | Dhl      |
+    And contains M_Shippers
+      | Identifier  |
+      | shipper_DHL |
 
   Scenario: Create additional delivery plannings
 
@@ -63,7 +63,7 @@ Feature: Delivery planning processes interaction
       | deliveryInstructionAdd                | shipper_DHL             | customer                       | customerLocation               | 2023-02-25       |
     And load M_Package for M_ShipperTransportation: deliveryInstructionAdd
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageAdd              | product                 |
+      | packageAdd              | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageAdd              | shipper_DHL             | customer                     | customerLocation                      | 2023-02-01   |
@@ -142,7 +142,7 @@ Feature: Delivery planning processes interaction
       | deliveryInstruction                   | shipper_DHL             | customer                       | customerLocation               | 2023-02-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstruction
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | package                 | product                 |
+      | package                 | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | package                 | shipper_DHL             | customer                     | customerLocation                      | 2023-02-01   |

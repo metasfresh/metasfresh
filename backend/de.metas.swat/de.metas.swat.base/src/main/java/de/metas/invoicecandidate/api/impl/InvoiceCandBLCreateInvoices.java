@@ -9,6 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.DimensionService;
@@ -67,12 +68,14 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -105,7 +108,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -166,6 +168,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Parameters
 	private Properties _ctx;
 	private String _trxName;
+	@Setter
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
@@ -396,9 +399,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
-				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
-				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
-				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
+				invoice.setExternalId(invoiceHeader.getExternalId());
 			}
 
 			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
@@ -424,7 +425,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
 			}
-			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -467,14 +467,19 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 			invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
 			invoice.setC_Auction_ID(AuctionId.toRepoId(invoiceHeader.getAuctionId()));
+			invoice.setOrg_BP_Account_ID(BankAccountId.toRepoId(invoiceHeader.getOrgBankAccountId()));
 
 			setHarvestingDetails(invoice, invoiceHeader);
+			invoice.setModCntr_Settings_ID(ModularContractSettingsId.toRepoId(invoiceHeader.getModularContractSettingsId()));
+
+			invoice.setIsCreditedInvoiceReinvoicable(invoiceHeader.isCreditedInvoiceReinvoicable());
 
 			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
 			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
 
+			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -579,6 +584,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// NOTE: not static because we share the services
 	private class DefaultInvoiceLineGeneratorRunnable implements TrxRunnable2
 	{
+		@Getter
 		private final List<I_C_InvoiceLine> createdLines;
 		private final I_C_Invoice invoice;
 		private final List<I_C_Invoice_Candidate> errorCandidates;
@@ -708,6 +714,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
 				invoiceLine.setC_Flatrate_Term_ID(cand.getC_Flatrate_Term_ID());
+				invoiceLine.setProductName(cand.getProductName());
+				invoiceLine.setInvoicingGroup(cand.getInvoicingGroup());
+				invoiceLine.setUserElementNumber1(cand.getUserElementNumber1());
+				invoiceLine.setUserElementNumber2(cand.getUserElementNumber2());
+				invoiceLine.setIsHidePriceAndAmountOnPrint(cand.isHidePriceAndAmountOnPrint());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)
@@ -843,7 +854,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoiceCandDAO.save(icRecord);
 		}
 
-		private I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+		@Nullable
+		private I_M_AttributeSetInstance createASI(@Nullable final List<IInvoiceLineAttribute> invoiceLineAttributes)
 		{
 			// If there are no attributes, return a null ASI
 			if (Check.isEmpty(invoiceLineAttributes))
@@ -853,7 +865,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
-			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
+			asi.setM_AttributeSet_ID(AttributeSetId.NONE.getRepoId());
 			attributesRepo.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
@@ -898,11 +910,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				errorCandidates.clear();
 				errorException[0] = null;
 			}
-		}
-
-		public List<I_C_InvoiceLine> getCreatedLines()
-		{
-			return createdLines;
 		}
 	}
 
@@ -1084,7 +1091,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
-				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
 				candsOfUserId.add(ic);
 			}
 
@@ -1183,14 +1190,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 		return candidates;
-	}
-
-	/**
-	 * Set the invoice generator to use in invoicing.
-	 */
-	public void setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
-	{
-		this.invoiceGeneratorClass = invoiceGeneratorClass;
 	}
 
 	@Override

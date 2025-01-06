@@ -64,7 +64,7 @@ class DefaultMatchInvListener implements MatchInvListener
 	private void clearInvoiceLineFromMatchPOs(@NonNull final MatchInv matchInv)
 	{
 		matchInvoiceService.getOrderLineId(matchInv)
-				.ifPresent(orderLineId -> matchPOBL.unlink(orderLineId, matchInv.getInvoiceLineId()));
+				.ifPresent(orderLineId -> matchPOBL.unlink(orderLineId, matchInv.getInvoiceAndLineId()));
 	}
 
 }

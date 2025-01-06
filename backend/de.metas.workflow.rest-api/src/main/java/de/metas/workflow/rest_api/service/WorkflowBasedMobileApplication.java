@@ -1,14 +1,16 @@
 package de.metas.workflow.rest_api.service;
 
+import de.metas.mobile.application.MobileApplication;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 
 import java.util.function.UnaryOperator;
@@ -20,7 +22,10 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	@Override
 	@NonNull
-	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId)
+	{
+		return MobileApplication.super.customizeApplicationInfo(applicationInfo, loggedUserId);
+	}
 
 	WorkflowLaunchersList provideLaunchers(WorkflowLaunchersQuery query);
 
@@ -32,7 +37,7 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	void abortAll(UserId callerId);
 
-	default WorkflowLaunchersFacetGroupList getFacets(@NonNull UserId userId) {return WorkflowLaunchersFacetGroupList.EMPTY;}
+	default WorkflowLaunchersFacetGroupList getFacets(WorkflowLaunchersFacetQuery query) {return WorkflowLaunchersFacetGroupList.EMPTY;}
 
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 

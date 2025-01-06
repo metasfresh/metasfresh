@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class ModularContractTypeId implements RepoIdAware
@@ -49,7 +50,7 @@ public class ModularContractTypeId implements RepoIdAware
 
 	private ModularContractTypeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "modularContractTypeId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ModCntr_Type_ID");
 	}
 
 	public static int toRepoId(@Nullable final ModularContractTypeId modularContractTypeId)
@@ -62,5 +63,10 @@ public class ModularContractTypeId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final ModularContractTypeId o1, @Nullable final ModularContractTypeId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

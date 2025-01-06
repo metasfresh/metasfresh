@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Maturing_Candidates_v extends org.compiere.model.PO implements I_PP_Maturing_Candidates_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -569240609L;
+	private static final long serialVersionUID = 273821769L;
 
     /** Standard Constructor */
     public X_PP_Maturing_Candidates_v (final Properties ctx, final int PP_Maturing_Candidates_v_ID, @Nullable final String trxName)
@@ -89,6 +89,21 @@ public class X_PP_Maturing_Candidates_v extends org.compiere.model.PO implements
 	public java.lang.String getHUStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_HUStatus);
+	}
+
+	@Override
+	public void setIssue_M_Product_ID (final int Issue_M_Product_ID)
+	{
+		if (Issue_M_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Issue_M_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Issue_M_Product_ID, Issue_M_Product_ID);
+	}
+
+	@Override
+	public int getIssue_M_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Issue_M_Product_ID);
 	}
 
 	@Override
@@ -257,6 +272,33 @@ public class X_PP_Maturing_Candidates_v extends org.compiere.model.PO implements
 	public int getPP_Order_Candidate_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions(final org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class, PP_Product_BOMVersions);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions_ID (final int PP_Product_BOMVersions_ID)
+	{
+		if (PP_Product_BOMVersions_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMVersions_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMVersions_ID, PP_Product_BOMVersions_ID);
+	}
+
+	@Override
+	public int getPP_Product_BOMVersions_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOMVersions_ID);
 	}
 
 	@Override

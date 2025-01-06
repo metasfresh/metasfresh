@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
@@ -36,11 +37,14 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.util.Iterator;
+import java.util.Set;
 
 public interface IPPOrderCandidateDAO extends ISingletonService
 {
 	@NonNull
 	I_PP_Order_Candidate getById(@NonNull final PPOrderCandidateId ppOrderCandidateId);
+
+	@NonNull ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull Set<PPOrderCandidateId> ppOrderCandidateIds);
 
 	void save(@NonNull final I_PP_Order_Candidate candidateRecord);
 
@@ -60,6 +64,8 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 	@NonNull
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId);
 
+	ImmutableSet<PPOrderId> getPPOrderIds(@NonNull PPOrderCandidateId ppOrderCandidateId);
+
 	@NonNull ImmutableList<I_PP_Order_Candidate> getByOrderId(@NonNull PPOrderId ppOrderId);
 
 	@NonNull
@@ -70,4 +76,6 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 	void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate);
 
 	void closeCandidate(@NonNull PPOrderCandidateId ppOrderCandidateId);
+
+	void deleteLines(@NonNull PPOrderCandidateId ppOrderCandidateId);
 }

@@ -49,7 +49,6 @@ import java.util.Set;
 public class WorkflowExecutionSupportingServicesFacade
 {
 	@NonNull private final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
-	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
@@ -76,21 +75,27 @@ public class WorkflowExecutionSupportingServicesFacade
 
 	public void processDocument(@NonNull final IDocument document, @NonNull final String docAction)
 	{
-		documentBL.processEx(document, docAction);
+		Services.get(IDocumentBL.class).processEx(document, docAction);
 	}
 
-	public IDocument getDocument(final PO po) {return documentBL.getDocument(po);}
+	public IDocument getDocument(final PO po)
+	{
+		return Services.get(IDocumentBL.class).getDocument(po);
+	}
 
-	public IDocument getDocumentOrNull(final PO po) {return documentBL.getDocumentOrNull(po);}
+	public IDocument getDocumentOrNull(final PO po)
+	{
+		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
+	}
 
 	public Optional<DocBaseType> getDocBaseType(final IDocument document)
 	{
-		return documentBL.getDocBaseType(document);
+		return Services.get(IDocumentBL.class).getDocBaseType(document);
 	}
 
 	public Optional<DocApprovalStrategyId> getDocApprovalStrategyId(final IDocument document)
 	{
-		final I_C_DocType docType = documentBL.getDocTypeOrNull(document);
+		final I_C_DocType docType = Services.get(IDocumentBL.class).getDocTypeOrNull(document);
 		if (docType == null)
 		{
 			return Optional.empty();

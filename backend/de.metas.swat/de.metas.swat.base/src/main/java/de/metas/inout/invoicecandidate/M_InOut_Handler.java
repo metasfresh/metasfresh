@@ -101,7 +101,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the inout line requests
-		return InvoiceCandidateGenerateRequest.ofAll(inoutLineHandlers, inoutLines);
+		return InvoiceCandidateGenerateRequest.ofAll(inoutLineHandlers, inoutLines, request.getLockOwner());
 	}
 
 	/**

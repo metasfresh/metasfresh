@@ -20,6 +20,7 @@ import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -180,6 +181,11 @@ public class JSONDocumentChangedEvent
 	public ZonedDateTime getValueAsZonedDateTime()
 	{
 		return DateTimeConverters.fromObjectToZonedDateTime(value);
+	}
+
+	public LocalDate getValueAsLocalDate()
+	{
+		return DateTimeConverters.fromObjectToLocalDate(value);
 	}
 
 	public IntegerLookupValue getValueAsIntegerLookupValue()

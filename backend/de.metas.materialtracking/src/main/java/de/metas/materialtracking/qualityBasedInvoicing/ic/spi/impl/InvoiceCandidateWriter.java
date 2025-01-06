@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -72,6 +73,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnableAdapter;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -94,6 +96,7 @@ public class InvoiceCandidateWriter
 	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	// Parameters:
 	private final IContextAware _context;
 	private I_C_ILCandHandler _invoiceCandidateHandler;
@@ -105,6 +108,8 @@ public class InvoiceCandidateWriter
 	 * NOTE: please don't use this object in other scope then clearing. If you want more invoicing informations, please take them from {@link #_vendorInvoicingInfo}.
 	 */
 	private List<I_C_Invoice_Candidate> _invoiceCandidatesToClear;
+	
+	@Nullable
 	private QualityInvoiceLineGroupByTypeComparator groupsSorter;
 
 	// Current Status:
@@ -147,8 +152,6 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets the original invoice candidates that need to be cleared when a new invoice candidate is created by this builder
-	 *
-	 * @param invoiceCandidatesToClear
 	 */
 	public InvoiceCandidateWriter setInvoiceCandidatesToClear(final List<I_C_Invoice_Candidate> invoiceCandidatesToClear)
 	{
@@ -160,8 +163,6 @@ public class InvoiceCandidateWriter
 	 * Sets which group types will be accepted and saved.
 	 * <p>
 	 * Also, the {@link IQualityInvoiceLineGroup}s will be sorted exactly by the order of given types.
-	 *
-	 * @param types
 	 */
 	public InvoiceCandidateWriter setQualityInvoiceLineGroupTypes(final List<QualityInvoiceLineGroupType> types)
 	{
@@ -178,8 +179,6 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets C_DocType_ID to be used when invoice will be created
-	 *
-	 * @param invoiceDocTypeId
 	 */
 	public void setInvoiceDocType_ID(final int invoiceDocTypeId)
 	{
@@ -194,10 +193,8 @@ public class InvoiceCandidateWriter
 		return new ArrayList<>(_createdInvoiceCandidates);
 	}
 
-	private void addToCreatedInvoiceCandidates(final I_C_Invoice_Candidate invoiceCandidate)
+	private void addToCreatedInvoiceCandidates(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
-
 		final boolean newIc = InterfaceWrapperHelper.isNew(invoiceCandidate);
 
 		//
@@ -249,13 +246,13 @@ public class InvoiceCandidateWriter
 	/**
 	 * @return vendor invoicing info; never return null
 	 */
-	private final IVendorInvoicingInfo getVendorInvoicingInfo()
+	private IVendorInvoicingInfo getVendorInvoicingInfo()
 	{
 		Check.assumeNotNull(_vendorInvoicingInfo, "_vendorInvoicingInfo not null");
 		return _vendorInvoicingInfo;
 	}
 
-	private final IContextAware getContext()
+	private IContextAware getContext()
 	{
 		return _context;
 	}
@@ -347,7 +344,6 @@ public class InvoiceCandidateWriter
 	/**
 	 * Creates invoice candidate
 	 *
-	 * @param qualityInvoiceLineGroup
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
 	private I_C_Invoice_Candidate createInvoiceCandidate(@NonNull final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
@@ -462,6 +458,7 @@ public class InvoiceCandidateWriter
 
 		//
 		ic.setProcessed(false); // in the DB it's processed=false by default, but for decoupled AIts we need to set is explicitly, in order to select ICs by this flag
+		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// NOTE: don't save it
 
@@ -474,9 +471,8 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * If there are any preexisting ICs to be come obsolete because of our new
-	 *
-	 * @param qualityInvoiceLineGroup
-	 * @task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
+	 * <p>
+	 * task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
 	 */
 	private void deleteExistingInvoiceCandidates(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{

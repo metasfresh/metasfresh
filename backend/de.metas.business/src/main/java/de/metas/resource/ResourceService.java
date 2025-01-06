@@ -238,7 +238,7 @@ public class ResourceService
 
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
+		final ResourceType resourceType = ResourceTypeRepository.fromRecord(resourceTypeRecord);
 
 		final Set<ResourceId> resourceIds = resourceRepository.getActiveResourceIdsByResourceTypeId(resourceType.getId());
 		if (resourceIds.isEmpty())
@@ -301,6 +301,18 @@ public class ResourceService
 	{
 		return resourceRepository.getResourceIdsByUserId(userId);
 	}
+
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		return resourceRepository.getResourceTypeIdByResourceId(resourceId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(final ImmutableSet<ResourceTypeId> resourceTypeIds)
+	{
+		return resourceRepository.getResourceIdsByResourceTypeIds(resourceTypeIds);
+	}
+
+	public ImmutableSet<ResourceId> getActivePlantIds() {return resourceRepository.getActivePlantIds();}
 
 	//
 	//

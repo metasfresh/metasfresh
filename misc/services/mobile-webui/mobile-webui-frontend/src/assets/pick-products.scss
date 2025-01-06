@@ -27,3 +27,26 @@
   width: 25%;
   font-size: 1.5em;
 }
+
+.green-border-button {
+  background-color: white;
+  color: $base-mf-green;
+  border-color: $base-mf-green;
+  font-size: 1.25rem;
+}
+
+@media only screen and (max-width: $small-screen-width) {
+  .picking-to-pick {
+    padding-top: 0;
+  }
+  .picking-row-qty {
+    font-size: 1em;
+  }
+  .picking-row-picking {
+    padding-top: 0;
+  }
+  .picking-row-picked {
+    font-size: 1em;
+  }
+}
+

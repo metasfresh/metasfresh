@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,19 +23,21 @@
 package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 public class LotNoGenerator implements IComponentGenerator
 {
-	public static final String FIXED_PREFIX = "1";
-	public static final String MATERIAL_RECEIPT_INDICATOR = "R";
-	public static final String PP_ORDER_INDICATOR = "M";
-	public static final String YEAR_AND_MONTH_PATTERN = "YYMM";
+	private static final String FIXED_PREFIX = "1";
+	private static final String PP_ORDER_INDICATOR = "M";
+	private static final String SYSCONFIG_DATE_FORMAT = "de.metas.document.seqNo.DateSequenceProvider.dateFormat";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public ImmutableAttributeSet generate(@NonNull final ComponentGeneratorContext context)
@@ -53,7 +55,7 @@ public class LotNoGenerator implements IComponentGenerator
 			return ImmutableAttributeSet.EMPTY;
 		}
 
-		final String serialNo = generateAndIncrementSerialNo(false,context.getClientId());
+		final String serialNo = generateAndIncrementSerialNo();
 
 		return ImmutableAttributeSet.builder()
 				.attributeValue(AttributeConstants.ATTR_SerialNo, serialNo)
@@ -61,14 +63,14 @@ public class LotNoGenerator implements IComponentGenerator
 	}
 
 	@NonNull
-	private String generateAndIncrementSerialNo(final boolean isMaterialReceipt, @NonNull final ClientId clientId)
+	private String generateAndIncrementSerialNo()
 	{
-		final String materialReceiptIndicator = isMaterialReceipt ? MATERIAL_RECEIPT_INDICATOR : PP_ORDER_INDICATOR;
-		final String last2DigitsOfYear =TimeUtil.formatDate(Env.getDate(), YEAR_AND_MONTH_PATTERN);
+		final String dateFormatToUse = sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT);
+		Check.assumeNotEmpty(dateFormatToUse, "{} sysconfig has not been defined", SYSCONFIG_DATE_FORMAT);
 
-		final String prefixToUse = FIXED_PREFIX + materialReceiptIndicator + last2DigitsOfYear;
+		final String lastDigits = TimeUtil.formatDate(Env.getDate(), dateFormatToUse);
 
-		return prefixToUse;
+		return FIXED_PREFIX + PP_ORDER_INDICATOR + lastDigits;
 	}
 
 	@Override

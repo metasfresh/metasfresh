@@ -23,45 +23,70 @@
 package de.metas.resource;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductCategoryId;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
-import java.time.temporal.TemporalUnit;
 
 @Repository
 public class ResourceTypeRepository
 {
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ResourceType getById(@NonNull final ResourceTypeId resourceTypeId)
+	private final CCache<Integer, ResourceTypesMap> cache = CCache.<Integer, ResourceTypesMap>builder()
+			.cacheName("ResourceTypesMap")
+			.tableName(I_S_ResourceType.Table_Name)
+			.expireMinutes(0)
+			.build();
+
+	public ResourceType getById(@NonNull final ResourceTypeId id)
 	{
-		final I_S_ResourceType record = InterfaceWrapperHelper.loadOutOfTrx(resourceTypeId, I_S_ResourceType.class);
-		return toResourceType(record);
+		return getMap().getById(id);
 	}
 
-	ResourceType toResourceType(final I_S_ResourceType record)
+	private ResourceTypesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
+
+	private ResourceTypesMap retrieveMap()
 	{
+		return queryBL.createQueryBuilder(I_S_ResourceType.class)
+				//.addOnlyActiveRecordsFilter() // all!
+				.stream()
+				.map(ResourceTypeRepository::fromRecord)
+				.collect(ResourceTypesMap.collect());
+	}
+
+	static ResourceType fromRecord(final I_S_ResourceType record)
+	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
-		final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(durationUomId);
 
 		return ResourceType.builder()
 				.id(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.caption(trls.getColumnTrl(I_S_ResourceType.COLUMNNAME_Name, record.getName()))
 				.active(record.isActive())
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.durationUomId(durationUomId)
-				.durationUnit(durationUnit)
+				.availability(extractResourceAvailability(record))
+				.build();
+	}
+
+	private static ResourceWeeklyAvailability extractResourceAvailability(final I_S_ResourceType record)
+	{
+		final boolean timeSlot = record.isTimeSlot();
+		return ResourceWeeklyAvailability.builder()
 				.availableDaysOfWeek(extractAvailableDaysOfWeek(record))
-				.timeSlot(record.isTimeSlot())
-				.timeSlotStart(TimeUtil.asLocalTime(record.getTimeSlotStart()))
-				.timeSlotEnd(TimeUtil.asLocalTime(record.getTimeSlotEnd()))
+				.timeSlot(timeSlot)
+				.timeSlotStart(timeSlot ? TimeUtil.asLocalTime(record.getTimeSlotStart()) : null)
+				.timeSlotEnd(timeSlot ? TimeUtil.asLocalTime(record.getTimeSlotEnd()) : null)
 				.build();
 	}
 

@@ -1,55 +1,5 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.model.I_C_POS_Profile;
-import org.adempiere.model.I_C_POS_Profile_Warehouse;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.I_AD_Table_Process;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_Attribute;
-import org.eevolution.model.I_M_Warehouse_Routing;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_M_Warehouse_Routing;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_C_Order;
@@ -65,12 +15,34 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_AD_Table_Process;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Attribute;
+import org.eevolution.model.I_M_Warehouse_Routing;
+import org.eevolution.model.X_M_Warehouse_Routing;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 /**
  * This helper class declares master data and objects that are useful for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUDocumentSelectTestHelper extends HUTestHelper
 {
@@ -96,11 +68,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	public static final String NAME_PurchaseOrder7 = "PO 7";
 	public static final String NAME_PurchaseOrder8 = "PO 8";
 	public static final String NAME_PurchaseOrder9 = "PO 9";
-
-	public static final String NAME_Product1 = "Product 1";
-	public static final String NAME_Product2 = "Product 2";
-
-	private I_C_POS_Profile posProfile;
 
 	public I_M_Warehouse warehouse1;
 	public I_M_Warehouse warehouse2;
@@ -134,8 +101,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	private I_M_HU_PI_Item_Product huDefIFCO_pip_Tomato;
 
 	/**
-	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}. Therefore can can call
-	 * {@link HUTestHelper#createHUs(IHUContext, I_M_HU_PI, I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} with this PIP and both {@link HUTestHelper#pTomato} and {@link HUTestHelper#pSalad}.
+	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}.
 	 */
 	public I_M_HU_PI huDefIFCO2;
 	public I_M_HU_PI_Item_Product huDefIFCO2_pip_Tomato;
@@ -168,10 +134,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		super.setupMasterData();
 
 		WeightAttributeValueCalloutTest.setupWeightsToNoPI(this);
-
-		posProfile = InterfaceWrapperHelper.newInstance(I_C_POS_Profile.class, contextProvider);
-		posProfile.setAD_Role_ID(adRole.getAD_Role_ID());
-		InterfaceWrapperHelper.save(posProfile);
 
 		//
 		// Document Types
@@ -390,17 +352,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return order;
 	}
 
-	public I_PP_Order createManufacturingOrder(final String docNo, final I_M_Warehouse warehouse)
-	{
-		final I_PP_Order order = InterfaceWrapperHelper.create(ctx, I_PP_Order.class, ITrx.TRXNAME_None);
-		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		order.setDocumentNo(docNo);
-		order.setProcessed(true);
-		InterfaceWrapperHelper.save(order);
-		return order;
-	}
-
-	public I_M_ReceiptSchedule createReceiptSchedule(
+	public void createReceiptSchedule(
 			@Nullable final I_M_Warehouse warehouse,
 			@Nullable final I_M_Warehouse warehouseDest,
 			@NonNull final I_C_Order order,
@@ -428,7 +380,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setQualityNote("Quality des");
 		rSched.setM_HU_PI_Item_Product(pip);
 		InterfaceWrapperHelper.save(rSched);
-		return rSched;
 	}
 
 	private I_M_AttributeSetInstance createASI()
@@ -448,7 +399,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return asi;
 	}
 
-	public I_M_Warehouse_Routing createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
+	public void createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
 	{
 		final I_M_Warehouse_Routing warehouseRouting = InterfaceWrapperHelper.newInstance(I_M_Warehouse_Routing.class, contextProvider);
 		warehouseRouting.setDocBaseType(docBaseType);
@@ -456,19 +407,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		warehouseRouting.setIsActive(true);
 		InterfaceWrapperHelper.save(warehouseRouting);
 
-		// ... also create the POS Profile Warehouse
-		createPOSProfileWarehouse(warehouse);
-
-		return warehouseRouting;
-	}
-
-	private I_C_POS_Profile_Warehouse createPOSProfileWarehouse(final I_M_Warehouse warehouse)
-	{
-		final I_C_POS_Profile_Warehouse posProfileWarehouse = InterfaceWrapperHelper.newInstance(I_C_POS_Profile_Warehouse.class, posProfile);
-		posProfileWarehouse.setC_POS_Profile(posProfile);
-		posProfileWarehouse.setM_Warehouse(warehouse);
-		InterfaceWrapperHelper.save(posProfileWarehouse);
-		return posProfileWarehouse;
 	}
 
 	private void createHU_Report_Process(final String name)

@@ -42,6 +42,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.pricing.PriceListId;

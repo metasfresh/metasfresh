@@ -42,14 +42,15 @@ import java.util.Map;
 @Builder
 public class InvoicingParams
 {
-	public static final String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
-	public static final String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
-	public static final String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
-	public static final String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
-	public static final String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
-	public static final String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
-	public static final String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
-	public static final String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+	public static String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
+	public static String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
+	public static String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
+	public static String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
+	public static String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
+	public static String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
+	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
+	public static String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+	public static String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
 	public static final String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 	public static final String PARA_OverrideDueDate = "OverrideDueDate";
 	public static final String PARA_IsInvoicingSingleBPartner = "IsInvoicingSingleBPartner";
@@ -61,6 +62,7 @@ public class InvoicingParams
 	boolean storeInvoicesInResult;
 	boolean assumeOneInvoice;
 	boolean isInvoicingSingleBPartner;
+	@Builder.Default boolean supplementMissingPaymentTermIds = true; // default true because is legacy code which no longer exists in master
 	@Nullable LocalDate dateInvoiced;
 	@Nullable LocalDate dateAcct;
 	@Nullable String poReference;
@@ -83,6 +85,7 @@ public class InvoicingParams
 				.check_NetAmtToInvoice(params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice))
 				.updateLocationAndContactForInvoice(params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice))
 				.completeInvoices(params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/))
+				.supplementMissingPaymentTermIds(params.getParameterAsBool(PARA_SupplementMissingPaymentTermIds))
 				.forexContractParameters(ForexContractParameters.ofParams(params))
 				.overrideDueDate(params.getParameterAsLocalDate(PARA_OverrideDueDate))
 				.isInvoicingSingleBPartner(params.getParameterAsBoolean(PARA_IsInvoicingSingleBPartner, false))
@@ -125,6 +128,7 @@ public class InvoicingParams
 		map.put(PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		map.put(PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		map.put(PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
+		map.put(PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		map.put(PARA_IsCompleteInvoices, isCompleteInvoices());
 
 		final ForexContractParameters forexContractParameters = getForexContractParameters();

@@ -39,6 +39,7 @@ public class JsonWorkflowLaunchersFacet
 	@NonNull WorkflowLaunchersFacetId facetId;
 	@NonNull String caption;
 	long sortNo;
+	boolean active;
 
 	public static JsonWorkflowLaunchersFacet of(
 			@NonNull final WorkflowLaunchersFacet facet,
@@ -50,6 +51,7 @@ public class JsonWorkflowLaunchersFacet
 				.facetId(facet.getFacetId())
 				.caption(facet.getCaption().translate(jsonOpts.getAdLanguage()))
 				.sortNo(facet.getSortNo())
+				.active(facet.isActive())
 				.build();
 	}
 }

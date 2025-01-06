@@ -213,14 +213,14 @@ public class S_EffortControl_StepDef
 		}
 
 		final String pendingEffortSum = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_EffortControl.COLUMNNAME_PendingEffortSum);
-		if (Check.isNotBlank(pendingEffortSum) && !effortControl.getPendingEffortSum().equals(pendingEffortSum))
+		if (Check.isNotBlank(pendingEffortSum) && !pendingEffortSum.equals(effortControl.getPendingEffortSum()))
 		{
 			errorCollectors.add(MessageFormat.format("S_EffortControl={0}; Expecting PendingEffortSum={1} but actual is {2}",
 													 effortControl.getS_EffortControl_ID(), pendingEffortSum, effortControl.getPendingEffortSumSeconds()));
 		}
 
 		final String effortSum = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_EffortControl.COLUMNNAME_EffortSum);
-		if (Check.isNotBlank(effortSum) && !effortControl.getEffortSum().equals(effortSum))
+		if (Check.isNotBlank(effortSum) && !effortSum.equals(effortControl.getEffortSum()))
 		{
 			errorCollectors.add(MessageFormat.format("S_EffortControl={0}; Expecting EffortSum={1} but actual is {2}",
 													 effortControl.getS_EffortControl_ID(), effortSum, effortControl.getEffortSumSeconds()));

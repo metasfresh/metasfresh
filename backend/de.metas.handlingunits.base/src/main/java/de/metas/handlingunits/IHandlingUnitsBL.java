@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -54,6 +56,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -92,6 +95,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
 	List<I_M_HU> getVHUs(HuId huId);
+
+	HUType getHUUnitType(@NonNull I_M_HU hu);
 
 	ImmutableSet<HuId> getVHUIds(HuId huId);
 
@@ -143,6 +148,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_C_UOM getHandlingUOM(I_M_Product product);
 
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);
+
+	boolean isDestroyed(HuId huId);
 
 	/**
 	 * @return true if HU was destroyed
@@ -263,6 +270,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	CopyHUsResponse copyAsPlannedHUs(@NonNull Collection<HuId> huIdsToCopy);
 
+	CopyHUsCommandBuilder copyAsPlannedHUs();
+
 	I_M_HU copyAsPlannedHU(@NonNull HuId huId);
 
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull HuId huId);
@@ -287,6 +296,20 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull I_M_HU_PI huPI,
 			@Nullable String huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
+
+	Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
+
+	@Nullable
+	I_M_HU_PI retrievePIDefaultForPicking();
+
+	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	@Builder
 	@Value
@@ -316,11 +339,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent.
 	 *
 	 * @return top level parent; never return null; more preciselly:
-	 *         <ul>
-	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
-	 *         <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
-	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
-	 *         </ul>
+	 * <ul>
+	 * <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
+	 * <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
+	 * <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
+	 * </ul>
 	 */
 	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
@@ -364,8 +387,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @param hu hu to check if it is picked on the fly
 	 * @return true if it is picked on the fly; false otherwise
 	 * @see the following 2 methods:
-	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
-	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
 	 */
 	@SuppressWarnings("JavadocReference")
 	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
@@ -466,6 +489,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 
+	HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull I_M_HU hu);
+
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
@@ -492,6 +517,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
+
+	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
 		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
@@ -509,10 +537,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	static I_C_BPartner_Location extractBPartnerLocationOrNull(final I_M_HU hu)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
+		final BPartnerLocationId bpartnerLocationId = extractBPartnerLocationIdOrNull(hu);
 		return bpartnerLocationId != null
 				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
+	}
+
+	@Nullable
+	static BPartnerLocationId extractBPartnerLocationIdOrNull(final I_M_HU hu)
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
 	}
 
 	LocatorId getLocatorId(HuId huId);
@@ -600,21 +634,41 @@ public interface IHandlingUnitsBL extends ISingletonService
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
-				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
+				? Services.get(IHUPIItemProductDAO.class).getRecordById(piItemProductId)
 				: null;
 	}
 
 	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
 
+	AttributesKey getAttributesKeyForInventory(@NonNull IAttributeSet attributeSet);
+
+	void setHUStatus(@NonNull Collection<I_M_HU> hus, @NonNull String huStatus);
+
+	void setHUStatus(@NonNull Collection<I_M_HU> hus, @NonNull IHUContext huContext, @NonNull String huStatus);
+
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
+
+	void setHUStatus(@NonNull I_M_HU hu, @NonNull String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
 
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
+	boolean isHUHierarchyCleared(@NonNull I_M_HU hu);
+
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
+
+	void setClearanceStatusRecursively(@NonNull I_M_HU hu, @NonNull ClearanceStatusInfo clearanceStatusInfo);
+
+	void setClearanceStatusRecursively(
+			@NonNull Collection<I_M_HU> hus,
+			@NonNull ClearanceStatusInfo clearanceStatusInfo,
+			@Nullable Predicate<I_M_HU> filter);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
 }

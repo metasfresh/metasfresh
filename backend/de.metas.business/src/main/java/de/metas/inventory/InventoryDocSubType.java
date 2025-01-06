@@ -2,6 +2,7 @@ package de.metas.inventory;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -34,8 +35,8 @@ import org.compiere.model.X_C_DocType;
 public enum InventoryDocSubType implements ReferenceListAwareEnum
 {
 	InternalUseInventory(X_C_DocType.DOCSUBTYPE_InternalUseInventory), //
-	AggregatedHUInventory("IAH"), //
-	SingleHUInventory("ISH"), //
+	AggregatedHUInventory(X_C_DocType.DOCSUBTYPE_AggregatedHUInventory), //
+	SingleHUInventory(X_C_DocType.DOCSUBTYPE_SingleHUInventory), //
 	VirtualInventory(X_C_DocType.DOCSUBTYPE_VirtualInventory), //
 	;
 
@@ -59,13 +60,10 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 		return DocBaseType.MaterialPhysicalInventory;
 	}
 
-	public String toDocSubTypeString()
-	{
-		return getCode();
-	}
-
 	public DocBaseAndSubType toDocBaseAndSubType()
 	{
-		return DocBaseAndSubType.of(getDocBaseType(), toDocSubTypeString());
+		return DocBaseAndSubType.of(getDocBaseType(), getDocSubType());
 	}
+
+	public DocSubType getDocSubType() { return DocSubType.ofCode(code); }
 }

@@ -23,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -39,7 +40,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public MBPartnerLocation(final Properties ctx, final int C_BPartner_Location_ID, final String trxName)
+	public MBPartnerLocation(final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
 	{
 		super(ctx, C_BPartner_Location_ID, trxName);
 		if (is_new())

@@ -17,14 +17,13 @@
 
 package org.compiere.model;
 
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
+import org.slf4j.Logger;
+
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.Access;
 
 /**
  * @author Trifon N. Trifonov

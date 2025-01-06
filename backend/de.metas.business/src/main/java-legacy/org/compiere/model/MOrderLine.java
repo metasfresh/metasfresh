@@ -268,10 +268,6 @@ public class MOrderLine extends X_C_OrderLine
 	 * Product
 	 */
 	private MProduct m_product = null;
-	/**
-	 * Charge
-	 */
-	private MCharge m_charge = null;
 
 	/**
 	 * Get Parent
@@ -363,86 +359,6 @@ public class MOrderLine extends X_C_OrderLine
 		setC_Tax_ID(tax.getTaxId().getRepoId());
 		setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 	}    // setTax
-
-	/**
-	 * Calculate Extended Amt. May or may not include tax
-	 */
-	public void setLineNetAmt()
-	{
-		BigDecimal bd = getPriceActual().multiply(getQtyOrdered());
-		// metas: tsa: begin: 01459
-		// Line Net Amt shall be zero if the line is not active
-		if (!isActive())
-		{
-			bd = BigDecimal.ZERO;
-		}
-		// metas: tsa: end: 01459
-
-		final boolean documentLevel = getTax().isDocumentLevel();
-		final boolean isTaxIncluded = Services.get(IOrderLineBL.class).isTaxIncluded(this);
-		final CurrencyPrecision taxPrecision = Services.get(IOrderLineBL.class).getTaxPrecision(this);
-
-		// juddm: Tax Exempt & Tax Included in Price List & not Document Level - Adjust Line Amount
-		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
-		if (isTaxIncluded && !documentLevel)
-		{
-			BigDecimal taxStdAmt = BigDecimal.ZERO;
-			BigDecimal taxThisAmt = BigDecimal.ZERO;
-
-			MTax orderTax = getTax();
-			MTax stdTax = null;
-
-			// get the standard tax
-			if (getProduct() == null)
-			{
-				if (getCharge() != null)    // Charge
-				{
-					stdTax = new MTax(getCtx(),
-							((MTaxCategory)getCharge().getC_TaxCategory()).getDefaultTax().getC_Tax_ID(),
-							get_TrxName());
-				}
-			}
-			else
-			// Product
-			{
-				// FIXME metas 05129 need proper concept (link between M_Product and C_TaxCategory_ID was removed)
-				throw new AdempiereException("Unsupported tax calculation when tax is included, but it's not on document level");
-			}
-
-			if (stdTax != null)
-			{
-				final ITaxBL taxBL = Services.get(ITaxBL.class);
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxStdAmt.add(taxBL.calculateTaxAmt(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
-
-				bd = bd.subtract(taxStdAmt).add(taxThisAmt);
-
-				log.debug("Price List includes Tax and Tax Changed on Order Line: New Tax Amt: "
-						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + bd);
-			}
-
-		}
-
-		if (bd.scale() > taxPrecision.toInt())
-		{
-			bd = bd.setScale(taxPrecision.toInt(), BigDecimal.ROUND_HALF_UP);
-		}
-		super.setLineNetAmt(bd);
-	}    // setLineNetAmt
-
-	/**
-	 * Get Charge
-	 *
-	 * @return product or null
-	 */
-	public MCharge getCharge()
-	{
-		if (m_charge == null && getC_Charge_ID() != 0)
-		{
-			m_charge = MCharge.get(getCtx(), getC_Charge_ID());
-		}
-		return m_charge;
-	}
 
 	/**
 	 * Get Tax

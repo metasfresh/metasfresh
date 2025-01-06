@@ -29,6 +29,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
+import de.metas.externalsystem.leichmehl.PLUType;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -79,10 +81,14 @@ public class ExternalSystem_Config_LeichMehl_ProductMapping_StepDef
 					+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final BPartnerId bPartnerId = bPartnerIdentifier == null ? null : BPartnerId.ofRepoId(bPartnerTable.get(bPartnerIdentifier).getC_BPartner_ID());
 
+			final PLUType pluType = PLUType.ofCodeOptional(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_ExternalSystem_Config_LeichMehl.COLUMNNAME_CU_TU_PLU))
+					.orElse(PLUType.CU);
+			
 			final I_ExternalSystem_Config_LeichMehl_ProductMapping productMapping = CoalesceUtil
 					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
 											   .addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_M_Product_ID, productId)
 											   .addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID, bPartnerId)
+											   .addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMN_CU_TU_PLU, pluType.getCode())
 											   .create()
 											   .firstOnly(I_ExternalSystem_Config_LeichMehl_ProductMapping.class),
 									   () -> InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class));
@@ -90,6 +96,7 @@ public class ExternalSystem_Config_LeichMehl_ProductMapping_StepDef
 			assertThat(productMapping).isNotNull();
 
 			productMapping.setM_Product_ID(productId.getRepoId());
+			productMapping.setCU_TU_PLU(pluType.getCode());
 			if(bPartnerId != null)
 			{
 				productMapping.setC_BPartner_ID(bPartnerId.getRepoId());

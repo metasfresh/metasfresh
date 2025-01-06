@@ -36,12 +36,11 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_PP_Maturing_Candidates_v;
-import org.eevolution.model.I_PP_OrderLine_Candidate;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Repository;
@@ -76,10 +75,12 @@ public class PPMaturingCandidatesViewRepo
 		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(ppMaturingCandidatesV.getPP_Order_Candidate_ID());
 		final MaturingConfigId maturingConfigId = MaturingConfigId.ofRepoId(ppMaturingCandidatesV.getM_Maturing_Configuration_ID());
 		final MaturingConfigLineId maturingConfigLineId = MaturingConfigLineId.ofRepoId(ppMaturingCandidatesV.getM_Maturing_Configuration_Line_ID());
+		final ProductBOMVersionsId productBOMVersionsId = ProductBOMVersionsId.ofRepoId(ppMaturingCandidatesV.getPP_Product_BOMVersions_ID());
 		final ProductId productId = ProductId.ofRepoId(ppMaturingCandidatesV.getM_Product_ID());
+		final ProductId issueProductId = ProductId.ofRepoId(ppMaturingCandidatesV.getIssue_M_Product_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppMaturingCandidatesV.getM_Warehouse_ID());
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppMaturingCandidatesV.getPP_Product_Planning_ID());
-		final Quantity quantity = Quantitys.create(ppMaturingCandidatesV.getQty(), UomId.ofRepoId(ppMaturingCandidatesV.getC_UOM_ID()));
+		final Quantity quantity = Quantitys.of(ppMaturingCandidatesV.getQty(), UomId.ofRepoId(ppMaturingCandidatesV.getC_UOM_ID()));
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppMaturingCandidatesV.getM_AttributeSetInstance_ID());
 		final Instant dateStartSchedule = Objects.requireNonNull(ppMaturingCandidatesV.getDateStartSchedule()).toInstant();
 		final HuId huId = HuId.ofRepoId(ppMaturingCandidatesV.getM_HU_ID());
@@ -89,7 +90,9 @@ public class PPMaturingCandidatesViewRepo
 				.ppOrderCandidateId(ppOrderCandidateId)
 				.maturingConfigId(maturingConfigId)
 				.maturingConfigLineId(maturingConfigLineId)
+				.productBOMVersionsId(productBOMVersionsId)
 				.productId(productId)
+				.issueProductId(issueProductId)
 				.warehouseId(warehouseId)
 				.productPlanningId(productPlanningId)
 				.qtyRequired(quantity)
@@ -103,16 +106,11 @@ public class PPMaturingCandidatesViewRepo
 	{
 		final IQuery<I_PP_Maturing_Candidates_v> ppMaturingCandidatesVQuery = queryBL.createQueryBuilder(I_PP_Maturing_Candidates_v.class)
 				.create();
-		final IQueryBuilder<I_PP_Order_Candidate> commonQueryBuilder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, true)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, true)
-				.addNotInSubQueryFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, I_PP_Maturing_Candidates_v.COLUMNNAME_PP_Order_Candidate_ID, ppMaturingCandidatesVQuery);
-
-		commonQueryBuilder.andCollectChildren(I_PP_OrderLine_Candidate.COLUMN_PP_Order_Candidate_ID)
+				.addNotInSubQueryFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, I_PP_Maturing_Candidates_v.COLUMNNAME_PP_Order_Candidate_ID, ppMaturingCandidatesVQuery)
 				.create()
-				.delete();
-
-		return commonQueryBuilder.create()
 				.delete();
 	}
 

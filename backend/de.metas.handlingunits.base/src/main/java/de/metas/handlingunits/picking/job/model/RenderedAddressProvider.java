@@ -25,10 +25,12 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.location.AddressDisplaySequence;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,10 +39,10 @@ import java.util.Map;
 public class RenderedAddressProvider
 {
 	@NonNull IDocumentLocationBL documentLocationBL;
-	@NonNull Map<BPartnerLocationId, String> locationId2RenderedAddress;
+	@NonNull Map<AddressToRender, String> locationId2RenderedAddress;
 
 	@NonNull
-	public static RenderedAddressProvider of(@NonNull final IDocumentLocationBL locationBL)
+	public static RenderedAddressProvider newInstance(@NonNull final IDocumentLocationBL locationBL)
 	{
 		return RenderedAddressProvider.builder()
 				.documentLocationBL(locationBL)
@@ -51,14 +53,28 @@ public class RenderedAddressProvider
 	@NonNull
 	public String getAddress(@NonNull final BPartnerLocationId locationId)
 	{
-		return locationId2RenderedAddress.computeIfAbsent(locationId, this::renderAddress);
+		return getAddress(locationId, null);
 	}
 
 	@NonNull
-	private String renderAddress(@NonNull final BPartnerLocationId locationId)
+	public String getAddress(@NonNull final BPartnerLocationId bpLocationId, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return documentLocationBL
-				.computeRenderedAddress(DocumentLocation.ofBPartnerLocationId(locationId))
+		return locationId2RenderedAddress.computeIfAbsent(AddressToRender.of(bpLocationId, displaySequence), this::renderAddress);
+	}
+
+	@NonNull
+	private String renderAddress(@NonNull final AddressToRender addressToRender)
+	{
+		final String renderedAddress = documentLocationBL
+				.computeRenderedAddress(DocumentLocation.ofBPartnerLocationId(addressToRender.getBpLocationId()), addressToRender.getDisplaySequence())
 				.getRenderedAddress();
+		return renderedAddress != null ? renderedAddress : "";
+	}
+
+	@Value(staticConstructor = "of")
+	private static class AddressToRender
+	{
+		@NonNull BPartnerLocationId bpLocationId;
+		@Nullable AddressDisplaySequence displaySequence;
 	}
 }

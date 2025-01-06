@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError, toastErrorFromObj } from '../utils/toast';
 import { trl } from '../utils/translations';
-import { useBooleanSetting, usePositiveNumberSetting } from '../reducers/settings';
+import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { debounce } from 'lodash';
+import { beep } from '../utils/audio';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -18,15 +19,49 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
+const useConfigParams = () => {
+  return {
+    okBeepParams: {
+      name: 'OK',
+      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
+      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
+    },
+    errorBeepParams: {
+      name: 'error',
+      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
+      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
+    },
+    isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
+    triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
+      'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
+      0
+    ),
+    textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
+  };
+};
+
 const BarcodeScannerComponent = ({
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
   continuousRunning,
 }) => {
+  const {
+    isShowInputText,
+    triggerOnChangeIfLengthGreaterThan,
+    textChangedDebounceMillis,
+    okBeepParams,
+    errorBeepParams,
+  } = useConfigParams();
+
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
+  const [isProcessing, setProcessing] = useState(false);
 
   const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
     inputTextRef?.current?.select();
@@ -37,6 +72,7 @@ const BarcodeScannerComponent = ({
       return;
     }
     scanningStatus.running = true;
+    setProcessing(true);
 
     // console.log('Resolving scanned barcode', {
     //   scannedBarcode,
@@ -52,10 +88,11 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      // console.log('Got resolvedResult', resolvedResult);
+      console.log('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
+        beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
       } else {
         await onResolvedResult(resolvedResult);
@@ -64,11 +101,16 @@ const BarcodeScannerComponent = ({
           scanningStatus.done = true;
           controls?.stop();
         }
+
+        beep(okBeepParams);
       }
     } catch (error) {
+      beep(errorBeepParams);
       toastErrorFromObj(error);
     } finally {
       scanningStatus.running = false;
+      setProcessing(false);
+
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
@@ -91,12 +133,8 @@ const BarcodeScannerComponent = ({
     return function cleanup() {
       mountedRef.current = false;
     };
-  });
+  }, []);
 
-  const triggerOnChangeIfLengthGreaterThan = usePositiveNumberSetting(
-    'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
-    0
-  );
   const handleInputTextChanged = (e) => {
     const scannedBarcode = e.target.value;
 
@@ -110,7 +148,6 @@ const BarcodeScannerComponent = ({
     }
   };
 
-  const textChangedDebounceMillis = usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300);
   const handleInputTextChangedDebounced = useMemo(() => {
     return debounce(handleInputTextChanged, textChangedDebounceMillis);
   }, [textChangedDebounceMillis]);
@@ -137,14 +174,15 @@ const BarcodeScannerComponent = ({
   };
 
   useEffect(() => {
+    videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
     inputTextRef?.current?.focus();
   });
 
-  const isShowInputText = useBooleanSetting('barcodeScanner.showInputText');
   return (
     <div className="barcode-scanner">
+      {isProcessing && <Spinner />}
       <video key="video" ref={videoRef} width="100%" height="100%" />
-      {isShowInputText && (
+      {isShowInputText && !isProcessing && (
         <input
           key="input-text"
           ref={inputTextRef}
@@ -157,6 +195,14 @@ const BarcodeScannerComponent = ({
           onKeyUp={handleInputTextKeyPress}
         />
       )}
+    </div>
+  );
+};
+
+const Spinner = () => {
+  return (
+    <div className="loading">
+      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
     </div>
   );
 };

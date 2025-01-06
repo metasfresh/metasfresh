@@ -1,8 +1,8 @@
 package de.metas.document.archive.api;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 
 /**
  * Service responsible with managing registered {@link IDocOutboundProducer}s and picking the right one in order to perform document outbound actions.

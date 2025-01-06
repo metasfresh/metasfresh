@@ -1821,6 +1821,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1111": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1870,6 +1871,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1111_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1919,6 +1921,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1112": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -1968,6 +1971,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1112_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2017,6 +2021,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1113": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2066,6 +2071,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1113_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2115,6 +2121,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1121": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2164,6 +2171,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1121_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2213,6 +2221,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1122": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": true,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2262,6 +2271,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1122_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2311,6 +2321,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1123": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2395,6 +2406,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1123_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2444,6 +2456,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "DataEntry_SubTab_ID": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2492,6 +2505,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "documentLinkColumnName": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2545,6 +2559,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2596,6 +2611,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "parentLinkField": {
             "allowShowPassword": false,
             "alwaysUpdateable": false,
+            "booleanWidgetType": false,
             "calculated": false,
             "callouts": [ ],
             "caption": {
@@ -2682,6 +2698,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1211": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2731,6 +2748,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1211_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2780,6 +2798,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1212": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2829,6 +2848,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1212_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2878,6 +2898,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1213": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2927,6 +2948,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1213_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -2976,6 +2998,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1221": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3025,6 +3048,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1221_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3074,6 +3098,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1222": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": true,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3123,6 +3148,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1222_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3172,6 +3198,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1223": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3256,6 +3283,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "1223_Info": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3305,6 +3333,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "DataEntry_SubTab_ID": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3353,6 +3382,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "documentLinkColumnName": {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3406,6 +3436,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             {
               "allowShowPassword": false,
               "alwaysUpdateable": false,
+              "booleanWidgetType": false,
               "calculated": false,
               "callouts": [ ],
               "caption": {
@@ -3457,6 +3488,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "parentLinkField": {
             "allowShowPassword": false,
             "alwaysUpdateable": false,
+            "booleanWidgetType": false,
             "calculated": false,
             "callouts": [ ],
             "caption": {

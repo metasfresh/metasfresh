@@ -156,4 +156,16 @@ public class PickingSlotBL implements IPickingSlotBL
 		return globalQRCodeService.createPDF(qrCodes);
 	}
 
+	@Override
+	public boolean isAvailableForAnyBPartner(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return isAvailableForAnyBPartner(pickingSlotDAO.getById(pickingSlotId));
+	}
+
+	@NonNull
+	public I_M_PickingSlot getById(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.getById(pickingSlotId);
+	}
+
 }

@@ -73,14 +73,16 @@ class MasterWindowContainer extends PureComponent {
   }
 
   async onWebsocketEvent(event) {
-    const { includedTabsInfo, stale } = event;
+    const { includedTabsInfo, stale, activeTabStaled } = event;
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
+    //console.log('onWebsocketEvent', { event, activeTab });
 
+    //
     // Document header got staled
     if (stale) {
       const { params, fireUpdateData } = this.props;
@@ -91,22 +93,20 @@ class MasterWindowContainer extends PureComponent {
       });
     }
 
+    //
     // Active included tab got staled
-    if (activeTab) {
-      // Full tab got staled
-      if (activeTab.stale) {
-        this.refreshActiveTab();
-      }
-      // Some included rows got staled
-      else {
-        // if `staleRowIds` is empty, we'll just query for all rows and update what changed
-        // This can happen when adding a new product via the `Add new` modal.
-        const { staleRowIds } = activeTab;
-
-        await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {
+    if (activeTabStaled || activeTab?.stale) {
+      this.refreshActiveTab();
+    }
+    // Some included rows got staled
+    else if (activeTab) {
+      // if `staleRowIds` is empty, we'll just query for all rows and update what changed
+      // This can happen when adding a new product via the `Add new` modal.
+      await this.getTabRows(activeTab.tabId, activeTab.staleRowIds).then(
+        (res) => {
           this.mergeDataIntoIncludedTab(res);
-        });
-      }
+        }
+      );
     }
   }
 
@@ -260,7 +260,7 @@ class MasterWindowContainer extends PureComponent {
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then(({ rows }) =>
           updateTabTableData(tableId, rows)
         );
       })
@@ -300,21 +300,18 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowId, docId },
     } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-    const activeTabId = master.layout.activeTab;
 
-    if (!activeTabId) {
+    const activeTabId = master.layout.activeTab;
+    if (tabId !== activeTabId) {
       return;
     }
-    const tableId = getTableId({
-      windowId,
-      docId,
-      tabId: activeTabId,
-    });
 
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+    const tableId = getTableId({ windowId, docId, tabId });
+
+    sortTab({ scope: 'master', windowId, docId, tabId, field, asc });
+    getTabRequest(tabId, windowId, dataId, orderBy).then(({ rows }) => {
       updateTabTableData(tableId, rows);
     });
   };

@@ -33,7 +33,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderHandlerUtils;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -44,27 +44,22 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLineCandidate;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class PPOrderCandidateEventHandler
+@RequiredArgsConstructor
+abstract class PPOrderCandidateEventHandler
 {
-	protected final CandidateChangeService candidateChangeService;
-	protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	public PPOrderCandidateEventHandler(
-			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.candidateChangeService = candidateChangeService;
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-	}
+	@NonNull protected final CandidateChangeService candidateChangeService;
+	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@NonNull
-	protected Candidate createHeaderCandidate(
+	protected final Candidate createHeaderCandidate(
 			@NonNull final AbstractPPOrderCandidateEvent event,
 			@NonNull final CandidatesQuery preExistingSupplyQuery)
 	{
@@ -96,44 +91,46 @@ public abstract class PPOrderCandidateEventHandler
 				.lotForLot(ppOrderCandidate.getPpOrderData().getLotForLot())
 				.build();
 
-		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
+		final boolean attemptUpdate = !preExistingSupplyQuery.isFalse();
 
-		return candidateChangeService.onCandidateNewOrChange(
-				headerCandidate,
-				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(attemptUpdate));
+		return candidateChangeService.onCandidateNewOrChange(headerCandidate, OnNewOrChangeAdvise.attemptUpdate(attemptUpdate))
+				.toCandidateWithQtyDelta();
 	}
 
-	protected void createLineCandidates(
+	protected final void createLineCandidates(
 			@NonNull final AbstractPPOrderCandidateEvent event,
 			@Nullable final MaterialDispoGroupId groupId,
 			@NonNull final Candidate headerCandidate)
 	{
-		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
+		final List<PPOrderLineCandidate> ppOrderLineCandidates = ppOrderCandidate.getLines();
 		final boolean simulated = headerCandidate.isSimulated();
 
 		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
 		{
-			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, simulated);
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, groupId, simulated);
 
 			final Candidate.CandidateBuilder candidateBuilder = existingLineCandidate != null
 					? existingLineCandidate.toBuilder()
-					: Candidate.builderForClientAndOrgId(event.getPpOrderCandidate().getPpOrderData().getClientAndOrgId());
+					: Candidate.builderForClientAndOrgId(ppOrderCandidate.getPpOrderData().getClientAndOrgId());
 
 			final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
-			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderLineCandidate(ppOrderLineCandidate, ppOrderCandidate);
 
-			final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+			final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLineCandidate(ppOrderLineCandidate, ppOrderCandidate);
 
 			candidateBuilder
 					.type(CandidateType.DEMAND)
 					.businessCase(CandidateBusinessCase.PRODUCTION)
-					.seqNo(headerCandidate.getSeqNo() + 1)
+					.seqNo(headerCandidate.getSeqNo() + 1) // not related to the ppOrderCandidate's SeqNo!
 					.businessCaseDetail(lineCandidateProductionDetail)
-					.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()))
 					.materialDescriptor(materialDescriptor)
 					.simulated(simulated)
-					.lotForLot(headerCandidate.getLotForLot());
-
+                    .lotForLot(headerCandidate.getLotForLot());
+			if (headerDemandDetail != null)
+			{
+				candidateBuilder.additionalDemandDetail(headerDemandDetail.withTraceId(event.getTraceId()));
+			}
 			if (groupId != null)
 			{
 				candidateBuilder.groupId(groupId);
@@ -143,8 +140,38 @@ public abstract class PPOrderCandidateEventHandler
 		}
 	}
 
+	@Nullable
+	protected final Candidate deleteHeaderCandidate(
+			@NonNull final CandidatesQuery preExistingSupplyQuery)
+	{
+		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
+
+		if (existingCandidateOrNull != null)
+		{
+			candidateChangeService.onCandidateDelete(existingCandidateOrNull);
+		}
+		return existingCandidateOrNull;
+	}
+
+	protected final void deleteLineCandidates(
+			@NonNull final AbstractPPOrderCandidateEvent event,
+			@NonNull final Candidate headerCandidate)
+	{
+		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+		final boolean simulated = headerCandidate.isSimulated();
+
+		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
+		{
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, null, simulated);
+			if (existingLineCandidate != null)
+			{
+				candidateChangeService.onCandidateDelete(existingLineCandidate);
+			}
+		}
+	}
+
 	@NonNull
-	private ProductionDetail createProductionDetailForPPOrderCandidate(
+	private static ProductionDetail createProductionDetailForPPOrderCandidate(
 			@NonNull final AbstractPPOrderCandidateEvent event,
 			@Nullable final Candidate existingCandidateOrNull)
 	{
@@ -156,14 +183,15 @@ public abstract class PPOrderCandidateEventHandler
 				.advised(Flag.of(event instanceof PPOrderCandidateAdvisedEvent))
 				.qty(ppOrderCandidate.getPpOrderData().getQtyOpen())
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
+				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.pickDirectlyIfFeasible(Flag.FALSE)
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
-				.ppOrderCandidateId(ppOrderCandidate.getPpOrderCandidateId())
+				.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()))
 				.build();
 	}
 
 	@NonNull
-	private MaterialDescriptor createMaterialDescriptorForPPOrderCandidate(final PPOrderCandidate ppOrderCandidate)
+	private static MaterialDescriptor createMaterialDescriptorForPPOrderCandidate(final PPOrderCandidate ppOrderCandidate)
 	{
 		return MaterialDescriptor.builder()
 				.date(ppOrderCandidate.getPpOrderData().getDatePromised())
@@ -174,7 +202,7 @@ public abstract class PPOrderCandidateEventHandler
 	}
 
 	@NonNull
-	private ProductionDetail.ProductionDetailBuilder prepareProductionDetail(@Nullable final Candidate existingCandidateOrNull)
+	private static ProductionDetail.ProductionDetailBuilder prepareProductionDetail(@Nullable final Candidate existingCandidateOrNull)
 	{
 		return Optional.ofNullable(existingCandidateOrNull)
 				.map(Candidate::getBusinessCaseDetail)
@@ -184,7 +212,10 @@ public abstract class PPOrderCandidateEventHandler
 	}
 
 	@Nullable
-	private Candidate retrieveExistingLineCandidateOrNull(@NonNull final PPOrderLineCandidate ppOrderLineCandidate, final boolean simulated)
+	private Candidate retrieveExistingLineCandidateOrNull(
+			@NonNull final PPOrderLineCandidate ppOrderLineCandidate,
+			@Nullable final MaterialDispoGroupId groupId,
+			final boolean simulated)
 	{
 		final SimulatedQueryQualifier simulatedQueryQualifier = simulated
 				? SimulatedQueryQualifier.ONLY_SIMULATED
@@ -199,6 +230,7 @@ public abstract class PPOrderCandidateEventHandler
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.productionDetailsQuery(productionDetailsQuery)
 				.simulatedQueryQualifier(simulatedQueryQualifier)
+				.groupId(groupId)
 				.build();
 
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
@@ -215,11 +247,12 @@ public abstract class PPOrderCandidateEventHandler
 				.advised(Flag.FALSE)
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
-				.qty(ppOrderLineData.getQtyRequired())
+				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
+				.qty(ppOrderLineData.getQtyOpenNegateIfReceipt())
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())
 				.description(ppOrderLineData.getDescription())
-				.ppOrderLineCandidateId(ppOrderLineCandidate.getPpOrderLineCandidateId())
+				.ppOrderRef(PPOrderRef.ofPPOrderLineCandidateId(ppOrderCandidate.getPpOrderCandidateId(), ppOrderLineCandidate.getPpOrderLineCandidateId()))
 				.build();
 	}
 
@@ -233,7 +266,7 @@ public abstract class PPOrderCandidateEventHandler
 		return MaterialDescriptor.builder()
 				.date(ppOrderLineCandidate.getPpOrderLineData().getIssueOrReceiveDate())
 				.productDescriptor(ppOrderLineCandidate.getPpOrderLineData().getProductDescriptor())
-				.quantity(ppOrderLineCandidate.getPpOrderLineData().getQtyRequired())
+				.quantity(ppOrderLineCandidate.getPpOrderLineData().getQtyOpenNegateIfReceipt())
 				.warehouseId(ppOrderData.getWarehouseId())
 				.build();
 	}

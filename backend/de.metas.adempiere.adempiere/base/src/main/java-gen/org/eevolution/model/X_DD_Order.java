@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for DD_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 548969864L;
+	private static final long serialVersionUID = 2133224776L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -183,6 +183,19 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -249,19 +262,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -522,6 +522,60 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public void setForward_PP_Order_BOMLine(final org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class, Forward_PP_Order_BOMLine);
+	}
+
+	@Override
+	public void setForward_PP_Order_BOMLine_ID (final int Forward_PP_Order_BOMLine_ID)
+	{
+		if (Forward_PP_Order_BOMLine_ID < 1) 
+			set_Value (COLUMNNAME_Forward_PP_Order_BOMLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_Forward_PP_Order_BOMLine_ID, Forward_PP_Order_BOMLine_ID);
+	}
+
+	@Override
+	public int getForward_PP_Order_BOMLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_BOMLine_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getForward_PP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setForward_PP_Order(final org.eevolution.model.I_PP_Order Forward_PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_ID, org.eevolution.model.I_PP_Order.class, Forward_PP_Order);
+	}
+
+	@Override
+	public void setForward_PP_Order_ID (final int Forward_PP_Order_ID)
+	{
+		if (Forward_PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_Forward_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_Forward_PP_Order_ID, Forward_PP_Order_ID);
+	}
+
+	@Override
+	public int getForward_PP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final @Nullable BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -682,6 +736,42 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	@Override
+	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
+	{
+		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
+	}
+
+	@Override
+	public boolean isMRP_AllowCleanup() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_MRP_AllowCleanup);
+	}
+
+	@Override
+	public void setMRP_Generated (final boolean MRP_Generated)
+	{
+		set_Value (COLUMNNAME_MRP_Generated, MRP_Generated);
+	}
+
+	@Override
+	public boolean isMRP_Generated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_MRP_Generated);
+	}
+
+	@Override
+	public void setMRP_ToDelete (final boolean MRP_ToDelete)
+	{
+		set_Value (COLUMNNAME_MRP_ToDelete, MRP_ToDelete);
+	}
+
+	@Override
+	public boolean isMRP_ToDelete() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	}
+
+	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
@@ -751,42 +841,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public int getM_Warehouse_To_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_To_ID);
-	}
-
-	@Override
-	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
-	{
-		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
-	}
-
-	@Override
-	public boolean isMRP_AllowCleanup() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_AllowCleanup);
-	}
-
-	@Override
-	public void setMRP_Generated (final boolean MRP_Generated)
-	{
-		set_Value (COLUMNNAME_MRP_Generated, MRP_Generated);
-	}
-
-	@Override
-	public boolean isMRP_Generated() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_Generated);
-	}
-
-	@Override
-	public void setMRP_ToDelete (final boolean MRP_ToDelete)
-	{
-		set_Value (COLUMNNAME_MRP_ToDelete, MRP_ToDelete);
-	}
-
-	@Override
-	public boolean isMRP_ToDelete() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
 	}
 
 	@Override

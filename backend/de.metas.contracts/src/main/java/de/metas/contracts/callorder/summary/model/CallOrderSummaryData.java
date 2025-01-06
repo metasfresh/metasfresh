@@ -70,9 +70,6 @@ public class CallOrderSummaryData
 	BigDecimal qtyInvoiced = BigDecimal.ZERO;
 
 	@Nullable
-	String poReference;
-
-	@Nullable
 	AttributeSetInstanceId attributeSetInstanceId;
 
 	boolean isActive;

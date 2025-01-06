@@ -1,27 +1,6 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.picking.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PickingProfile_PickingJobConfig
@@ -97,6 +76,29 @@ public interface I_PickingProfile_PickingJobConfig
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Format Pattern.
+	 * The pattern used to format a number or date.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFormatPattern (@Nullable java.lang.String FormatPattern);
+
+	/**
+	 * Get Format Pattern.
+	 * The pattern used to format a number or date.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFormatPattern();
+
+	ModelColumn<I_PickingProfile_PickingJobConfig, Object> COLUMN_FormatPattern = new ModelColumn<>(I_PickingProfile_PickingJobConfig.class, "FormatPattern", null);
+	String COLUMNNAME_FormatPattern = "FormatPattern";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -120,7 +122,7 @@ public interface I_PickingProfile_PickingJobConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Display in detailed.
+	 * Set Display in detailed view.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -129,7 +131,7 @@ public interface I_PickingProfile_PickingJobConfig
 	void setIsDisplayInDetailed (boolean IsDisplayInDetailed);
 
 	/**
-	 * Get Display in detailed.
+	 * Get Display in detailed view.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -208,7 +210,7 @@ public interface I_PickingProfile_PickingJobConfig
 	String COLUMNNAME_PickingJobField = "PickingJobField";
 
 	/**
-	 * Set Picking Job Config.
+	 * Set Field.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -217,7 +219,7 @@ public interface I_PickingProfile_PickingJobConfig
 	void setPickingProfile_PickingJobConfig_ID (int PickingProfile_PickingJobConfig_ID);
 
 	/**
-	 * Get Picking Job Config.
+	 * Get Field.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

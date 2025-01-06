@@ -145,7 +145,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 		}
 		// APP
-		else if (DocBaseType.APPayment.equals(docBaseType))
+		else if (DocBaseType.PurchasePayment.equals(docBaseType))
 		{
 			// Prepayment/PaymentSelect (DR)
 			final Account acct;

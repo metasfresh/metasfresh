@@ -899,18 +899,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setLowLevel (final int LowLevel)
-	{
-		set_Value (COLUMNNAME_LowLevel, LowLevel);
-	}
-
-	@Override
-	public int getLowLevel() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LowLevel);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
@@ -1607,15 +1595,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfDepth (final int ShelfDepth)
+	public void setShelfDepth (final BigDecimal ShelfDepth)
 	{
 		set_Value (COLUMNNAME_ShelfDepth, ShelfDepth);
 	}
 
 	@Override
-	public int getShelfDepth() 
+	public BigDecimal getShelfDepth()
 	{
-		return get_ValueAsInt(COLUMNNAME_ShelfDepth);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfDepth);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1632,15 +1621,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfWidth (final int ShelfWidth)
+	public void setShelfWidth (final BigDecimal ShelfWidth)
 	{
 		set_Value (COLUMNNAME_ShelfWidth, ShelfWidth);
 	}
 
 	@Override
-	public int getShelfWidth() 
+	public BigDecimal getShelfWidth()
 	{
-		return get_ValueAsInt(COLUMNNAME_ShelfWidth);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfWidth);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1790,4 +1780,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+    @Override
+    public void setQRCode_Configuration_ID (final int QRCode_Configuration_ID)
+    {
+        set_Value (COLUMNNAME_QRCode_Configuration_ID, QRCode_Configuration_ID);
+    }
+
+    @Override
+    public int getQRCode_Configuration_ID()
+    {
+        return get_ValueAsInt(COLUMNNAME_QRCode_Configuration_ID);
+    }
 }

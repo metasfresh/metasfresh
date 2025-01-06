@@ -51,6 +51,8 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 
 	boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
 
+	Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull Set<PPOrderId> ppOrderIds);
+
 	Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull PPOrderId ppOrderId);
 
 	void setNewLUAndSave(@NonNull List<I_PP_Order_Qty> candidates, @NonNull HuId newLUId);

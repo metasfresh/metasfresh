@@ -27,6 +27,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -45,7 +46,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class WEBUI_M_HU_MoveToGarbage_Partial extends HUEditorProcessTemplate implements IProcessPrecondition
 {
@@ -106,11 +106,11 @@ public class WEBUI_M_HU_MoveToGarbage_Partial extends HUEditorProcessTemplate im
 	// @RunOutOfTrx // run in transaction!
 	protected String doIt()
 	{
-		final List<I_M_HU> tus = extractTUs();
+		final LUTUResult.TUsList tus = extractTUs();
 
 		inventoryService.moveToGarbage(
 				HUInternalUseInventoryCreateRequest.builder()
-						.hus(tus)
+						.hus(tus.toHURecords())
 						.movementDate(Env.getZonedDateTime(getCtx()))
 						.internalUseInventoryDocTypeId(p_internalUseInventoryDocTypeId)
 						.description(p_description)
@@ -122,7 +122,7 @@ public class WEBUI_M_HU_MoveToGarbage_Partial extends HUEditorProcessTemplate im
 		return MSG_OK;
 	}
 
-	private List<I_M_HU> extractTUs()
+	private LUTUResult.TUsList extractTUs()
 	{
 		if (p_qtyTU_Int <= 0)
 		{
@@ -132,11 +132,11 @@ public class WEBUI_M_HU_MoveToGarbage_Partial extends HUEditorProcessTemplate im
 
 		final I_M_HU topLevelHU = handlingUnitsBL.getById(HuId.ofRepoId(getRecord_ID()));
 
-		final List<I_M_HU> tus = HUTransformService.newInstance()
+		final LUTUResult.TUsList tus = HUTransformService.newInstance()
 				.husToNewTUs(HUTransformService.HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, qtyTU.toInt()));
-		if (tus.size() != qtyTU.toInt())
+		if (tus.getQtyTU().toInt() != qtyTU.toInt())
 		{
-			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, qtyTU.toInt(), tus.size());
+			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, qtyTU.toInt(), tus.getQtyTU());
 		}
 
 		return tus;

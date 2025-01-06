@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -42,10 +42,21 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public BigDecimal getCapacityPerProductionCycleOverride() 
+	public BigDecimal getCapacityPerProductionCycleOverride()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycleOverride);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
+	{
+		throw new IllegalArgumentException ("AD_Workflow_ID is virtual column");	}
+
+	@Override
+	public int getAD_Workflow_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
 	}
 
 	@Override
@@ -126,7 +137,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
-	/** 
+	/**
 	 * IsLotForLot AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -142,7 +153,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public java.lang.String getIsLotForLot() 
+	public java.lang.String getIsLotForLot()
 	{
 		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
@@ -354,6 +365,33 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate_Parent()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class);
+	}
+
+	@Override
+	public void setPP_Order_Candidate_Parent(final org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate_Parent)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_Order_Candidate_Parent);
+	}
+
+	@Override
+	public void setPP_Order_Candidate_Parent_ID (final int PP_Order_Candidate_Parent_ID)
+	{
+		if (PP_Order_Candidate_Parent_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, PP_Order_Candidate_Parent_ID);
+	}
+
+	@Override
+	public int getPP_Order_Candidate_Parent_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_Parent_ID);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
@@ -440,7 +478,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public BigDecimal getQtyProcessed_OnDate() 
+	public BigDecimal getQtyProcessed_OnDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -484,5 +522,32 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID (final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1)
+			set_Value (COLUMNNAME_WorkStation_ID, null);
+		else
+			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
 	}
 }

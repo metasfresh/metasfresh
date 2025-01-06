@@ -22,6 +22,9 @@
 
 package de.metas.contracts.modular.invgroup.interceptor;
 
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.product.ProductId;
 import lombok.AllArgsConstructor;
@@ -29,8 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
-import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -47,8 +48,8 @@ public class ModCntr_InvoicingGroup_Product
 		final ProductId productId = ProductId.ofRepoId(invGroupProduct.getM_Product_ID());
 		final InvoicingGroupProductId invoicingGroupProductId = InvoicingGroupProductId.ofRepoIdOrNull(invGroupProduct.getModCntr_InvoicingGroup_Product_ID());
 		final I_ModCntr_InvoicingGroup invoicingGroup = InterfaceWrapperHelper.load(invGroupProduct.getModCntr_InvoicingGroup_ID(), I_ModCntr_InvoicingGroup.class);
-
-		modCntrInvoicingGroupRepository.validateInvoicingGroupProductNoOverlap(productId, invoicingGroupProductId, invoicingGroup.getValidFrom(), invoicingGroup.getValidTo());
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(invoicingGroup.getHarvesting_Year_ID(), invoicingGroup.getC_Harvesting_Calendar_ID());
+		modCntrInvoicingGroupRepository.validateInvoicingGroupProductNoOverlap(productId, invoicingGroupProductId, yearAndCalendarId);
 	}
 
 }

@@ -223,7 +223,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.attributes(productAndAttributes.getAttributes())
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
 				.vatCodeId(VatCodeId.ofRepoIdOrNull(orderLineQuickInput.getC_VAT_Code_ID()))
-				.qty(Quantitys.create(quickInputQty, uomId))
+				.qty(Quantitys.of(quickInputQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))

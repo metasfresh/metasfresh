@@ -1,7 +1,7 @@
 package de.metas.workflow.execution.approval.strategy.check_superior_strategy;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.ICurrencyBL;
-import de.metas.workflow.execution.approval.strategy.UsersToApproveList;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -13,6 +13,7 @@ import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
+import de.metas.workflow.execution.approval.strategy.UsersToApproveList;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
@@ -34,6 +35,11 @@ class AllMatchingSupervisorsStrategy implements CheckSupervisorStrategy
 
 		final UsersToApproveList userIdsToApprove = UsersToApproveList.empty();
 
+		if (!isRoleApprovalRequired(request, request.getUserId()))
+		{
+			return ImmutableList.of();
+		}
+		
 		UserId supervisorId = userBL.getSupervisorId(request.getUserId(), orgId).orElse(null);
 		final HashSet<UserId> seenSupervisorIds = new HashSet<>();
 		while (supervisorId != null)
@@ -44,12 +50,12 @@ class AllMatchingSupervisorsStrategy implements CheckSupervisorStrategy
 				break;
 			}
 
+			userIdsToApprove.add(supervisorId);
+
 			if (isRoleApprovalRequired(request, supervisorId))
 			{
-				userIdsToApprove.add(supervisorId);
+				supervisorId = userBL.getSupervisorId(supervisorId, orgId).orElse(null);
 			}
-
-			supervisorId = userBL.getSupervisorId(supervisorId, orgId).orElse(null);
 		}
 
 		return userIdsToApprove.toList();

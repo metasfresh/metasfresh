@@ -81,4 +81,6 @@ public interface IProductBOMDAO extends ISingletonService
 				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
 				.map(ProductBOMId::ofRepoId);
 	}
+
+	Optional<ProductBOMLineId> getBomLineByProductId(@NonNull ProductBOMId productBOMId, @NonNull ProductId productId);
 }

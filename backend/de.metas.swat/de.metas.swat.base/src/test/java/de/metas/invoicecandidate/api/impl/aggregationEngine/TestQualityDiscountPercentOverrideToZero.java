@@ -22,24 +22,24 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.material.MovementType;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * Two inout lines, one in-dispute. However, <code>QualityDiscount_Override</code> is set to zero.
@@ -83,7 +83,9 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 	 * Need to set the QualityDiscountPercent_Override value again, because it was unset by the first run of the IC-update.
 	 */
 	@Override
-	protected void step_updateInvoiceCandidates(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
+	protected void step_updateInvoiceCandidates(
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@Nullable final List<I_M_InOutLine> inOutLines)
 	{
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 		ic.setQualityDiscountPercent_Override(config_getQualityDiscount_Override());
@@ -92,7 +94,9 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
@@ -111,7 +115,10 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
+			@NonNull final List<I_M_InOutLine> inOutLines,
+			@NonNull final List<IInvoiceHeader> invoices)
 	{
 		super.step_validate_after_aggregation(invoiceCandidates, inOutLines, invoices);
 

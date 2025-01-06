@@ -22,24 +22,21 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 @Value
@@ -48,104 +45,64 @@ public class PickingJobFacets
 {
 	public static PickingJobFacets EMPTY = PickingJobFacets.builder().build();
 
-	@NonNull
-	@Singular
-	ImmutableSet<CustomerFacet> customers;
+	@NonNull @Builder.Default ImmutableSet<PickingJobFacet> facets = ImmutableSet.of();
+
+	public static Collector<Packageable, ?, PickingJobFacets> collectFromPackageables(@NonNull final CollectingParameters parameters)
+	{
+		return PickingJobFacetsAccumulator.collect(parameters);
+	}
+
+	public <T extends PickingJobFacet, R> ImmutableList<R> toList(@NonNull final Class<T> type, @NonNull Function<T, R> mapper)
+	{
+		return facets.stream()
+				.map(facet -> facet.asTypeOrNull(type))
+				.filter(Objects::nonNull)
+				.map(mapper)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public interface PickingJobFacet
+	{
+		@NonNull PickingJobFacetGroup getGroup();
+
+		boolean isActive();
+
+		PickingJobFacet withActive(boolean isActive);
+
+		@Nullable
+		default <T extends PickingJobFacet> T asTypeOrNull(@NonNull Class<T> type) {return type.isInstance(this) ? type.cast(this) : null;}
+
+		@NonNull
+		default <T extends PickingJobFacet> T asType(@NonNull Class<T> type) {return type.cast(this);}
+	}
 
 	@Value(staticConstructor = "of")
-	public static class CustomerFacet
+	public static class CustomerFacet implements PickingJobFacet
 	{
+		@NonNull PickingJobFacetGroup group = PickingJobFacetGroup.CUSTOMER;
+		@With boolean isActive;
 		@NonNull BPartnerId bpartnerId;
 		@NonNull String customerBPValue;
 		@NonNull String customerName;
 	}
 
-	@NonNull
-	@Singular
-	ImmutableSet<DeliveryDayFacet> deliveryDays;
-
 	@Value(staticConstructor = "of")
-	public static class DeliveryDayFacet
+	public static class DeliveryDayFacet implements PickingJobFacet
 	{
+		@NonNull PickingJobFacetGroup group = PickingJobFacetGroup.DELIVERY_DATE;
+		@With boolean isActive;
 		@NonNull LocalDate deliveryDate;
 		@NonNull ZoneId timeZone;
 	}
 
-	@NonNull
-	@Singular
-	ImmutableSet<HandoverLocationFacet> handoverLocations;
-
 	@Value(staticConstructor = "of")
-	public static class HandoverLocationFacet
+	public static class HandoverLocationFacet implements PickingJobFacet
 	{
+		@NonNull PickingJobFacetGroup group = PickingJobFacetGroup.HANDOVER_LOCATION;
+		@With boolean isActive;
 		@NonNull BPartnerLocationId bPartnerLocationId;
 		@NonNull String renderedAddress;
-	}
-
-	public static Collector<Packageable, ?, PickingJobFacets> collectFromPackageables(@NonNull final CollectingParameters parameters)
-	{
-		final Supplier<PickingJobFacetsBuilder> supplier = PickingJobFacets::builder;
-		final BiConsumer<PickingJobFacetsBuilder, Packageable> accumulator = (builder, item) -> {
-			extractCustomerFacet(item, parameters).ifPresent(builder::customer);
-			extractDeliveryDateFacet(item, parameters).ifPresent(builder::deliveryDay);
-			extractHandoverLocation(item, parameters).ifPresent(builder::handoverLocation);
-		};
-		final BinaryOperator<PickingJobFacetsBuilder> combiner = (builder1, builder2) -> {
-			final PickingJobFacets facetsToAdd = builder2.build();
-			builder1.customers(facetsToAdd.getCustomers());
-			builder1.deliveryDays(facetsToAdd.getDeliveryDays());
-			builder1.handoverLocations(facetsToAdd.getHandoverLocations());
-			return builder1;
-		};
-		final Function<PickingJobFacetsBuilder, PickingJobFacets> finisher = PickingJobFacetsBuilder::build;
-
-		return Collector.of(supplier, accumulator, combiner, finisher);
-	}
-
-	@NonNull
-	private static Optional<PickingJobFacets.CustomerFacet> extractCustomerFacet(
-			@NonNull final Packageable packageable,
-			@NonNull final CollectingParameters collectingParameters)
-	{
-		if (!collectingParameters.isCollectBPartner())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(PickingJobFacets.CustomerFacet.of(packageable.getCustomerId(),
-															 packageable.getCustomerBPValue(),
-															 packageable.getCustomerName()));
-	}
-
-	@NonNull
-	private static Optional<PickingJobFacets.DeliveryDayFacet> extractDeliveryDateFacet(
-			@NonNull final Packageable packageable,
-			@NonNull final CollectingParameters collectingParameters)
-	{
-		if (!collectingParameters.isCollectDeliveryDate())
-		{
-			return Optional.empty();
-		}
-
-		final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
-		//final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
-		final ZoneId timeZone = SystemTime.zoneId();
-		final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();
-		return Optional.of(PickingJobFacets.DeliveryDayFacet.of(deliveryDay, timeZone));
-	}
-
-	@NonNull
-	private static Optional<HandoverLocationFacet> extractHandoverLocation(
-			@NonNull final Packageable packageable,
-			@NonNull final CollectingParameters collectingParameters)
-	{
-		if (!collectingParameters.isCollectHandoverLocation())
-		{
-			return Optional.empty();
-		}
-		final String renderedAddress = collectingParameters.getAddressProvider().getAddress(packageable.getHandoverLocationId());
-
-		return Optional.of(HandoverLocationFacet.of(packageable.getHandoverLocationId(), renderedAddress));
 	}
 
 	@Value
@@ -153,8 +110,7 @@ public class PickingJobFacets
 	public static class CollectingParameters
 	{
 		@NonNull RenderedAddressProvider addressProvider;
-		boolean collectBPartner;
-		boolean collectHandoverLocation;
-		boolean collectDeliveryDate;
+		@NonNull ImmutableList<PickingJobFacetGroup> groupsInOrder;
+		@NonNull PickingJobQuery.Facets activeFacets;
 	}
 }

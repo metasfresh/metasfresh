@@ -792,7 +792,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		final Properties ctx = _ctx;
 		if (ctx == null)
 		{
-			log.warn("No context configured for {}. Returning global context", this);
+			log.debug("No context configured for {}. Returning global context", this);
 			return Env.getCtx();
 		}
 

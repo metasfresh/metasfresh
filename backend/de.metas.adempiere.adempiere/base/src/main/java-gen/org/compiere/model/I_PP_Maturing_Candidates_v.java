@@ -119,6 +119,26 @@ public interface I_PP_Maturing_Candidates_v
 	String COLUMNNAME_HUStatus = "HUStatus";
 
 	/**
+	 * Set issue_m_product_id.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssue_M_Product_ID (int Issue_M_Product_ID);
+
+	/**
+	 * Get issue_m_product_id.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssue_M_Product_ID();
+
+	String COLUMNNAME_Issue_M_Product_ID = "Issue_M_Product_ID";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -305,6 +325,31 @@ public interface I_PP_Maturing_Candidates_v
 
 	ModelColumn<I_PP_Maturing_Candidates_v, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_Order_Candidate_ID = new ModelColumn<>(I_PP_Maturing_Candidates_v.class, "PP_Order_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
 	String COLUMNNAME_PP_Order_Candidate_ID = "PP_Order_Candidate_ID";
+
+	/**
+	 * Set BOM & Formula.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Product_BOMVersions_ID (int PP_Product_BOMVersions_ID);
+
+	/**
+	 * Get BOM & Formula.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Product_BOMVersions_ID();
+
+	@Nullable org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions();
+
+	void setPP_Product_BOMVersions(@Nullable org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions);
+
+	ModelColumn<I_PP_Maturing_Candidates_v, org.eevolution.model.I_PP_Product_BOMVersions> COLUMN_PP_Product_BOMVersions_ID = new ModelColumn<>(I_PP_Maturing_Candidates_v.class, "PP_Product_BOMVersions_ID", org.eevolution.model.I_PP_Product_BOMVersions.class);
+	String COLUMNNAME_PP_Product_BOMVersions_ID = "PP_Product_BOMVersions_ID";
 
 	/**
 	 * Set Product Planning.

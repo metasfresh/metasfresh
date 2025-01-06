@@ -22,6 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
@@ -29,38 +32,169 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
+
 @EqualsAndHashCode
 public final class StepDefDataIdentifier
 {
+	public static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
+
 	public static final String SUFFIX = "Identifier";
 
-	@NonNull private final String value;
+	private static final String PREFIX_Unnamed = "unnamed-";
+	private static final AtomicInteger nextUnnamedIdentifierId = new AtomicInteger(1);
+
+	@NonNull
+	private final String value;
 
 	private StepDefDataIdentifier(@NonNull final String value)
 	{
 		this.value = value;
 	}
 
-	public static StepDefDataIdentifier ofString(@NonNull String value)
+	@NonNull
+	public static StepDefDataIdentifier ofString(@NonNull final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		if (valueNorm == null)
 		{
 			throw new AdempiereException("Invalid identifier `" + value + "`");
 		}
-		return new StepDefDataIdentifier(valueNorm);
+		else if (valueNorm.equalsIgnoreCase(NULL.value) || "-".equals(value))
+		{
+			return NULL;
+		}
+		else
+		{
+			return new StepDefDataIdentifier(valueNorm);
+		}
+	}
+
+	@Nullable
+	public static StepDefDataIdentifier ofNullableString(@Nullable final String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		return valueNorm != null ? ofString(valueNorm) : null;
+	}
+
+	public static List<StepDefDataIdentifier> ofCommaSeparatedString(@Nullable final String value)
+	{
+		final StepDefDataIdentifier identifier = ofNullableString(value);
+		return identifier == null ? ImmutableList.of() : identifier.toCommaSeparatedList();
+	}
+
+	public static StepDefDataIdentifier nextUnnamed()
+	{
+		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
+	}
+
+	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 
 	@Override
-	public String toString() {return getAsString();}
+	public String toString()
+	{
+		return getAsString();
+	}
 
-	public String getAsString() {return value;}
+	public boolean isNullPlaceholder()
+	{
+		return this.equals(NULL);
+	}
 
-	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType) {return RepoIdAwares.ofObject(value, idType);}
+	public String getAsString()
+	{
+		return value;
+	}
 
-	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(getAsString());}
+	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType)
+	{
+		return RepoIdAwares.ofObject(value, idType);
+	}
 
-	public <T> void put(@NonNull final StepDefData<T> table, @NonNull T record) {table.put(this, record);}
+	public int getAsInt()
+	{
+		if (isNullPlaceholder())
+		{
+			return -1;
+		}
+		return NumberUtils.asInt(value);
+	}
 
-	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull T record) {table.putOrReplace(this, record);}
+	@NonNull
+	public <T> T lookupNotNullIn(@NonNull final StepDefData<T> table)
+	{
+		final T result = lookupIn(table);
+		if (result == null)
+		{
+			throw new AdempiereException("Missing result for Identifier=" + this);
+		}
+		return result;
+	}
+
+	@Nullable
+	public <T> T lookupIn(@NonNull final StepDefData<T> table)
+	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
+		return table.get(this);
+	}
+
+	@Nullable
+	public <ID extends RepoIdAware> ID lookupIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
+	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
+		return table.getId(this);
+	}
+
+	@Nullable
+	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull final IntFunction<T> loader)
+	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
+		return table.getOptional(this)
+				.orElseGet(() -> loader.apply(getAsInt()));
+	}
+
+	public <T> void put(@NonNull final StepDefData<T> table, @NonNull final T record)
+	{
+		table.put(this, record);
+	}
+
+	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull final T record)
+	{
+		table.putOrReplace(this, record);
+	}
+
+	@NonNull
+	public List<StepDefDataIdentifier> toCommaSeparatedList()
+	{
+		if (!value.contains(","))
+		{
+			return ImmutableList.of(this);
+		}
+		else
+		{
+			return Splitter.on(",")
+					.trimResults()
+					.omitEmptyStrings()
+					.splitToList(value)
+					.stream()
+					.map(StepDefDataIdentifier::ofString)
+					.collect(ImmutableList.toImmutableList());
+		}
+	}
 }

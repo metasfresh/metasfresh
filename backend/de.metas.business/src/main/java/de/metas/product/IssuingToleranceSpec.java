@@ -167,6 +167,6 @@ public final class IssuingToleranceSpec
 		final BigDecimal tolerance = percent
 				.computePercentageOf(baseQty.toBigDecimal(), baseQty.getUOM().getStdPrecision());
 
-		return Quantitys.create(tolerance, baseQty.getUomId());
+		return Quantitys.of(tolerance, baseQty.getUomId());
 	}
 }

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
@@ -34,5 +35,7 @@ public class WorkflowLaunchersFacetGroup
 {
 	@NonNull WorkflowLaunchersFacetGroupId id;
 	@NonNull ITranslatableString caption;
-	@NonNull ImmutableList<WorkflowLaunchersFacet> facets;
+	@NonNull @Singular ImmutableList<WorkflowLaunchersFacet> facets;
+
+	public boolean isEmpty() {return facets.isEmpty();}
 }

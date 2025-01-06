@@ -69,6 +69,7 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
+        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 
@@ -143,6 +144,12 @@
         <module>de.metas.payment.sepa</module>
         <module>de.metas.payment.paypal</module>
         <module>de.metas.payment.revolut</module>
+        <module>de.metas.payment.sumup</module>
+        <module>de.metas.payment.sumup.webui</module>
+        <module>de.metas.payment.sumup.rest-api</module>
+
+        <module>de.metas.postfinance.base</module>
+        <module>de.metas.postfinance.webui</module>
 
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>
@@ -206,11 +213,14 @@
         <module>de.metas.picking.rest-api</module>
         <module>de.metas.distribution.rest-api</module>
 
+        <module>de.metas.pos.base</module>
+        <module>de.metas.pos.rest-api</module>
+
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
-        <!-- <module>extensionsupport</module> -->
 
         <module>de-metas-salesorder</module>
+        <!-- <module>extensionsupport</module> -->
     </modules>
 
     <dependencyManagement>

@@ -6,7 +6,7 @@ import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 
 const DistributionStepButton = ({
   applicationId,

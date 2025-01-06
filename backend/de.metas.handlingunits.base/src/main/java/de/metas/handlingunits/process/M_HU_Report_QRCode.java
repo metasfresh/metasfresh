@@ -2,8 +2,8 @@ package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.process.AdProcessId;
 import de.metas.printing.IMassPrintingService;
+import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
@@ -56,7 +56,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 	protected String doIt()
 	{
 		final PInstanceId selectionId = getPinstanceId();
-		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(processId);
+		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
 
 		if (getProcessInfo().isPrintPreview())
 		{

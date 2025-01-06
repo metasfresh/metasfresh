@@ -1,25 +1,23 @@
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -58,6 +56,7 @@ import de.metas.util.Check;
 	private AdWindowId _adWindowId;
 	private int _adTabId;
 	private int _templateTabId;
+	@Nullable private TabIncludeFiltersStrategy tabIncludeFiltersStrategy;
 	private boolean _tabReadOnly;
 	private boolean _loadAllLanguages = false;
 	private boolean _applyRolePermissions = true;
@@ -115,6 +114,7 @@ import de.metas.util.Check;
 							AD_Window_ID,
 							adTabId,
 							tabReadOnly,
+							tabIncludeFiltersStrategy,
 							loadAllLanguages,
 							applyRolePermissions,
 							rs);
@@ -212,6 +212,12 @@ import de.metas.util.Check;
 	private int getTemplateTabIdEffective()
 	{
 		return _templateTabId > 0 ? _templateTabId : getAD_Tab_ID();
+	}
+
+	public GridFieldVOsLoader setTabIncludeFiltersStrategy(@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy)
+	{
+		this.tabIncludeFiltersStrategy = tabIncludeFiltersStrategy;
+		return this;
 	}
 
 	public GridFieldVOsLoader setTabReadOnly(final boolean tabReadOnly)

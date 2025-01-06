@@ -10,6 +10,7 @@ import de.metas.process.ProcessExecutionResult.CalendarToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.ResourceGroupId;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -80,7 +81,7 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 				return Optional.empty();
 			}
 
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceId);
+			final CalendarResourceId calendarResourceId = ResourceIdAndType.machine(resourceId).toCalendarResourceId();
 
 			return Optional.of(CalendarToOpen.builder().calendarResourceId(calendarResourceId.getAsString()).build());
 		}
@@ -92,7 +93,7 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 				return Optional.empty();
 			}
 
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceGroupId);
+			final CalendarResourceId calendarResourceId = CalendarResourceId.ofResourceGroupId(resourceGroupId);
 
 			return Optional.of(CalendarToOpen.builder().calendarResourceId(calendarResourceId.getAsString()).build());
 		}

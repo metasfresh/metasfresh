@@ -355,6 +355,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				//
 				.purchasePriceVarianceOffsetAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()), I_C_AcctSchema_GL.COLUMNNAME_PPVOffset_Acct))
 				//
+				.cashRoundingAcct(acctSchemaGL.getCashRounding_Acct() > 0 ? Account.of(AccountId.ofRepoId(acctSchemaGL.getCashRounding_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CashRounding_Acct) : null)
+				//
 				.build();
 	}
 

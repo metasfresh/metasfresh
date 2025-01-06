@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -118335786L;
+	private static final long serialVersionUID = -130832715L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -61,6 +61,19 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
+	public void setAmtSource (final @Nullable BigDecimal AmtSource)
+	{
+		set_ValueNoCheck (COLUMNNAME_AmtSource, AmtSource);
+	}
+
+	@Override
+	public BigDecimal getAmtSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmtSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setBPName (final @Nullable java.lang.String BPName)
 	{
 		set_Value (COLUMNNAME_BPName, BPName);
@@ -82,6 +95,33 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getBPValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPValue);
+	}
+
+	@Override
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+	}
+
+	@Override
+	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+	}
+
+	@Override
+	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
+	{
+		if (C_AcctSchema_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
+	}
+
+	@Override
+	public int getC_AcctSchema_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
 	}
 
 	@Override
@@ -112,6 +152,21 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_DocType_ID (final int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
+	}
+
+	@Override
+	public int getC_DocType_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
 	@Override
@@ -154,7 +209,7 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setCR_Account (final java.lang.String CR_Account)
+	public void setCR_Account (final @Nullable java.lang.String CR_Account)
 	{
 		set_Value (COLUMNNAME_CR_Account, CR_Account);
 	}
@@ -163,6 +218,21 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getCR_Account() 
 	{
 		return get_ValueAsString(COLUMNNAME_CR_Account);
+	}
+
+	@Override
+	public void setC_Tax_ID (final int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, C_Tax_ID);
+	}
+
+	@Override
+	public int getC_Tax_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
 	}
 
 	@Override
@@ -200,6 +270,18 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.sql.Timestamp getDateAcct() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
+	}
+
+	@Override
+	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateTrx, DateTrx);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateTrx() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateTrx);
 	}
 
 	@Override
@@ -245,18 +327,6 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setDebitOrCreditIndicator (final boolean DebitOrCreditIndicator)
-	{
-		set_Value (COLUMNNAME_DebitOrCreditIndicator, DebitOrCreditIndicator);
-	}
-
-	@Override
-	public boolean isDebitOrCreditIndicator() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_DebitOrCreditIndicator);
-	}
-
-	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_ValueNoCheck (COLUMNNAME_Description, Description);
@@ -293,7 +363,7 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public void setDR_Account (final java.lang.String DR_Account)
+	public void setDR_Account (final @Nullable java.lang.String DR_Account)
 	{
 		set_Value (COLUMNNAME_DR_Account, DR_Account);
 	}
@@ -317,55 +387,63 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
-	public org.compiere.model.I_Fact_Acct getFact_Acct()
+	public void setIsSOTrx (final @Nullable java.lang.String IsSOTrx)
 	{
-		return get_ValueAsPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
+		set_ValueNoCheck (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
 	@Override
-	public void setFact_Acct(final org.compiere.model.I_Fact_Acct Fact_Acct)
+	public java.lang.String getIsSOTrx() 
 	{
-		set_ValueFromPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class, Fact_Acct);
+		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override
-	public void setFact_Acct_ID (final int Fact_Acct_ID)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		if (Fact_Acct_ID < 1) 
-			set_Value (COLUMNNAME_Fact_Acct_ID, null);
-		else 
-			set_Value (COLUMNNAME_Fact_Acct_ID, Fact_Acct_ID);
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
 
 	@Override
-	public int getFact_Acct_ID() 
+	public java.lang.String getPOReference() 
 	{
-		return get_ValueAsInt(COLUMNNAME_Fact_Acct_ID);
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	@Override
-	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
+	public void setPostingType (final @Nullable java.lang.String PostingType)
 	{
-		set_Value (COLUMNNAME_GrandTotal, GrandTotal);
+		set_ValueNoCheck (COLUMNNAME_PostingType, PostingType);
 	}
 
 	@Override
-	public BigDecimal getGrandTotal() 
+	public java.lang.String getPostingType() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
+		return get_ValueAsString(COLUMNNAME_PostingType);
+	}
+
+	@Override
+	public void setTaxAmtSource (final @Nullable BigDecimal TaxAmtSource)
+	{
+		set_ValueNoCheck (COLUMNNAME_TaxAmtSource, TaxAmtSource);
+	}
+
+	@Override
+	public BigDecimal getTaxAmtSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtSource);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setTaxAmt (final @Nullable BigDecimal TaxAmt)
+	public void setVATCode (final @Nullable java.lang.String VATCode)
 	{
-		set_Value (COLUMNNAME_TaxAmt, TaxAmt);
+		set_ValueNoCheck (COLUMNNAME_VATCode, VATCode);
 	}
 
 	@Override
-	public BigDecimal getTaxAmt() 
+	public java.lang.String getVATCode() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsString(COLUMNNAME_VATCode);
 	}
 }

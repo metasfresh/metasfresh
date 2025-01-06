@@ -76,7 +76,7 @@ import java.util.Set;
 /**
  * Generates HUs for given customer return line(s).
  */
-public class CustomerReturnLineHUGenerator
+class CustomerReturnLineHUGenerator
 {
 
 	/**
@@ -97,13 +97,6 @@ public class CustomerReturnLineHUGenerator
 		}
 		return new CustomerReturnLineHUGenerator()
 				.setContext(contextToUse);
-	}
-
-	public static List<I_M_HU> generateForReturnLine(@NonNull final I_M_InOutLine returnLine)
-	{
-		return newInstance(PlainContextAware.newWithThreadInheritedTrx())
-				.addM_InOutLine(returnLine)
-				.generate();
 	}
 
 	// services

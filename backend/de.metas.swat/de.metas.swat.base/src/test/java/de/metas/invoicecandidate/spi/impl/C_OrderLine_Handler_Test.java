@@ -23,6 +23,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
+import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
@@ -207,8 +208,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			setUpActivityAndTaxRetrieval(order2, orderLine2);
 		}
 
-		final List<I_C_Invoice_Candidate> iCands1 = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1)).getC_Invoice_Candidates();
-		final List<I_C_Invoice_Candidate> iCands2 = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine2)).getC_Invoice_Candidates();
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final List<I_C_Invoice_Candidate> iCands1 = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1, lockOwner)).getC_Invoice_Candidates();
+		final List<I_C_Invoice_Candidate> iCands2 = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine2, lockOwner)).getC_Invoice_Candidates();
 
 		updateInvalidCandidates();
 
@@ -430,7 +433,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 
-		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1));
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1, lockOwner));
 
 		assertThat(invoiceCandidates.getC_Invoice_Candidates().size()).isEqualTo(1);
 
@@ -474,7 +479,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 
-		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1));
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1, lockOwner));
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.getC_Invoice_Candidates().get(0);
 
 		assertThat(invoiceCandidate.getPresetDateInvoiced())
@@ -513,7 +520,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 
-		final List<I_C_Invoice_Candidate> ics = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1)).getC_Invoice_Candidates();
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final List<I_C_Invoice_Candidate> ics = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1, lockOwner)).getC_Invoice_Candidates();
 
 		assertThat(ics).hasSize(1);
 		final I_C_Invoice_Candidate ic = ics.get(0);

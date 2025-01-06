@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.X_ModCntr_Log;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -45,8 +46,9 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	SALES_ORDER(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesOrder),
 	SHIPMENT_DISPOSITION(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ShipmentDisposition),
 	SHIPMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Shipment),
-	FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement),
-	DEFINITIVE_FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement),
+	PROFORMA_SHIPMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProformaShipment),
+	FINAL_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_FinalInvoice),
+	DEFINITIVE_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_DefinitiveInvoice),
 	INVENTORY(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Inventory),
 	SALES_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice),
 	SALES_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesModularContract),
@@ -55,8 +57,22 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	PRO_FORMA_SO(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO),
 	PRO_FORMA_SO_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract),
 	SHIPPING_NOTIFICATION(MODCNTR_LOG_DOCUMENTTYPE_Lieferavis),
+	PROFORMA_SHIPPING_NOTIFICATION(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProformaShippingNotification),
 	IMPORT_LOG(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog),
 	;
+
+	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPMENT, PROFORMA_SHIPMENT);
+
+	public static final ImmutableSet<LogEntryDocumentType> TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES = ImmutableSet.of(MATERIAL_RECEIPT, PRODUCTION, INVENTORY);
+
+	public static final ImmutableSet<LogEntryDocumentType> ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(SHIPPING_NOTIFICATION, PROFORMA_SHIPPING_NOTIFICATION);
+
+	public static final ImmutableSet<LogEntryDocumentType> INTEREST_SPECIFIC_MODCNTR_LOG_DOCUMENTTYPES = ImmutableSet.of(
+			SHIPPING_NOTIFICATION,
+			PROFORMA_SHIPPING_NOTIFICATION,
+			INTERIM_INVOICE,
+			PURCHASE_MODULAR_CONTRACT
+	);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
 
@@ -74,4 +90,13 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	{
 		return code != null ? ofCode(code) : null;
 	}
+
+	public boolean isShipment() { return this.equals(SHIPMENT); }
+	public boolean isProformaShipment() { return this.equals(PROFORMA_SHIPMENT); }
+	public boolean isAnyShipmentType() { return ALL_SHIPMENT_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
+	public boolean isShippingNotification() { return this.equals(SHIPPING_NOTIFICATION); }
+	public boolean isProformaShippingNotification() { return this.equals(PROFORMA_SHIPPING_NOTIFICATION); }
+	public boolean isAnyShippingNotificationType() { return ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
+
+	public boolean isInterestSpecificType() { return INTEREST_SPECIFIC_MODCNTR_LOG_DOCUMENTTYPES.contains(this); }
 }

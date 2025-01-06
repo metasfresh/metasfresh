@@ -38,9 +38,9 @@
         <jackson.version>2.13.4</jackson.version>
         <amqp-client.version>5.14.2</amqp-client.version>
 
-        <jasperreports.version>6.7.0</jasperreports.version>
+        <jasperreports.version>6.21.2</jasperreports.version>
 
-        <itext.version>2.1.7.js6</itext.version>
+        <itextpdf.version>5.5.13.3</itextpdf.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.7.7</spring-boot-admin.version>
@@ -71,6 +71,8 @@
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <modules>
@@ -169,9 +171,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.lowagie</groupId>
-                <artifactId>itext</artifactId>
-                <version>${itext.version}</version>
+                <groupId>com.itextpdf</groupId>
+                <artifactId>itextpdf</artifactId>
+                <version>${itextpdf.version}</version>
             </dependency>
 
             <!-- this also contains the javax.annotations -->
@@ -209,6 +211,13 @@
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>17.0.0</version>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>
@@ -327,7 +336,7 @@
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.15.2</version>
+                    <version>0.15.3</version>
                     <dependencies>
                         <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
                         <dependency>

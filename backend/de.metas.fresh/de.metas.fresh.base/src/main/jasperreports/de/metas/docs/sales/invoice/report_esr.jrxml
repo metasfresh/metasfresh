@@ -101,14 +101,14 @@ FROM
 			<textField>
 				<reportElement mode="Transparent" x="19" y="31" width="137" height="64" uuid="e396ee7a-608c-4c45-ac18-ede609806c13"/>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiver}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Transparent" x="182" y="31" width="137" height="64" uuid="9a9c1f27-f7a8-492b-8c2d-624403da6ffd"/>
 				<textElement>
-					<font fontName="SansSerif" size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiver}]]></textFieldExpression>
 			</textField>
@@ -122,21 +122,21 @@ FROM
 			<textField>
 				<reportElement mode="Transparent" x="355" y="146" width="137" height="64" uuid="99e5a5c2-b328-44d0-a81a-2b370c8a0dab"/>
 				<textElement>
-					<font fontName="SansSerif" size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Transparent" x="206" y="115" width="94" height="13" uuid="c05f2848-e44e-4bc4-adfe-19b7e1a18d55"/>
 				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Transparent" x="34" y="115" width="94" height="13" uuid="b8e75c03-1423-4960-ac64-6673cd9a0304"/>
 				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
@@ -150,7 +150,7 @@ FROM
 			<textField isStretchWithOverflow="true">
 				<reportElement mode="Transparent" x="19" y="196" width="137" height="74" uuid="d22cea99-69ad-4feb-86cb-9e0712461603"/>
 				<textElement>
-					<font fontName="SansSerif" size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
 			</textField>

@@ -1,8 +1,7 @@
 package de.metas.acct.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaElementType;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.X_C_AcctSchema_Element;
 
 /*
  * #%L
@@ -57,6 +56,8 @@ public enum AcctSegmentType
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
 	UserElementString7(AcctSchemaElementType.UserElementString7),
+	UserElementNumber1(AcctSchemaElementType.UserElementNumber1),
+	UserElementNumber2(AcctSchemaElementType.UserElementNumber2),
 	SalesOrder(AcctSchemaElementType.SalesOrder),
 	SectionCode(AcctSchemaElementType.SectionCode),
 	UserElementDate1(AcctSchemaElementType.UserElementDate1),
@@ -66,5 +67,12 @@ public enum AcctSegmentType
 
 	AcctSegmentType(@SuppressWarnings("unused") final AcctSchemaElementType elementType)
 	{
+	}
+
+	private static final ImmutableSet<AcctSegmentType> MANDATORY_SEGMENTS = ImmutableSet.of(Client, Organization, Account);
+
+	public boolean isMandatoryQuerySegment()
+	{
+		return MANDATORY_SEGMENTS.contains(this);
 	}
 }
