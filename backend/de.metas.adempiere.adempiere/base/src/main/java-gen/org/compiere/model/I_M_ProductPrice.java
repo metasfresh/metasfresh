@@ -52,6 +52,31 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_ProductPrice, Object> COLUMN_Created = new ModelColumn<>(I_M_ProductPrice.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -94,31 +119,6 @@ public interface I_M_ProductPrice
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_M_ProductPrice, Object> COLUMN_Created = new ModelColumn<>(I_M_ProductPrice.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Invoicable Quantity per.
@@ -278,7 +278,7 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
 
 	/**
-	 * Set Saison Fix Preis.
+	 * Set Season fixed Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -287,7 +287,7 @@ public interface I_M_ProductPrice
 	void setIsSeasonFixedPrice (boolean IsSeasonFixedPrice);
 
 	/**
-	 * Get Saison Fix Preis.
+	 * Get Season fixed Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -297,6 +297,29 @@ public interface I_M_ProductPrice
 
 	ModelColumn<I_M_ProductPrice, Object> COLUMN_IsSeasonFixedPrice = new ModelColumn<>(I_M_ProductPrice.class, "IsSeasonFixedPrice", null);
 	String COLUMNNAME_IsSeasonFixedPrice = "IsSeasonFixedPrice";
+
+	/**
+	 * Set Matching Order.
+	 * If there are several matching prices for a price list version/product combination, the price with the smallest value is used.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMatchSeqNo (int MatchSeqNo);
+
+	/**
+	 * Get Matching Order.
+	 * If there are several matching prices for a price list version/product combination, the price with the smallest value is used.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMatchSeqNo();
+
+	ModelColumn<I_M_ProductPrice, Object> COLUMN_MatchSeqNo = new ModelColumn<>(I_M_ProductPrice.class, "MatchSeqNo", null);
+	String COLUMNNAME_MatchSeqNo = "MatchSeqNo";
 
 	/**
 	 * Set Attributes.
@@ -379,20 +402,20 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
-	 * Set Version Preisliste.
+	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/**
-	 * Get Version Preisliste.
+	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -448,7 +471,7 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_M_ProductPrice_Base_ID = "M_ProductPrice_Base_ID";
 
 	/**
-	 * Set M_ProductPrice_ID.
+	 * Set Product Price.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -457,7 +480,7 @@ public interface I_M_ProductPrice
 	void setM_ProductPrice_ID (int M_ProductPrice_ID);
 
 	/**
-	 * Get M_ProductPrice_ID.
+	 * Get Product Price.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -469,28 +492,7 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
 
 	/**
-	 * Set Matching order.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMatchSeqNo (int MatchSeqNo);
-
-	/**
-	 * Get Matching order.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMatchSeqNo();
-
-	ModelColumn<I_M_ProductPrice, Object> COLUMN_MatchSeqNo = new ModelColumn<>(I_M_ProductPrice.class, "MatchSeqNo", null);
-	String COLUMNNAME_MatchSeqNo = "MatchSeqNo";
-
-	/**
-	 * Set Mindestpreis.
+	 * Set Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -500,7 +502,7 @@ public interface I_M_ProductPrice
 	void setPriceLimit (BigDecimal PriceLimit);
 
 	/**
-	 * Get Mindestpreis.
+	 * Get Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -513,8 +515,8 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_PriceLimit = "PriceLimit";
 
 	/**
-	 * Set Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Set List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -523,8 +525,8 @@ public interface I_M_ProductPrice
 	void setPriceList (BigDecimal PriceList);
 
 	/**
-	 * Get Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Get List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -555,6 +557,27 @@ public interface I_M_ProductPrice
 
 	ModelColumn<I_M_ProductPrice, Object> COLUMN_PriceStd = new ModelColumn<>(I_M_ProductPrice.class, "PriceStd", null);
 	String COLUMNNAME_PriceStd = "PriceStd";
+
+	/**
+	 * Set Scale price quantity from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setScalePriceQuantityFrom (java.lang.String ScalePriceQuantityFrom);
+
+	/**
+	 * Get Scale price quantity from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getScalePriceQuantityFrom();
+
+	ModelColumn<I_M_ProductPrice, Object> COLUMN_ScalePriceQuantityFrom = new ModelColumn<>(I_M_ProductPrice.class, "ScalePriceQuantityFrom", null);
+	String COLUMNNAME_ScalePriceQuantityFrom = "ScalePriceQuantityFrom";
 
 	/**
 	 * Set SeqNo.

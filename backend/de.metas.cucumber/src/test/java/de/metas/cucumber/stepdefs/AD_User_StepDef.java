@@ -22,6 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,6 +63,7 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_Phone;
 public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	
 	private final AD_User_StepDefData userTable;
@@ -213,6 +217,12 @@ public class AD_User_StepDef
 		}
 
 		InterfaceWrapperHelper.saveRecord(userRecord);
+
+		final Integer roleId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.Role_ID");
+		if (roleId != null)
+		{
+			roleDAO.createUserRoleAssignmentIfMissing(UserId.ofRepoId(userRecord.getAD_User_ID()), RoleId.ofRepoId(roleId));
+		}
 
 		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 		userTable.putOrReplace(userIdentifier, userRecord);

@@ -23,15 +23,24 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.model.I_MD_Candidate;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class MD_Candidate_StepDefData extends StepDefData<I_MD_Candidate>
+		implements StepDefDataGetIdAware<CandidateId, I_MD_Candidate>
 {
 	public MD_Candidate_StepDefData()
 	{
 		super(I_MD_Candidate.class);
+	}
+
+	@Override
+	public CandidateId extractIdFromRecord(final I_MD_Candidate record)
+	{
+		return CandidateId.ofRepoId(record.getMD_Candidate_ID());
 	}
 }

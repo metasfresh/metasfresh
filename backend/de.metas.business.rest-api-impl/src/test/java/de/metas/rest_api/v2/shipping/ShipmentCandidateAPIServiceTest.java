@@ -83,8 +83,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class ShipmentCandidateAPIServiceTest
@@ -136,7 +135,7 @@ class ShipmentCandidateAPIServiceTest
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
 				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
-				new ProductRepository(),
+				ProductRepository.newInstanceForUnitTesting(),
 				exportSequenceNumberProvider,
 				new OxidAdaptor());
 	}

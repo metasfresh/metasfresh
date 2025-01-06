@@ -26,6 +26,7 @@ import { apiBasePath } from '../constants';
 import { toastError } from '../utils/toast';
 import { useEffect, useState } from 'react';
 import { parseWorkplaceQRCodeString } from '../utils/qrCode/workplace';
+import { useApplicationInfo } from '../reducers/applications';
 
 const workplaceAPIBase = `${apiBasePath}/workplace`;
 
@@ -33,20 +34,25 @@ export const getCurrentWorkplaceInfo = () => {
   return axios.get(`${workplaceAPIBase}`).then(unboxAxiosResponse);
 };
 
-export const useCurrentWorkplace = () => {
+export const useCurrentWorkplace = ({ applicationId }) => {
+  const { requiresWorkplace: requiresWorkplaceIfAvailable } = useApplicationInfo({ applicationId });
   const [isLoading, setIsLoading] = useState(true);
   const [isWorkplaceRequired, setIsWorkplaceRequired] = useState(false);
   const [workplace, setWorkplace] = useState(null);
 
   useEffect(() => {
-    setIsLoading(true);
-    getCurrentWorkplaceInfo()
-      .then(({ workplaceRequired, assignedWorkplace }) => {
-        setIsWorkplaceRequired(workplaceRequired);
-        setWorkplace(assignedWorkplace);
-      })
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setIsLoading(false));
+    if (requiresWorkplaceIfAvailable) {
+      setIsLoading(true);
+      getCurrentWorkplaceInfo()
+        .then(({ workplaceRequired, assignedWorkplace }) => {
+          setIsWorkplaceRequired(workplaceRequired);
+          setWorkplace(assignedWorkplace);
+        })
+        .catch((axiosError) => toastError({ axiosError }))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const setWorkplaceByQRCode = (qrCode) => {

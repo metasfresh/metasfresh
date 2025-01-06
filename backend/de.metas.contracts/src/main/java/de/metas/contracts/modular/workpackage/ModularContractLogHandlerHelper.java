@@ -38,15 +38,30 @@ import lombok.experimental.UtilityClass;
 public class ModularContractLogHandlerHelper
 {
 	private final AdMessageKey MSG_ON_COMPLETE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.IModularContractLogHandler.CompleteLogDescription");
+	private final AdMessageKey MSG_ON_REVERSE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper.ReverseLogDescription");
 
 	@NonNull
-	public String getDescription(
+	public String getOnCompleteDescription(
 			@NonNull final DocTypeId docTypeId,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity)
 	{
 		return TranslatableStrings.adMessage(
 						MSG_ON_COMPLETE_LOG_DESCRIPTION,
+						Services.get(IDocTypeBL.class).getNameById(docTypeId),
+						Services.get(IProductBL.class).getProductValueAndName(productId),
+						quantity.toString())
+				.translate(Language.getBaseAD_Language());
+	}
+
+	@NonNull
+	public String getOnReverseDescription(
+			@NonNull final DocTypeId docTypeId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity quantity)
+	{
+		return TranslatableStrings.adMessage(
+						MSG_ON_REVERSE_LOG_DESCRIPTION,
 						Services.get(IDocTypeBL.class).getNameById(docTypeId),
 						Services.get(IProductBL.class).getProductValueAndName(productId),
 						quantity.toString())

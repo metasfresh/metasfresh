@@ -26,6 +26,7 @@ import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
 
@@ -36,16 +37,22 @@ public class DeleteOrdersQuery
 
 	@Nullable
 	OrderLineId salesOrderLineId;
+	@Nullable
+	PPOrderBOMLineId ppOrderBOMLineId;
 
 	@Builder
-	public DeleteOrdersQuery(final boolean onlySimulated, @Nullable final OrderLineId salesOrderLineId)
+	public DeleteOrdersQuery(
+			final boolean onlySimulated,
+			@Nullable final OrderLineId salesOrderLineId,
+			@Nullable final PPOrderBOMLineId ppOrderBOMLineId)
 	{
-		if (!onlySimulated && salesOrderLineId == null)
+		if (!onlySimulated && salesOrderLineId == null && ppOrderBOMLineId == null)
 		{
 			throw new AdempiereException("Deleting all records is not allowed!");
 		}
 
 		this.onlySimulated = onlySimulated;
 		this.salesOrderLineId = salesOrderLineId;
+		this.ppOrderBOMLineId = ppOrderBOMLineId;
 	}
 }

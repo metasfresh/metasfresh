@@ -53,9 +53,14 @@ import de.metas.invoice.service.impl.PlainInvoiceBL;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -81,6 +86,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 public class DunningTestBase
@@ -107,6 +113,7 @@ public class DunningTestBase
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
 	protected IDunningBL dunningBL;
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
 	public final void beforeTest()
@@ -209,6 +216,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext()
 	{
 		final Properties ctx = getCtx();
+		ctx.setProperty("#AD_Client_ID", "1");
+		ctx.setProperty("#AD_Org_ID", "1");
+
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		final PlainDunningContext dunningContext = new PlainDunningContext(ctx, trxRunConfig);
 		final DunningConfig config = dunningContext.getDunningConfig();
@@ -220,7 +230,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext(Date dunningDate, I_C_DunningLevel dunningLevel)
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
-		dunningContext.setDunningDate(dunningDate);
+		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -278,6 +290,14 @@ public class DunningTestBase
 		POJOWrapper.enableStrictValues(level);
 
 		return level;
+	}
+
+	@NonNull
+	protected OrgInfo createOrgInfo()
+	{
+		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(OrgId.MAIN)
+				.build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)

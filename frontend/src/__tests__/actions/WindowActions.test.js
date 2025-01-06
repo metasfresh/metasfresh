@@ -1,11 +1,11 @@
-import thunk from 'redux-thunk';
-import nock from 'nock';
-import configureStore from 'redux-mock-store';
-import { merge } from 'merge-anything';
+import thunk from "redux-thunk";
+import nock from "nock";
+import configureStore from "redux-mock-store";
+import { merge } from "merge-anything";
 
-import { initialState as appInitialState } from '../../reducers/appHandler';
-import { initialState } from '../../reducers/viewHandler';
-import windowState from '../../reducers/windowHandler';
+import { initialState as appInitialState } from "../../reducers/appHandler";
+import { initialState } from "../../reducers/viewHandler";
+import windowState from "../../reducers/windowHandler";
 
 import {
   createWindow,
@@ -13,18 +13,17 @@ import {
   setPrintingOptions,
   setSpinner,
   togglePrintingOption,
-} from '../../actions/WindowActions';
-import * as ACTION_TYPES from '../../constants/ActionTypes';
-import { getScope, parseToDisplay } from '../../utils/documentListHelper';
+} from "../../actions/WindowActions";
+import * as ACTION_TYPES from "../../constants/ActionTypes";
+import { getScope, parseToDisplay } from "../../utils/documentListHelper";
 
-import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
-import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
-import layoutFixtures
-  from '../../../test_setup/fixtures/master_window/layout.json';
-import printingOptions
-  from '../../../test_setup/fixtures/window/printingOptions.json';
+import masterWindowProps from "../../../test_setup/fixtures/master_window.json";
+import dataFixtures from "../../../test_setup/fixtures/master_window/data.json";
+import layoutFixtures from "../../../test_setup/fixtures/master_window/layout.json";
+import printingOptions from "../../../test_setup/fixtures/window/printingOptions.json";
 
-const createState = (state = {}) => merge(
+const createState = (state = {}) =>
+  merge(
     {
       viewHandler: initialState,
       windowHandler: windowState,

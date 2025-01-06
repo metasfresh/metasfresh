@@ -1,7 +1,7 @@
 package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.lang.SOTrx;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -48,7 +48,7 @@ public class InOutCostsView extends AbstractCustomView<InOutCostRow>
 
 	public SOTrx getSoTrx() {return getRowsData().getSoTrx();}
 
-	public InvoiceLineId getInvoiceLineId() {return getRowsData().getInvoiceLineId();}
+	public InvoiceAndLineId getInvoiceLineId() {return getRowsData().getInvoiceAndLineId();}
 
 	@Override
 	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}

@@ -23,6 +23,7 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  */
 
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -125,7 +126,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		if (_invoiceDocTypeDownPaymentId == null)
 		{
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment;
-			_invoiceDocTypeDownPaymentId = loadDocType(docSubType);
+			_invoiceDocTypeDownPaymentId = loadDocType(DocSubType.ofCode(docSubType));
 		}
 		return _invoiceDocTypeDownPaymentId.getRepoId();
 	}
@@ -136,7 +137,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		if (_invoiceDocTypeFinalSettlementId == null)
 		{
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement;
-			_invoiceDocTypeFinalSettlementId = loadDocType(docSubType);
+			_invoiceDocTypeFinalSettlementId = loadDocType(DocSubType.ofCode(docSubType));
 		}
 		return _invoiceDocTypeFinalSettlementId.getRepoId();
 	}
@@ -150,7 +151,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		return getScrapPercentageTreshold().compareTo(new BigDecimal("100")) < 0;
 	}
 
-	private DocTypeId loadDocType(final String docSubType)
+	private DocTypeId loadDocType(final DocSubType docSubType)
 	{
 		final IContextAware context = getContext();
 
@@ -160,7 +161,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 
 		return Services.get(IDocTypeDAO.class).getDocTypeId(
 				DocTypeQuery.builder()
-						.docBaseType(DocBaseType.APInvoice)
+						.docBaseType(DocBaseType.PurchaseInvoice)
 						.docSubType(docSubType)
 						.adClientId(adClientId)
 						.adOrgId(adOrgId)

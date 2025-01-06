@@ -65,6 +65,8 @@ public final class InvoiceCandidateIdsSelection
 		this.ids = ids;
 	}
 
+	public boolean isEmpty() {return selectionId == null && (ids == null || ids.isEmpty());}
+
 	public boolean isDatabaseSelection()
 	{
 		return selectionId != null;

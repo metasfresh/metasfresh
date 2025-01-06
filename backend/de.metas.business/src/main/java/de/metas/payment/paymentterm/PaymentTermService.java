@@ -1,21 +1,19 @@
 package de.metas.payment.paymentterm;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import javax.annotation.Nullable;
-
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
+import javax.annotation.Nullable;
 
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

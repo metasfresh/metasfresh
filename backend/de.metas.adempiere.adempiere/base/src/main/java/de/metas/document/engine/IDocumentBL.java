@@ -160,6 +160,8 @@ public interface IDocumentBL extends ISingletonService
 	Optional<DocBaseType> getDocBaseType(@NonNull Object model);
 
 	/**
+	 * Gets document summary
+	 *
 	 * @return document summary or toString() in case the model is not a document.
 	 */
 	String getSummary(Object model);

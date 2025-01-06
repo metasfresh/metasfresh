@@ -24,13 +24,13 @@ package de.metas.purchasecandidate.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.util.Services;
-import org.compiere.model.X_C_DocType;
 
 public class C_PurchaseCandiate_Create_Requisitions
 		extends C_PurchaseCandiate_Create_PurchaseOrders
@@ -51,7 +51,7 @@ public class C_PurchaseCandiate_Create_Requisitions
 			reqDocTypeId = this._reqDocTypeId = docTypeDAO.getDocTypeId(
 					DocTypeQuery.builder()
 							.docBaseType(DocBaseType.PurchaseOrder)
-							.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
+							.docSubType(DocSubType.Requisition)
 							.adClientId(getClientId().getRepoId())
 							.build());
 		}

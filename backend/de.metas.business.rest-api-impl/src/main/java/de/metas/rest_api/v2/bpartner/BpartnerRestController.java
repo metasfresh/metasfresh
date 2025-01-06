@@ -52,6 +52,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -339,6 +340,10 @@ public class BpartnerRestController
 						defaultSyncAdvise);
 				response.responseItem(persist);
 			}
+			catch(final AdempiereException e)
+			{
+				throw e.setParameter("bpartnerIdentifier", requestItem.getBpartnerIdentifier());
+			}
 		}
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
@@ -364,9 +369,10 @@ public class BpartnerRestController
 			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@Operation(summary = "Create or update a locations for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a location exists, then those of its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a locations for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a location exists, then those of its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
@@ -420,9 +426,10 @@ public class BpartnerRestController
 			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
 			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@Operation(summary = "Create or update a contacts for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a contact exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a contacts for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a contact exists, then its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
@@ -479,9 +486,10 @@ public class BpartnerRestController
 			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
 			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@Operation(summary = "Create or update a bank account for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a bank account for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a bank account exists, then its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/bankAccount")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
 

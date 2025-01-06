@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Util.ArrayKey;
 
@@ -45,21 +46,24 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 /**
- * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
+ * Contains common BL used when loading from an {@link de.metas.handlingunits.allocation.IAllocationRequest} to an {@link IAllocationResult}
  *
  * @author al
- *
  */
 public abstract class AbstractProducerDestination implements IHUProducerAllocationDestination
 {
 	//
 	// Services
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
+	/**
+	 * Error message which is thrown when the result of allocating to a new HU is ZERO
+	 */
 	private static final AdMessageKey MSG_QTY_LOAD_ERROR = AdMessageKey.of("AbstractProducerDestination.load_Error");
 
 	/**
@@ -80,16 +84,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private boolean _isExternalProperty = false; // default false
 
 	/**
-	 *
 	 * <code>true</code> if this producer is in configurable state (i.e. nothing was produced yet)
 	 */
 	private boolean _configurable = true;
 
+	private HUListCursor previouslyCreatedHUs = null;
 	private final HashMap<ArrayKey, HUListCursor> currentHUs = new HashMap<>();
 
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
-	 *
+	 * <p>
 	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
@@ -109,8 +113,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * @return {@code true} if we are allowed to create a new HU <b>or allocate to the current aggregate/"bag"-HU</b> in case is needed.
-	 *         Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
-	 * 
+	 * Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
 	 */
 	public abstract boolean isAllowCreateNewHU();
 
@@ -126,6 +129,20 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	protected abstract IAllocationResult loadHU(final I_M_HU hu, final IAllocationRequest request);
 
+	protected final void addPreviouslyCreatedHU(@NonNull final I_M_HU hu)
+	{
+		if (previouslyCreatedHUs == null)
+		{
+			previouslyCreatedHUs = new HUListCursor();
+		}
+		previouslyCreatedHUs.append(hu);
+	}
+
+	protected final void clearPreviouslyCreatedHUs()
+	{
+		previouslyCreatedHUs = null;
+	}
+
 	/**
 	 * Gets current HU to allocate on.
 	 * <ul>
@@ -136,6 +153,24 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private HUListCursor getCreateCurrentHU(final IAllocationRequest request)
 	{
+		//
+		// Consider pre-created HUs first
+		if (previouslyCreatedHUs != null)
+		{
+			if (previouslyCreatedHUs.hasCurrent() && previouslyCreatedHUs.current() != null)
+			{
+				return previouslyCreatedHUs;
+			}
+			while (previouslyCreatedHUs.hasNext())
+			{
+				previouslyCreatedHUs.next();
+				if (previouslyCreatedHUs.current() != null)
+				{
+					return previouslyCreatedHUs;
+				}
+			}
+		}
+
 		final HUListCursor currentHUCursor = getCurrentHUCursor(request);
 
 		// If we have a current HU and it's not null
@@ -199,14 +234,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Creates a new handling unit for given <code>request</code>.
-	 *
+	 * <p>
 	 * The newly created HU will be also added to created HUs list.
 	 *
 	 * @return created handling unit; never return null
 	 */
 	private I_M_HU createNewHU(final IAllocationRequest request)
 	{
-		//
 		// Create HU Builder
 		final IHUBuilder huBuilder = createHUBuilder(request);
 
@@ -276,9 +310,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 *
 	 * @return the parent item to which newly created HUs shall be added. May return <code>null</code>, if the new HU shall have no parent.
-	 *
 	 * @see #createNewHU(IAllocationRequest)
 	 * @see IHUBuilder#setM_HU_Item_Parent(I_M_HU_Item)
 	 */
@@ -360,9 +392,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return true;
 	}
 
-	private boolean addToCreateHUs0(final I_M_HU hu)
+	private boolean addToCreateHUs0(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
 		final boolean added = _createdHUs.add(hu);
 		if (added)
 		{
@@ -390,7 +421,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Method called after an HU was added to HU created list.
-	 *
+	 * <p>
 	 * To be implemented by extending classes.
 	 */
 	protected void afterHUAddedToCreatedList(final I_M_HU hu)
@@ -425,16 +456,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			addToCreatedHUsIfAllowCreateNewHU(hu);
 		}
-	}
-
-	/**
-	 * Method called after an HU was removed from HU created list.
-	 *
-	 * To be implemented by extending classes.
-	 */
-	protected void afterHURemovedFromCreatedList(final I_M_HU hu)
-	{
-		// nothing at this level.
 	}
 
 	@Override
@@ -520,7 +541,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			prepareToLoad(request.getHuContext(), currentHU);
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
-			AllocationUtils.mergeAllocationResult(result, currentResult);
 
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -549,9 +569,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					// throw a nice user friendly error
 					throw new AdempiereException(MSG_QTY_LOAD_ERROR, currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "");
 				}
-				// destroyCurrentHU(currentHUCursor);
-				// currentHU = null;
+
+				if (request.isDeleteEmptyAndJustCreatedAggregatedTUs())
+				{
+					destroyCurrentHU(currentHUCursor, request.getHuContext());
+					continue;
+				}
 			}
+
+			AllocationUtils.mergeAllocationResult(result, currentResult);
 
 			if (handlingUnitsBL.isAggregateHU(currentHU))
 			{
@@ -622,7 +648,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Called by {@link #load(IAllocationRequest)} right before actual load is starting.
-	 *
+	 * <p>
 	 * In this method, implementators can do further configurations and loadings if needed.
 	 */
 	protected void loadStarting(final IAllocationRequest request)
@@ -747,5 +773,39 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final boolean isExternalProperty()
 	{
 		return _isExternalProperty;
+	}
+
+	private void destroyCurrentHU(final HUListCursor currentHUCursor, final IHUContext huContext)
+	{
+		final I_M_HU hu = currentHUCursor.current();
+		if (hu == null)
+		{
+			return; // shall not happen
+		}
+
+		currentHUCursor.closeCurrent(); // close the current position of this cursor
+
+		// since _createdNonAggregateHUs is just a subset of _createdHUs, we don't know if 'hu' was in there to start with. All we care is that it's not in _createdNonAggregateHUs after this method.
+		_createdNonAggregateHUs.remove(hu);
+
+		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
+		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
+
+		// Delete only those HUs which were internally created by THIS producer
+		if (DYNATTR_Producer.getValue(hu) == this)
+		{
+			final Supplier<IAutoCloseable> getDontDestroyParentLUClosable = () -> {
+				final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(hu);
+				return lu != null
+						? huContext.temporarilyDontDestroyHU(HuId.ofRepoId(lu.getM_HU_ID()))
+						: () -> {
+				};
+			};
+
+			try (final IAutoCloseable dontDestroyParentLU = getDontDestroyParentLUClosable.get())
+			{
+				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
+			}
+		}
 	}
 }

@@ -78,6 +78,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setIsReceipt(true);
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		record.setM_Locator_ID(request.getLocatorId().getRepoId());
@@ -99,6 +100,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setIsReceipt(false);
 
 		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
 		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());
@@ -180,7 +182,6 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	{
 		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
 	}
-
 
 	@Override
 	public Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(

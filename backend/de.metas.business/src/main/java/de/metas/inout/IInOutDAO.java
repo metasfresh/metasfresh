@@ -21,6 +21,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +56,8 @@ import java.util.stream.Stream;
 public interface IInOutDAO extends ISingletonService
 {
 	I_M_InOut getById(InOutId inoutId);
+
+	List<I_M_InOut> getByIds(@NonNull Set<InOutId> inoutIds);
 
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
@@ -124,6 +127,8 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
+	I_M_InOut getByLineIdInTrx(@NonNull InOutLineId inoutLineId);
+
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
 
 	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
@@ -156,4 +161,8 @@ public interface IInOutDAO extends ISingletonService
 	Stream<I_M_InOutLine> stream(@NonNull InOutLineQuery query);
 
 	Stream<I_M_InOut> stream(@NonNull IQueryFilter<I_M_InOut> inOutFilter);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull InOutQuery query);
+
+	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 }

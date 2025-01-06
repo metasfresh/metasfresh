@@ -27,6 +27,7 @@ import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
@@ -34,6 +35,7 @@ import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Process;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +44,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
 public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
@@ -65,10 +67,15 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		final ProductId productId = ProductId.ofRepoId(1);
 		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
 
+		final I_AD_Process customProcess = newInstance(I_AD_Process.class);
+		customProcess.setValue("ExternalSystem_Config_LeichMehl_CustomQuery");
+		saveRecord(customProcess);
+
 		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
 		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
 		pluFileConfigGroup.setName("testGroupName");
-
+		pluFileConfigGroup.setIsAdditionalCustomQuery(true);
+		pluFileConfigGroup.setAD_Process_CustomQuery_ID(customProcess.getAD_Process_ID());
 		saveRecord(pluFileConfigGroup);
 
 		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
@@ -79,7 +86,6 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		pluFileConfig.setReplacement("replacement");
 		pluFileConfig.setReplaceRegExp("replacePattern");
 		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
-
 		saveRecord(pluFileConfig);
 
 		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
@@ -87,7 +93,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		productMappingRecord.setM_Product_ID(productId.getRepoId());
 		productMappingRecord.setPLU_File("pluFile");
 		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
+		productMappingRecord.setCU_TU_PLU(PLUType.CU.getCode());
 		saveRecord(productMappingRecord);
 
 		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
@@ -96,11 +102,16 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		productMappingRecord2.setC_BPartner_ID(bPartnerId.getRepoId());
 		productMappingRecord2.setPLU_File("pluFilePartner");
 		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
+		productMappingRecord2.setCU_TU_PLU(PLUType.CU.getCode());
 		saveRecord(productMappingRecord2);
 
 		// when
-		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository.getByProductIdAndPartnerId(productId, bPartnerId);
+		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository
+				.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+									.productId(productId)
+									.bPartnerId(bPartnerId)
+									.pluType(PLUType.CU)
+									.build());
 
 		// then
 		assertThat(result).isPresent();
@@ -139,6 +150,7 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		productMappingRecord.setM_Product_ID(productIdNotMatching.getRepoId());
 		productMappingRecord.setPLU_File("pluFile");
 		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		productMappingRecord.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(productMappingRecord);
 
@@ -162,9 +174,131 @@ public class ExternalSystemLeichMehlConfigProductMappingRepositoryTest
 		saveRecord(productMappingRecord3);
 
 		// when
-		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository.getByProductIdAndPartnerId(productId, bPartnerId);
+		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository
+				.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+									.productId(productId)
+									.bPartnerId(bPartnerId)
+									.pluType(PLUType.CU)
+									.build());
 
 		// then
 		assertThat(result).isEmpty();
 	}
+
+	@Test
+	void getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getCUOne()
+	{
+		// given
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(1);
+		final ProductId productId = ProductId.ofRepoId(1);
+		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
+
+		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
+		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		pluFileConfigGroup.setName("testGroupName");
+
+		saveRecord(pluFileConfigGroup);
+
+		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
+		pluFileConfig.setLeichMehl_PluFile_Config_ID(1);
+		pluFileConfig.setLeichMehl_PluFile_ConfigGroup_ID(pluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
+		pluFileConfig.setTargetFieldName("targetFileName");
+		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
+		pluFileConfig.setReplacement("replacement");
+		pluFileConfig.setReplaceRegExp("replacePattern");
+		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
+
+		saveRecord(pluFileConfig);
+
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord.setExternalSystem_Config_LeichMehl_ProductMapping_ID(1);
+		productMappingRecord.setM_Product_ID(productId.getRepoId());
+		productMappingRecord.setC_BPartner_ID(bPartnerId.getRepoId());
+		productMappingRecord.setPLU_File("pluFile");
+		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		productMappingRecord.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(productMappingRecord);
+
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord2.setExternalSystem_Config_LeichMehl_ProductMapping_ID(2);
+		productMappingRecord2.setM_Product_ID(productId.getRepoId());
+		productMappingRecord2.setC_BPartner_ID(bPartnerId.getRepoId());
+		productMappingRecord2.setPLU_File("pluFilePartner");
+		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		productMappingRecord2.setCU_TU_PLU(PLUType.TU.getCode());
+
+		saveRecord(productMappingRecord2);
+
+		// when
+		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository
+				.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+									.productId(productId)
+									.bPartnerId(bPartnerId)
+									.pluType(PLUType.CU)
+									.build());
+
+		// then
+		assertThat(result).isPresent();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getTUOne()
+	{
+		// given
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(1);
+		final ProductId productId = ProductId.ofRepoId(1);
+		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
+
+		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
+		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		pluFileConfigGroup.setName("testGroupName");
+
+		saveRecord(pluFileConfigGroup);
+
+		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
+		pluFileConfig.setLeichMehl_PluFile_Config_ID(1);
+		pluFileConfig.setLeichMehl_PluFile_ConfigGroup_ID(pluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
+		pluFileConfig.setTargetFieldName("targetFileName");
+		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
+		pluFileConfig.setReplacement("replacement");
+		pluFileConfig.setReplaceRegExp("replacePattern");
+		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
+
+		saveRecord(pluFileConfig);
+
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord.setExternalSystem_Config_LeichMehl_ProductMapping_ID(1);
+		productMappingRecord.setM_Product_ID(productId.getRepoId());
+		productMappingRecord.setC_BPartner_ID(bPartnerId.getRepoId());
+		productMappingRecord.setPLU_File("pluFile");
+		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		productMappingRecord.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(productMappingRecord);
+
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord2.setExternalSystem_Config_LeichMehl_ProductMapping_ID(2);
+		productMappingRecord2.setM_Product_ID(productId.getRepoId());
+		productMappingRecord2.setC_BPartner_ID(bPartnerId.getRepoId());
+		productMappingRecord2.setPLU_File("pluFilePartner");
+		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
+		productMappingRecord2.setCU_TU_PLU(PLUType.TU.getCode());
+
+		saveRecord(productMappingRecord2);
+
+		// when
+		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemLeichMehlConfigProductMappingRepository
+				.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+									.productId(productId)
+									.bPartnerId(bPartnerId)
+									.pluType(PLUType.TU)
+									.build());
+
+		// then
+		assertThat(result).isPresent();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+	
 }

@@ -37,6 +37,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -50,6 +51,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -67,46 +69,69 @@ public class EDIDesadvPackRepository
 	public EDIDesadvPack createDesadvPack(@NonNull final CreateEDIDesadvPackRequest createEDIDesadvPackRequest)
 	{
 		final I_EDI_Desadv_Pack desadvPackRecord = newInstance(I_EDI_Desadv_Pack.class);
-
+		desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));
-
+		desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
 		desadvPackRecord.setM_HU_ID(HuId.toRepoId(createEDIDesadvPackRequest.getHuId()));
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
-		desadvPackRecord.setM_HU_PackagingCode_LU_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeLUID()));
-		desadvPackRecord.setGTIN_LU_PackingMaterial(createEDIDesadvPackRequest.getGtinLUPackingMaterial());
+		desadvPackRecord.setM_HU_PackagingCode_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeID()));
+		desadvPackRecord.setGTIN_PackingMaterial(createEDIDesadvPackRequest.getGtinPackingMaterial());
 
 		saveRecord(desadvPackRecord);
+		final EDIDesadvPackId packId = EDIDesadvPackId.ofRepoId(desadvPackRecord.getEDI_Desadv_Pack_ID());
 
 		final ImmutableList.Builder<I_EDI_Desadv_Pack_Item> createdEDIDesadvPackItemRecordsBuilder = ImmutableList.builder();
-		for (final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest : createEDIDesadvPackRequest.getCreateEDIDesadvPackItemRequests())
+		for (final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest : createEDIDesadvPackRequest.getCreateEDIDesadvPackItemRequests())
 		{
-			final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord = InterfaceWrapperHelper.loadOrNew(createEDIDesadvPackItemRequest.getEdiDesadvPackItemId(),
-																									I_EDI_Desadv_Pack_Item.class);
-
-			ediDesadvPackItemRecord.setEDI_Desadv_Pack_ID(desadvPackRecord.getEDI_Desadv_Pack_ID());
-			ediDesadvPackItemRecord.setEDI_DesadvLine_ID(EDIDesadvLineId.toRepoId(createEDIDesadvPackItemRequest.getEdiDesadvLineId()));
-			ediDesadvPackItemRecord.setM_InOut_ID(InOutId.toRepoId(createEDIDesadvPackItemRequest.getInOutId()));
-			ediDesadvPackItemRecord.setM_InOutLine_ID(InOutLineId.toRepoId(createEDIDesadvPackItemRequest.getInOutLineId()));
-			ediDesadvPackItemRecord.setQtyItemCapacity(createEDIDesadvPackItemRequest.getQtyItemCapacity());
-			ediDesadvPackItemRecord.setQtyTU(NumberUtils.asIntOrZero(createEDIDesadvPackItemRequest.getQtyTu()));
-			ediDesadvPackItemRecord.setMovementQty(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM());
-			ediDesadvPackItemRecord.setQtyCUsPerTU(createEDIDesadvPackItemRequest.getQtyCUsPerTU());
-			ediDesadvPackItemRecord.setQtyCUsPerTU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUPerTUinInvoiceUOM());
-			ediDesadvPackItemRecord.setQtyCUsPerLU(createEDIDesadvPackItemRequest.getQtyCUsPerLU());
-			ediDesadvPackItemRecord.setQtyCUsPerLU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUsPerLUinInvoiceUOM());
-			ediDesadvPackItemRecord.setBestBeforeDate(createEDIDesadvPackItemRequest.getBestBeforeDate());
-			ediDesadvPackItemRecord.setLotNumber(createEDIDesadvPackItemRequest.getLotNumber());
-			ediDesadvPackItemRecord.setM_HU_PackagingCode_TU_ID(PackagingCodeId.toRepoId(createEDIDesadvPackItemRequest.getHuPackagingCodeTUID()));
-			ediDesadvPackItemRecord.setGTIN_TU_PackingMaterial(createEDIDesadvPackItemRequest.getGtinTUPackingMaterial());
-
-			saveRecord(ediDesadvPackItemRecord);
-
-			createdEDIDesadvPackItemRecordsBuilder.add(ediDesadvPackItemRecord);
+			final I_EDI_Desadv_Pack_Item packItemRecord = upsertPackItemRecord(createEDIDesadvPackItemRequest, packId);
+			createdEDIDesadvPackItemRecordsBuilder.add(packItemRecord);
 		}
 
 		return ofRecord(desadvPackRecord, createdEDIDesadvPackItemRecordsBuilder.build());
+	}
+
+	@NonNull
+	public EDIDesadvPack.EDIDesadvPackItem createDesadvPackItem(@NonNull final CreateEDIDesadvPackItemRequest createPackItemRequest)
+	{
+		final EDIDesadvPackId packId = Check.assumeNotNull(
+				createPackItemRequest.getEdiDesadvPackId(),
+				"When this method is called, the given request's ediDesadvPackId may not be null; request={}", createPackItemRequest);
+
+		Check.assumeNull(
+				createPackItemRequest.getEdiDesadvPackItemId(),
+				"When this method is called, the given request's ediDesadvPackItemId has to be null; request={}", createPackItemRequest);
+
+		final I_EDI_Desadv_Pack_Item packItemRecord = upsertPackItemRecord(createPackItemRequest, packId);
+		return ofPackItemRecord(packItemRecord, packId);
+	}
+
+	private static @NonNull I_EDI_Desadv_Pack_Item upsertPackItemRecord(
+			@NonNull final CreateEDIDesadvPackItemRequest createPackItemRequest,
+			@NonNull final EDIDesadvPackId packId)
+	{
+		final I_EDI_Desadv_Pack_Item packItemRecord = InterfaceWrapperHelper.loadOrNew(createPackItemRequest.getEdiDesadvPackItemId(),
+																					   I_EDI_Desadv_Pack_Item.class);
+		packItemRecord.setEDI_Desadv_Pack_ID(packId.getRepoId());
+		packItemRecord.setEDI_DesadvLine_ID(EDIDesadvLineId.toRepoId(createPackItemRequest.getEdiDesadvLineId()));
+		packItemRecord.setM_InOut_ID(InOutId.toRepoId(createPackItemRequest.getInOutId()));
+		packItemRecord.setM_InOutLine_ID(InOutLineId.toRepoId(createPackItemRequest.getInOutLineId()));
+		packItemRecord.setLine(createPackItemRequest.getLine());
+		packItemRecord.setQtyItemCapacity(createPackItemRequest.getQtyItemCapacity());
+		packItemRecord.setQtyTU(NumberUtils.asIntOrZero(createPackItemRequest.getQtyTu()));
+		packItemRecord.setMovementQty(createPackItemRequest.getMovementQtyInStockUOM());
+		packItemRecord.setQtyCUsPerTU(createPackItemRequest.getQtyCUsPerTU());
+		packItemRecord.setQtyCUsPerTU_InInvoiceUOM(createPackItemRequest.getQtyCUPerTUinInvoiceUOM());
+		packItemRecord.setQtyCUsPerLU(createPackItemRequest.getQtyCUsPerLU());
+		packItemRecord.setQtyCUsPerLU_InInvoiceUOM(createPackItemRequest.getQtyCUsPerLUinInvoiceUOM());
+		packItemRecord.setBestBeforeDate(createPackItemRequest.getBestBeforeDate());
+		packItemRecord.setLotNumber(createPackItemRequest.getLotNumber());
+		packItemRecord.setM_HU_PackagingCode_TU_ID(PackagingCodeId.toRepoId(createPackItemRequest.getHuPackagingCodeTUID()));
+		packItemRecord.setGTIN_TU_PackingMaterial(createPackItemRequest.getGtinTUPackingMaterial());
+
+		saveRecord(packItemRecord);
+		return packItemRecord;
 	}
 
 	public void deletePackById(@NonNull final EDIDesadvPackId ediDesadvPackId)
@@ -131,13 +156,13 @@ public class EDIDesadvPackRepository
 
 		final Set<EDIDesadvPackId> packIdsToDeleteIfEmpty = packIdsCollector.build();
 
-		for (final EDIDesadvPackId ediDesadvPackId : packIdsToDeleteIfEmpty)
+		for (final EDIDesadvPackId packId : packIdsToDeleteIfEmpty)
 		{
-			final List<I_EDI_Desadv_Pack_Item> packItemRecords = retrievePackItemRecords(EdiDesadvPackItemQuery.ofDesadvPackId(ediDesadvPackId));
+			final List<I_EDI_Desadv_Pack_Item> packItemRecords = retrievePackItemRecords(EdiDesadvPackItemQuery.ofDesadvPackId(packId));
 
 			if (packItemRecords.isEmpty())
 			{
-				deletePackById(ediDesadvPackId);
+				deletePackById(packId);
 			}
 		}
 	}
@@ -158,23 +183,54 @@ public class EDIDesadvPackRepository
 	@NonNull
 	public ImmutableList<EDIDesadvPack> getPacksByEDIDesadvLineId(@NonNull final EDIDesadvLineId ediDesadvLineId)
 	{
-		final ImmutableList.Builder<EDIDesadvPack> ediDesadvPackBuilder = ImmutableList.builder();
-
-		queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
+		final Map<Integer, List<I_EDI_Desadv_Pack_Item>> packId2packItemRecords = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID, ediDesadvLineId)
 				.create()
 				.stream()
-				.collect(Collectors.groupingBy(I_EDI_Desadv_Pack_Item::getEDI_Desadv_Pack_ID))
-				.forEach((packId, itemList) -> {
+				.collect(Collectors.groupingBy(I_EDI_Desadv_Pack_Item::getEDI_Desadv_Pack_ID));
 
-					final I_EDI_Desadv_Pack desadvPackRecord = InterfaceWrapperHelper.load(packId, I_EDI_Desadv_Pack.class);
-					final EDIDesadvPack ediDesadvPack = ofRecord(desadvPackRecord, itemList);
+		return ofPackIdAndItemRecords(packId2packItemRecords);
+	}
 
-					ediDesadvPackBuilder.add(ediDesadvPack);
-				});
+	@Nullable
+	public EDIDesadvPack getPackByDesadvLineAndHUId(@NonNull final HuId huId)
+	{
+		// with the recent changes, there can't be more than one pack per HU, but in old DESADVs there may be packs that share the same M_HU_ID,
+		final I_EDI_Desadv_Pack packRecord = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, huId)
+				.orderBy(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo)
+				.create()
+				.first(I_EDI_Desadv_Pack.class);
+		if (packRecord == null)
+		{
+			return null;
+		}
 
-		return ediDesadvPackBuilder.build();
+		final List<I_EDI_Desadv_Pack_Item> packItemRecords = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packRecord.getEDI_Desadv_Pack_ID())
+				.orderBy(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line)
+				.create()
+				.list();
+
+		return ofRecord(packRecord, packItemRecords);
+	}
+
+	private static ImmutableList<EDIDesadvPack> ofPackIdAndItemRecords(
+			@NonNull final Map<Integer, List<I_EDI_Desadv_Pack_Item>> packId2packItemRecords)
+	{
+		final ImmutableList.Builder<EDIDesadvPack> packBuilder = ImmutableList.builder();
+		for (final Map.Entry<Integer, List<I_EDI_Desadv_Pack_Item>> entry : packId2packItemRecords.entrySet())
+		{
+			final I_EDI_Desadv_Pack packRecord = InterfaceWrapperHelper.load(entry.getKey(), I_EDI_Desadv_Pack.class);
+			final EDIDesadvPack pack = ofRecord(packRecord, entry.getValue());
+
+			packBuilder.add(pack);
+		}
+
+		return packBuilder.build();
 	}
 
 	@NonNull
@@ -216,46 +272,57 @@ public class EDIDesadvPackRepository
 
 	@NonNull
 	private static EDIDesadvPack ofRecord(
-			@NonNull final I_EDI_Desadv_Pack desadvPackRecord,
-			@NonNull final List<I_EDI_Desadv_Pack_Item> ediDesadvPackItemRecords)
+			@NonNull final I_EDI_Desadv_Pack packRecord,
+			@NonNull final List<I_EDI_Desadv_Pack_Item> packItemRecords)
 	{
-		final EDIDesadvPack.EDIDesadvPackBuilder ediDesadvPackBuilder = EDIDesadvPack.builder();
+		final EDIDesadvPack.EDIDesadvPackBuilder packBuilder = EDIDesadvPack.builder();
 
-		final EDIDesadvPackId ediDesadvPackId = EDIDesadvPackId.ofRepoId(desadvPackRecord.getEDI_Desadv_Pack_ID());
+		final EDIDesadvPackId packId = EDIDesadvPackId.ofRepoId(packRecord.getEDI_Desadv_Pack_ID());
 
-		ediDesadvPackBuilder.ediDesadvPackId(ediDesadvPackId);
-		ediDesadvPackBuilder.ediDesadvId(EDIDesadvId.ofRepoId(desadvPackRecord.getEDI_Desadv_ID()));
-		ediDesadvPackBuilder.sscc18(desadvPackRecord.getIPA_SSCC18());
-		ediDesadvPackBuilder.isManualIpaSscc(desadvPackRecord.isManual_IPA_SSCC18());
-		ediDesadvPackBuilder.huId(HuId.ofRepoIdOrNull(desadvPackRecord.getM_HU_ID()));
-		ediDesadvPackBuilder.huPackagingCodeLuId(PackagingCodeId.ofRepoIdOrNull(desadvPackRecord.getM_HU_PackagingCode_LU_ID()));
-		ediDesadvPackBuilder.gtinLuPackingMaterial(desadvPackRecord.getGTIN_LU_PackingMaterial());
+		packBuilder.seqNo(packRecord.getSeqNo());
+		packBuilder.ediDesadvPackId(packId);
+		packBuilder.ediDesadvId(EDIDesadvId.ofRepoId(packRecord.getEDI_Desadv_ID()));
+		packBuilder.sscc18(packRecord.getIPA_SSCC18());
+		packBuilder.isManualIpaSscc(packRecord.isManual_IPA_SSCC18());
+		packBuilder.huId(HuId.ofRepoIdOrNull(packRecord.getM_HU_ID()));
+		packBuilder.huPackagingCodeId(PackagingCodeId.ofRepoIdOrNull(packRecord.getM_HU_PackagingCode_ID()));
+		packBuilder.gtinPackingMaterial(packRecord.getGTIN_PackingMaterial());
 
-		for (final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord : ediDesadvPackItemRecords)
+		for (final I_EDI_Desadv_Pack_Item packItemRecord : packItemRecords)
 		{
-			final EDIDesadvPack.EDIDesadvPackItem.EDIDesadvPackItemBuilder ediDesadvPackItemBuilder = EDIDesadvPack.EDIDesadvPackItem.builder();
-
-			ediDesadvPackItemBuilder.ediDesadvPackItemId(EDIDesadvPackItemId.ofRepoId(ediDesadvPackItemRecord.getEDI_Desadv_Pack_Item_ID()));
-			ediDesadvPackItemBuilder.ediDesadvPackId(ediDesadvPackId);
-			ediDesadvPackItemBuilder.ediDesadvLineId(EDIDesadvLineId.ofRepoId(ediDesadvPackItemRecord.getEDI_DesadvLine_ID()));
-			ediDesadvPackItemBuilder.inOutId(InOutId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_InOut_ID()));
-			ediDesadvPackItemBuilder.inOutLineId(InOutLineId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_InOutLine_ID()));
-			ediDesadvPackItemBuilder.qtyItemCapacity(ediDesadvPackItemRecord.getQtyItemCapacity());
-			ediDesadvPackItemBuilder.qtyTu(ediDesadvPackItemRecord.getQtyTU());
-			ediDesadvPackItemBuilder.movementQty(ediDesadvPackItemRecord.getMovementQty());
-			ediDesadvPackItemBuilder.qtyCUsPerTU(ediDesadvPackItemRecord.getQtyCUsPerTU());
-			ediDesadvPackItemBuilder.qtyCUPerTUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM());
-			ediDesadvPackItemBuilder.qtyCUsPerLU(ediDesadvPackItemRecord.getQtyCUsPerLU());
-			ediDesadvPackItemBuilder.qtyCUsPerLUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM());
-			ediDesadvPackItemBuilder.bestBeforeDate(ediDesadvPackItemRecord.getBestBeforeDate());
-			ediDesadvPackItemBuilder.lotNumber(ediDesadvPackItemRecord.getLotNumber());
-			ediDesadvPackItemBuilder.huPackagingCodeTuId(PackagingCodeId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_HU_PackagingCode_TU_ID()));
-			ediDesadvPackItemBuilder.gtinTuPackingMaterial(ediDesadvPackItemRecord.getGTIN_TU_PackingMaterial());
-
-			ediDesadvPackBuilder.ediDesadvPackItem(ediDesadvPackItemBuilder.build());
+			final EDIDesadvPack.EDIDesadvPackItem packItem = ofPackItemRecord(packItemRecord, packId);
+			packBuilder.ediDesadvPackItem(packItem);
 		}
 
-		return ediDesadvPackBuilder.build();
+		return packBuilder.build();
+	}
+
+	@NonNull
+	private static EDIDesadvPack.EDIDesadvPackItem ofPackItemRecord(
+			@NonNull final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord,
+			@NonNull final EDIDesadvPackId packId)
+	{
+		final EDIDesadvPack.EDIDesadvPackItem.EDIDesadvPackItemBuilder packItemBuilder = EDIDesadvPack.EDIDesadvPackItem.builder();
+
+		packItemBuilder.ediDesadvPackItemId(EDIDesadvPackItemId.ofRepoId(ediDesadvPackItemRecord.getEDI_Desadv_Pack_Item_ID()));
+		packItemBuilder.ediDesadvPackId(packId);
+		packItemBuilder.ediDesadvLineId(EDIDesadvLineId.ofRepoId(ediDesadvPackItemRecord.getEDI_DesadvLine_ID()));
+		packItemBuilder.line(ediDesadvPackItemRecord.getLine());
+		packItemBuilder.inOutId(InOutId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_InOut_ID()));
+		packItemBuilder.inOutLineId(InOutLineId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_InOutLine_ID()));
+		packItemBuilder.qtyItemCapacity(ediDesadvPackItemRecord.getQtyItemCapacity());
+		packItemBuilder.qtyTu(ediDesadvPackItemRecord.getQtyTU());
+		packItemBuilder.movementQty(ediDesadvPackItemRecord.getMovementQty());
+		packItemBuilder.qtyCUsPerTU(ediDesadvPackItemRecord.getQtyCUsPerTU());
+		packItemBuilder.qtyCUPerTUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM());
+		packItemBuilder.qtyCUsPerLU(ediDesadvPackItemRecord.getQtyCUsPerLU());
+		packItemBuilder.qtyCUsPerLUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM());
+		packItemBuilder.bestBeforeDate(ediDesadvPackItemRecord.getBestBeforeDate());
+		packItemBuilder.lotNumber(ediDesadvPackItemRecord.getLotNumber());
+		packItemBuilder.huPackagingCodeTuId(PackagingCodeId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_HU_PackagingCode_TU_ID()));
+		packItemBuilder.gtinTuPackingMaterial(ediDesadvPackItemRecord.getGTIN_TU_PackingMaterial());
+
+		return packItemBuilder.build();
 	}
 
 	@Value

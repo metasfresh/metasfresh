@@ -30,24 +30,27 @@ import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ProductRestController_StepDef
@@ -74,11 +77,7 @@ public class ProductRestController_StepDef
 	@Then("validate get products response")
 	public void verify_getProducts_response_v2(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			verifyGetProductsResponseV2(dataTableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::verifyGetProductsResponseV2);
 	}
 
 	@Then("validate retrieve product response")
@@ -89,23 +88,18 @@ public class ProductRestController_StepDef
 		final JsonProduct jsonProduct = mapper.readValue(testContext.getApiResponse().getContent(), JsonProduct.class);
 		assertThat(jsonProduct).isNotNull();
 
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> row : productTableList)
-		{
-			validateJsonProduct(row, jsonProduct);
-		}
+		DataTableRows.of(dataTable).forEach(row -> validateJsonProduct(row, jsonProduct));
 	}
 
-	private void verifyGetProductsResponseV2(@NonNull final Map<String, String> row) throws JsonProcessingException
+	private void verifyGetProductsResponseV2(@NonNull final DataTableRow row) throws JsonProcessingException
 	{
-		final String value = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Value);
-		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_UOMSymbol);
-		final String ean = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_UPC);
-		final String description = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Description);
+		final String value = extractProductValue(row);
+		final String name = extractProductName(row);
+		final String x12de355Code = row.getAsString(I_C_UOM.COLUMNNAME_UOMSymbol);
+		final String ean = row.getAsString(I_M_Product.COLUMNNAME_UPC);
+		final String description = row.getAsString(I_M_Product.COLUMNNAME_Description);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_M_Product productRecord = productTable.get(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID));
 
 		final JsonGetProductsResponse jsonGetProductsResponse = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(testContext.getApiResponse().getContent(), JsonGetProductsResponse.class);
 
@@ -127,17 +121,16 @@ public class ProductRestController_StepDef
 		verifyBPartnerProduct(bpartnerProduct, row);
 	}
 
-	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final Map<String, String> row)
+	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final DataTableRow row)
 	{
-		final String productNo = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ProductNo);
-		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
-		final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
-		final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase);
-		final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason);
-		final String ean = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + "ean");
+		final String productNo = row.getAsString(BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ProductNo);
+		final boolean isExcludedFromSale = row.getAsBoolean(BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
+		final String exclusionFromSaleReason = row.getAsOptionalString(BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason).orElse(null);
+		final boolean isExcludedFromPurchase = row.getAsBoolean(BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase);
+		final String exclusionFromPurchaseReason = row.getAsOptionalString(BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason).orElse(null);
+		final String ean = row.getAsOptionalString(BPARTNER_PRODUCT_RESPONSE_PATH + "ean").orElse(null);
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpartnerIdentifier);
+		final I_C_BPartner bPartnerRecord = bPartnerTable.get(row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID));
 
 		assertThat(returnedProductBPartner.getBpartnerId().getValue()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		assertThat(returnedProductBPartner.getProductNo()).isEqualTo(productNo);
@@ -146,32 +139,50 @@ public class ProductRestController_StepDef
 		assertThat(returnedProductBPartner.isExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
 		assertThat(returnedProductBPartner.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
 
-		if(Check.isNotBlank(ean))
+		if (Check.isNotBlank(ean))
 		{
 			assertThat(returnedProductBPartner.getEan()).isEqualTo(ean);
 		}
 	}
 
-	private void validateJsonProduct(@NonNull final Map<String, String> row, @NonNull final JsonProduct jsonProduct)
+	private void validateJsonProduct(@NonNull final DataTableRow row, @NonNull final JsonProduct jsonProduct)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
-		final String uomSymbol = DataTableUtil.extractStringForColumnName(row, "UomSymbol");
-		final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_Category_ID + "." +TABLECOLUMN_IDENTIFIER);
+		final ProductId productId = productTable.getId(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID));
+		final ProductCategoryId productCategoryId = productCategoryTable.getId(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_Category_ID));
+		final String name = extractProductName(row);
+		final String uomSymbol = row.getAsString("UomSymbol");
 
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(product).isNotNull();
-
-		final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
-		assertThat(productCategory).isNotNull();
-
-		assertThat(jsonProduct.getId().getValue()).isEqualTo(product.getM_Product_ID());
+		assertThat(jsonProduct.getId().getValue()).isEqualTo(productId.getRepoId());
 		assertThat(jsonProduct.getName()).isEqualTo(name);
 		assertThat(jsonProduct.getUom()).isEqualTo(uomSymbol);
-		assertThat(jsonProduct.getProductCategoryId().getValue()).isEqualTo(productCategory.getM_Product_Category_ID());
+		assertThat(jsonProduct.getProductCategoryId().getValue()).isEqualTo(productCategoryId.getRepoId());
 
 		final JsonProductBPartner bpartnerProduct = Check.singleElement(jsonProduct.getBpartners());
 
 		verifyBPartnerProduct(bpartnerProduct, row);
 	}
+
+	private String extractProductValue(final @NonNull DataTableRow row)
+	{
+		return parseString(row, I_M_Product.COLUMNNAME_Value, newProductParsingContext());
+	}
+
+	private String extractProductName(final @NonNull DataTableRow row)
+	{
+		return parseString(row, I_M_Product.COLUMNNAME_Name, newProductParsingContext());
+	}
+
+	private Evaluatee newProductParsingContext()
+	{
+		final HashMap<String, String> map = new HashMap<>();
+		productTable.forEach((identifier, product) -> map.put(identifier.getAsString() + ".productName", product.getName()));
+		return Evaluatees.ofMap(map);
+	}
+
+	private String parseString(final @NonNull DataTableRow row, final String columnName, final Evaluatee context)
+	{
+		return StringExpressionCompiler.instance.compile(row.getAsString(columnName))
+				.evaluate(context, IExpressionEvaluator.OnVariableNotFound.Fail);
+	}
+
 }

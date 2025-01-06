@@ -258,7 +258,7 @@ public class ModelToIndexEnqueueProcessor
 		final FTSConfig config = configAndEvents.getConfig();
 		createESIndex(config, configAndEvents.isDeleteIndexFirst());
 
-		final List<FTSModelIndexer> indexers = getModelIndexers(configAndEvents);
+		final ImmutableSet<FTSModelIndexer> indexers = getModelIndexers(configAndEvents);
 		if (indexers.isEmpty())
 		{
 			logger.warn("No indexers found found for {}. Discarding all events.", configAndEvents);
@@ -278,7 +278,7 @@ public class ModelToIndexEnqueueProcessor
 		addDocumentsToIndex(config, chunks);
 	}
 
-	private List<FTSModelIndexer> getModelIndexers(final ConfigAndEvents configAndEvents)
+	private ImmutableSet<FTSModelIndexer> getModelIndexers(final ConfigAndEvents configAndEvents)
 	{
 		return indexersRegistry.getBySourceTableNames(configAndEvents.getSourceTableNames());
 	}

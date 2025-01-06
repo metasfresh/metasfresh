@@ -1430,29 +1430,6 @@ public interface I_M_Product
 	String COLUMNNAME_LongTextDescription = "LongTextDescription";
 
 	/**
-	 * Set Low Level.
-	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLowLevel (int LowLevel);
-
-	/**
-	 * Get Low Level.
-	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLowLevel();
-
-	ModelColumn<I_M_Product, Object> COLUMN_LowLevel = new ModelColumn<>(I_M_Product.class, "LowLevel", null);
-	String COLUMNNAME_LowLevel = "LowLevel";
-
-	/**
 	 * Set Attribute Set.
 	 * Product Attribute Set
 	 *
@@ -2334,21 +2311,21 @@ public interface I_M_Product
 	 * Set Shelf Depth.
 	 * Shelf depth required
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setShelfDepth (int ShelfDepth);
+	void setShelfDepth (BigDecimal ShelfDepth);
 
 	/**
 	 * Get Shelf Depth.
 	 * Shelf depth required
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getShelfDepth();
+	BigDecimal getShelfDepth();
 
 	ModelColumn<I_M_Product, Object> COLUMN_ShelfDepth = new ModelColumn<>(I_M_Product.class, "ShelfDepth", null);
 	String COLUMNNAME_ShelfDepth = "ShelfDepth";
@@ -2380,21 +2357,21 @@ public interface I_M_Product
 	 * Set Shelf Width.
 	 * Shelf width required
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setShelfWidth (int ShelfWidth);
+	void setShelfWidth (BigDecimal ShelfWidth);
 
 	/**
 	 * Get Shelf Width.
 	 * Shelf width required
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getShelfWidth();
+	BigDecimal getShelfWidth();
 
 	ModelColumn<I_M_Product, Object> COLUMN_ShelfWidth = new ModelColumn<>(I_M_Product.class, "ShelfWidth", null);
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";
@@ -2693,4 +2670,25 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+    /**
+     * Set QRCode_Configuration_ID.
+     *
+     * <br>Type: TableDir
+     * <br>Mandatory: false
+     * <br>Virtual Column: false
+     */
+    void setQRCode_Configuration_ID(int QRCode_Configuration_ID);
+
+    /**
+     * Get QRCode_Configuration_ID.
+     *
+     * <br>Type: TableDir
+     * <br>Mandatory: false
+     * <br>Virtual Column: false
+     */
+    int getQRCode_Configuration_ID();
+
+    ModelColumn<I_M_Product, Object> COLUMN_QRCode_Configuration_ID = new ModelColumn<>(I_M_Product.class, "QRCode_Configuration_ID", null);
+    String COLUMNNAME_QRCode_Configuration_ID = "QRCode_Configuration_ID";
 }

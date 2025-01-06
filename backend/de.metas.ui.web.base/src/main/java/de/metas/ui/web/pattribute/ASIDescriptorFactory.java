@@ -27,6 +27,7 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -376,14 +377,14 @@ public class ASIDescriptorFactory
 					? field.getValueAs(IntegerLookupValue.class)
 					: field.getValueAs(StringLookupValue.class);
 
-			final int attributeValueId = field.getDescriptor().getLookupDescriptor()
+			final AttributeValueId attributeValueId = field.getDescriptor().getLookupDescriptor()
 					.orElseThrow(() -> new AdempiereException("No lookup defined for " + field))
 					.cast(ASILookupDescriptor.class)
-					.getM_AttributeValue_ID(lookupValue);
+					.getAttributeValueId(lookupValue);
 
 			ai.setValueNumber(lookupValue != null && isNumericKey ? BigDecimal.valueOf(lookupValue.getIdAsInt()) : null); // IMPORTANT: always setValueNumber before setValue because setValueNumber is overriden and set the Value string too. wtf?!
 			ai.setValue(lookupValue == null ? null : lookupValue.getIdAsString());
-			ai.setM_AttributeValue_ID(attributeValueId);
+			ai.setM_AttributeValue_ID(AttributeValueId.toRepoId(attributeValueId));
 		}
 
 		public I_M_AttributeInstance createAndSaveM_AttributeInstance(final I_M_AttributeSetInstance asiRecord, final IDocumentFieldView asiField)

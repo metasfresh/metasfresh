@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvId;
@@ -49,6 +49,16 @@ public class MatchInvoiceRepository
 		return fromRecord(record);
 	}
 
+	public I_M_MatchInv getRecordByIdOutOfTrx(@NonNull final MatchInvId matchInvId)
+		{
+			final I_M_MatchInv record = InterfaceWrapperHelper.loadOutOfTrx(matchInvId, I_M_MatchInv.class);
+			if (record == null)
+			{
+				throw new AdempiereException("No Match Invoice found for " + matchInvId);
+			}
+
+			return record;
+	}
 	public static MatchInv fromRecord(@NonNull final I_M_MatchInv record)
 	{
 		final MatchInvType type = MatchInvType.ofCode(record.getType());
@@ -65,7 +75,7 @@ public class MatchInvoiceRepository
 
 		return MatchInv.builder()
 				.id(MatchInvId.ofRepoId(record.getM_MatchInv_ID()))
-				.invoiceLineId(InvoiceLineId.ofRepoId(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
 				.inoutLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
@@ -156,9 +166,9 @@ public class MatchInvoiceRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_Type, query.getType());
 		}
-		if (query.getInvoiceLineId() != null)
+		if (query.getInvoiceAndLineId() != null)
 		{
-			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, query.getInvoiceLineId());
+			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, query.getInvoiceAndLineId());
 		}
 		if (query.getInoutId() != null)
 		{
@@ -197,9 +207,9 @@ public class MatchInvoiceRepository
 				.listIds(MatchInvId::ofRepoId);
 	}
 
-	public Set<MatchInvId> getIdsProcessedButNotPostedByInvoiceLineIds(@NonNull final Set<InvoiceLineId> invoiceLineIds)
+	public Set<MatchInvId> getIdsProcessedButNotPostedByInvoiceLineIds(@NonNull final Set<InvoiceAndLineId> invoiceAndLineIds)
 	{
-		if (invoiceLineIds.isEmpty())
+		if (invoiceAndLineIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -207,7 +217,7 @@ public class MatchInvoiceRepository
 		return queryBL
 				.createQueryBuilder(I_M_MatchInv.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
+				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceAndLineIds)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()

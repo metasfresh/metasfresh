@@ -88,6 +88,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -480,7 +481,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType, final int resultSetConcurrency)
+			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -495,9 +496,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType,
-											   final int resultSetConcurrency,
-											   final String trxName)
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -1003,10 +1004,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-							   final Object[] params,
-							   final String trxName,
-							   final int timeOut,
-							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+			final Object[] params,
+			@Nullable final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -1753,7 +1754,7 @@ public class DB
 	 * @param trxName optional Transaction Name
 	 * @return next primary key number
 	 */
-	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
+	public int getNextID(final int AD_Client_ID, @NonNull final String TableName, @Nullable final String trxName)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
@@ -1890,14 +1891,10 @@ public class DB
 
 	/**
 	 * Create SQL TO Date String from Timestamp
-	 *
-	 * @param time    Date to be converted
-	 * @param dayOnly true if time set to 00:00:00
-	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ') or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
-	public String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public String TO_DATE(@Nullable final Timestamp time, final int displayType)
 	{
-		return Database.TO_DATE(time, dayOnly);
+		return Database.TO_DATE(time, displayType);
 	}
 
 	/**
@@ -1908,7 +1905,7 @@ public class DB
 	 */
 	public String TO_DATE(final Timestamp day)
 	{
-		return TO_DATE(day, true);
+		return TO_DATE(day, DisplayType.Date);
 	}
 
 	/**
@@ -2090,7 +2087,6 @@ public class DB
 
 	/**
 	 * convenient method to close statement
-	 *
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2510,7 +2506,7 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
-					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2528,11 +2524,11 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
-													   1, // increment
-													   1, // minvalue
-													   Integer.MAX_VALUE, // maxvalue
-													   1000000, // start
-													   ITrx.TRXNAME_ThreadInherited);
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2575,7 +2571,7 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
-										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
 		}
 	}
 
@@ -2794,6 +2790,16 @@ public class DB
 	}
 
 	@NonNull
+	public static <T> ImmutableList<T> retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final Object[] sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
+		return retrieveRows(sql, sqlParamsList, loader);
+	}
+
+	@NonNull
 	public static <T> ImmutableSet<T> retrieveUniqueRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
@@ -2802,6 +2808,17 @@ public class DB
 		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
 		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
 		return rows.build();
+	}
+
+	public void forFirstRowIfAny(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer consumer)
+	{
+		retrieveFirstRowOrNull(sql, sqlParams, (rs) -> {
+			consumer.accept(rs);
+			return null;
+		});
 	}
 
 	public <T> T retrieveFirstRowOrNull(

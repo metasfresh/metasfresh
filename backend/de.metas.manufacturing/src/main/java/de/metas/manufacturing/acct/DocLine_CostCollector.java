@@ -41,9 +41,12 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		super(InterfaceWrapperHelper.getPO(cc), doc);
 
 		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
 
-		final CostCollectorType costCollectorType = doc.getCostCollectorType();
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty()
+				// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
+				.negateIf(costCollectorType.isCoOrByProductReceipt());
+
 		if (CostCollectorType.ComponentIssue.equals(costCollectorType))
 		{
 			setQty(movementQty, true); // we can see it as a sales transactions
@@ -52,7 +55,6 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		{
 			setQty(movementQty, false);
 		}
-
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 

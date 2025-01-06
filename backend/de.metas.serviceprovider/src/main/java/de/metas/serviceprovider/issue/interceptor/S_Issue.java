@@ -103,10 +103,10 @@ public class S_Issue
 
 		final UomId uomId = UomId.ofRepoId(record.getEffort_UOM_ID());
 
-		final Quantity currentInvoicableEffort = Quantitys.create(record.getInvoiceableChildEffort(), uomId)
-				.add(Quantitys.create(record.getInvoiceableEffort(), uomId));
-		final Quantity oldInvoicableEffort = Quantitys.create(oldRecord.getInvoiceableChildEffort(), uomId)
-				.add(Quantitys.create(oldRecord.getInvoiceableEffort(), uomId));
+		final Quantity currentInvoicableEffort = Quantitys.of(record.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.of(record.getInvoiceableEffort(), uomId));
+		final Quantity oldInvoicableEffort = Quantitys.of(oldRecord.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.of(oldRecord.getInvoiceableEffort(), uomId));
 
 		final HandleParentChangedRequest handleParentChangedRequest = HandleParentChangedRequest
 				.builder()

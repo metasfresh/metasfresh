@@ -79,6 +79,27 @@ public interface I_AD_Sequence_No
 	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
 	/**
+	 * Set Day.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCalendarDay (@Nullable java.lang.String CalendarDay);
+
+	/**
+	 * Get Day.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCalendarDay();
+
+	ModelColumn<I_AD_Sequence_No, Object> COLUMN_CalendarDay = new ModelColumn<>(I_AD_Sequence_No.class, "CalendarDay", null);
+	String COLUMNNAME_CalendarDay = "CalendarDay";
+
+	/**
 	 * Set Month.
 	 *
 	 * <br>Type: String

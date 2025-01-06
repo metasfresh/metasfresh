@@ -426,4 +426,24 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		return taxDAO.getChildTaxes(taxId);
 	}
+
+	@Override
+	public Tax getDefaultTax(final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getDefaultTax(taxCategoryId);
+	}
+
+
+	@NonNull
+	public Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull final String name)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
 }

@@ -70,7 +70,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		final SelectionSize selectionSize = context.getSelectionSize();
 		if (selectionSize.isNoSelection())

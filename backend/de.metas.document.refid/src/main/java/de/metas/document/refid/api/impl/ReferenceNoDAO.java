@@ -22,15 +22,6 @@ package de.metas.document.refid.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.MTable;
-import org.compiere.model.Query;
-
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -38,6 +29,14 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.MTable;
+import org.compiere.model.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public class ReferenceNoDAO extends AbstractReferenceNoDAO
 {

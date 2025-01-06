@@ -37,7 +37,7 @@ import java.math.BigDecimal;
 public class ManualInvoiceLine
 {
 	@NonNull
-	InvoiceLineId id;
+	InvoiceAndLineId id;
 
 	@NonNull
 	BigDecimal priceEntered;

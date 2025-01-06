@@ -30,8 +30,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -250,7 +250,9 @@ public class ShipmentScheduleRepository
 				.numberOfItemsForSameShipment(record.getNrOfOLCandsWithSamePOReference())
 				.deliveredQuantity(shipmentScheduleBL.getQtyDelivered(record))
 				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
-				.isProcessed(record.isProcessed());
+				.isProcessed(record.isProcessed())
+				.isClosed(record.isClosed())
+				.isDeliveryStop(record.isDeliveryStop());
 
 		if (record.getDateOrdered() != null)
 		{
@@ -293,6 +295,12 @@ public class ShipmentScheduleRepository
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
 		record.setExportStatus(shipmentSchedule.getExportStatus().getCode()); // right now this is the only mutable property
 		saveRecord(record);
+	}
+
+	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule record = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		return ofRecord(record);
 	}
 
 	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)

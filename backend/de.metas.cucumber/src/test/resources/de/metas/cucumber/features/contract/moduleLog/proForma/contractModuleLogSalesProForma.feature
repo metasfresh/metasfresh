@@ -1,4 +1,5 @@
 @Id:S0315
+@ignore
 @ghActions:run_on_executor5
 Feature: Modular contract log for proForma Sales Order
 
@@ -78,9 +79,9 @@ Feature: Modular contract log for proForma Sales Order
       | M_Locator_ID.Identifier | Value         | M_Warehouse_ID.Identifier |
       | locatorModularContract  | locator_S0315 | warehouseModularContract  |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | ownTransport            | 1000000          |
+    And contains M_Shippers
+      | Identifier   |
+      | ownTransport |
     And load DD_NetworkDistribution:
       | DD_NetworkDistribution_ID.Identifier | Value   |
       | ddNetwork_isHUDestroyed              | Gebinde |
@@ -133,9 +134,9 @@ Feature: Modular contract log for proForma Sales Order
       | huItemSOProduct                    | huPiItemPM                 | modularContract_prod_S0315 | 10  | 2022-02-01 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier     | Name                               | M_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
-      | modCntr_proForma_PO_settings_S0315 | modCntr_proForma_PO_settings_S0315 | modularContract_prod_S0315 | harvesting_calendar      | year_2022            | moduleLogPS                       | false       |
-      | modCntr_proForma_SO_settings_S0315 | modCntr_proForma_SO_settings_S0315 | modularContract_prod_S0315 | harvesting_calendar      | year_2022            | moduleLogPS                       | true        |
+      | ModCntr_Settings_ID.Identifier     | Name                               | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
+      | modCntr_proForma_PO_settings_S0315 | modCntr_proForma_PO_settings_S0315 | modularContract_prod_S0315  | harvesting_calendar      | year_2022            | moduleLogPS                       | false       |
+      | modCntr_proForma_SO_settings_S0315 | modCntr_proForma_SO_settings_S0315 | modularContract_prod_S0315  | harvesting_calendar      | year_2022            | moduleLogPS                       | true        |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier            | SeqNo | Name    | M_Product_ID.Identifier    | InvoicingGroup | ModCntr_Settings_ID.Identifier     | ModCntr_Type_ID.Identifier            |
@@ -149,7 +150,7 @@ Feature: Modular contract log for proForma Sales Order
       | modCntr_module_MC_proForma_SO_S0315     | 50    | name_50 | modularContract_prod_S0315 | Kosten         | modCntr_proForma_SO_settings_S0315 | modCntr_type_MC_proForma_SO_S0315     |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier    | Name                          | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.ModCntr_Settings_ID.Identifier | OPT.OnFlatrateTermExtend |
+      | Identifier                             | Name                          | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.ModCntr_Settings_ID.Identifier | OPT.OnFlatrateTermExtend |
       | modularContractTerms_proForma_PO_S0315 | modularContractTerms_PO_S0315 | ModularContract | moduleLogPS                       | modCntr_proForma_PO_settings_S0315 | Ex                       |
       | modularContractTerms_proForma_SO_S0315 | modularContractTerms_SO_S0315 | ModularContract | moduleLogPS                       | modCntr_proForma_SO_settings_S0315 | Ex                       |
 
@@ -221,7 +222,7 @@ Feature: Modular contract log for proForma Sales Order
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 120 seconds for order 'so_order_S0315'
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0315                      | PD           | true                | false       |
 

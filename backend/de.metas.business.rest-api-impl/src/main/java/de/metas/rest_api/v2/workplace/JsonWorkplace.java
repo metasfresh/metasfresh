@@ -37,6 +37,7 @@ public class JsonWorkplace
 {
 	@NonNull WorkplaceId id;
 	@NonNull String name;
+	@NonNull String qrCode;
 	@Nullable String warehouseName;
 	boolean isUserAssigned;
 }

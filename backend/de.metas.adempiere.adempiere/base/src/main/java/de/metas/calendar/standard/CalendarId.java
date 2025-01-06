@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 public class CalendarId implements RepoIdAware
 {
 	int repoId;
-
+	
 	@JsonCreator
 	public static CalendarId ofRepoId(final int repoId)
 	{

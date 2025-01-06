@@ -24,11 +24,13 @@ package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -137,7 +139,7 @@ public class InvoiceCandidateRepository
 				icRecord.setC_Harvesting_Calendar_ID(harvestYearAndCalendarId.calendarId().getRepoId());
 				icRecord.setHarvesting_Year_ID(harvestYearAndCalendarId.yearId().getRepoId());
 			}
-			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
+			icRecord.setModCntr_Settings_ID(ModularContractSettingsId.toRepoId(ic.getModularContractSettingsId()));
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
@@ -151,14 +153,15 @@ public class InvoiceCandidateRepository
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
 
-
 		final BigDecimal discountOverride = ic.getDiscountOverride() != null ? ic.getDiscountOverride().toBigDecimal() : null;
 		icRecord.setDiscount_Override(discountOverride);
-
+		icRecord.setProcessed(ic.isProcessed());
+		icRecord.setIsActive(ic.isActive());
+		icRecord.setIsTaxIncluded(ic.isTaxIncluded());
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
-			final Quantity oneUnitInPriceUom = Quantitys.create(ONE, priceEnteredOverride.getUomId());
+			final Quantity oneUnitInPriceUom = Quantitys.of(ONE, priceEnteredOverride.getUomId());
 
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(icRecord.getM_Product_ID());
 			final UomId icRecordUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
@@ -202,6 +205,14 @@ public class InvoiceCandidateRepository
 		}
 
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
+
+		icRecord.setOrg_BP_Account_ID(BankAccountId.toRepoId(ic.getBankAccountId()));
+
+		// avoid bad Fallback based on random pick of conversion UOMs via autoAppliedValidationRule, if not set
+		if(UomId.ofRepoIdOrNull(icRecord.getPrice_UOM_ID()) == null && UomId.ofRepoIdOrNull(icRecord.getC_UOM_ID()) != null)
+		{
+			icRecord.setPrice_UOM_ID(icRecord.getC_UOM_ID());
+		}
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -344,10 +355,13 @@ public class InvoiceCandidateRepository
 
 		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 		candidate.isManual(icRecord.isManual());
-		candidate.isInterimInvoice(icRecord.isInterimInvoice());
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
+		candidate.modularContractSettingsId(ModularContractSettingsId.ofRepoIdOrNull(icRecord.getModCntr_Settings_ID()));
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
+		candidate.isActive(icRecord.isActive());
+		candidate.processed(icRecord.isProcessed());
+		candidate.taxIncluded(icRecord.isTaxIncluded());
 		return candidate.build();
 	}
 
@@ -381,6 +395,9 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setQty(Quantity.toBigDecimal(invoiceDetailItem.getQty()));
+		invoiceDetailEntity.setC_UOM_ID(Quantity.toUomRepoId(invoiceDetailItem.getQty()));
+
 		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;

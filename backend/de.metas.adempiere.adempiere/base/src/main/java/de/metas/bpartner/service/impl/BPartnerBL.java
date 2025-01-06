@@ -19,6 +19,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -228,6 +229,14 @@ public class BPartnerBL implements IBPartnerBL
 				continue;
 			}
 
+			final boolean isInvoiceEmailEnabled = Optional.ofNullable(contactRecord.getIsInvoiceEmailEnabled())
+					.map(StringUtils::toBoolean)
+					.orElse(false);
+			if (request.isOnlyIfInvoiceEmailEnabled() && !isInvoiceEmailEnabled)
+			{
+				continue;
+			}
+
 			final User contact = userRepository.ofRecord(contactRecord);
 			if (!request.getFilter().test(contact))
 			{
@@ -377,6 +386,14 @@ public class BPartnerBL implements IBPartnerBL
 			updateAddressNoSave(bpLocation, bpartner);
 			bpartnersRepo.save(bpLocation);
 		}
+	}
+
+	@Override
+	public void updateMemo(final @NonNull BPartnerId bpartnerId, final String memo)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		bpartner.setMemo(memo);
+		bpartnersRepo.save(bpartner);
 	}
 
 	@Override
@@ -885,5 +902,12 @@ public class BPartnerBL implements IBPartnerBL
 																				  .type(type)
 																				  .bpartnerId(bPartnerId)
 																				  .build()));
+	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId);
 	}
 }

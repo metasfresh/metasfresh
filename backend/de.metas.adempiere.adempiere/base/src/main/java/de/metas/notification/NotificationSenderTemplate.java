@@ -3,13 +3,13 @@ package de.metas.notification;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -20,7 +20,6 @@ import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
-import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -37,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -94,7 +93,6 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
 	final UserNotificationsConfigService userNotificationsConfigService = SpringContextHolder.instance.getBean(UserNotificationsConfigService.class);
@@ -308,13 +306,10 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord())
+				.checkRecordPresentInWindow()
+				.findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -464,31 +459,32 @@ public class NotificationSenderTemplate
 	private void sendMail(final UserNotificationRequest request)
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
-		final Mailbox mailbox = findMailbox(notificationsConfig);
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
 		final String subject = extractMailSubject(request);
 
-		final EMail mail = mailService.createEMail(
-				mailbox,
-				notificationsConfig.getEmail(),
-				subject,
-				content,
-				html);
-		request.getAttachments().forEach(mail::addAttachment);
-		mailService.send(mail);
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.to(notificationsConfig.getEmail())
+				.subject(subject)
+				.message(content)
+				.html(html)
+				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
+				.build());
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
-		return mailService.findMailBox(
-				tenantEmailConfig,
-				notificationsConfig.getOrgId(),
-				(AdProcessId)null,  // AD_Process_ID
-				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				notificationsConfig.getEMailCustomType());  // customType
+		return mailService.findMailbox(mailboxQuery(notificationsConfig));
+	}
+
+	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)
+	{
+		return MailboxQuery.builder()
+				.clientId(notificationsConfig.getClientId())
+				.orgId(notificationsConfig.getOrgId())
+				.build();
 	}
 
 	@VisibleForTesting

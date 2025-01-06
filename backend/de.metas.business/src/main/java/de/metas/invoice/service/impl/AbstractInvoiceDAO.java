@@ -11,24 +11,27 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceMultiQuery;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -136,7 +139,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	public I_C_InvoiceLine retrieveLineById(final InvoiceAndLineId invoiceAndLineId)
+	{
+		return load(invoiceAndLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public I_C_InvoiceLine retrieveLineById(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return load(invoiceLineId, I_C_InvoiceLine.class);
 	}
@@ -184,18 +193,24 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getByIdInTrx(invoiceId);
-		final BigDecimal openAmt = retrieveOpenAmt(invoice);
-
-		final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
-		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		return Amount.of(openAmt, currencyCode);
+		return retrieveOpenAmt(invoice, true);
 	}
 
 	@Override
-	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+		return allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
+	}
+
+	@Override
+	public Amount retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted)
+	{
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+		final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+
+		final Money openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted);
+		return openAmt.toAmount(currencyRepository::getCurrencyCodeById);
 	}
 
 	@Override
@@ -406,7 +421,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice)
+	public boolean isReferencedInvoiceReversed(@NonNull final I_C_Invoice invoice)
 	{
 		final org.compiere.model.I_C_Invoice referencedInvoice = getReferencedInvoice(invoice);
 		final DocStatus originalInvoiceDocStatus;
@@ -422,7 +437,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Nullable
-	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
+	private org.compiere.model.I_C_Invoice getReferencedInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
@@ -490,9 +505,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
+	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
-		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+		return loadOutOfTrx(invoiceAndLineId, I_C_InvoiceLine.class);
 	}
 
 	@Override
@@ -516,17 +531,17 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)
+	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		final IQueryBL queryBL = this.queryBL;
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceAndLineId)
 				.create()
 				.list();
 	}
 
 	@NonNull
-	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final SingleInvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
 		{
@@ -580,18 +595,22 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final SingleInvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 		final DocBaseType docBaseType = docType.getDocBaseType();
-		final String docSubType = docType.getDocSubType();
+		final DocSubType docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-		if (Check.isNotBlank(docSubType))
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
 		{
 			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
@@ -608,7 +627,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final SingleInvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -668,13 +687,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id)
+	public Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceLineId.ofRepoId(id, lineId));
+				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)
@@ -783,4 +802,67 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.iterateAndStream();
 	}
+
+	@Override
+	public ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull final InvoiceMultiQuery multiQuery)
+	{
+		return toSqlQuery(multiQuery).listIds(InvoiceId::ofRepoId);
+	}
+
+	public IQuery<I_C_Invoice> toSqlQuery(@NonNull final InvoiceMultiQuery multiQuery)
+	{
+		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter();
+
+		final ICompositeQueryFilter<I_C_Invoice> filters = queryBuilder.addCompositeQueryFilter().setJoinOr();
+
+		for (final InvoiceQuery query : multiQuery.getQueries())
+		{
+			IQueryFilter<I_C_Invoice> sqlQueryFilter = toSqlQueryFilter(query);
+			filters.addFilter(sqlQueryFilter);
+		}
+
+		return queryBuilder.create();
+	}
+
+	public IQueryFilter<I_C_Invoice> toSqlQueryFilter(@NonNull final InvoiceQuery query)
+	{
+		final ICompositeQueryFilter<I_C_Invoice> queryFilter = queryBL.createCompositeQueryFilter(I_C_Invoice.class);
+
+		if (!query.getInvoiceIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceIds());
+		}
+		if (!query.getBpartnerIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, query.getBpartnerIds());
+		}
+		if (!query.getBpartnerLocationRepoIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, query.getBpartnerLocationRepoIds());
+		}
+		if (!query.getBpartnerContactRepoIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_AD_User_ID, query.getBpartnerContactRepoIds());
+		}
+		if (!query.getWarehouseIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
+		}
+		if (!query.getDocTypeIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, query.getDocTypeIds());
+		}
+		if (!query.getCalendarIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID, query.getCalendarIds());
+		}
+		if (!query.getYearIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_Harvesting_Year_ID, query.getYearIds());
+		}
+
+		return queryFilter;
+	}
+
 }

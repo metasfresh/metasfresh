@@ -17,13 +17,17 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
@@ -154,9 +158,13 @@ public abstract class AbstractFlatrateTermTest
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
+
+		SpringContextHolder.registerJUnitBean(ModularContractLogService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ModularContractService.newInstanceForJUnitTesting());
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 
@@ -272,7 +280,7 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
-		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
+		docType.setDocSubType(DocSubType.Subscription.getCode());
 		docType.setDocBaseType(DocBaseType.CustomerContract.getCode());
 		save(docType);
 	}
@@ -395,8 +403,8 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(),
-																											bpLocation.getC_BPartner_Location_ID(),
-																											bpLocation.getC_Location_ID());
+				bpLocation.getC_BPartner_Location_ID(),
+				bpLocation.getC_Location_ID());
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID());
 

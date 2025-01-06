@@ -1,10 +1,7 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import de.metas.bpartner.BPartnerId;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -12,6 +9,8 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
@@ -94,7 +93,7 @@ public class AvailableToPromiseRepositoryTest
 	}
 
 	/**
-	 * The stock record without bpartnerId is created first, but it's date is after the one with bPartnerId.
+	 * The stock record without bpartnerId is created first, but its date is after the one with bPartnerId.
 	 * So its Qty is not contained in the stock record with bpartner; therefore we count both
 	 */
 	@Test
@@ -115,7 +114,7 @@ public class AvailableToPromiseRepositoryTest
 
 	/**
 	 * The stock record without bpartnerId is created first, so it's qty is already included in the stock record with bpartner.
-	 * Therefore we only count the stock record with bpartner.
+	 * Therefore, we only count the stock record with bpartner.
 	 */
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor_3()
@@ -151,9 +150,9 @@ public class AvailableToPromiseRepositoryTest
 	}
 
 	/**
-	 * The stock record "for any bpartner" is created first, but it's date is after the one with {@code BPARTNER_ID}.
+	 * The stock record "for any bpartner" is created first, but its date is after the one with {@code BPARTNER_ID}.
 	 * So its qty is not contained within the stock record with {@code {@code BPARTNER_ID}}.
-	 * Therefore for {@code BPARTNER_ID} we count both.
+	 * Therefore, for {@code BPARTNER_ID} we count both.
 	 * However, for {@code BPARTNER_ID + 10}, we do not count the "for any bpartner"-record, because it's assumed to be included in {@code BPARTNER_ID + 10}'s record.
 	 */
 	@Test
@@ -174,36 +173,29 @@ public class AvailableToPromiseRepositoryTest
 		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_BEFORE_NOW);
 		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW);
 
-		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
-				.builder()
-				.addToPredefinedBuckets(addToPredefinedBuckets);
-
-		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
-				.builder()
-				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
-				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
+		final AvailableToPromiseMultiQuery multiQuery = AvailableToPromiseMultiQuery.builder()
+				.addToPredefinedBuckets(addToPredefinedBuckets)
+				.query(AvailableToPromiseQuery
+						.builder()
+						.productId(PRODUCT_ID)
+						.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+						.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
+						.build())
+				.query(AvailableToPromiseQuery
+						.builder()
+						.productId(PRODUCT_ID)
+						.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+						.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
+						.build())
 				.build();
-		multiQueryBuilder.query(query1);
 
-		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
-				.builder()
-				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
-				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
-				.build();
-		multiQueryBuilder.query(query2);
-
-		final AvailableToPromiseMultiQuery multipQuery = multiQueryBuilder.build();
-
-		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multipQuery);
+		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multiQuery);
 
 		assertThat(result).isNotNull();
 
 		final List<AvailableToPromiseResultGroup> resultGroups = result.getResultGroups();
-		assertThat(resultGroups).hasSize(2);
-
 		assertThat(resultGroups)
+				.hasSize(2)
 				.allSatisfy(group -> assertThat(group.getProductId().getRepoId()).isEqualTo(PRODUCT_ID));
 
 		assertThat(resultGroups)
@@ -220,8 +212,7 @@ public class AvailableToPromiseRepositoryTest
 	@Test
 	public void retrieveAvailableStock_differentStorageAttributesKeys_addToPredefinedBuckets()
 	{
-		boolean addToPredefinedBuckets = true;
-		final AvailableToPromiseMultiQuery multiQuery = retrieveAvailableStock_differentStorageAttributesKeys_performTest(addToPredefinedBuckets);
+		final AvailableToPromiseMultiQuery multiQuery = retrieveAvailableStock_differentStorageAttributesKeys_performTest(true);
 
 		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multiQuery);
 		assertThat(result.getResultGroups()).hasSize(1); // there is just one predefined bucket
@@ -229,7 +220,7 @@ public class AvailableToPromiseRepositoryTest
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/4342
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/4342">task</a>
 	 */
 	@Test
 	public void retrieveAvailableStock_differentStorageAttributesKeys_doNot_addToPredefinedBuckets()
@@ -249,15 +240,13 @@ public class AvailableToPromiseRepositoryTest
 		createStockRecordWithProduct(PRODUCT_ID, AttributesKey.ofAttributeValueIds(1000000), BEFORE_NOW);
 		createStockRecordWithProduct(PRODUCT_ID, AttributesKey.ofAttributeValueIds(1000007), BEFORE_NOW);
 
-		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
-				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1)) // shall not matter since all 3 records are not assigned to a particular customer
-				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
-				.build();
-
 		final AvailableToPromiseMultiQuery multiQuery = AvailableToPromiseMultiQuery.builder()
 				.addToPredefinedBuckets(addToPredefinedBuckets)
-				.query(query)
+				.query(AvailableToPromiseQuery.builder()
+						.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1)) // shall not matter since all 3 records are not assigned to a particular customer
+						.productId(PRODUCT_ID)
+						.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
+						.build())
 				.build();
 
 		final BigDecimal resultQtySum = availableToPromiseRepository.retrieveAvailableStockQtySum(multiQuery);
@@ -268,26 +257,21 @@ public class AvailableToPromiseRepositoryTest
 
 	private int seqNoCounter = 1; // we start with one, because 0 is not considered valid by the code under test
 
-	private I_MD_Candidate_ATP_QueryResult createStockRecordWithBPartner(
-			final BPartnerId bpartnerId,
-			final Instant dateProjected)
+	private void createStockRecordWithBPartner(final BPartnerId bpartnerId, final Instant dateProjected)
 	{
-		final int productId = PRODUCT_ID;
-		final AttributesKey storgateAttributesKey = STORAGE_ATTRIBUTES_KEY;
-
-		return createStockRecord(bpartnerId, productId, storgateAttributesKey, dateProjected);
+		createStockRecord(bpartnerId, PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, dateProjected);
 	}
 
-	private I_MD_Candidate_ATP_QueryResult createStockRecordWithProduct(
+	@SuppressWarnings("SameParameterValue")
+	private void createStockRecordWithProduct(
 			final int productId,
 			final AttributesKey storgateAttributesKey,
 			final Instant dateProjected)
 	{
-		final BPartnerId bpartnerId = null;
-		return createStockRecord(bpartnerId, productId, storgateAttributesKey, dateProjected);
+		createStockRecord(null, productId, storgateAttributesKey, dateProjected);
 	}
 
-	private I_MD_Candidate_ATP_QueryResult createStockRecord(
+	private void createStockRecord(
 			final BPartnerId bpartnerId,
 			final int productId,
 			final AttributesKey storgateAttributesKey,
@@ -313,7 +297,6 @@ public class AvailableToPromiseRepositoryTest
 
 		seqNoCounter++;
 
-		return viewRecord;
 	}
 
 	private MaterialDescriptor createMaterialDescriptor()
@@ -321,16 +304,12 @@ public class AvailableToPromiseRepositoryTest
 		return createMaterialDescriptor(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private MaterialDescriptor createMaterialDescriptor(final int productId, final AttributesKey storageAttributesKey)
 	{
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
-				productId,
-				storageAttributesKey,
-				ATTRIBUTE_SET_INSTANCE_ID);
-		final MaterialDescriptor materialDescriptor = EventTestHelper
-				.createMaterialDescriptor()
+		return EventTestHelper
+				.newMaterialDescriptor()
 				.withCustomerId(BPARTNER_ID_1)
-				.withProductDescriptor(productDescriptor);
-		return materialDescriptor;
+				.withProductDescriptor(ProductDescriptor.forProductAndAttributes(productId, storageAttributesKey, ATTRIBUTE_SET_INSTANCE_ID));
 	}
 }

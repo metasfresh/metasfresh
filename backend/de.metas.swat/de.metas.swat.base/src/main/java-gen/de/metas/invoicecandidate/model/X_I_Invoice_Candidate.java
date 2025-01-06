@@ -35,7 +35,7 @@ import java.util.Properties;
 public class X_I_Invoice_Candidate extends org.compiere.model.PO implements I_I_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2034228383L;
+	private static final long serialVersionUID = -1945906708L;
 
     /** Standard Constructor */
     public X_I_Invoice_Candidate (final Properties ctx, final int I_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -916,5 +916,32 @@ public class X_I_Invoice_Candidate extends org.compiere.model.PO implements I_I_
 	public String getX12DE355()
 	{
 		return get_ValueAsString(COLUMNNAME_X12DE355);
+	}
+
+	@Override
+	public void setM_PriceList_Version_ID (final int M_PriceList_Version_ID)
+	{
+		if (M_PriceList_Version_ID < 1)
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
+		else
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, M_PriceList_Version_ID);
+	}
+
+	@Override
+	public int getM_PriceList_Version_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_PriceList_Version_ID);
+	}
+
+	@Override
+	public void setM_PriceList_Version_Name (final @Nullable String M_PriceList_Version_Name)
+	{
+		set_Value (COLUMNNAME_M_PriceList_Version_Name, M_PriceList_Version_Name);
+	}
+
+	@Override
+	public String getM_PriceList_Version_Name()
+	{
+		return get_ValueAsString(COLUMNNAME_M_PriceList_Version_Name);
 	}
 }

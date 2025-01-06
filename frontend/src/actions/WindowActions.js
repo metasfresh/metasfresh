@@ -49,6 +49,7 @@ import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import {
   getInvalidDataItem,
   getScope,
+  parseItemToDisplay,
   parseToDisplay,
 } from '../utils/documentListHelper';
 
@@ -74,11 +75,13 @@ import {
 } from './CommentsPanelActions';
 import {
   createTabTable,
+  partialUpdateGridTableRows,
   updateTableRowProperty,
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 import { getPrintFile, getPrintUrl } from '../api/window';
+import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -279,10 +282,12 @@ export function clearMasterData() {
   };
 }
 
-export function sortTab(scope, tabId, field, asc) {
+export function sortTab({ scope, windowId, docId, tabId, field, asc }) {
   return {
     type: SORT_TAB,
     scope,
+    windowId,
+    docId,
     tabId,
     field,
     asc,
@@ -415,14 +420,16 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
     const tableId = getTableId({ windowId, tabId, docId });
     dispatch(updateTabTable({ tableId, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
-      .then((response) => {
-        const tableData = { result: response };
-
+      .then(({ rows, orderBys }) => {
         dispatch(
-          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+          updateTabTable({
+            tableId,
+            tableResponse: { result: rows, orderBys },
+            pending: false,
+          })
         );
 
-        return Promise.resolve(response);
+        return rows;
       })
       .catch((error) => {
         //show error message ?
@@ -908,6 +915,23 @@ export function patch(
 
     await dispatch({ type: PATCH_REQUEST, symbol, options });
 
+    //
+    // Update the state with the new property value
+    // In case the PATCH fails on server side, we will update the state again
+    await dispatch(
+      updatePropertyValue({
+        entity,
+        windowId: windowType,
+        docId: id,
+        tabId,
+        rowId,
+        property,
+        value,
+        isModal,
+        disconnected,
+      })
+    );
+
     try {
       const response = await patchRequest(options);
       const data =
@@ -974,30 +998,63 @@ export function patch(
     } catch (error) {
       await dispatch({ type: PATCH_FAILURE, symbol });
 
-      const response = await getData({
-        entity: entity,
-        docType: windowType,
-        docId: id,
-        tabId: tabId,
-        rowId: rowId,
-        fetchAdvancedFields: isAdvanced,
-        viewId: viewId,
-      });
-
+      // Restore the state by fetching it from server
       await dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          id,
+        updateDataFromServer({
+          dispatch,
+          entity,
           windowType,
+          id,
+          tabId,
+          rowId,
           isAdvanced,
+          viewId,
+          isModal,
           disconnected,
         })
       );
+
+      // Propagate the exception, so callers are aware that something went wrong.
+      throw error;
     }
   };
 }
+
+const updateDataFromServer = ({
+  entity,
+  windowType,
+  id,
+  tabId,
+  rowId,
+  isAdvanced,
+  viewId,
+  isModal,
+  disconnected,
+}) => {
+  return async (dispatch) => {
+    const response = await getData({
+      entity: entity,
+      docType: windowType,
+      docId: id,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: isAdvanced,
+      viewId: viewId,
+    });
+
+    await dispatch(
+      mapDataToState({
+        data: response.data,
+        isModal,
+        rowId,
+        id,
+        windowType,
+        isAdvanced,
+        disconnected,
+      })
+    );
+  };
+};
 
 export function fireUpdateData({
   windowId,
@@ -1060,26 +1117,51 @@ function updateData(doc, scope) {
 }
 
 function mapDataToState({ data, isModal, rowId, disconnected }) {
+  const isNewRow = rowId === 'NEW';
+
   return (dispatch) => {
+    if (disconnected === 'inlineTab') {
+      // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+      // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+      return;
+    }
+
     const dataArray = typeof data.splice === 'function' ? data : [data];
+    const rowsToUpdateByTableId = {};
 
-    dataArray.map((item, index) => {
-      const parsedItem = item.fieldsByName
-        ? {
-            ...item,
-            fieldsByName: parseToDisplay(item.fieldsByName),
-          }
-        : item;
+    dataArray.forEach((item, index) => {
+      const isFirstItem = index === 0;
+      const isRow = !!item.rowId;
 
-      if (
-        !(index === 0 && rowId === 'NEW') &&
-        (!item.rowId || (isModal && item.rowId))
-      ) {
-        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
-        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
-        disconnected !== 'inlineTab' &&
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+      if (isNewRow && isFirstItem) {
+        //
+      } else if (!isRow || (isModal && isRow)) {
+        const parsedItem = parseItemToDisplay({ item });
+        dispatch(updateData(parsedItem, getScope(isModal && isFirstItem)));
       }
+
+      if (isRow) {
+        const tableId = getTableId({
+          windowId: item.windowId,
+          docId: item.id,
+          tabId: item.tabId,
+        });
+
+        if (!rowsToUpdateByTableId[tableId]) {
+          rowsToUpdateByTableId[tableId] = [];
+        }
+
+        rowsToUpdateByTableId[tableId].push(item);
+      }
+    });
+
+    Object.keys(rowsToUpdateByTableId).forEach((tableId) => {
+      dispatch(
+        partialUpdateGridTableRows({
+          tableId,
+          rowsToUpdate: rowsToUpdateByTableId[tableId],
+        })
+      );
     });
   };
 }
@@ -1142,7 +1224,9 @@ export function updatePropertyValue({
         return false;
       }
 
-      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      if (tableId) {
+        dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      }
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`
       if (!isModal) {
@@ -1283,6 +1367,15 @@ export function openPrintingOptionsModal({
     viewDocumentIds: [documentNo],
     dataId: documentId,
     staticModalType: 'printing',
+  });
+}
+
+export function openSelectCurrentWorkplaceModal() {
+  return openModal({
+    title: counterpart.translate('userDropdown.changeWorkplace.caption'),
+    windowId: 'selectCurrentWorkplace',
+    modalType: 'static',
+    staticModalType: STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
   });
 }
 

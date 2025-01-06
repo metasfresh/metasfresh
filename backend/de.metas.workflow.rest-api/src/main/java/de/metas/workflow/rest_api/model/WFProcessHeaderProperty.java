@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Value
@@ -54,6 +55,12 @@ public class WFProcessHeaderProperty
 		public WFProcessHeaderPropertyBuilder value(final ZonedDateTime value)
 		{
 			return value(TranslatableStrings.dateAndTime(value));
+		}
+
+		@NonNull
+		public WFProcessHeaderPropertyBuilder value(@NonNull final LocalDate value)
+		{
+			return value(TranslatableStrings.date(value));
 		}
 
 		public WFProcessHeaderPropertyBuilder value(final int value)

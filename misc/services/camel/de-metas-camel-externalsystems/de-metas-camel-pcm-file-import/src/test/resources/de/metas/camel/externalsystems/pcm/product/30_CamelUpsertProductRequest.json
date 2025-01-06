@@ -1,0 +1,91 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestProductUpsert": {
+    "requestItems": [
+      {
+        "productIdentifier": "ext-ProCareManagement-productIdentifier",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "requestProduct": {
+          "code": "productValue_bpartnerIdentifier_2",
+          "codeSet": true,
+          "name": "productName",
+          "nameSet": true,
+          "type": "ITEM",
+          "typeSet": true,
+          "uomCode": "PCE",
+          "uomCodeSet": true,
+          "ean": null,
+          "eanSet": false,
+          "gtin": null,
+          "gtinSet": false,
+          "description": null,
+          "descriptionSet": true,
+          "discontinued": null,
+          "discontinuedSet": false,
+          "discontinuedFrom": null,
+          "discontinuedFromSet": false,
+          "active": null,
+          "activeSet": false,
+          "stocked": null,
+          "stockedSet": false,
+          "productCategoryIdentifier": null,
+          "productCategoryIdentifierSet": false,
+          "syncAdvise": null,
+          "bpartnerProductItems": [
+            {
+              "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_2",
+              "bpartnerSet": true,
+              "active": null,
+              "activeSet": false,
+              "seqNo": null,
+              "seqNoSet": false,
+              "productNo": "productValue",
+              "productNoSet": true,
+              "description": null,
+              "descriptionSet": true,
+              "cuEAN": null,
+              "cuEANSet": true,
+              "gtin": null,
+              "gtinSet": false,
+              "customerLabelName": null,
+              "customerLabelNameSet": false,
+              "ingredients": null,
+              "ingredientsSet": false,
+              "currentVendor": true,
+              "currentVendorSet": true,
+              "excludedFromSales": null,
+              "excludedFromSalesSet": false,
+              "exclusionFromSalesReason": null,
+              "exclusionFromSalesReasonSet": false,
+              "dropShip": null,
+              "dropShipSet": false,
+              "usedForVendor": null,
+              "usedForVendorSet": false,
+              "excludedFromPurchase": null,
+              "excludedFromPurchaseSet": false,
+              "exclusionFromPurchaseReason": null,
+              "exclusionFromPurchaseReasonSet": false
+            }
+          ],
+          "productTaxCategories": null,
+          "uomConversions": [
+            {
+              "fromUomCode": "PCE",
+              "toUomCode": "LTR",
+              "fromToMultiplier": 0.2,
+              "fromToMultiplierSet": true,
+              "catchUOMForProduct": null,
+              "catchUOMForProductSet": false
+            }
+          ]
+        },
+        "externalSystemConfigId": 1
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

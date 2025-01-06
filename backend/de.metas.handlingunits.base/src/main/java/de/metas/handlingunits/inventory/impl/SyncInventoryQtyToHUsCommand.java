@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inventory.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -29,6 +30,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -79,6 +81,7 @@ public class SyncInventoryQtyToHUsCommand
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
+	private final HUQRCodesService huQRCodesService;
 
 	private final Inventory inventory;
 
@@ -87,12 +90,14 @@ public class SyncInventoryQtyToHUsCommand
 	@Builder
 	private SyncInventoryQtyToHUsCommand(
 			@NonNull final InventoryRepository inventoryRepository,
-			@NonNull final SourceHUsService sourceHUsService,
+			@NonNull final SourceHUsService sourceHUsService, 
+			@NonNull final HUQRCodesService huQRCodesService,
 			//
 			@NonNull final Inventory inventory)
 	{
 		this.inventoryRepository = inventoryRepository;
 		this.sourceHUsService = sourceHUsService;
+		this.huQRCodesService = huQRCodesService;
 		this.inventory = inventory;
 	}
 
@@ -101,7 +106,8 @@ public class SyncInventoryQtyToHUsCommand
 		for (final InventoryLine inventoryLine : inventory.getLines())
 		{
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
-			if (qtyDiff.signum() == 0)
+			if (qtyDiff.signum() == 0
+					|| (inventoryLine.getQtyBookFixed().signum() < 0 && inventoryLine.getQtyCountFixed().signum() == 0))
 			{
 				continue;
 			}
@@ -208,7 +214,9 @@ public class SyncInventoryQtyToHUsCommand
 
 		final InventoryLine resultInventoryLine = inventoryLine.withInventoryLineHUs(resultInventoryLineHUs);
 
-		if (!Objects.equals(inventoryLine, resultInventoryLine))
+		if (!Objects.equals(inventoryLine, resultInventoryLine)
+				&& inventoryLine.getQtyCountFixed().equals(resultInventoryLine.getQtyCount()) // do not adjust quantity in inventory line
+		)
 		{
 			inventoryRepository.saveInventoryLine(resultInventoryLine, inventory.getId());
 		}
@@ -244,18 +252,7 @@ public class SyncInventoryQtyToHUsCommand
 					new PlainProductStorage(productId, qtyToTransfer),
 					inventoryLineRecord);
 
-			if (inventoryLineHU.getHuId() == null)
-			{
-				// TODO handle when inventoryLine.getM_HU_PI_Item_Product_ID() is set
-				destination = HUProducerDestination.ofVirtualPI()
-						.setHUStatus(X_M_HU.HUSTATUS_Active)
-						.setLocatorId(inventoryLine.getLocatorId());
-			}
-			else
-			{
-				final I_M_HU hu = handlingUnitsDAO.getById(inventoryLineHU.getHuId());
-				destination = HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
-			}
+			destination = createAllocationDestination(inventoryLine, inventoryLineHU);
 		}
 		//
 		// Case: HU has more than counted
@@ -301,6 +298,10 @@ public class SyncInventoryQtyToHUsCommand
 		if (inventoryLineHU.getHuId() == null)
 		{
 			final HuId createdHUId = extractSingleCreatedHUId(destination);
+			if(inventoryLineHU.getHuQRCode() != null)
+			{
+				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), ImmutableSet.of(createdHUId));
+			}
 
 			sourceHUsService.addSourceHUMarkerIfCarringComponents(
 					createdHUId,
@@ -312,6 +313,31 @@ public class SyncInventoryQtyToHUsCommand
 		else
 		{
 			return inventoryLineHU;
+		}
+	}
+
+	private IAllocationDestination createAllocationDestination(final @NonNull InventoryLine inventoryLine, final @NonNull InventoryLineHU inventoryLineHU)
+	{
+		if (inventoryLineHU.getHuId() == null)
+		{
+			if (inventoryLineHU.getHuQRCode() != null)
+			{
+				return HUProducerDestination.of(inventoryLineHU.getHuQRCode().getPackingInstructionsId())
+						.setHUStatus(X_M_HU.HUSTATUS_Active)
+						.setLocatorId(inventoryLine.getLocatorId());
+			}
+			else
+			{
+				// TODO use inventoryLine.getM_HU_PI_Item_Product_ID() if set
+				return HUProducerDestination.ofVirtualPI()
+						.setHUStatus(X_M_HU.HUSTATUS_Active)
+						.setLocatorId(inventoryLine.getLocatorId());
+			}
+		}
+		else
+		{
+			final I_M_HU hu = handlingUnitsDAO.getById(inventoryLineHU.getHuId());
+			return HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
 		}
 	}
 

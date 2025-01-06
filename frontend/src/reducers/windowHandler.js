@@ -6,35 +6,44 @@ import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
+  CLOSE_FILTER_BOX,
   CLOSE_MODAL,
   CLOSE_PLUGIN_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
-  CLOSE_FILTER_BOX,
-  TOP_ACTIONS_DELETE,
-  DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  TOP_ACTIONS_LOADING,
-  TOP_ACTIONS_FAILURE,
-  TOP_ACTIONS_SUCCESS,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
-  OPEN_FILTER_BOX,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_RESET,
   PATCH_SUCCESS,
+  RESET_PRINTING_OPTIONS,
+  SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_ITEM_PROP,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_WRAPPER_DATA,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
+  TOP_ACTIONS_DELETE,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_SUCCESS,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -42,21 +51,12 @@ import {
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
   UPDATE_INLINE_TAB_DATA,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-  SET_PRINTING_OPTIONS,
-  RESET_PRINTING_OPTIONS,
-  TOGGLE_PRINTING_OPTION,
-  SET_INLINE_TAB_LAYOUT_AND_DATA,
-  SET_INLINE_TAB_WRAPPER_DATA,
-  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
-  UPDATE_INLINE_TAB_ITEM_FIELDS,
-  SET_INLINE_TAB_ADD_NEW,
-  SET_INLINE_TAB_SHOW_MORE,
-  SET_INLINE_TAB_ITEM_PROP,
-  SET_SPINNER,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -156,20 +156,22 @@ export const initialState = {
  * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
-
-  return state.windowHandler[selector].data;
+  return getLayoutAndData(state, isModal).data;
 };
 
 export const getElementLayout = (state, isModal, layoutPath) => {
-  const selector = isModal ? 'modal' : 'master';
-  const layout = state.windowHandler[selector].layout;
+  const layout = getLayoutAndData(state, isModal).layout;
   const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
     layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
   ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getLayoutAndData = (state, isModal = false) => {
+  const selector = isModal ? 'modal' : 'master';
+  return state.windowHandler[selector] ?? {};
 };
 
 export const getInlineTabLayout = ({

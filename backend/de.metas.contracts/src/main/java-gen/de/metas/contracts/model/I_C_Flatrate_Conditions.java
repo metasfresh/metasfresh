@@ -894,29 +894,6 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
 
 	/**
-	 * Set UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setUOMType (java.lang.String UOMType);
-
-	/**
-	 * Get UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getUOMType();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Conditions.class, "UOMType", null);
-	String COLUMNNAME_UOMType = "UOMType";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
