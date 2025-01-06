@@ -22,10 +22,12 @@
 
 package de.metas.calendar.standard.impl;
 
+import de.metas.calendar.standard.YearId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
@@ -37,8 +39,8 @@ import java.util.Properties;
 
 public class CalendarDAO extends AbstractCalendarDAO
 {
-
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public List<I_C_Period> retrievePeriods(
@@ -95,30 +97,24 @@ public class CalendarDAO extends AbstractCalendarDAO
 	}
 
 	@Override
-	public I_C_Period retrieveFirstPeriodOfTheYear(final I_C_Year year)
+	public I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
-		final String trxName = InterfaceWrapperHelper.getTrxName(year);
-
-		return new Query(ctx, I_C_Period.Table_Name, I_C_Period.COLUMNNAME_C_Year_ID + "=?", trxName)
-				.setParameters(year.getC_Year_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Period.COLUMNNAME_StartDate)
+		return queryBL.createQueryBuilder(I_C_Period.class)
+				.addEqualsFilter(I_C_Period.COLUMNNAME_C_Year_ID, yearId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Period.COLUMNNAME_StartDate)
+				.create()
 				.first(I_C_Period.class);
 	}
 
 	@Override
-	public I_C_Period retrieveLastPeriodOfTheYear(final I_C_Year year)
+	public I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
-		final String trxName = InterfaceWrapperHelper.getTrxName(year);
-
-		return new Query(ctx, I_C_Period.Table_Name, I_C_Period.COLUMNNAME_C_Year_ID + "=?", trxName)
-				.setParameters(year.getC_Year_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Period.COLUMNNAME_StartDate + " DESC ")
+		return queryBL.createQueryBuilder(I_C_Period.class)
+				.addEqualsFilter(I_C_Period.COLUMNNAME_C_Year_ID, yearId)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_Period.COLUMNNAME_StartDate)
+				.create()
 				.first(I_C_Period.class);
 	}
 

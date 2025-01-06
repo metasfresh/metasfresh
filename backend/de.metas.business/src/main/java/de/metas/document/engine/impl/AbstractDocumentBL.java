@@ -164,7 +164,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		});
 
-		return processed != null && processed.booleanValue();
+		return processed != null && processed;
 	}
 
 	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception
@@ -377,7 +377,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public String getDocumentNo(final Object model)
+	public String getDocumentNo(@NonNull final Object model)
 	{
 		//
 		// First try: document's DocumentNo if available
@@ -510,7 +510,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		private final String value;
 		private final String caption;
-		private String description;
+		private final String description;
 
 		private DocActionItem(final ADRefListItem adRefListItem, final String adLanguage)
 		{

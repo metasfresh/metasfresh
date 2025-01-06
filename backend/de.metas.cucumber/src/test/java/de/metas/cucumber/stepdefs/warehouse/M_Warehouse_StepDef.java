@@ -27,17 +27,22 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.util.Check;
+import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
@@ -52,24 +57,16 @@ import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
+@RequiredArgsConstructor
 public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-
-	public M_Warehouse_StepDef(
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable
-	)
-	{
-		this.warehouseTable = warehouseTable;
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-	}
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	@And("update M_Warehouse:")
 	public void update_M_Warehouse(@NonNull final DataTable dataTable)
@@ -84,86 +81,88 @@ public class M_Warehouse_StepDef
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Warehouse_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(COLUMNNAME_Value);
 
-			final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
-					.addEqualsFilter(COLUMNNAME_Value, value)
-					.create()
-					.firstOnlyNotNull(I_M_Warehouse.class);
+					final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
+							.addEqualsFilter(COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyNotNull(I_M_Warehouse.class);
 
-			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
-				assertThat(bPartnerLocation).isNotNull();
-				bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
-			}
+					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+							.ifPresent(bpartnerLocationIdentifier -> {
+								final I_C_BPartner_Location bPartnerLocation = load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+								assertThat(bPartnerLocation).isNotNull();
+								bpartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
+							});
 
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			warehouseTable.putOrReplace(warehouseIdentifier, warehouseRecord);
-		}
+					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+				});
 	}
 
 	@And("metasfresh contains M_Warehouse:")
 	public void create_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			final String value = row.getAsString(COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Warehouse_ID)
+				.forEach((row) -> {
+					final ValueAndName valueAndName = row.suggestValueAndName();
 
-			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliersNotNull(
-					() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
-							.addEqualsFilter(COLUMNNAME_Value, value)
-							.create()
-							.firstOnlyOrNull(I_M_Warehouse.class),
-					() -> InterfaceWrapperHelper.newInstance(I_M_Warehouse.class));
+					final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliersNotNull(
+							() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
+									.addEqualsFilter(COLUMNNAME_Value, valueAndName.getValue())
+									.create()
+									.firstOnlyOrNull(I_M_Warehouse.class),
+							() -> InterfaceWrapperHelper.newInstance(I_M_Warehouse.class));
 
-			assertThat(warehouseRecord).isNotNull();
+					assertThat(warehouseRecord).isNotNull();
 
-			final String name = row.getAsString(I_M_Warehouse.COLUMNNAME_Name);
+					final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
+					if (isIssueWarehouse)
+					{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
+						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
+						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).create().updateDirectly(updater);
+					}
 
-			final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
-			if (isIssueWarehouse)
-			{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
-				final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
-				queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).create().updateDirectly(updater);
-			}
+					final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
+							.map(bpartnerTable::getId)
+							.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID);
 
-			final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
-					.map(bPartnerTable::getId)
-					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID);
+					final int bpartnerLocationRepoId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+							.map(bpartnerLocationTable::get)
+							.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+							.orElse(-1);
 
-			final int bpartnerLocationRepoId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
-					.map(bPartnerLocationTable::get)
-					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-					.orElse(-1);
+					final BPartnerLocationId bpartnerLocationId = bpartnerLocationRepoId > 0
+							? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId)
+							: StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID;
 
-			final BPartnerLocationId bpartnerLocationId = bpartnerLocationRepoId > 0
-					? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId)
-					: StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID;
+					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
+					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
 
-			final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
-			final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
-			final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
+					warehouseRecord.setValue(valueAndName.getValue());
+					warehouseRecord.setName(valueAndName.getName());
+					warehouseRecord.setSeparator("*");
+					warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+					warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+					warehouseRecord.setIsInTransit(isInTransit);
+					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
 
-			warehouseRecord.setValue(value);
-			warehouseRecord.setName(name);
-			warehouseRecord.setSeparator("*");
-			warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
-			warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
-			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
-			warehouseRecord.setIsInTransit(isInTransit);
-			warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
-			warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
+					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_PP_Plant_ID)
+							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
+							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
-			saveRecord(warehouseRecord);
+					saveRecord(warehouseRecord);
 
-			row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID).put(warehouseTable, warehouseRecord);
-		}
+					warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+
+					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+				});
 	}
 
 	@And("there is no in transit M_Warehouse")

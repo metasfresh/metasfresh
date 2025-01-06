@@ -9,9 +9,15 @@ export const putSettingsAction = (map) => {
   };
 };
 
-export const useBooleanSetting = (name) => {
+export const useBooleanSetting = (name, defaultIfNotFound = false) => {
   const value = useSetting(name);
-  return value === 'Y' || value === true;
+  if (value === 'Y' || value === true) {
+    return true;
+  } else if (value === 'N' || value === false) {
+    return false;
+  } else {
+    return defaultIfNotFound;
+  }
 };
 
 export const usePositiveNumberSetting = (name, defaultValue) => {

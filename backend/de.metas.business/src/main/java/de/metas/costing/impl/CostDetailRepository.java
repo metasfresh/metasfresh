@@ -334,7 +334,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(record.getSource_Currency_ID());
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId, record.getSourceAmt(), sourceCurrencyId);
-		final Quantity qty = Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+		final Quantity qty = Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 
 		return CostDetail.builder()
 				.id(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))

@@ -63,7 +63,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -296,7 +295,7 @@ public class CustomerReturnsWithoutHUsProducer
 
 	private I_M_HU initializeCU(@NonNull final LocatorId locatorId)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getById(HUPIItemProductId.VIRTUAL_HU);
+		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getRecordById(HUPIItemProductId.VIRTUAL_HU);
 		final I_M_HU_PI huPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.VIRTUAL);
 
 		return huTrxBL.createHUContextProcessorExecutor()
@@ -324,7 +323,7 @@ public class CustomerReturnsWithoutHUsProducer
 	{
 		final List<CreateAttributeInstanceReq> attributes = customerReturnLineCandidate.getCreateAttributeInstanceReqs();
 
-		if (Check.isEmpty(attributes))
+		if (attributes == null || attributes.isEmpty())
 		{
 			return null;
 		}
@@ -348,7 +347,7 @@ public class CustomerReturnsWithoutHUsProducer
 				targetWarehouseId = warehousesRepo.retrieveQuarantineWarehouseId();
 				break;
 			case QUALITY_ISSUE:
-				targetWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIds().iterator().next();
+				targetWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 				break;
 			default:
 				throw new AdempiereException("The given ReturnedGoodsWarehouseType is not supported!")

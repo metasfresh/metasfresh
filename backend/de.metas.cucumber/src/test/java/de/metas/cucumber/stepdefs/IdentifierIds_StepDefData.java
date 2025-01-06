@@ -22,10 +22,27 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+
+import java.util.Optional;
+
 public class IdentifierIds_StepDefData extends StepDefData<Integer>
 {
 	public IdentifierIds_StepDefData()
 	{
 		super(null);
 	}
+
+	public <T extends RepoIdAware> Optional<T> getOptional(@NonNull final String identifier, @NonNull final Class<T> type)
+	{
+		return getOptional(StepDefDataIdentifier.ofString(identifier), type);
+	}
+
+	public <T extends RepoIdAware> Optional<T> getOptional(@NonNull final StepDefDataIdentifier identifier, @NonNull final Class<T> type)
+	{
+		return getOptional(identifier).map(valueInt -> RepoIdAwares.ofRepoId(valueInt, type));
+	}
+
 }

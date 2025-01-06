@@ -173,6 +173,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.banking</groupId>
@@ -428,6 +435,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <artifactId>de.metas.printing.base</artifactId>
             <groupId>de.metas.printing</groupId>
             <version>${metasfresh.version}</version>
@@ -493,7 +508,15 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
-                
+
+        <dependency>
+            <groupId>de.metas.postfinance</groupId>
+            <artifactId>de.metas.postfinance.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
@@ -538,6 +561,15 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
 
         <!-- Elasticsearch -->
         <dependency>

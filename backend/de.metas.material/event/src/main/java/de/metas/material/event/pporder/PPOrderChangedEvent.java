@@ -3,6 +3,7 @@ package de.metas.material.event.pporder;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
@@ -15,6 +16,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderAndBOMLineId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -50,26 +53,25 @@ public class PPOrderChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderChangedEvent";
 
-	private final EventDescriptor eventDescriptor;
+	@NonNull EventDescriptor eventDescriptor;
 
-	Instant newDatePromised;
-	Instant oldDatePromised;
+	@NonNull Instant newDatePromised;
+	@NonNull Instant oldDatePromised;
 
-	PPOrder ppOrderAfterChanges;
+	@NonNull PPOrder ppOrderAfterChanges;
 
-	BigDecimal oldQtyRequired;
-	BigDecimal newQtyRequired;
+	@NonNull BigDecimal oldQtyRequired;
+	@NonNull BigDecimal newQtyRequired;
 
-	BigDecimal oldQtyDelivered;
-	BigDecimal newQtyDelivered;
+	@NonNull BigDecimal oldQtyDelivered;
+	@NonNull BigDecimal newQtyDelivered;
 
-	DocStatus oldDocStatus;
-	@With
-	DocStatus newDocStatus;
+	@NonNull DocStatus oldDocStatus;
+	@NonNull @With DocStatus newDocStatus;
 
-	List<PPOrderLine> newPPOrderLines;
-	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
-	List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
+	@NonNull List<PPOrderLine> newPPOrderLines;
+	@NonNull List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
+	@NonNull List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
 
 	@Builder
 	@JsonCreator
@@ -104,7 +106,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 		this.deletedPPOrderLines = deletedPPOrderLines;
 		this.newPPOrderLines = newPPOrderLines;
 	}
-	
+
 	@NonNull
 	public Optional<ChangedPPOrderLineDescriptor> getChangedDescriptorForPPOrderLineId(final int ppOrderLineId)
 	{
@@ -112,11 +114,11 @@ public class PPOrderChangedEvent implements MaterialEvent
 		{
 			return Optional.empty();
 		}
-		
+
 		return ppOrderLineChanges.stream()
-				.filter(changedDescriptor -> changedDescriptor.getNewPPOrderLineId() == ppOrderLineId)
+				.filter(changedDescriptor -> changedDescriptor.getNewPPOrderLineRepoId() == ppOrderLineId)
 				.findFirst();
-	}	
+	}
 
 	public boolean isJustCompleted()
 	{
@@ -132,7 +134,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 		final DocStatus newDocStatus = getNewDocStatus();
 
 		return newDocStatus != null && newDocStatus.isInProgress()
-				&& (oldDocStatus != null && oldDocStatus.isCompleted()); 
+				&& (oldDocStatus != null && oldDocStatus.isCompleted());
 	}
 
 	public int getPpOrderId()
@@ -149,9 +151,9 @@ public class PPOrderChangedEvent implements MaterialEvent
 	@Value
 	public static class ChangedPPOrderLineDescriptor
 	{
-		int oldPPOrderLineId;
+		@NonNull PPOrderAndBOMLineId oldPPOrderLineId;
 
-		int newPPOrderLineId;
+		@Nullable PPOrderAndBOMLineId newPPOrderLineId;
 
 		ProductDescriptor productDescriptor;
 
@@ -178,8 +180,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 		@Builder
 		@JsonCreator
 		private ChangedPPOrderLineDescriptor(
-				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
-				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
+				@JsonProperty("oldPPOrderLineId") @NonNull final PPOrderAndBOMLineId oldPPOrderLineId,
+				@JsonProperty("newPPOrderLineId") @Nullable final PPOrderAndBOMLineId newPPOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 				@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
@@ -188,8 +190,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 				@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
 				@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered)
 		{
-			this.oldPPOrderLineId = Check.assumeGreaterThanZero(oldPPOrderLineId, "oldPPOrderLineId");
-			this.newPPOrderLineId = Check.assumeGreaterThanZero(newPPOrderLineId, "newPPOrderLineId");
+			if (!oldPPOrderLineId.isSameOrderAs(newPPOrderLineId))
+			{
+				throw new AdempiereException("Old and New lines shall be part of the same order");
+			}
+			this.oldPPOrderLineId = oldPPOrderLineId;
+			this.newPPOrderLineId = newPPOrderLineId;
 			this.productDescriptor = productDescriptor;
 			this.minMaxDescriptor = minMaxDescriptor;
 			this.issueOrReceiveDate = issueOrReceiveDate;
@@ -197,6 +203,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.newQtyRequired = newQtyRequired;
 			this.oldQtyDelivered = oldQtyDelivered;
 			this.newQtyDelivered = newQtyDelivered;
+		}
+
+		@JsonIgnore
+		public int getNewPPOrderLineRepoId()
+		{
+			return newPPOrderLineId != null ? newPPOrderLineId.getLineRepoId() : -1;
 		}
 	}
 

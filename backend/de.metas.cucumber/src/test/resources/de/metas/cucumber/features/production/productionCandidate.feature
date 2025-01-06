@@ -12,6 +12,7 @@ Feature: Production dispo scenarios
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
 
+  @Id:S0129.2_140
   @from:cucumber
   @Id:S0129.2_140
   Scenario: Try to re-open production candidate after it has been closed
@@ -42,6 +43,7 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
 
+  @Id:S0129.2_160
   @from:cucumber
   @Id:S0129.2_160
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed
@@ -69,6 +71,7 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier | QtyToProcess |
       | oc_1                             | 12           |
 
+  @Id:S0129.2_180
   @from:cucumber
   @Id:S0129.2_180
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed
@@ -108,6 +111,7 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier | QtyToProcess |
       | oc_1                             | 2            |
 
+  @Id:S0129.2_190
   @from:cucumber
   @Id:S0129.2_190
   Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed
@@ -146,3 +150,5 @@ Feature: Production dispo scenarios
     Then update PP_Order_Candidate's qty entered to less than processed expecting exception
       | PP_Order_Candidate_ID.Identifier | QtyEntered |
       | oc_1                             | 2          |
+    
+    

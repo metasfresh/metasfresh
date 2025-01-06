@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 public class ExternalSystemParentConfigId implements RepoIdAware
@@ -49,6 +50,12 @@ public class ExternalSystemParentConfigId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new ExternalSystemParentConfigId(repoId) : null;
 	}
 
+	@NonNull
+	public static Optional<ExternalSystemParentConfigId> ofRepoIdOptional(@Nullable final Integer repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+	
 	public static int toRepoId(@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId)
 	{
 		return externalSystemParentConfigId != null ? externalSystemParentConfigId.getRepoId() : -1;

@@ -22,17 +22,29 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.shippingnotification.ShippingNotificationId;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
@@ -47,6 +59,8 @@ public class M_Shipping_Notification
 	private final ModularContractService contractService;
 	@NonNull
 	private final ShippingNotificationService shippingNotificationService;
+
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_Shipping_Notification shippingNotification)
@@ -66,6 +80,21 @@ public class M_Shipping_Notification
 	{
 		final ShippingNotificationId notificationId = ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID());
 		shippingNotificationService.getLines(notificationId)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+				.forEach(line -> contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
+																			 .tableRecordReference(TableRecordReference.of(line))
+																			 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+																			 .modelAction(modelAction)
+																			 .userInChargeId(Env.getLoggedUserId())
+																			 .build()));
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_Shipping_Notification.COLUMNNAME_M_Warehouse_ID)
+	public void setShipFrom_Partner_ID(@NonNull final I_M_Shipping_Notification shipingNotificationRecord)
+	{
+		if (shipingNotificationRecord.getM_Warehouse_ID() > 0)
+		{
+			final BPartnerId partnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(shipingNotificationRecord.getM_Warehouse_ID()));
+			shipingNotificationRecord.setShipFrom_Partner_ID(partnerId.getRepoId());
+		}
 	}
 }

@@ -32,7 +32,6 @@ public interface IMaterialTrackingPPOrderDAO extends ISingletonService
 	/**
 	 * Deletes <all <code>C_Invoice_Detail</code> records that reference the given <code>ppOrder</code>.
 	 *
-	 * @param ppOrder
 	 * @return the number of deleted records
 	 */
 	int deleteInvoiceDetails(I_PP_Order ppOrder);

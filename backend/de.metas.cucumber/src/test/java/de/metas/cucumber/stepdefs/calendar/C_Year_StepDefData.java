@@ -22,13 +22,22 @@
 
 package de.metas.cucumber.stepdefs.calendar;
 
+import de.metas.calendar.standard.YearId;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import org.compiere.model.I_C_Year;
 
 public class C_Year_StepDefData extends StepDefData<I_C_Year>
+		implements StepDefDataGetIdAware<YearId, I_C_Year>
 {
 	public C_Year_StepDefData()
 	{
 		super(I_C_Year.class);
+	}
+
+	@Override
+	public YearId extractIdFromRecord(final I_C_Year record)
+	{
+		return YearId.ofRepoId(record.getC_Year_ID());
 	}
 }

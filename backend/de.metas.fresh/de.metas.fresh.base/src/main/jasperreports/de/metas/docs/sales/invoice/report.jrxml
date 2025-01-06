@@ -122,7 +122,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="340" y="155" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
+				<reportElement key="subreport-8" x="330" y="155" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -191,7 +191,6 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="344daebc-f507-45b8-a914-4cf3f0864bb7">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_invoice_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>

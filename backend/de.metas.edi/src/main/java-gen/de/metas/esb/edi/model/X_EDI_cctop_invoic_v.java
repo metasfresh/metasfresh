@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -12,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI_cctop_invoic_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1115794842L;
+	private static final long serialVersionUID = 863516785L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_v (Properties ctx, int EDI_cctop_invoic_v_ID, String trxName)
@@ -161,6 +162,18 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 		return (java.lang.String)get_Value(COLUMNNAME_CreditMemoReasonText);
 	}
 
+	@Override
+	public void setDateAcct (final @Nullable java.sql.Timestamp DateAcct)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateAcct()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
+	}
+	
 	@Override
 	public void setDateInvoiced (java.sql.Timestamp DateInvoiced)
 	{

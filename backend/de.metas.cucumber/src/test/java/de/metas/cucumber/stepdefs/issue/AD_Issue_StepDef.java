@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AD_Issue_StepDef
 {

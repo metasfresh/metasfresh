@@ -38,11 +38,15 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.List;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @UtilityClass
 public final class FileUtil
 {
-	public static void copy(File from, OutputStream out) throws IOException
+	public static void copy(final File from, final OutputStream out) throws IOException
 	{
 		try (final InputStream in = new FileInputStream(from))
 		{
@@ -50,7 +54,7 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(InputStream in, File to) throws IOException
+	public static void copy(final InputStream in, final File to) throws IOException
 	{
 		try (final FileOutputStream out = new FileOutputStream(to))
 		{
@@ -58,9 +62,9 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(InputStream in, OutputStream out) throws IOException
+	public static void copy(final InputStream in, final OutputStream out) throws IOException
 	{
-		byte[] buf = new byte[4096];
+		final byte[] buf = new byte[4096];
 		int len;
 		while ((len = in.read(buf)) > 0)
 		{
@@ -68,33 +72,38 @@ public final class FileUtil
 		}
 		out.flush();
 	}
+	
+	public static String getTempDir()
+	{
+		return System.getProperty("java.io.tmpdir");
+	}
 
 	public static File createTempFile(final String fileExtension, final String title)
 	{
-		final String path = System.getProperty("java.io.tmpdir");
+		final String path = getTempDir();
 		final String prefix = makeFilePrefix(title);
 
-		File file;
+		final File file;
 		try
 		{
 			file = File.createTempFile(prefix, "." + fileExtension, new File(path));
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e.getLocalizedMessage(), e);
 		}
 		return file;
 	}
 
-	private static String makeFilePrefix(String name)
+	private static String makeFilePrefix(final String name)
 	{
 		if (name == null || name.trim().length() == 0)
 		{
 			return "Report_";
 		}
-		StringBuilder prefix = new StringBuilder();
-		char[] nameArray = name.toCharArray();
-		for (char ch : nameArray)
+		final StringBuilder prefix = new StringBuilder();
+		final char[] nameArray = name.toCharArray();
+		for (final char ch : nameArray)
 		{
 			if (Character.isLetterOrDigit(ch))
 			{
@@ -207,7 +216,7 @@ public final class FileUtil
 		{
 			tempFile = File.createTempFile(suffix, ".tmp");
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException("Cannot create temporary directory with suffix '" + suffix + "'", e);
 		}
@@ -271,5 +280,43 @@ public final class FileUtil
 		}
 
 		return !Files.exists(file) ? Optional.of(file) : Optional.empty();
+	}
+
+	public static File zip(@NonNull final List<File> files) throws IOException
+	{
+		final File zipFile = File.createTempFile("ZIP", ".zip");
+		zipFile.deleteOnExit();
+
+		try (final FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
+				final ZipOutputStream zip = new ZipOutputStream(fileOutputStream))
+		{
+			zip.setMethod(ZipOutputStream.DEFLATED);
+			zip.setLevel(Deflater.BEST_COMPRESSION);
+
+			for (final File file : files)
+			{
+				addToZipFile(file, zip);
+			}
+		}
+
+		return zipFile;
+	}
+
+	private static void addToZipFile(@NonNull final File file, @NonNull final ZipOutputStream zos) throws IOException
+	{
+		try (final FileInputStream fis = new FileInputStream(file))
+		{
+			final ZipEntry zipEntry = new ZipEntry(file.getName());
+			zos.putNextEntry(zipEntry);
+
+			final byte[] bytes = new byte[1024];
+			int length;
+			while ((length = fis.read(bytes)) >= 0)
+			{
+				zos.write(bytes, 0, length);
+			}
+
+			zos.closeEntry();
+		}
 	}
 }

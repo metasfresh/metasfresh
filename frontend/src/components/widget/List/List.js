@@ -177,8 +177,9 @@ class ListWidget extends Component {
         }
 
         request.then((res) => {
-          let values = res.data.values || [];
-          let singleOption = values && values.length === 1;
+          const hasMoreResults = !!res.data.hasMoreResults;
+          const values = res.data.values || [];
+          const singleOption = values && values.length === 1;
 
           if (forceSelection && singleOption) {
             this.previousValue = '';
@@ -186,6 +187,7 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+              hasMoreResults,
               loading: false,
             });
 
@@ -197,6 +199,7 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+              hasMoreResults,
               loading: false,
             });
           }
@@ -336,6 +339,7 @@ class ListWidget extends Component {
     const {
       list,
       listHash,
+      hasMoreResults,
       loading,
       selectedItem,
       autoFocus,
@@ -350,6 +354,7 @@ class ListWidget extends Component {
         loading={loading}
         list={list}
         listHash={listHash}
+        hasMoreResults={hasMoreResults}
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}

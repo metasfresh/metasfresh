@@ -51,7 +51,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class AD_Column_StepDef
 {
@@ -94,7 +94,7 @@ public class AD_Column_StepDef
 	@And("update AD_Column:")
 	public void update_AD_Columns(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::updateAD_Column);
+		DataTableRows.of(dataTable).forEach(this::updateAD_Column);
 	}
 
 	private void updateAD_Column(final DataTableRow row)

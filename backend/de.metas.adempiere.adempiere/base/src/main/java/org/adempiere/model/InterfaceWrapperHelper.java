@@ -47,7 +47,8 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -62,6 +63,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.poi.ss.formula.functions.T;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -72,6 +74,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +84,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -237,9 +241,9 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param modelClass   model class
 	 * @param useOldValues <ul>
-	 *                                                    <li>true if old values shall be used
-	 *                                                    <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
-	 *                                                    </ul>
+	 *                     <li>true if old values shall be used
+	 *                     <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
+	 *                     </ul>
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 * <ul>
 	 * <li>{@link #create(Object, Class)}
@@ -377,33 +381,39 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
+	}
+	
+	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
+	{
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, modelMapper);
 	}
 
 	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwaresOutOfTrx(@NonNull final Collection<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
-	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	private static <RT, MT> List<MT> loadByIds(final Set<Integer> ids, final Class<RT> modelClass, final String trxName, final Function<RT, MT> modelMapper)
 	{
 		if (getInMemoryDatabaseForModel(modelClass) != null)
 		{
-			return POJOWrapper.loadByIds(ids, modelClass, trxName);
+			return POJOWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 		}
-		return POWrapper.loadByIds(ids, modelClass, trxName);
+		return POWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 	}
 
 	/**
@@ -481,7 +491,6 @@ public class InterfaceWrapperHelper
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
 	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
-	 *
 	 */
 	public static void markStaled(final Object model)
 	{
@@ -514,6 +523,8 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
+	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */
@@ -838,6 +849,7 @@ public class InterfaceWrapperHelper
 	 * InterfaceWrapperHelper throws it.
 	 */
 	/* package */
+
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
@@ -961,10 +973,19 @@ public class InterfaceWrapperHelper
 		return modelClassInfo.getTableName() != null;
 	}
 
-	public static int getTableId(final Class<?> clazz)
+	public static int getTableId(@NonNull final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
+	}
+
+	public static AdTableId getAdTableId(@NonNull final Class<?> clazz)
+	{
+		final String tableName = getTableName(clazz);
+		return TableIdsCache.instance.getTableId(tableName)
+				.orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
 	}
 
 	/**
@@ -977,8 +998,10 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	public static String getKeyColumnName(final Class<?> clazz)
@@ -1013,7 +1036,9 @@ public class InterfaceWrapperHelper
 	public static int getModelTableId(final Object model)
 	{
 		final String modelTableName = getModelTableName(model);
-		return Services.get(IADTableDAO.class).retrieveTableId(modelTableName);
+		return TableIdsCache.instance.getTableId(modelTableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	/**
@@ -1203,11 +1228,17 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static <T> T getValueOrNull(final Object model, final String columnName)
+	public static <T> T getValueOrNull(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+	}
+
+	public static BigDecimal getValueAsBigDecimalOrNull(final Object model, final String columnName)
+	{
+		final Object valueObj = getValueOrNull(model, columnName);
+		return NumberUtils.asBigDecimal(valueObj);
 	}
 
 	public static <T> Optional<T> getValue(final Object model, final String columnName)
@@ -1219,7 +1250,7 @@ public class InterfaceWrapperHelper
 	}
 
 	@NonNull
-	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	public static <T> Optional<T> getValueOptional(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1243,14 +1274,14 @@ public class InterfaceWrapperHelper
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated
-	public static <T> T getValueOverrideOrValue(final Object model, final String columnName)
+	public static <T> T getValueOverrideOrValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = true;
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	private static <T> T getValue(final Object model,
+	private static <T> T getValue(@NonNull final Object model,
 								  final String columnName,
 								  final boolean throwExIfColumnNotFound,
 								  final boolean useOverrideColumnIfAvailable)
@@ -1258,7 +1289,7 @@ public class InterfaceWrapperHelper
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
+	public static <ModelType> ModelType getModelValue(@NonNull final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
 		if (POWrapper.isHandled(model))
 		{
@@ -1407,6 +1438,7 @@ public class InterfaceWrapperHelper
 	private static final String DYNATTR_SaveDeleteDisabled = "SaveDeleteDisabled";
 
 	/**
+	 * @param model
 	 * @return true if save/delete was not disabled on purpose for given model
 	 * @see #DYNATTR_SaveDeleteDisabled
 	 */
@@ -1584,6 +1616,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
 	public static int getLoadCount(final Object model)
@@ -1689,7 +1722,6 @@ public class InterfaceWrapperHelper
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
 	 * then return an instance using {@link #create(Object, Class)}.<br>
 	 * Otherwise, return <code>null</code> .
-	 *
 	 */
 	public static <T> T asColumnReferenceAwareOrNull(final Object model,
 													 final Class<T> clazz)

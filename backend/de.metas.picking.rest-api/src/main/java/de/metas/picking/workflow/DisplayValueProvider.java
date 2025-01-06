@@ -29,18 +29,21 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.PickingJobField;
+import de.metas.handlingunits.picking.config.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
-import de.metas.picking.config.MobileUIPickingUserProfile;
-import de.metas.picking.config.PickingJobField;
-import de.metas.picking.config.PickingJobFieldType;
+import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -77,7 +80,7 @@ public class DisplayValueProvider
 		this.profile = profile;
 	}
 
-	public void cacheWarmUpForPickingJobReferences(final ImmutableList<PickingJobReference> pickingJobReferences)
+	public void cacheWarmUpForPickingJobReferences(final PickingJobReferenceList pickingJobReferences)
 	{
 		if (pickingJobReferences.isEmpty())
 		{
@@ -130,33 +133,49 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJob pickingJob)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
 	{
 		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobCandidate pickingJobCandidate)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return computeLauncherCaption(toContext(pickingJobCandidate));
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobReference pickingJobReference)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return computeLauncherCaption(toContext(pickingJobReference));
 	}
 
 	@NonNull
-	private ITranslatableString computeLauncherCaption(@NonNull final Context context)
+	private WorkflowLauncherCaption computeLauncherCaption(@NonNull final Context context)
 	{
-		final ImmutableList<ITranslatableString> parts = profile.getLauncherFieldsInOrder()
-				.stream()
-				.map(uiFiled -> getDisplayValue(uiFiled, context))
-				.filter(caption -> !TranslatableStrings.isBlank(caption))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList.Builder<String> fieldsInOrder = ImmutableList.builder();
+		@NonNull ImmutableMap.Builder<String, ITranslatableString> fieldValues = ImmutableMap.builder();
+		@NonNull ImmutableMap.Builder<String, Comparable<?>> comparableKeys = ImmutableMap.builder();
 
-		return TranslatableStrings.join(" | ", parts);
+		for (final PickingJobField field : profile.getLauncherFieldsInOrder())
+		{
+			final ITranslatableString value = getDisplayValue(field, context);
+			final Comparable<?> comparableKey = getComparableKey(field, context);
+			final String fieldType = field.getField().getCode();
+
+			fieldsInOrder.add(fieldType);
+			fieldValues.put(fieldType, value);
+			if (comparableKey != null)
+			{
+				comparableKeys.put(fieldType, comparableKey);
+			}
+		}
+
+		return WorkflowLauncherCaption.builder()
+				.fieldsInOrder(fieldsInOrder.build())
+				.fieldValues(fieldValues.build())
+				.comparingKeys(comparableKeys.build())
+				.build();
 	}
 
 	@NonNull
@@ -235,6 +254,25 @@ public class DisplayValueProvider
 			default:
 			{
 				throw new AdempiereException("Unknown field: " + field.getField());
+			}
+		}
+	}
+
+	@Nullable
+	private Comparable<?> getComparableKey(@NonNull final PickingJobField field, @NonNull final Context pickingJob)
+	{
+		//noinspection SwitchStatementWithTooFewBranches
+		switch (field.getField())
+		{
+			case RUESTPLATZ_NR:
+			{
+				return getRuestplatz(pickingJob)
+						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
+						.orElse(null);
+			}
+			default:
+			{
+				return null;
 			}
 		}
 	}

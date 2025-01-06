@@ -57,7 +57,7 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 
 			return Optional.of(new CCacheStatsOrderBy(parts));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Invalid order by string `" + string + "`", ex);
 		}
@@ -128,9 +128,9 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 			return comparator;
 		}
 
-		static Part parse(@NonNull String string)
+		static Part parse(@NonNull final String string)
 		{
-			String stringNorm = StringUtils.trimBlankToNull(string);
+			final String stringNorm = StringUtils.trimBlankToNull(string);
 			if (stringNorm == null)
 			{
 				throw new AdempiereException("Invalid part: `" + string + "`");

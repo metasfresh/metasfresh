@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderCreateRequestBuilder;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class PPOrderAllocator
 	String headerAggKey;
 
 	@NonNull
-	PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequestBuilder;
+	PPOrderCreateRequestBuilder ppOrderCreateRequestBuilder;
 
 	@NonNull
 	Map<PPOrderCandidateId, Quantity> ppOrderCand2AllocatedQty = new HashMap<>();
@@ -56,15 +57,14 @@ public class PPOrderAllocator
 	@Builder
 	public PPOrderAllocator(
 			@NonNull final String headerAggKey,
-			@NonNull final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequestBuilder,
 			@NonNull final Quantity capacityPerProductionCycle)
 	{
 		Check.assume(capacityPerProductionCycle.signum() >= 0, "capacityPerProductionCycle must be a positive number!");
 
 		this.headerAggKey = headerAggKey;
-		this.ppOrderCreateRequestBuilder = ppOrderCreateRequestBuilder;
 		this.capacityPerProductionCycle = capacityPerProductionCycle;
 		this.allocatedQty = capacityPerProductionCycle.toZero();
+		this.ppOrderCreateRequestBuilder = new PPOrderCreateRequestBuilder();
 	}
 
 	/**
@@ -82,6 +82,8 @@ public class PPOrderAllocator
 			return capacityPerProductionCycle.toZero();
 		}
 
+		ppOrderCreateRequestBuilder.addRecord(ppOrderCandidateToAllocate.getPpOrderCandidate());
+
 		final Quantity qtyToAllocate = getQtyToAllocate(ppOrderCandidateToAllocate);
 
 		allocateQuantity(ppOrderCandidateToAllocate, qtyToAllocate);
@@ -92,9 +94,7 @@ public class PPOrderAllocator
 	@NonNull
 	public PPOrderCreateRequest getPPOrderCreateRequest()
 	{
-		return ppOrderCreateRequestBuilder
-				.qtyRequired(allocatedQty)
-				.build();
+		return ppOrderCreateRequestBuilder.build(allocatedQty);
 	}
 
 	private boolean isFullCapacityReached()

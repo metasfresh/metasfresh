@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -40,7 +42,6 @@ public class ShipmentScheduleId implements RepoIdAware
 {
 	private static final String M_SHIPMENT_SCHEDULE_TABLE_NAME = "M_ShipmentSchedule";
 
-	@JsonCreator
 	public static ShipmentScheduleId ofRepoId(final int repoId)
 	{
 		return new ShipmentScheduleId(repoId);
@@ -49,6 +50,13 @@ public class ShipmentScheduleId implements RepoIdAware
 	public static ShipmentScheduleId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	// NOTE: we need this String deserializer in order to use ShipmentScheduleId as a map key in a map that needs to deserialized from json
+	@JsonCreator
+	public static ShipmentScheduleId ofString(@NonNull final String repoIdStr)
+	{
+		return RepoIdAwares.ofObject(repoIdStr, ShipmentScheduleId.class, ShipmentScheduleId::ofRepoId);
 	}
 
 	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<ShipmentScheduleId> ids)
@@ -93,5 +101,12 @@ public class ShipmentScheduleId implements RepoIdAware
 	public TableRecordReference toTableRecordReference()
 	{
 		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, getRepoId());
+	}
+
+	public static boolean equals(@Nullable final ShipmentScheduleId id1, @Nullable final ShipmentScheduleId id2) {return Objects.equals(id1, id2);}
+
+	public static TableRecordReferenceSet toTableRecordReferenceSet(@NonNull final Collection<ShipmentScheduleId> ids)
+	{
+		return TableRecordReferenceSet.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, ids);
 	}
 }

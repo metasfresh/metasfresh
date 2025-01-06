@@ -6,7 +6,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.product.ProductId;
 import de.metas.workflow.WFDurationUnit;
 import lombok.AccessLevel;
@@ -235,6 +237,16 @@ public class PPOrderRouting
 	public void uncloseActivity(final PPOrderRoutingActivityId activityId)
 	{
 		getActivityById(activityId).uncloseIt();
+	}
+
+	@NonNull
+	public RawMaterialsIssueStrategy getIssueStrategyForRawMaterialsActivity()
+	{
+		return activities.stream()
+				.filter(activity -> activity.getType() == PPRoutingActivityType.RawMaterialsIssue)
+				.findFirst()
+				.map(PPOrderRoutingActivity::getRawMaterialsIssueStrategy)
+				.orElse(RawMaterialsIssueStrategy.DEFAULT);
 	}
 
 }

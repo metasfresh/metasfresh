@@ -758,7 +758,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				log.warn("BoilerPlate entry '" + refName + "' does not exist");
 				continue;
 			}
-			
+
 			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
 			ref.saveEx();
 		}
@@ -776,6 +776,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 */
 	public static BoilerPlateContext createEditorContext(final SourceDocument sourceDocument)
 	{
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final IUserBL userBL = Services.get(IUserBL.class);
+
 		final Properties ctx = Env.getCtx();
 
 		final BoilerPlateContext.Builder attributesBuilder = BoilerPlateContext.builder();
@@ -783,7 +786,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		attributesBuilder.setSourceDocument(sourceDocument);
 		attributesBuilder.setAD_Language(Env.getAD_Language(ctx));
 
-		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		final I_AD_User salesRep = userDAO.retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
 		{
 			attributesBuilder.setSalesRep(salesRep);
@@ -915,6 +918,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final IUserBL userBL = Services.get(IUserBL.class);
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 		I_AD_User user = Optional.ofNullable(sourceDocument.getFieldValueAsRepoId("AD_User_ID", UserId::ofRepoIdOrNull))
 				.map(userBL::getById)
@@ -943,6 +947,18 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			if (userBL.isEMailValid(user))
 			{
 				attributesBuilder.setEmail(user.getEMail());
+			}
+			final Properties ctx = Env.getCtx();
+			final I_AD_User ccUser = userDAO.retrieveUserOrNull(ctx, user.getCC_User_ID());
+
+			if(ccUser != null)
+			{
+				attributesBuilder.setCCUser(ccUser);
+				if(userBL.isEMailValid(ccUser))
+				{
+					final String ccEmail = ccUser.getEMail();
+					attributesBuilder.setCCEmail(ccEmail);
+				}
 			}
 
 			if (bPartnerLocationId == null)
@@ -994,8 +1010,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		private static final String VAR_SalesRep = "SalesRep";
 		private static final String VAR_SalesRep_ID = "SalesRep_ID";
 		private static final String VAR_EMail = "EMail";
+		private static final String VAR_CC_EMail = "CC_EMail";
 		private static final String VAR_AD_User_ID = "AD_User_ID";
 		private static final String VAR_AD_User = "AD_User";
+		private static final String VAR_CC_User_ID = "CC_UserID";
+		private static final String VAR_CC_User = "CC_User";
 		private static final String VAR_C_BPartner_ID = "C_BPartner_ID";
 		private static final String VAR_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 		private static final String VAR_AD_Org_ID = "AD_Org_ID";
@@ -1074,6 +1093,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			return (Integer)get(VAR_AD_User_ID);
 		}
+
+		@Nullable
+		public Integer getCC_User_ID()
+		{
+			return (Integer)get(VAR_CC_User_ID);
+		}
+
 
 		@Nullable
 		public Integer getAD_User_ID(final Integer defaultValue)
@@ -1196,9 +1222,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
+			public void setCCUser(final I_AD_User ccUser)
+			{
+				setAttribute(VAR_CC_User, ccUser);
+				setAttribute(VAR_CC_User_ID, ccUser != null ? ccUser.getAD_User_ID() : null);
+			}
+
 			public Builder setEmail(final String email)
 			{
 				setAttribute(VAR_EMail, email);
+				return this;
+			}
+
+			public Builder setCCEmail(final String ccEmail)
+			{
+				setAttribute(VAR_CC_EMail, ccEmail);
 				return this;
 			}
 

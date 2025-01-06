@@ -48,7 +48,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_1 | orderLine_A_stocked_1     | N             | 0            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_1               | D            | true                | false       |
 
@@ -88,7 +88,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_2 | orderLine_A_notStocked_1  | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_2               | D            | true                | false       |
 
@@ -145,7 +145,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_3 | orderLine_A_stocked_2     | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_3               | D            | true                | false       |
 
@@ -205,7 +205,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_4 | orderLine_A_notStocked_2  | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_4               | D            | true                | false       |
 
@@ -248,7 +248,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_5 | orderLine_F_notStocked_1  | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_5               | D            | true                | false       |
 
@@ -291,7 +291,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_6 | orderLine_F_stocked_1     | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_6               | D            | true                | false       |
 
@@ -351,7 +351,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_7 | orderLine_F_notStocked_2  | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_7               | D            | true                | false       |
 
@@ -408,7 +408,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_8 | orderLine_F_stocked_2     | N             | 1            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_8               | D            | true                | false       |
 
@@ -483,7 +483,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_1 | orderLine_FIFO_1          | N             | 12           |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_FIFO_1          | D            | true                | false       |
 
@@ -555,7 +555,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_2 | orderLine_FIFO_2          | N             | 6            |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_FIFO_2          | D            | true                | false       |
 

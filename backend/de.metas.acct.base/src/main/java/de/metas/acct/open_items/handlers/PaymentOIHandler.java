@@ -195,11 +195,6 @@ public class PaymentOIHandler implements FAOpenItemsHandler
 	{
 		private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
-		public C_Payment_Interceptor()
-		{
-			System.out.println("AAAA");
-		}
-
 		@ModelChange(
 				timings = ModelValidator.TYPE_AFTER_CHANGE,
 				ifColumnsChanged = {

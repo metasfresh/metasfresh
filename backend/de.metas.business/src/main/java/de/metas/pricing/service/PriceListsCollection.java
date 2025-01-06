@@ -33,12 +33,12 @@ import java.util.stream.Stream;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -75,12 +75,18 @@ public class PriceListsCollection
 		return CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
 	}
 
+	/**
+	 * @return {@link PriceListId}s, prefering one with a country
+	 */
 	public Optional<PriceListId> getPriceListId(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
 	{
 		return getPriceList(countryId, soTrx)
 				.map(PriceListsCollection::extractPriceListId);
 	}
 
+	/**
+	 * @return the first pricelist, prefering one with a country
+	 */
 	public Optional<I_M_PriceList> getPriceList(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
 	{
 		return getPriceLists()
@@ -94,6 +100,9 @@ public class PriceListsCollection
 				.findFirst();
 	}
 
+	/**
+	 * @return list of M_PriceLists, those PLs with a country first
+	 */
 	public ImmutableList<I_M_PriceList> filterAndList(@NonNull final CountryId countryId, @Nullable final SOTrx soTrx)
 	{
 		return getPriceLists()
@@ -103,6 +112,7 @@ public class PriceListsCollection
 						.acceptNoCountry(true)
 						.soTrx(soTrx)
 						.build())
+				.sorted(RepoIdAwares.comparingNullsLast(PriceListsCollection::extractCountryIdOrNull))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -112,6 +122,9 @@ public class PriceListsCollection
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	/**
+	 * @return stream of {@link PriceListId}s, those PLs with a country first
+	 */
 	public Stream<PriceListId> filterAndStreamIds(@NonNull final Set<CountryId> countryIds)
 	{
 		Check.assumeNotEmpty(countryIds, "countryIds is not empty");
@@ -121,6 +134,28 @@ public class PriceListsCollection
 				.filter(PriceListFilter.builder()
 						.countryIds(ImmutableSet.copyOf(countryIds))
 						.build())
+				.sorted(RepoIdAwares.comparingNullsLast(PriceListsCollection::extractCountryIdOrNull))
+				.map(PriceListsCollection::extractPriceListId)
+				.distinct();
+	}
+
+	public ImmutableSet<PriceListId> filterAndListIds(@NonNull final SOTrx soTrx)
+	{
+		return filterAndStreamIds(soTrx)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return stream of {@link PriceListId}s, those PLs with a country first
+	 */
+	public Stream<PriceListId> filterAndStreamIds(@NonNull final SOTrx soTrx)
+	{
+		return getPriceLists()
+				.stream()
+				.filter(PriceListFilter.builder()
+						.soTrx(soTrx)
+						.build())
+				.sorted(RepoIdAwares.comparingNullsLast(PriceListsCollection::extractCountryIdOrNull))
 				.map(PriceListsCollection::extractPriceListId)
 				.distinct();
 	}

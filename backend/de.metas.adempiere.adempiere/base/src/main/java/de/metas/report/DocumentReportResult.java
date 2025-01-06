@@ -23,13 +23,13 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class DocumentReportResult
 {
 	@NonNull
@@ -57,7 +57,6 @@ public class DocumentReportResult
 	PInstanceId reportPInstanceId;
 
 	@Nullable
-	@With
 	BPartnerId bpartnerId;
 
 	@Nullable
@@ -67,12 +66,22 @@ public class DocumentReportResult
 	@Builder.Default
 	PrintCopies copies = PrintCopies.ONE;
 
+	@Builder.Default
+	boolean isMainReport = true;
+
+
 	@Nullable
 	ArchiveResult lastArchive;
 
 	@Nullable
+	DocTypeId overrideDocTypeId;
+
+	@Nullable
 	Integer asyncBatchId;
 
+	@Nullable
+	String poReference;
+	
 	@Nullable
 	public String getFilename()
 	{

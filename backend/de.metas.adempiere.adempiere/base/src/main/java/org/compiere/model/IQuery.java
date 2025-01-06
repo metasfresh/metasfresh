@@ -104,6 +104,8 @@ public interface IQuery<T>
 
 	String getTableName();
 
+	IQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value);
+
 	List<T> list() throws DBException;
 
 	/**
@@ -276,6 +278,8 @@ public interface IQuery<T>
 	 * @return true if exists, false otherwise
 	 */
 	boolean anyMatch() throws DBException;
+
+	default boolean noneMatch() {return !anyMatch();}
 
 	/**
 	 * Returns an {@link Iterator} over current query selection.

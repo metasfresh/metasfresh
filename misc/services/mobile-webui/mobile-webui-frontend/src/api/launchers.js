@@ -8,22 +8,24 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 /**
  * @summary Get the list of available launchers
  */
-export const getLaunchers = ({ applicationId, filterByQRCode, facets }) => {
+export const getLaunchers = ({ applicationId, filterByQRCode, filterByDocumentNo, facets }) => {
   const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       applicationId,
       filterByQRCode: toQRCodeString(filterByQRCode),
+      filterByDocumentNo,
       facetIds,
     })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const countLaunchers = ({ applicationId, facetIds }) => {
+export const countLaunchers = ({ applicationId, filterByDocumentNo, facetIds }) => {
   //console.log('countLaunchers', { applicationId, facetIds });
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       applicationId,
+      filterByDocumentNo,
       facetIds,
       countOnly: true,
     })
@@ -31,10 +33,11 @@ export const countLaunchers = ({ applicationId, facetIds }) => {
     .then((response) => response.count);
 };
 
-export const getFacets = ({ applicationId, activeFacetIds }) => {
+export const getFacets = ({ applicationId, filterByDocumentNo, activeFacetIds }) => {
   return axios
     .post(`${apiBasePath}/userWorkflows/facets`, {
       applicationId,
+      filterByDocumentNo,
       activeFacetIds,
     })
     .then((response) => unboxAxiosResponse(response))
@@ -74,6 +77,7 @@ export const useLaunchersWebsocket = ({
   userToken,
   applicationId,
   filterByQRCode,
+  filterByDocumentNo,
   facets,
   onWebsocketMessage,
 }) => {
@@ -87,10 +91,11 @@ export const useLaunchersWebsocket = ({
         userToken,
         applicationId,
         qrCode: filterByQRCodeString,
+        documentNo: filterByDocumentNo,
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode, facetIds });
+      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode, filterByDocumentNo, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
@@ -105,8 +110,8 @@ export const useLaunchersWebsocket = ({
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.debug('WS disconnected', { applicationId, filterByQRCode });
+        console.debug('WS disconnected', { applicationId, filterByQRCode, filterByDocumentNo });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, filterByDocumentNo, facetIds]);
 };

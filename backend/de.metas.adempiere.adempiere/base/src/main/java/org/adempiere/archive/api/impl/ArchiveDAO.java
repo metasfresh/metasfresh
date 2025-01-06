@@ -50,6 +50,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ArchiveDAO implements IArchiveDAO
 {
@@ -57,7 +58,7 @@ public class ArchiveDAO implements IArchiveDAO
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
 	@Override
-	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId id)
 	{
 		return load(id, I_AD_Archive.class);
 	}
@@ -89,6 +90,7 @@ public class ArchiveDAO implements IArchiveDAO
 			@NonNull final QueryLimit limit)
 	{
 		return retrieveArchivesQuery(ctx, recordRef)
+				.orderByDescending(I_AD_Archive.COLUMNNAME_IsMainArchive)
 				.orderByDescending(I_AD_Archive.COLUMNNAME_Created)
 				.setLimit(limit)
 				.create()
@@ -144,12 +146,6 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
-	public I_AD_Archive retrieveArchive(@NonNull final ArchiveId archiveId)
-	{
-		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
-	}
-
-	@Override
 	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
 	{
 		queryBL.createQueryBuilder(I_AD_Archive.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -169,4 +165,18 @@ public class ArchiveDAO implements IArchiveDAO
 		return archive;
 	}
 
+	@Override
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		retrieveArchivesQuery(Env.getCtx(), recordReference)
+				.create()
+				.stream()
+				.forEach(archive -> {
+					archive.setPOReference(poReference);
+					
+					saveRecord(archive);
+				});
+	}
 }

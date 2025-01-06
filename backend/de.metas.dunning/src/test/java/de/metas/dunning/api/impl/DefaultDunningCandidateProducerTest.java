@@ -32,6 +32,8 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,10 +45,12 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
@@ -59,7 +63,6 @@ import static org.junit.Assert.assertThat;
  * </ul>
  *
  * @author tsa
- *
  */
 public class DefaultDunningCandidateProducerTest extends DunningTestBase
 {
@@ -94,6 +97,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		dunningLevel3_30.setName("Level3");
 		dunningLevel3_30.setIsWriteOff(false);
 		InterfaceWrapperHelper.save(dunningLevel3_30);
+
+		createOrgInfo();
 	}
 
 	@Test
@@ -351,31 +356,31 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(null)
 							.create()
-					);
+			);
 			Assert.assertNotNull("GraceDate null - candidate shall be generated", candidate);
 		}
 		// GraceDate before context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(TimeUtil.addDays(dunningDate, -1))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, -1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNotNull("GraceDate before context DunningDate - candidate shall be generated", candidate);
 		}
 		// GraceDate equals context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(dunningDate)
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(dunningDate, OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNull("GraceDate equals with context DunningDate - candidate shall NOT be generated", candidate);
 		}
 		// GraceDate after context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(TimeUtil.addDays(dunningDate, 1))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, 1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNull("GraceDate after context DunningDate - candidate shall NOT be generated", candidate);
 		}
 	}
@@ -384,7 +389,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	public void test_getLastDunningDateEffective_emptyCollection()
 	{
 		final List<I_C_Dunning_Candidate> candidates = Collections.emptyList();
-		final Date lastDate = producer.getLastDunningDateEffective(candidates);
+		final LocalDateAndOrgId lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
 		Assert.assertNull("Last DunningDateEffective shall be null for an empty collection", lastDate);
 	}
 
@@ -429,8 +434,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			candidates.add(c);
 		}
 
-		final Date lastDate = producer.getLastDunningDateEffective(candidates);
-		Assert.assertEquals("Last DunningDateEffective shall be null for an empty collection", TimeUtil.getDay(2013, 01, 04), lastDate);
+		final LocalDateAndOrgId lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
+		Assert.assertEquals("Last DunningDateEffective shall be null for an empty collection", LocalDate.of(2013, 1, 4), lastDate.toLocalDate());
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -446,7 +451,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		}
 
 		// shall throw an exception because candidate's DunningDateEffective is null
-		producer.getLastDunningDateEffective(candidates);
+		producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
 	}
 
 	@Test
@@ -454,7 +459,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	{
 		final List<I_C_Dunning_Candidate> candidates = Collections.emptyList();
 
-		final Timestamp dunningDate = TimeUtil.getDay(2013, 03, 01);
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 3, 1), OrgId.MAIN);
 		final int daysAfterLast = producer.getDaysAfterLastDunningEffective(dunningDate, candidates);
 		Assert.assertEquals("daysAfterLast shall be not available", DefaultDunningCandidateProducer.DAYS_NotAvailable, daysAfterLast);
 	}
@@ -467,23 +472,24 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
 			c.setDunningDateEffective(TimeUtil.getDay(2013, 01, 02));
+			c.setAD_Org_ID(OrgId.MAIN.getRepoId());
 			InterfaceWrapperHelper.save(c);
 			candidates.add(c);
 		}
 
 		//
 		{
-			final Timestamp dunningDate = TimeUtil.getDay(2013, 01, 02);
+			final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 2), OrgId.MAIN);
 			final int daysAfterLast = producer.getDaysAfterLastDunningEffective(dunningDate, candidates);
 			Assert.assertEquals("Invalid DaysAfterLast", 0, daysAfterLast);
 		}
 		{
-			final Timestamp dunningDate = TimeUtil.getDay(2013, 01, 03);
+			final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 3), OrgId.MAIN);
 			final int daysAfterLast = producer.getDaysAfterLastDunningEffective(dunningDate, candidates);
 			Assert.assertEquals("Invalid DaysAfterLast", 1, daysAfterLast);
 		}
 		{
-			final Timestamp dunningDate = TimeUtil.getDay(2013, 01, 10);
+			final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 10), OrgId.MAIN);
 			final int daysAfterLast = producer.getDaysAfterLastDunningEffective(dunningDate, candidates);
 			Assert.assertEquals("Invalid DaysAfterLast", 8, daysAfterLast);
 		}
@@ -518,10 +524,9 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_isDaysBetweenDunningsRespected_NoCandidates()
 	{
-		final Date dunningDate = null; // not required
 		final int requiredDaysBetweenDunnings = 1000;
 		final List<I_C_Dunning_Candidate> candidates = Collections.emptyList();
-		final boolean respected = producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates);
+		final boolean respected = producer.isDaysBetweenDunningsRespected(null, requiredDaysBetweenDunnings, candidates);
 		Assert.assertTrue("Shall be true for an empty collection", respected);
 	}
 
@@ -537,7 +542,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			candidates.add(c);
 		}
 
-		final Date dunningDate = TimeUtil.getDay(2013, 01, 10); // not required
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 10), OrgId.MAIN); // not required
 		final int requiredDaysBetweenDunnings = 5;
 
 		// Shall throw an exception because Last Dunning Efective Date is not available
@@ -552,11 +557,12 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
 			c.setDunningDateEffective(TimeUtil.getDay(2013, 01, 10));
+			c.setAD_Org_ID(OrgId.MAIN.getRepoId());
 			InterfaceWrapperHelper.save(c);
 			candidates.add(c);
 		}
 
-		final Date dunningDate = TimeUtil.getDay(2013, 01, 01);
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 1), OrgId.MAIN);
 		final int requiredDaysBetweenDunnings = 3;
 
 		final boolean respected = producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates);
@@ -575,7 +581,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			candidates.add(c);
 		}
 
-		final Date dunningDate = TimeUtil.getDay(2013, 01, 10);
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 10), OrgId.MAIN);
 		final int requiredDaysBetweenDunnings = 15;
 
 		final boolean respected = producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates);
@@ -594,7 +600,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			candidates.add(c);
 		}
 
-		final Date dunningDate = TimeUtil.getDay(2013, 01, 10);
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 10), OrgId.MAIN);
 		final int requiredDaysBetweenDunnings = 7;
 
 		final boolean respected = producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates);
@@ -615,7 +621,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
 				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 1), OrgId.MAIN)) // dueDate,
 				.setGraceDate(null);
 	}
 
@@ -626,19 +632,23 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Invalid candidate - AD_Client_ID: " + candidate, fromDoc.getAD_Client_ID(), candidate.getAD_Client_ID());
 		Assert.assertEquals("Invalid candidate - AD_Org_ID: " + candidate, fromDoc.getAD_Org_ID(), candidate.getAD_Org_ID());
 
-		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(Services.get(IADTableDAO.class).retrieveTableName(candidate.getAD_Table_ID())));
+		assertThat("Invalid candidate - AD_Table_ID: " + candidate, fromDoc.getTableName(), equalToIgnoringCase(Services.get(IADTableDAO.class).retrieveTableName(candidate.getAD_Table_ID())));
 		Assert.assertEquals("Invalid candidate - Record_ID: " + candidate, fromDoc.getRecordId(), candidate.getRecord_ID());
 		Assert.assertEquals("Invalid candidate - C_DunningLevel: " + candidate, context.getC_DunningLevel(), candidate.getC_DunningLevel());
-		Assert.assertEquals("Invalid candidate - Processed: " + candidate, false, candidate.isProcessed());
-		Assert.assertEquals("Invalid candidate - IsDunningDocProcessed: " + candidate, false, candidate.isDunningDocProcessed());
+		Assert.assertFalse("Invalid candidate - Processed: " + candidate, candidate.isProcessed());
+		Assert.assertFalse("Invalid candidate - IsDunningDocProcessed: " + candidate, candidate.isDunningDocProcessed());
 		Assert.assertNull("Invalid candidate - DunningDateEffective: " + candidate, candidate.getDunningDateEffective());
 
-		Assert.assertEquals("Invalid candidate - DunningDate: " + candidate, context.getDunningDate(), candidate.getDunningDate());
+		Assert.assertEquals("Invalid candidate - DunningDate: " + candidate, Optional.ofNullable(context.getDunningDate())
+				.map(date -> date.toTimestamp(orgDAO::getTimeZone))
+				.orElse(null), candidate.getDunningDate());
 		Assert.assertEquals("Invalid candidate - C_BPartner_ID: " + candidate, fromDoc.getC_BPartner_ID(), candidate.getC_BPartner_ID());
 		Assert.assertEquals("Invalid candidate - C_BPartner_Location_ID: " + candidate, fromDoc.getC_BPartner_Location_ID(), candidate.getC_BPartner_Location_ID());
 		Assert.assertEquals("Invalid candidate - C_Dunning_Contact_ID: " + candidate, fromDoc.getContact_ID(), candidate.getC_Dunning_Contact_ID());
-		Assert.assertEquals("Invalid candidate - DueDate: " + candidate, fromDoc.getDueDate(), candidate.getDueDate());
-		Assert.assertEquals("Invalid candidate - DunningGrace: " + candidate, fromDoc.getGraceDate(), candidate.getDunningGrace());
+		Assert.assertEquals("Invalid candidate - DueDate: " + candidate, fromDoc.getDueDate(), LocalDateAndOrgId.ofTimestamp(candidate.getDueDate(), OrgId.MAIN, orgDAO::getTimeZone));
+		Assert.assertEquals("Invalid candidate - DunningGrace: " + candidate, Optional.ofNullable(fromDoc.getGraceDate())
+				.map(date -> date.toTimestamp(orgDAO::getTimeZone))
+				.orElse(null), candidate.getDunningGrace());
 		Assert.assertEquals("Invalid candidate - DaysDue: " + candidate, fromDoc.getDaysDue(), candidate.getDaysDue());
 		Assert.assertEquals("Invalid candidate - IsWriteOff: " + candidate, candidateDunningLevel.isWriteOff(), candidate.isWriteOff());
 

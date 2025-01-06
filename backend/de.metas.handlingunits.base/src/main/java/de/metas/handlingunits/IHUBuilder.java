@@ -19,12 +19,11 @@ import java.time.ZonedDateTime;
  * Handling Unit Builder Helper
  *
  * @author tsa
- *
  */
 public interface IHUBuilder extends IHUIterator
 {
 	/**
-	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
+	 * This instance stores the {@code huPIVersion}.<br>
 	 * Background: if the parent item is a {@link X_M_HU_Item#ITEMTYPE_HUAggregate} item, then a virtual HU is created, no matter what the given {@code huPIVersion} sais.<br>
 	 * However, below that virtual HU, the given {@code huPIVersion}'s material and packaging items shall be created none the less.
 	 */
@@ -42,7 +41,6 @@ public interface IHUBuilder extends IHUIterator
 	 * <p>
 	 * Also check out {@link #setM_HU_Item_Parent(I_M_HU_Item)}.
 	 *
-	 * @param piVersion
 	 * @return created handling unit; never return null
 	 */
 	I_M_HU create(I_M_HU_PI_Version piVersion);
@@ -70,14 +68,12 @@ public interface IHUBuilder extends IHUIterator
 
 	/**
 	 * Sets M_Locator to be set on newly create HU.
-	 *
 	 * In case HU Item Parent (see {@link #setM_HU_Item_Parent(I_M_HU_Item)}) is set then locator from parent will be used and this one will be ignored.
 	 */
 	IHUBuilder setLocatorId(LocatorId locatorId);
 
 	/**
 	 * Sets {@link I_M_HU#COLUMN_HUStatus} to be used when creating a new HU.
-	 *
 	 * In case HU Item Parent (see {@link #setM_HU_Item_Parent(I_M_HU_Item)}) is set then HUStatus from parent will be used and this one will be ignored.
 	 *
 	 * @param huStatus HU Status (see X_M_HU.HUSTATUS_*); null is not accepted
@@ -99,4 +95,7 @@ public interface IHUBuilder extends IHUIterator
 	IHUBuilder setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
 
 	IHUBuilder setIsExternalProperty(boolean externalProperty);
+
+	@Override
+	IHUBuilder setListener(final IHUIteratorListener listener);
 }

@@ -10,6 +10,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.dunning.api.IDunningDAO;
 import de.metas.location.ILocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -40,6 +41,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.OptionalInt;
 import java.util.Properties;
@@ -74,11 +76,10 @@ import java.util.Properties;
  * <li>save everything: {@link #save()}
  * <li>when a getter is called, it will fetch the value directly from the loaded database record
  * </ul>
- *
+ * <p>
  * This shall be a short living object.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class ClientSetup
 {
@@ -96,6 +97,7 @@ class ClientSetup
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
+	private final transient IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 	// Parameters
 	private final Properties _ctx;
@@ -109,6 +111,7 @@ class ClientSetup
 	private final I_C_BP_BankAccount orgBankAccount;
 	private final I_C_AcctSchema acctSchema;
 	private final I_M_PriceList priceList_None;
+	private Runnable updateDunningsOnSaveAction;
 
 	private ClientSetup(@NonNull final Properties ctx)
 	{
@@ -136,15 +139,15 @@ class ClientSetup
 			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
-			
+
 			final BPartnerId orgBPartnerId = BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID());
 			orgBankAccount = bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBPartnerId).orElse(null);
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
-			
+
 			//
 			final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoId(adClientInfo.getC_AcctSchema1_ID());
 			acctSchema = Services.get(IAcctSchemaDAO.class).getRecordById(primaryAcctSchemaId);
-			
+
 			priceList_None = InterfaceWrapperHelper.create(getCtx(), IPriceListDAO.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
@@ -178,6 +181,11 @@ class ClientSetup
 		InterfaceWrapperHelper.save(acctSchema, ITrx.TRXNAME_ThreadInherited);
 
 		InterfaceWrapperHelper.save(priceList_None, ITrx.TRXNAME_ThreadInherited);
+
+		if (updateDunningsOnSaveAction != null)
+		{
+			updateDunningsOnSaveAction.run();
+		}
 	}
 
 	private void setOtherDefaults()
@@ -259,7 +267,7 @@ class ClientSetup
 		{
 			return this;
 		}
-		
+
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchema.getC_Currency_ID());
 		final CurrencyCode acctCurrencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(acctCurrencyId);
 
@@ -268,6 +276,12 @@ class ClientSetup
 		acctSchema.setName(acctSchema.getGAAP() + " / " + acctCurrencyCode.toThreeLetterCode());
 
 		priceList_None.setC_Currency_ID(currencyId.getRepoId());
+
+		updateDunningsOnSaveAction = () ->
+				dunningDAO.retrieveDunningsByOrg(OrgId.ofRepoId(adOrg.getAD_Org_ID())).forEach(dunning -> {
+					dunning.setC_Currency_ID(currencyId.getRepoId());
+					dunningDAO.save(dunning);
+				});
 
 		return this;
 	}
@@ -365,10 +379,15 @@ class ClientSetup
 		return setCompanyAddress(companyAddress);
 	}
 
-	public ClientSetup setCompanyLogo(final I_AD_Image companyLogo)
+	public ClientSetup setCompanyLogo(final @Nullable I_AD_Image companyLogo)
 	{
 		if (companyLogo == null || companyLogo.getAD_Image_ID() <= 0)
 		{
+			adClientInfo.setLogo_ID(-1);
+			adClientInfo.setLogoReport_ID(-1);
+			adClientInfo.setLogoWeb_ID(-1);
+			adOrgInfoChangeRequest.logoImageId(OptionalInt.of(-1));
+			orgBPartner.setLogo_ID(-1);
 			return this;
 		}
 
@@ -387,7 +406,7 @@ class ClientSetup
 	{
 		if (adImageId <= 0)
 		{
-			return this;
+			return setCompanyLogo(null);
 		}
 
 		final I_AD_Image companyLogo = InterfaceWrapperHelper.create(getCtx(), adImageId, I_AD_Image.class, ITrx.TRXNAME_ThreadInherited);

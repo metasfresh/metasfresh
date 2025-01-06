@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -15,9 +16,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -48,8 +47,7 @@ import java.util.List;
  */
 public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	@Autowired
-	private DocumentCollection documentsCollection;
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
 
 	@Param(parameterName = "QtyTU")
 	private int p_QtyTU;
@@ -106,10 +104,10 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
 
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
-		final List<I_M_HU> tus = HUTransformService.newInstance().husToNewTUs(request);
-		if (tus.size() != p_QtyTU)
+		final LUTUResult.TUsList tus = HUTransformService.newInstance().husToNewTUs(request);
+		if (tus.getQtyTU().toInt() != p_QtyTU)
 		{
-			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, p_QtyTU, tus.size());
+			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, p_QtyTU, tus.getQtyTU());
 		}
 
 		HUMoveToDirectWarehouseService.newInstance()
@@ -119,7 +117,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setLoggable(this)
-				.move(tus.iterator());
+				.move(tus.toHURecords().iterator());
 
 		return MSG_OK;
 	}

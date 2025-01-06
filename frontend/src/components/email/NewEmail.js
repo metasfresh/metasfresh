@@ -102,7 +102,7 @@ const NewEmail = ({ windowId, docId, handleCloseEmail }) => {
                 {counterpart.translate('window.email.to')}:
               </span>
               <AutocompleteField
-                to={data?.to || []}
+                value={data?.to || []}
                 onChange={(value) => onFieldChanged('to', value, true)}
                 suggestValuesForQueryString={(queryString) =>
                   api.getToTypeahead(data.emailId, queryString)

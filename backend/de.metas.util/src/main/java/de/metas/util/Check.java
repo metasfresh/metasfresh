@@ -311,7 +311,7 @@ public final class Check
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
 	@Contract("!null, _, _, _ -> fail")
-	public static void assumeNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static void assumeNull(@Nullable final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object == null;
 		assume(cond, exceptionClass, assumptionMessage, params);
@@ -352,7 +352,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+	public static <T extends Collection<?>> T assumeNotEmpty(
 			final T collection,
 			final String assumptionMessage,
 			final Object... params)
@@ -458,7 +458,7 @@ public final class Check
 
 	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
 	{
-		assumeNotNull(valueName, "" + valueName + " is not null");
+		assumeNotNull(valueName, valueName + " is not null");
 		if (valueBD == null || valueBD.signum() <= 0)
 		{
 			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueBD);
@@ -588,8 +588,7 @@ public final class Check
 	{
 		return () -> {
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
-			final RuntimeException ex = mkEx(exceptionClass, errMsgFormated);
-			return ex;
+			return mkEx(exceptionClass, errMsgFormated);
 		};
 	}
 
@@ -623,7 +622,7 @@ public final class Check
 	/**
 	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
 	 */
-	@Contract("!null -> true")
+	@Contract("null -> false")
 	public static boolean isNotBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isNotBlank(str);
@@ -636,6 +635,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+	@Contract("null, _ -> true")
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		return EmptyUtil.isEmpty(str, trimWhitespaces);
@@ -644,7 +644,8 @@ public final class Check
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
-	public static boolean isEmpty(final BigDecimal bd)
+	@Contract("null -> true")
+	public static boolean isEmpty(@Nullable final BigDecimal bd)
 	{
 		return EmptyUtil.isEmpty(bd);
 	}
@@ -660,6 +661,7 @@ public final class Check
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return EmptyUtil.isEmpty(collection);
@@ -679,12 +681,12 @@ public final class Check
 	 * <p>
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
 	 *
-	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
+	 * @deprecated as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
 	public static boolean equals(final Object a, final Object b)
 	{
-		if (a == b || a != null && b != null && a.equals(b))
+		if (a == b || a != null && a.equals(b))
 		{
 			return true;
 		}

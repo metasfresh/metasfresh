@@ -81,10 +81,12 @@ public class PPRoutingActivity
 	boolean milestone;
 	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
 	@Nullable UserInstructions userInstructions;
+	@Nullable PPOrderTargetPlanningStatus targetPlanningStatus;
 
 	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 
 	@Nullable PPRoutingActivityTemplateId activityTemplateId;
+	@Nullable RawMaterialsIssueStrategy rawMaterialsIssueStrategy;
 
 	public boolean isValidAtDate(final Instant dateTime)
 	{

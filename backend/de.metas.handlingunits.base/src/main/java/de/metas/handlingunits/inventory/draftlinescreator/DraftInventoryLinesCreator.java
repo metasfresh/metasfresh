@@ -101,15 +101,15 @@ public class DraftInventoryLinesCreator
 						strategy.getClass().getSimpleName(), strategy.getMaxLocatorsAllowed());
 				break;
 			}
-			if (!preAddedHuIds.contains(hu.getHuId()))
+
+			if (hu.getHuId() != null && preAddedHuIds.contains(hu.getHuId()))
 			{
-				createOrUpdateInventoryLine(hu);
+				loggable.addLog("M_HU_ID={} is already assigned to M_Inventory_ID={}; -> not trying to add it again",
+						HuId.toRepoId(hu.getHuId()), InventoryId.toRepoId(inventoryId));
+				continue;
 			}
-			else
-			{
-				loggable.addLog("M_HU_ID={} is already assinged to M_Inventory_ID={}; -> not trying to add it again",
-						HuId.toRepoId(hu.getHuId()),InventoryId.toRepoId(inventoryId));
-			}
+
+			createOrUpdateInventoryLine(hu);
 			countInventoryLines++;
 		}
 
@@ -177,6 +177,7 @@ public class DraftInventoryLinesCreator
 
 		return InventoryLineHU.builder()
 				.huId(huForInventoryLine.getHuId())
+				.huQRCode(huForInventoryLine.getHuQRCode())
 				.qtyBook(quantityBooked)
 				.qtyCount(quantityCount)
 				.build();

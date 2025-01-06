@@ -37,6 +37,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -593,6 +594,12 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
+	public void setReportData(@NonNull final Resource data)
+	{
+		final String filename = Check.assumeNotNull(data.getFilename(), "Resource shall have the filename set: {}", data);
+		setReportData(data, filename, MimeType.getMimeType(data.getFilename()));
+	}
+
 	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
 	{
 		setReportData(ReportResultData.builder()
@@ -607,6 +614,10 @@ public class ProcessExecutionResult
 		setReportData(ReportResultData.ofFile(file));
 	}
 
+	public void setReportData(@NonNull final File file, @NonNull final String fileName)
+	{
+		setReportData(ReportResultData.ofFile(file, fileName));
+	}
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;

@@ -30,7 +30,13 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleReposi
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
+import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
@@ -55,7 +61,12 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				ADReferenceService.newMocked(),
-				huReservationService);
+				huReservationService,
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+										   )));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());

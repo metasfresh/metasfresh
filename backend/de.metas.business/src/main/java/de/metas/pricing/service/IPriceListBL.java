@@ -1,14 +1,5 @@
 package de.metas.pricing.service;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -16,6 +7,13 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * @author RC
@@ -61,6 +59,7 @@ public interface IPriceListBL extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			@Nullable PricingSystemId pricingSystemId,
+			@Nullable PriceListId priceListId,
 			CountryId countryId,
 			ZonedDateTime date,
 			@Nullable SOTrx soTrx,

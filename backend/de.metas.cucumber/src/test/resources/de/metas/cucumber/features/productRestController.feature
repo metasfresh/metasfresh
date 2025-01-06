@@ -3,7 +3,7 @@
 Feature:product get/create/update using metasfresh api
   As a REST-API invoker
   I want want to be able to upsert products
-  
+
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -19,10 +19,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: create Product request, as a REST-API invoker
   I want to be able to upsert products
 
-    Given metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference | Type     |
-      | ALBERTA             | 345               | BPartner |
-      | ALBERTA             | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
@@ -147,7 +151,19 @@ Feature:product get/create/update using metasfresh api
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
             }
-         }
+         },
+         "uomConversions": [
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "KGM",
+            "fromToMultiplier": 0.25
+          },
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "GRM",
+            "fromToMultiplier": 0.00025
+          }
+        ]
       }
     }
   ],
@@ -165,23 +181,28 @@ Feature:product get/create/update using metasfresh api
       | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | ALBERTA_345_sectionCode    | true            | HH                       |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
-      | bpartner_1               | ext-ALBERTA-345    |
-      | bpartner_2               | ext-ALBERTA-456    |
+      | customer_20240322_1      | ext-ALBERTA-345    |
+      | customer_20240322_2      | ext-ALBERTA-456    |
     And locate bpartner product by product and bpartner
       | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
-      | bp_1                             | p_1                     | bpartner_1               |
-      | bp_2                             | p_1                     | bpartner_2               |
+      | bp_1                             | p_1                     | customer_20240322_1      |
+      | bp_2                             | p_1                     | customer_20240322_2      |
     And verify bpartner product info
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
     And validate created M_Quality_Attributes for product: p_1
       | OPT.QualityAttribute  |
       | BearbeitetBio         |
       | EU/Non-EU-Agriculture |
+
+    And validate C_UOM_Conversion:
+      | M_Product_ID.Identifier | C_UOM_ID.X12DE355 | C_UOM_To_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE               | KGM                  | 0.25         |
+      | p_1                     | PCE               | GRM                  | 0.00025      |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
 """
@@ -227,8 +248,8 @@ Feature:product get/create/update using metasfresh api
 
     Then locate bpartner product by product and bpartner
       | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
-      | bp_1                             | p_1                     | bpartner_1               |
-      | bp_2                             | p_1                     | bpartner_2               |
+      | bp_1                             | p_1                     | customer_20240322_1      |
+      | bp_2                             | p_1                     | customer_20240322_2      |
 
     And verify bpartner product info
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
@@ -242,10 +263,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
 
-    And metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference | Type     |
-      | ALBERTA             | 345               | BPartner |
-      | ALBERTA             | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -335,52 +360,52 @@ Feature:product get/create/update using metasfresh api
       | p_1                     | code345_2 | Product_Test_2 | ITEM        | PCE               | ean_test | gtin_test | test_description | true     |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
-      | bpartner_1               | ext-ALBERTA-345    |
+      | customer_20240322_1      | ext-ALBERTA-345    |
     And locate bpartner product by product and bpartner
       | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
-      | bp_1                             | p_1                     | bpartner_1               |
+      | bp_1                             | p_1                     | customer_20240322_1      |
     And verify bpartner product info
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | testForSale             | true                   | testForPurchase             |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | true                       |
     When a 'GET' request with the below payload is sent to the metasfresh REST-API 'api/v2/products' and fulfills with '200' status code
 """
 """
     Then validate get products response
       | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | UPC      | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
-      | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
+      | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | customer_20240322_1      | test                | true                         | testForSale                       | true                             | testForPurchase                       |
 
 
   @from:cucumber
   Scenario: Retrieve product by external identifier
 
     Given load M_Product_Category:
-      | M_Product_Category_ID.Identifier | Name     | Value    |
-      | standard_category                | Standard | Standard |
+      | M_Product_Category_ID | Name     | Value    |
+      | standard_category     | Standard | Standard |
 
     And metasfresh contains M_Products:
-      | Identifier | Value        | Name        | OPT.M_Product_Category_ID.Identifier |
-      | product_1  | productValue | productName | standard_category                    |
+      | Identifier | M_Product_Category_ID.Identifier |
+      | product_1  | standard_category                |
 
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer |
-      | bpartner_1 | BPartnerName | N            | Y              |
+      | Identifier | IsCustomer |
+      | bpartner_1 | Y          |
 
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference  | Type    | OPT.M_Product_ID.Identifier |
+      | productExternalRef                | LeichUndMehl   | productExternalRef | Product | product_1                   |
 
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
 
     Then validate retrieve product response
-      | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
-      | product_1               | productName | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |
+      | M_Product_ID | Name                    | UomSymbol | M_Product_Category_ID | C_BPartner_ID | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
+      | product_1    | @product_1.productName@ | Stk       | standard_category     | bpartner_1    | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |
 
   @from:cucumber
   @Id:S0295_100

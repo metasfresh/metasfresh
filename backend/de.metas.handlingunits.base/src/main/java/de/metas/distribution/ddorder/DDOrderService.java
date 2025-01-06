@@ -18,17 +18,20 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
 import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -132,6 +135,16 @@ public class DDOrderService
 		documentBL.processEx(ddOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 	}
 
+	public void print(@NonNull final DDOrderId ddOrderId)
+	{
+		DefaultModelArchiver.builder()
+				.record(getById(ddOrderId))
+				.isDirectEnqueue(true)
+				.isDirectProcessQueueItem(true)
+				.build()
+				.archive();
+	}
+
 	public void closeLine(final I_DD_OrderLine ddOrderLine)
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
@@ -195,10 +208,17 @@ public class DDOrderService
 		final ImmutableList.Builder<I_DD_Order> result = ImmutableList.builder();
 		for (final Entry<BPartnerLocationId, Collection<HUToDistribute>> entry : entries)
 		{
+			final WarehouseId warehouseFromId = entry.getValue()
+					.stream()
+					.map(huToDistribute -> IHandlingUnitsBL.extractWarehouseId(huToDistribute.getHu()))
+					.distinct()
+					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All HUs shall be from same warehouseFromId")));
+
 			final Optional<I_DD_Order> ddOrder = HUs2DDOrderProducer.newProducer(ddOrderMoveScheduleService)
 					.setLocatorToId(quarantineLocatorId)
 					.setBpartnerLocationId(entry.getKey())
 					.setHUs(entry.getValue().iterator())
+					.setWarehouseFromId(warehouseFromId)
 					.process();
 
 			ddOrder.ifPresent(result::add);
@@ -254,9 +274,9 @@ public class DDOrderService
 	public void generateDirectMovements(@NonNull final I_DD_Order ddOrder)
 	{
 		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
-				.ddOrder(ddOrder)
-				.failIfNotFullAllocated(true)
-				.build());
+																				   .ddOrder(ddOrder)
+																				   .failIfNotFullAllocated(true)
+																				   .build());
 
 		final ImmutableList<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.savePlan(plan);
 
@@ -265,7 +285,10 @@ public class DDOrderService
 				.generateDirectMovements();
 	}
 
-	public boolean isCreateMovementOnComplete() {return sysConfigBL.getBooleanValue(SYSCONFIG_IsCreateMovementOnComplete, false);}
+	public boolean isCreateMovementOnComplete()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCreateMovementOnComplete, false);
+	}
 
 	public Quantity getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
@@ -302,6 +325,11 @@ public class DDOrderService
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
 		unassignFromResponsibleAndSave(ddOrder);
+	}
+
+	public void removeAllNotStartedSchedules(final DDOrderId ddOrderId)
+	{
+		ddOrderMoveScheduleService.removeNotStarted(ddOrderId);
 	}
 
 	private void unassignFromResponsibleAndSave(final I_DD_Order ddOrder)

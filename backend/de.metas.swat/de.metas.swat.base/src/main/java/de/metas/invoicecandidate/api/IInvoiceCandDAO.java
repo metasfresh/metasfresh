@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceLineAllocId;
@@ -67,7 +68,7 @@ import java.util.Set;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+	I_C_Invoice_Candidate getById(@NonNull InvoiceCandidateId invoiceCandId);
 
 	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
 
@@ -88,6 +89,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
+
+	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine, boolean onlyActive);
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(InvoiceId invoiceId);
 
@@ -131,6 +134,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * </ul>
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
+
+	@NonNull
+	Collection<InvoiceCandidateId> retrieveInvoiceCandidateIds(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Returns all ICs that have the given <code>headerAggregationKey</code>.
@@ -245,8 +251,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	// /**
 	//  * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	//  * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
-	//  *
-	//  * task https://github.com/metasfresh/metasfresh/issues/3809
+	//  * <p>
+	//  * task <a href="https://github.com/metasfresh/metasfresh/issues/3809">https://github.com/metasfresh/metasfresh/issues/3809</a>
 	//  */
 	// void updateMissingPaymentTermIds(PInstanceId selectionId);
 
@@ -284,7 +290,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/1566
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1566">https://github.com/metasfresh/metasfresh/issues/1566</a>
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
@@ -292,8 +298,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
-	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/13376
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/13376">https://github.com/metasfresh/metasfresh/issues/13376</a>
 	 */
 	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
 
@@ -428,4 +434,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	@NonNull
 	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }

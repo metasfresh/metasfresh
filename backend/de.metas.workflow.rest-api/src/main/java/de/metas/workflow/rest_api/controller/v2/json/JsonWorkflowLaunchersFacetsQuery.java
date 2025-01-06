@@ -22,8 +22,7 @@
 
 package de.metas.workflow.rest_api.controller.v2.json;
 
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,5 +38,6 @@ import java.util.List;
 public class JsonWorkflowLaunchersFacetsQuery
 {
 	@NonNull MobileApplicationId applicationId;
+	@Nullable String filterByDocumentNo;
 	@Nullable List<WorkflowLaunchersFacetId> activeFacetIds;
 }

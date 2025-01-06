@@ -88,6 +88,7 @@ public class DocTypeInvoicingPoolRepository
 				.negativeAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getNegative_Amt_C_DocType_ID()))
 				.isSoTrx(SOTrx.ofBoolean(docTypeInvoicingPoolRecord.isSOTrx()))
 				.isOnDistinctICTypes(docTypeInvoicingPoolRecord.isOnDistinctICTypes())
+				.isCreditedInvoiceReinvoicable(docTypeInvoicingPoolRecord.isCreditedInvoiceReinvoicable())
 				.isActive(docTypeInvoicingPoolRecord.isActive())
 				.build();
 	}

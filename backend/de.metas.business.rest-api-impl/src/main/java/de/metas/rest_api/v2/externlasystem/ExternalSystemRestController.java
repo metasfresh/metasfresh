@@ -50,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -101,7 +102,8 @@ public class ExternalSystemRestController
 						.jsonInvokeExternalSystemParams(externalSystemParams)
 						.build();
 
-		return getResponse(externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest));
+		final ProcessExecutionResult processExecutionResult = externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest);
+		return getResponse(processExecutionResult);
 	}
 
 	@Operation(summary = "Enables an external system to create an `AD_PInstance_Log`." 
@@ -203,7 +205,6 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok().body(statusInfo);
 	}
 
-
 	@Operation(summary = "Get external system info.\n Note, only externalSystemConfigType=GRSSignum is supported at the moment.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Successfully retrieved external system info"),
@@ -228,18 +229,25 @@ public class ExternalSystemRestController
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)
 	{
-		final RunProcessResponse runProcessResponse;
+		final ResponseEntity.BodyBuilder responseEntity;
+		
+		final RunProcessResponse.RunProcessResponseBuilder responseBodyBuilder = RunProcessResponse.builder()
+				.pInstanceID(String.valueOf(processExecutionResult.getPinstanceId().getRepoId()));
 
-		runProcessResponse = RunProcessResponse.builder()
-				.pInstanceID(String.valueOf(processExecutionResult.getPinstanceId().getRepoId()))
-				.errors(processExecutionResult.getThrowable() != null ?
-								JsonError.ofSingleItem(JsonErrors.ofThrowable(processExecutionResult.getThrowable(), Env.getADLanguageOrBaseLanguage()))
-								: null)
-				.build();
+		if (processExecutionResult.getThrowable() != null)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(processExecutionResult.getThrowable(), Env.getADLanguageOrBaseLanguage()));
+			responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
 
-		return ResponseEntity
-				.ok()
+			responseBodyBuilder.errors(error);
+		}
+		else
+		{
+			responseEntity = ResponseEntity.ok();
+		}
+
+		return responseEntity
 				.contentType(MediaType.APPLICATION_JSON)
-				.body(runProcessResponse);
+				.body(responseBodyBuilder.build());
 	}
 }

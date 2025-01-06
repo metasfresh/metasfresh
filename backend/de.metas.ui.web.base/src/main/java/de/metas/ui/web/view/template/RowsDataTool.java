@@ -1,15 +1,14 @@
 package de.metas.ui.web.view.template;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -35,9 +34,9 @@ import lombok.experimental.UtilityClass;
 
 
 @UtilityClass
-class RowsDataTool
+public class RowsDataTool
 {
-	static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
+	public static <T extends IViewRow> Map<DocumentId, T> extractAllRows(final Collection<T> topLevelRows)
 	{
 		final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
 		topLevelRows.forEach(topLevelRow -> {

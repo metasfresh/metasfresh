@@ -43,6 +43,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.reflections.util.Utils;
 
@@ -82,6 +83,7 @@ public class CreateUpdateOrderCandidateCommand
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
 
+		ppOrderCandidateRecord.setPP_Order_Candidate_Parent_ID(PPOrderCandidateId.toRepoId(request.getParentPPOrderCandidateId()));
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(request.getProductPlanningId()));
 		ppOrderCandidateRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
 		ppOrderCandidateRecord.setS_Resource_ID(request.getPlantId().getRepoId());
@@ -131,7 +133,7 @@ public class CreateUpdateOrderCandidateCommand
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
-		if(!Utils.isEmpty(request.getLotForLot()))
+		if (!Utils.isEmpty(request.getLotForLot()))
 		{
 			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}

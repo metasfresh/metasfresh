@@ -2,8 +2,8 @@ package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
@@ -49,12 +49,12 @@ public class MatchPODAO implements IMatchPODAO
 	@Override
 	public List<I_M_MatchPO> getByOrderLineAndInvoiceLine(
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final InvoiceLineId invoiceLineId)
+			@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_MatchPO.class)
 				.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, orderLineId)
-				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, invoiceAndLineId)
 				.create()
 				.listImmutable(I_M_MatchPO.class);
 	}

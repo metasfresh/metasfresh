@@ -124,7 +124,7 @@ public class AsyncBatchService
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
-				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
 			else
 			{
@@ -168,6 +168,7 @@ public class AsyncBatchService
 	}
 
 	/**
+	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
 	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
