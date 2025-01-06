@@ -357,7 +357,7 @@ jobs:
 
   preloaded-db:
     runs-on: ubuntu-latest
-    needs: [ backend ]
+    needs: [ init, backend ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
     steps:
