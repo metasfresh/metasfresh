@@ -167,7 +167,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       },
       "triggerDocumentDate": "2020-03-21",
       "triggerDocumentId": {
-        "invoiceLineId": {
+        "invoiceAndLineId": {
           "invoiceId": 10,
           "repoId": 15
         }

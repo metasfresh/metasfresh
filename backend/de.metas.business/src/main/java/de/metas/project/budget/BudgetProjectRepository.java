@@ -151,6 +151,10 @@ public class BudgetProjectRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_ExternalId, ExternalId.toValue(query.getExternalId()));
 		}
+		if (query.getExternalIdPattern() != null)
+		{
+			queryBuilder.addStringLikeFilter(I_C_Project.COLUMNNAME_ExternalId, "%" + query.getExternalIdPattern() + "%", true);
+		}
 
 		return queryBuilder
 				.create()

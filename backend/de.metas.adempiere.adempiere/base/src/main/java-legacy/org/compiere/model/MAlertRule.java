@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
+import de.metas.util.FileUtil;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -151,7 +152,7 @@ public class MAlertRule extends X_AD_AlertRule
 		File file = null;
 		try
 		{
-			file = new File(System.getProperty("java.io.tmpdir"), name+"."+extension);
+			file = new File(FileUtil.getTempDir(), name+"."+extension);
 			file.createNewFile();
 			return file;
 		}

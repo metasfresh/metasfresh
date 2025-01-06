@@ -22,6 +22,7 @@ package de.metas.material.planning.pporder;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.ProductId;
@@ -30,6 +31,7 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -151,4 +153,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void save(I_PP_Order_BOMLine orderBOMLine);
 
 	Set<ProductId> getProductIdsToIssue(PPOrderId ppOrderId);
+
+	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
 }

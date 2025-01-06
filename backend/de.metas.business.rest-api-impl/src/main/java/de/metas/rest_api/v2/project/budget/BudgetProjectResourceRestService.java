@@ -430,11 +430,11 @@ public class BudgetProjectResourceRestService
 
 		if (request.isPlannedDurationSet() && plannedDuration == null)
 		{
-			return Quantitys.createZero(durationUOMId);
+			return Quantitys.zero(durationUOMId);
 		}
 		else if (request.isPlannedDurationSet())
 		{
-			return Quantitys.create(plannedDuration, durationUOMId);
+			return Quantitys.of(plannedDuration, durationUOMId);
 		}
 		else if (existingBudgetProjectResource != null)
 		{
@@ -444,7 +444,7 @@ public class BudgetProjectResourceRestService
 		}
 		else
 		{
-			return Quantitys.createZero(durationUOMId);
+			return Quantitys.zero(durationUOMId);
 		}
 	}
 

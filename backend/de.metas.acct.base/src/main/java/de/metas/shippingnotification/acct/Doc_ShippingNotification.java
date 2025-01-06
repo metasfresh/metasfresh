@@ -7,7 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
-import de.metas.document.DocBaseType;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.dimension.Dimension;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
@@ -27,10 +27,10 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	private ShippingNotification shippingNotification;
 
 	Doc_ShippingNotification(
-			@NonNull ShippingNotificationAcctService shippingNotificationAcctService,
+			@NonNull final ShippingNotificationAcctService shippingNotificationAcctService,
 			@NonNull final AcctDocContext ctx)
 	{
-		super(ctx, DocBaseType.ShippingNotification);
+		super(ctx);
 		this.shippingNotificationAcctService = shippingNotificationAcctService;
 	}
 
@@ -46,9 +46,25 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 	@Override
 	protected List<Fact> createFacts(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
-		return ImmutableList.of(fact);
+		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
+		if (docBaseAndSubType.isShippingNotificationBaseType())
+		{
+			if(docBaseAndSubType.isProformaSubType())
+			{
+				return ImmutableList.of();
+			}
+			else
+			{
+				final Fact fact = new Fact(this, as, PostingType.Actual);
+				shippingNotification.getLines().forEach(line -> createFactsForLine(fact, line));
+				return ImmutableList.of(fact);
+			}
+		}
+		else
+		{
+			throw newPostingException()
+					.setDetailMessage("DocumentType unknown: " + docBaseAndSubType);
+		}
 	}
 
 	private void createFactsForLine(final Fact fact, final ShippingNotificationLine line)
@@ -101,7 +117,7 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 		cr.setFromDimension(dimension);
 	}
 
-	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull ShippingNotificationLine line)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull final ShippingNotificationLine line)
 	{
 		return getAccountProvider().getProductAccount(as.getId(), line.getProductId(), null, acctType);
 	}

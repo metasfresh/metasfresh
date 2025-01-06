@@ -23,7 +23,7 @@
 package de.metas.workflow.rest_api.controller.v2.json;
 
 import de.metas.global_qrcodes.GlobalQRCode;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,6 +40,7 @@ public class JsonLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable String filterByDocumentNo;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
 
 	boolean countOnly;

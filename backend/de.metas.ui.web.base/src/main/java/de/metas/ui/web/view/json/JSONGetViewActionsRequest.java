@@ -8,6 +8,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 @Value
@@ -17,6 +18,7 @@ import java.util.Set;
 public class JSONGetViewActionsRequest
 {
 	@Nullable String viewProfileId;
+	@Nullable List<JSONViewOrderBy> viewOrderBy;
 
 	@Nullable Set<String> selectedIds;
 

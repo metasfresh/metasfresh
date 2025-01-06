@@ -1,21 +1,24 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.inout.IHUInOutBL;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+
+import java.util.HashSet;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -27,12 +30,12 @@ import org.compiere.SpringContextHolder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,13 +46,16 @@ import org.compiere.SpringContextHolder;
  * Return the selected HUs back to customer.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task initial task https://github.com/metasfresh/metasfresh/issues/1306
+ * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/1306">issue</a>
  */
 public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
-	private List<I_M_HU> husMoved = null;
+	private ImmutableList<I_M_HU> _selectedHUsToReturn = null;
+	private MultiCustomerHUReturnsResult result;
+
+	private static final HUEditorRowFilter ELIGIBLE_ROWS_FILTER = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyHUStatus(X_M_HU.HUSTATUS_Shipped).build();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -59,9 +65,9 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamEligibleSelectedRows().findAny().isPresent())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
+			return ProcessPreconditionsResolution.reject(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -70,24 +76,54 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected String doIt()
 	{
-		final ImmutableList<I_M_HU> husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_M_HU> husToReturn = getSelectedHUsToReturn();
 		if (husToReturn.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		returnsServiceFacade.createCustomerReturnInOutForHUs(husToReturn);
-		husMoved = husToReturn;
+		this.result = returnsServiceFacade.createCustomerReturnInOutForHUs(husToReturn);
 
 		return MSG_OK;
+	}
+
+	private Stream<HUEditorRow> streamEligibleSelectedRows()
+	{
+		return streamSelectedRows(ELIGIBLE_ROWS_FILTER);
+	}
+
+	private ImmutableList<I_M_HU> getSelectedHUsToReturn()
+	{
+		ImmutableList<I_M_HU> selectedHUsToReturn = this._selectedHUsToReturn;
+		if (selectedHUsToReturn == null)
+		{
+			final ImmutableSet<HuId> huIds = streamEligibleSelectedRows()
+					.map(HUEditorRow::getHuId)
+					.distinct()
+					.collect(ImmutableSet.toImmutableSet());
+			selectedHUsToReturn = this._selectedHUsToReturn = ImmutableList.copyOf(handlingUnitsRepo.getByIds(huIds));
+		}
+		return selectedHUsToReturn;
 	}
 
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		if (husMoved != null && !husMoved.isEmpty())
+		if (!success)
 		{
-			getView().removeHUsAndInvalidate(husMoved);
+			return;
 		}
+
+		final HashSet<HuId> huIdsToRefresh = new HashSet<>();
+		getSelectedHUsToReturn().stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.forEach(huIdsToRefresh::add);
+
+		if (result != null)
+		{
+			huIdsToRefresh.addAll(result.getReturnedHUIds());
+		}
+
+		addHUIdsAndInvalidateView(huIdsToRefresh);
 	}
 }

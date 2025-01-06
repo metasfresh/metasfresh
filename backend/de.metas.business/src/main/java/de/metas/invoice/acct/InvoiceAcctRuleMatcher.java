@@ -24,8 +24,8 @@ package de.metas.invoice.acct;
 
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,27 +39,27 @@ public class InvoiceAcctRuleMatcher
 {
 	public static final Comparator<InvoiceAcctRuleMatcher> ORDER_FROM_SPECIFIC_TO_GENERIC = Comparator.comparing(InvoiceAcctRuleMatcher::getAcctSchemaId)
 			.thenComparing(InvoiceAcctRuleMatcher::getAccountConceptualName, Comparator.nullsLast(Comparator.naturalOrder()))
-			.thenComparing(InvoiceAcctRuleMatcher::getInvoiceLineId, Comparator.nullsLast(Comparator.naturalOrder()));
+			.thenComparing(InvoiceAcctRuleMatcher::getInvoiceAndLineId, Comparator.nullsLast(Comparator.naturalOrder()));
 
 	@NonNull AcctSchemaId acctSchemaId;
-	@Nullable InvoiceLineId invoiceLineId;
+	@Nullable InvoiceAndLineId invoiceAndLineId;
 	@Nullable AccountConceptualName accountConceptualName;
 
 	void assertInvoiceId(@NonNull InvoiceId expectedInvoiceId)
 	{
-		if (invoiceLineId != null)
+		if (invoiceAndLineId != null)
 		{
-			invoiceLineId.assertInvoiceId(expectedInvoiceId);
+			invoiceAndLineId.assertInvoiceId(expectedInvoiceId);
 		}
 	}
 
 	boolean matches(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final AccountConceptualName accountConceptualName,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		return AcctSchemaId.equals(this.acctSchemaId, acctSchemaId)
 				&& (this.accountConceptualName == null || AccountConceptualName.equals(this.accountConceptualName, accountConceptualName))
-				&& (this.invoiceLineId == null || InvoiceLineId.equals(this.invoiceLineId, invoiceLineId));
+				&& (this.invoiceAndLineId == null || InvoiceAndLineId.equals(this.invoiceAndLineId, invoiceAndLineId));
 	}
 }

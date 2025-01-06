@@ -61,6 +61,8 @@ public class BPartnerAttachmentsRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_ATTACH_FILE = "mock:attachFile";
 
 	private static final String JSON_BPARTNER_ATTACHMENT = "0_JsonBPartnerAttachment.json";
+	private static final String JSON_BPARTNER_ATTACHMENT_MISSING_ANHANGDATEI = "0_JsonBPartnerAttachment_missing_ANHANGDATEI.json";
+	private static final String JSON_BPARTNER_ATTACHMENT_NULL_ANHANGDATEI = "0_JsonBPartnerAttachment_null_ANHANGDATEI.json";
 	private static final String JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ = "10_RetrieveExternalSystemInfoCamelRequest.json";
 	private static final String JSON_EXTERNAL_SYSTEM_INFO_RES = "10_JsonExternalSystemInfo.json";
 	private static final String JSON_ATTACHMENT_REQ = "20_JsonAttachmentRequest.json";
@@ -143,6 +145,62 @@ public class BPartnerAttachmentsRouteBuilderTest extends CamelTestSupport
 		assertThat(mockAttachFileEP.called).isEqualTo(1);
 	}
 
+	@Test
+	void attachFileToBPartner_missing_ANHANGDATEI() throws Exception
+	{
+		//given
+		final TokenCredentials tokenCredentials = TokenCredentials.builder()
+				.orgCode("orgCode")
+				.pInstance(JsonMetasfreshId.of(1))
+				.externalSystemValue("childConfigValue")
+				.build();
+
+		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
+
+		final MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP = new MockRetrieveExternalSysInfoEP();
+		final MockAttachFileEP mockAttachFileEP = new MockAttachFileEP();
+		preparePushRouteForTesting(mockRetrieveExternalSysInfoEP, mockAttachFileEP);
+
+		context.start();
+
+		final String requestBodyAsString = loadAsString(JSON_BPARTNER_ATTACHMENT_MISSING_ANHANGDATEI);
+
+		//when
+		template.sendBody("direct:" + BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID, requestBodyAsString);
+
+		//then
+		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(0);
+		assertThat(mockAttachFileEP.called).isEqualTo(0);
+	}
+
+	@Test
+	void attachFileToBPartner_null_ANHANGDATEI() throws Exception
+	{
+		//given
+		final TokenCredentials tokenCredentials = TokenCredentials.builder()
+				.orgCode("orgCode")
+				.pInstance(JsonMetasfreshId.of(1))
+				.externalSystemValue("childConfigValue")
+				.build();
+
+		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
+
+		final MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP = new MockRetrieveExternalSysInfoEP();
+		final MockAttachFileEP mockAttachFileEP = new MockAttachFileEP();
+		preparePushRouteForTesting(mockRetrieveExternalSysInfoEP, mockAttachFileEP);
+
+		context.start();
+
+		final String requestBodyAsString = loadAsString(JSON_BPARTNER_ATTACHMENT_NULL_ANHANGDATEI);
+
+		//when
+		template.sendBody("direct:" + BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID, requestBodyAsString);
+
+		//then
+		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(0);
+		assertThat(mockAttachFileEP.called).isEqualTo(0);
+	}
+	
 	private void preparePushRouteForTesting(
 			@NonNull final BPartnerAttachmentsRouteBuilderTest.MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP,
 			@NonNull final BPartnerAttachmentsRouteBuilderTest.MockAttachFileEP mockAttachFileEP) throws Exception

@@ -7,7 +7,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +59,7 @@ public class C_Flatrate_ConditionsTest
 		conditions.setC_Flatrate_Transition(transition);
 		save(conditions);
 
-		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsDAO());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
 
 		assertThatExceptionOfType(AdempiereException.class)
 				.isThrownBy(() -> flatrateConditions.onTransitionChange(conditions))
@@ -71,7 +71,7 @@ public class C_Flatrate_ConditionsTest
 	public void prohibitVoidAndClose()
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsDAO());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
 
 		assertThatThrownBy(() -> flatrateConditions.prohibitVoidAndClose(conditions)).hasMessage(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
 	}
@@ -83,7 +83,7 @@ public class C_Flatrate_ConditionsTest
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 		save(conditions);
 
-		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsDAO());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
 
 		assertThatThrownBy(() -> flatrateConditions.beforeComplete(conditions)).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P.toAD_Message());
 	}
@@ -100,7 +100,7 @@ public class C_Flatrate_ConditionsTest
 		subscriptionTerm.setC_Flatrate_Conditions(conditions);
 		save(subscriptionTerm);
 
-		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsDAO());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
 
 		assertThatThrownBy(() -> flatrateConditions.beforeReactivate(conditions)).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P.toAD_Message());
 	}

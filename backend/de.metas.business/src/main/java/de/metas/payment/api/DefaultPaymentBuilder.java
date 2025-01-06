@@ -52,8 +52,11 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 
+@SuppressWarnings("UnusedReturnValue")
 public class DefaultPaymentBuilder
 {
 	public static DefaultPaymentBuilder newInboundReceiptBuilder()
@@ -143,7 +146,7 @@ public class DefaultPaymentBuilder
 
 	private DocTypeId getDocTypeIdOrNull()
 	{
-		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment;
+		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment;
 
 		return docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(docBaseType)
@@ -219,6 +222,13 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
+	{
+		assertNotBuilt();
+		payment.setDateTrx(dateTrx != null ? Timestamp.from(dateTrx) : null);
+		return this;
+	}
+
 	public final DefaultPaymentBuilder bpartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		assertNotBuilt();
@@ -258,7 +268,7 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
-		if(paymentCurrencyContext.isFixedConversionRate())
+		if (paymentCurrencyContext.isFixedConversionRate())
 		{
 			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
 			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());

@@ -32,6 +32,7 @@ import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostElement;
 import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
@@ -204,35 +205,43 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final DocBaseType docBaseType = getDocBaseType();
+		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
+		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
 
 		//
 		// *** Sales - Shipment
-		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
+		if (docBaseType.isShipment() && isSOTrx())
 		{
-			return createFacts_SalesShipment(as);
+			if (docBaseAndSubType.isProformaSubType())
+			{
+				return ImmutableList.of();
+			}
+			else
+			{
+				return createFacts_SalesShipment(as);
+			}
 		}
 		//
 		// *** Sales - Return
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
+		else if (docBaseType.isReceipt() && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
+		else if (docBaseType.isReceipt() && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
+		else if (docBaseType.isShipment() && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
 		else
 		{
 			throw newPostingException()
-					.setDetailMessage("DocumentType unknown: " + docBaseType);
+					.setDetailMessage("DocumentType unknown: " + docBaseAndSubType);
 		}
 	}
 

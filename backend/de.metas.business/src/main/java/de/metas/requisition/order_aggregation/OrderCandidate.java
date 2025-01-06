@@ -71,7 +71,7 @@ public class OrderCandidate
 
 	public Quantity getQty()
 	{
-		return Quantitys.create(requisitionLine.getQty(), UomId.ofRepoId(requisitionLine.getC_UOM_ID()));
+		return Quantitys.of(requisitionLine.getQty(), UomId.ofRepoId(requisitionLine.getC_UOM_ID()));
 	}
 
 	public BigDecimal getPriceActual() {return requisitionLine.getPriceActual();}

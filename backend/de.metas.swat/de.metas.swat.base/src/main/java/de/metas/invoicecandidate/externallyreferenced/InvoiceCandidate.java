@@ -24,13 +24,15 @@ package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -63,36 +65,40 @@ import java.util.List;
 @Data
 public class InvoiceCandidate
 {
-	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final NewInvoiceCandidate newIC)
+	public static InvoiceCandidateBuilder createBuilder(@NonNull final InvoiceCandidateUpsertRequest upsertRequest)
 	{
 		return InvoiceCandidate
 				.builder()
-				.billPartnerInfo(newIC.getBillPartnerInfo())
-				.dateOrdered(newIC.getDateOrdered())
-				.discountOverride(newIC.getDiscountOverride())
-				.externalHeaderId(newIC.getExternalHeaderId())
-				.externalLineId(newIC.getExternalLineId())
-				.invoiceDocTypeId(newIC.getInvoiceDocTypeId())
-				.invoiceRuleOverride(newIC.getInvoiceRuleOverride())
-				.invoicingUomId(newIC.getInvoicingUomId())
-				.lineDescription(newIC.getLineDescription())
-				.orgId(newIC.getOrgId())
-				.poReference(newIC.getPoReference())
-				.presetDateInvoiced(newIC.getPresetDateInvoiced())
-				.priceEnteredOverride(newIC.getPriceEnteredOverride())
-				.productId(newIC.getProductId())
-				.qtyDelivered(newIC.getQtyDelivered())
-				.qtyOrdered(newIC.getQtyOrdered())
-				.soTrx(newIC.getSoTrx())
-				.projectId(newIC.getProjectId())
-				.invoiceDetailItems(newIC.getInvoiceDetailItems())
-				.activityId(newIC.getActivityId())
-				.paymentTermId(newIC.getPaymentTermId())
-				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId())
-				.isInterimInvoice(newIC.isInterimInvoice())
-				.handlerId(newIC.getHandlerId())
-				.isManual(newIC.isManual())
-				.flatrateTermId(newIC.getFlatrateTermId());
+				.id(upsertRequest.getInvoiceCandidateId())
+				.billPartnerInfo(upsertRequest.getBillPartnerInfo())
+				.dateOrdered(upsertRequest.getDateOrdered())
+				.discountOverride(upsertRequest.getDiscountOverride())
+				.externalHeaderId(upsertRequest.getExternalHeaderId())
+				.externalLineId(upsertRequest.getExternalLineId())
+				.invoiceDocTypeId(upsertRequest.getInvoiceDocTypeId())
+				.invoiceRuleOverride(upsertRequest.getInvoiceRuleOverride())
+				.invoicingUomId(upsertRequest.getInvoicingUomId())
+				.lineDescription(upsertRequest.getLineDescription())
+				.orgId(upsertRequest.getOrgId())
+				.poReference(upsertRequest.getPoReference())
+				.presetDateInvoiced(upsertRequest.getPresetDateInvoiced())
+				.priceEnteredOverride(upsertRequest.getPriceEnteredOverride())
+				.productId(upsertRequest.getProductId())
+				.qtyDelivered(upsertRequest.getQtyDelivered())
+				.qtyOrdered(upsertRequest.getQtyOrdered())
+				.soTrx(upsertRequest.getSoTrx())
+				.projectId(upsertRequest.getProjectId())
+				.invoiceDetailItems(upsertRequest.getInvoiceDetailItems())
+				.activityId(upsertRequest.getActivityId())
+				.paymentTermId(upsertRequest.getPaymentTermId())
+				.harvestYearAndCalendarId(upsertRequest.getHarvestYearAndCalendarId())
+				.modularContractSettingsId(upsertRequest.getModularContractSettingsId())
+				.isInterimInvoice(upsertRequest.isInterimInvoice())
+				.handlerId(upsertRequest.getHandlerId())
+				.isManual(upsertRequest.isManual())
+				.isActive(true)
+				.processed(false)
+				.flatrateTermId(upsertRequest.getFlatrateTermId());
 	}
 
 	private final OrgId orgId;
@@ -134,12 +140,16 @@ public class InvoiceCandidate
 
 	private final PricingSystemId pricingSystemId;
 
-	/** when loaded from DB, come IC records can have an empty priceListVersionId. */
+	/**
+	 * when loaded from DB, come IC records can have an empty priceListVersionId.
+	 */
 	private final PriceListVersionId priceListVersionId;
 
 	private final ProductPrice priceEntered;
 
-	/** If given, then productId and currencyId have to match! */
+	/**
+	 * If given, then productId and currencyId have to match!
+	 */
 	@Nullable
 	private ProductPrice priceEnteredOverride;
 
@@ -173,8 +183,12 @@ public class InvoiceCandidate
 	@NonNull
 	PaymentTermId paymentTermId;
 
-	@Nullable
-	final YearAndCalendarId harvestYearAndCalendarId;
+	@Nullable final YearAndCalendarId harvestYearAndCalendarId;
+
+	@Nullable final ModularContractSettingsId modularContractSettingsId;
+
+	boolean processed;
+	boolean isActive;
 
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
@@ -190,6 +204,11 @@ public class InvoiceCandidate
 
 	@Nullable
 	private final FlatrateTermId flatrateTermId;
+
+	@Nullable
+	private final BankAccountId bankAccountId;
+
+	private final boolean taxIncluded;
 
 	@Builder
 	private InvoiceCandidate(
@@ -224,13 +243,18 @@ public class InvoiceCandidate
 			@Nullable final String descriptionBottom,
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
+			@Nullable final ModularContractSettingsId modularContractSettingsId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
 			@Nullable final FlatrateTermId flatrateTermId,
 			final boolean isManual,
-			@Nullable final AuctionId auctionId)
+			final boolean processed,
+			final boolean isActive,
+			final boolean taxIncluded,
+			@Nullable final AuctionId auctionId,
+			@Nullable final BankAccountId bankAccountId)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -263,6 +287,7 @@ public class InvoiceCandidate
 		this.activityId = activityId;
 		this.paymentTermId = paymentTermId;
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
+		this.modularContractSettingsId = modularContractSettingsId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 		this.isInterimInvoice = isInterimInvoice;
@@ -270,6 +295,10 @@ public class InvoiceCandidate
 		this.isManual = isManual;
 		this.auctionId = auctionId;
 		this.flatrateTermId = flatrateTermId;
+		this.processed = processed;
+		this.isActive = isActive;
+		this.bankAccountId = bankAccountId;
+		this.taxIncluded = taxIncluded;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

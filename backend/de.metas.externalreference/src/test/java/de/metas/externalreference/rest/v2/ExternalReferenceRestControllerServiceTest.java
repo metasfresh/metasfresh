@@ -23,10 +23,11 @@
 package de.metas.externalreference.rest.v2;
 
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -88,16 +89,16 @@ class ExternalReferenceRestControllerServiceTest
 		// given
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("system"))
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id1")
+				.item(JsonExternalReferenceRequestItem.of(JsonExternalReferenceLookupItem.builder()
+														   .externalReference("id1")
 														   .type("bpartner")
 														   .build(),
-												   JsonMetasfreshId.of(23)))
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id2")
+														  JsonMetasfreshId.of(23)))
+				.item(JsonExternalReferenceRequestItem.of(JsonExternalReferenceLookupItem.builder()
+														   .externalReference("id2")
 														   .type("bpartner")
 														   .build(),
-												   JsonMetasfreshId.of(24)))
+														  JsonMetasfreshId.of(24)))
 				.build();
 
 		// when
@@ -119,7 +120,7 @@ class ExternalReferenceRestControllerServiceTest
 				.build();
 		final JsonExternalReferenceLookupItem lookupItem2 = JsonExternalReferenceLookupItem.builder()
 				.type("bpartner")
-				.id("id2")
+				.externalReference("id2")
 				.build();
 		final JsonExternalReferenceLookupItem lookupItem3 = JsonExternalReferenceLookupItem.builder()
 				.type("bpartner")
@@ -134,7 +135,7 @@ class ExternalReferenceRestControllerServiceTest
 																														  .item(lookupItem3)
 																														  .build());
 
-		final List<JsonExternalReferenceItem> items = response.getItems();
+		final List<JsonExternalReferenceResponseItem> items = response.getItems();
 
 		assertThat(items.get(0).getLookupItem()).isEqualTo(lookupItem1);
 		assertThat(items.get(0).getMetasfreshId()).isNull();
@@ -154,16 +155,16 @@ class ExternalReferenceRestControllerServiceTest
 		// given
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("system"))
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id1")
+				.item(JsonExternalReferenceRequestItem.of(JsonExternalReferenceLookupItem.builder()
+														   .externalReference("id1")
 														   .type("bpartner")
 														   .build(),
-												   JsonMetasfreshId.of(25)))
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id2")
+														  JsonMetasfreshId.of(25)))
+				.item(JsonExternalReferenceRequestItem.of(JsonExternalReferenceLookupItem.builder()
+														   .externalReference("id2")
 														   .type("bpartner")
 														   .build(),
-												   JsonMetasfreshId.of(26)))
+														  JsonMetasfreshId.of(26)))
 				.build();
 
 		// when
@@ -190,7 +191,7 @@ class ExternalReferenceRestControllerServiceTest
 																														  .item(lookupItem1)
 																														  .build());
 
-		final List<JsonExternalReferenceItem> items = response.getItems();
+		final List<JsonExternalReferenceResponseItem> items = response.getItems();
 
 		assertThat(items.get(0).getLookupItem()).isEqualTo(lookupItem1);
 		assertThat(items.get(0).getMetasfreshId()).isNotNull();

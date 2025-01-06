@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -23,6 +22,8 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCan
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -74,6 +75,7 @@ public class ProcessPickingCandidatesCommand
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
 	private final IHUPPOrderBL ppOrderService = Services.get(IHUPPOrderBL.class);
+	private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices = ShipmentScheduleWithHUSupportingServices.getInstance();
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	//
@@ -100,7 +102,6 @@ public class ProcessPickingCandidatesCommand
 		final PackToHUsProducer packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
-				.huCapacityBL(Services.get(IHUCapacityBL.class))
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.inventoryService(inventoryService)
 				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
@@ -217,6 +218,11 @@ public class ProcessPickingCandidatesCommand
 			@NonNull final Quantity qtyPicked,
 			@NonNull final IHUContext huContext)
 	{
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(shipmentScheduleWithHUSupportingServices)
+				.huContext(huContext)
+				.build();
+
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 
 		final boolean anonymousHuPickedOnTheFly = false;
@@ -228,7 +234,7 @@ public class ProcessPickingCandidatesCommand
 						qtyPicked,
 						hu),
 				hu,
-				huContext,
+				factory,
 				anonymousHuPickedOnTheFly);
 	}
 
@@ -378,9 +384,13 @@ public class ProcessPickingCandidatesCommand
 			}
 
 			final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+			final ProductId productId = ProductId.ofRepoId(shipmentSchedulesCache.getById(shipmentScheduleId).getM_Product_ID());
 
 			return packToHUsProducer.extractPackToInfo(
+					productId,
 					packToSpec,
+					null,
+					null,
 					shipmentSchedulesCache.getShipToBPLocationId(shipmentScheduleId),
 					shipmentSchedulesCache.getShipFromLocatorId(shipmentScheduleId));
 		}
@@ -395,15 +405,19 @@ public class ProcessPickingCandidatesCommand
 			final PackToInfo packToInfo = getPackToInfo(pickingCandidateId);
 			final boolean checkIfAlreadyPacked = isOnlyOnePickingCandidatePackedTo(packToInfo);
 			final List<I_M_HU> packedToHUs = packToHUsProducer.packToHU(
-					huContext,
-					pickFromHUId,
-					packToInfo,
-					productId,
-					qtyPicked,
-					null,
-					pickingCandidateId.toTableRecordReference(),
-					checkIfAlreadyPacked,
-					false);
+							PackToHUsProducer.PackToHURequest.builder()
+									.huContext(huContext)
+									.pickFromHUId(pickFromHUId)
+									.packToInfo(packToInfo)
+									.productId(productId)
+									.qtyPicked(qtyPicked)
+									.catchWeight(null)
+									.documentRef(pickingCandidateId.toTableRecordReference())
+									.checkIfAlreadyPacked(checkIfAlreadyPacked)
+									.createInventoryForMissingQty(false)
+									.build()
+					)
+					.getAllTURecords();
 
 			if (packedToHUs.isEmpty())
 			{

@@ -1,7 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -37,7 +37,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -48,7 +47,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -78,17 +77,16 @@ public class DemandCandiateHandlerTest
 	private PostMaterialEventService postMaterialEventService;
 	private DemandCandiateHandler demandCandidateHandler;
 	private AvailableToPromiseRepository availableToPromiseRepository;
-	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
+				new MDCandidateDimensionFactory()
+		));
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -121,7 +119,7 @@ public class DemandCandiateHandlerTest
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
-		assertDemandEventWasFiredWithQuantity("23");
+		assertSupplyRequiredEventWasFiredWithQuantity("23");
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records).hasSize(4);
@@ -156,7 +154,7 @@ public class DemandCandiateHandlerTest
 		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		// then
-		assertDemandEventWasFiredWithQuantity("13");
+		assertSupplyRequiredEventWasFiredWithQuantity("13");
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
@@ -166,10 +164,10 @@ public class DemandCandiateHandlerTest
 
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 		assertThat(demandStockRecord).extracting(
-				"MD_Candidate_Parent_ID",
-				"Qty",
-				"StorageAttributesKey",
-				"SeqNo")
+						"MD_Candidate_Parent_ID",
+						"Qty",
+						"StorageAttributesKey",
+						"SeqNo")
 				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
@@ -193,7 +191,7 @@ public class DemandCandiateHandlerTest
 				.retrieveAvailableStockQtySum(query);
 	}
 
-	private void assertDemandEventWasFiredWithQuantity(@NonNull final String expectedQty)
+	private void assertSupplyRequiredEventWasFiredWithQuantity(@NonNull final String expectedQty)
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
@@ -206,10 +204,9 @@ public class DemandCandiateHandlerTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
 		assertThat(supplyRequiredDescriptor).isNotNull();
 
-		final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
-		assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
+		assertThat(supplyRequiredDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(supplyRequiredDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(supplyRequiredDescriptor.getQtyToSupplyBD()).isEqualByComparingTo(expectedQty);
 	}
 
 	@Test
@@ -231,13 +228,15 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
+		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.enqueueEventNow(Mockito.any());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
-		final Candidate candidate = Candidate.builder()
+		return Candidate.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -247,7 +246,6 @@ public class DemandCandiateHandlerTest
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();
-		return candidate;
 	}
 
 	/**
@@ -375,21 +373,18 @@ public class DemandCandiateHandlerTest
 		demandCandidateHandler.onCandidateNewOrChange(demandCandidate, OnNewOrChangeAdvise.DEFAULT);
 	}
 
-	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
+	private static Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
 	{
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(new BigDecimal(quantity))
-				.date(NOW)
-				.build();
-		final Candidate candidate = Candidate.builder()
+		return Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
-				.materialDescriptor(materialDescriptor)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.quantity(new BigDecimal(quantity))
+						.date(NOW)
+						.build())
 				.build();
-
-		return candidate;
 	}
 
 	@ParameterizedTest

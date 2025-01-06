@@ -23,6 +23,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -75,15 +76,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 public class ESRImportEnqueuer
 {
+	public static final AdMessageKey LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG = AdMessageKey.of("de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR");
 	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE = AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
 	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES = AdMessageKey.of("ESR_Import_LoadFromFile.InconsitentTypes");
-	public static final AdMessageKey LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG = AdMessageKey.of("de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR");
-
-	public static final ESRImportEnqueuer newInstance()
-	{
-		return new ESRImportEnqueuer();
-	}
-
 	// services
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -91,19 +86,21 @@ public class ESRImportEnqueuer
 	private final transient IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final Properties ctx = Env.getCtx();
-
 	private I_ESR_Import esrImport;
 	private ESRImportEnqueuerDataSource fromDataSource;
-
 	private String asyncBatchName = "ESR Import";
 	private String asyncBatchDesc = "ESR Import process";
 	private PInstanceId pinstanceId;
-
 	private ILoggable loggable = Loggables.nop();
 
 	private ESRImportEnqueuer()
 	{
 
+	}
+
+	public static final ESRImportEnqueuer newInstance()
+	{
+		return new ESRImportEnqueuer();
 	}
 
 	public void execute()
@@ -196,8 +193,8 @@ public class ESRImportEnqueuer
 	}
 
 	private void createImportFileFromSingleAttachment(@NonNull final I_ESR_Import esrImport,
-			final byte[] data,
-			@NonNull final String filename)
+													  final byte[] data,
+													  @NonNull final String filename)
 	{
 		final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), data);
 
@@ -217,48 +214,83 @@ public class ESRImportEnqueuer
 	}
 
 	private void createImportFilesFromZips(@NonNull final I_ESR_Import esrImport,
-			@NonNull final ByteArrayInputStream in)
+										   @NonNull final ByteArrayInputStream in)
 	{
-		final List<ZipFileResource> unzippedFiles = getZipFileResources(in);
+		final List<ZipFileResource> unzippedFiles = getZipFileResourcesSafely(in);
+
+		if (unzippedFiles.isEmpty())
+		{
+			throw new AdempiereException("No valid files found in the ZIP archive.");
+		}
+
+		final List<String> errors = new ArrayList<>();
 
 		for (final ZipFileResource unzippedFile : unzippedFiles)
 		{
-			createImportFileFromSingleAttachment(esrImport, unzippedFile.getData(), unzippedFile.getFilename());
+			try
+			{
+				createImportFileFromSingleAttachment(esrImport, unzippedFile.getData(), unzippedFile.getFilename());
+			}
+			catch (Exception ex)
+			{
+				errors.add(String.format("Error processing file '%s': %s", unzippedFile.getFilename(), ex.getMessage()));
+			}
+		}
+
+		if (!errors.isEmpty())
+		{
+			logPartialImportWarnings(errors);
 		}
 	}
 
-	@NonNull
-	private List<ZipFileResource> getZipFileResources(final @NonNull ByteArrayInputStream in)
+	private List<ZipFileResource> getZipFileResourcesSafely(@NonNull final ByteArrayInputStream in)
 	{
-		final ZipInputStream zipStream = new ZipInputStream(in);
-
 		final List<ZipFileResource> unzippedFiles = new ArrayList<>();
-		try
+		try (final ZipInputStream zipStream = new ZipInputStream(in))
 		{
-			ZipEntry zipEntry = zipStream.getNextEntry();
-			while (zipEntry != null)
+			ZipEntry zipEntry;
+			while ((zipEntry = zipStream.getNextEntry()) != null)
 			{
 				if (zipEntry.isDirectory())
 				{
-					zipEntry = zipStream.getNextEntry();
 					continue;
 				}
-				final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 
-				unzippedFiles.add(unzippedFile);
-
-				zipEntry = zipStream.getNextEntry();
+				try
+				{
+					final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
+					unzippedFiles.add(unzippedFile);
+				}
+				catch (Exception e)
+				{
+					// Log error for the problematic file, but continue processing
+					addLog("Failed to extract file '{}': {}", zipEntry.getName(), e.getMessage());
+				}
+				finally
+				{
+					try
+					{
+						zipStream.closeEntry();
+					}
+					catch (IOException e)
+					{
+						addLog("Failed to close zip entry '{}': {}", zipEntry.getName(), e.getMessage());
+					}
+				}
 			}
-			zipStream.closeEntry();
-			zipStream.close();
 		}
-		catch (final Exception ex)
+		catch (IOException e)
 		{
-			// provide more info about why the file could not be unzipped
-			throw new AdempiereException(ex);
+			throw new AdempiereException("Failed to process ZIP file: " + e.getMessage(), e);
 		}
-
 		return unzippedFiles;
+	}
+
+	private void logPartialImportWarnings(final List<String> errors)
+	{
+		final String combinedErrors = String.join("\n", errors);
+		addLog("Partial import completed with errors:\n{}", combinedErrors);
+		throw new AdempiereException("Partial import completed with errors. See logs for details.");
 	}
 
 	private void checkUpdateDataType(final I_ESR_ImportFile esrImportFile, final String fileName)
@@ -310,44 +342,6 @@ public class ESRImportEnqueuer
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 
-	}
-
-	private static class ZipFileResource extends AbstractResource
-	{
-		private final byte[] data;
-		private final String filename;
-
-		@Builder
-		private ZipFileResource(
-				@NonNull final byte[] data,
-				@NonNull final String filename)
-		{
-			this.data = data;
-			this.filename = filename;
-		}
-
-		@Override
-		public String getFilename()
-		{
-			return filename;
-		}
-
-		@Override
-		public String getDescription()
-		{
-			return null;
-		}
-
-		@Override
-		public InputStream getInputStream()
-		{
-			return new ByteArrayInputStream(data);
-		}
-
-		public byte[] getData()
-		{
-			return data;
-		}
 	}
 
 	private String computeESRHashAndCheckForDuplicates(@NonNull final OrgId orgId, final byte[] fileContent)
@@ -446,5 +440,43 @@ public class ESRImportEnqueuer
 	private void addLog(final String msg, final Object... msgParameters)
 	{
 		loggable.addLog(msg, msgParameters);
+	}
+
+	private static class ZipFileResource extends AbstractResource
+	{
+		private final byte[] data;
+		private final String filename;
+
+		@Builder
+		private ZipFileResource(
+				@NonNull final byte[] data,
+				@NonNull final String filename)
+		{
+			this.data = data;
+			this.filename = filename;
+		}
+
+		@Override
+		public String getFilename()
+		{
+			return filename;
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return null;
+		}
+
+		@Override
+		public InputStream getInputStream()
+		{
+			return new ByteArrayInputStream(data);
+		}
+
+		public byte[] getData()
+		{
+			return data;
+		}
 	}
 }

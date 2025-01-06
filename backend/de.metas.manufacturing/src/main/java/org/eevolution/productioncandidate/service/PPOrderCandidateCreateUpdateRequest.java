@@ -53,6 +53,7 @@ import java.time.Instant;
 public class PPOrderCandidateCreateUpdateRequest
 {
 	PPOrderCandidateId ppOrderCandidateId;
+	PPOrderCandidateId parentPPOrderCandidateId;
 	ClientAndOrgId clientAndOrgId;
 	ProductPlanningId productPlanningId;
 	MaterialDispoGroupId materialDispoGroupId;
@@ -77,6 +78,7 @@ public class PPOrderCandidateCreateUpdateRequest
 	@Builder
 	public PPOrderCandidateCreateUpdateRequest(
 		@Nullable final PPOrderCandidateId ppOrderCandidateId,
+		@Nullable final PPOrderCandidateId parentPPOrderCandidateId,
 		@NonNull final ClientAndOrgId clientAndOrgId,
 		@Nullable final ProductPlanningId productPlanningId,
 		@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -109,6 +111,7 @@ public class PPOrderCandidateCreateUpdateRequest
 
 			}
 			this.ppOrderCandidateId = ppOrderCandidateId;
+		this.parentPPOrderCandidateId = parentPPOrderCandidateId;
 			this.clientAndOrgId = clientAndOrgId;
 			this.productPlanningId = productPlanningId;
 			this.materialDispoGroupId = materialDispoGroupId;

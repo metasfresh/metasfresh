@@ -24,7 +24,6 @@ package de.metas.banking.invoice_auto_allocation;
 
 import de.metas.banking.BankAccountId;
 import de.metas.document.DocTypeId;
-import de.metas.util.OptionalBoolean;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -83,6 +82,21 @@ class BankAccountInvoiceAutoAllocRulesTest
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(20)))
 					.isFalse();
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(21)))
+					.isTrue();
+		}
+		
+		@Test
+		public void invoiceDocType_restricted_no_BankAcccount()
+		{
+			final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Arrays.asList(
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build(),
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(11)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
+			));
+
+			Assertions.assertThat(rules.isAutoAllocate(null, DocTypeId.ofRepoId(20)))
+					.isFalse();
+
+			Assertions.assertThat(rules.isAutoAllocate(null, DocTypeId.ofRepoId(21)))
 					.isTrue();
 		}
 	}

@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -662,6 +663,48 @@ public interface I_C_AcctSchema_Element
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
 
 	/**
 	 * Set UserElementString1.

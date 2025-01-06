@@ -11,13 +11,15 @@ import de.metas.inoutcandidate.spi.impl.OrderReceiptScheduleProducer;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
@@ -26,11 +28,13 @@ import java.util.stream.Stream;
 public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerFactory
 {
 	private final Map<String, CopyOnWriteArrayList<Class<? extends IReceiptScheduleProducer>>> producerClasses = new ConcurrentHashMap<>();
-	/** Source table name to {@link IReceiptScheduleWarehouseDestProvider} */
+	/**
+	 * Source table name to {@link IReceiptScheduleWarehouseDestProvider}
+	 */
 	private final CompositeReceiptScheduleWarehouseDestProvider warehouseDestProviders = new CompositeReceiptScheduleWarehouseDestProvider(DefaultFromOrderLineWarehouseDestProvider.instance);
 
 	private final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter;
-		
+
 	public ReceiptScheduleProducerFactory(@NonNull final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter)
 	{
 		this.modelAggregateFilter = modelAggregateFilter;
@@ -101,7 +105,9 @@ public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerF
 		return this;
 	}
 
-	/** Mutable composite {@link IReceiptScheduleWarehouseDestProvider} */
+	/**
+	 * Mutable composite {@link IReceiptScheduleWarehouseDestProvider}
+	 */
 	private static final class CompositeReceiptScheduleWarehouseDestProvider implements IReceiptScheduleWarehouseDestProvider
 	{
 		private final IReceiptScheduleWarehouseDestProvider defaultProvider;
@@ -131,13 +137,13 @@ public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerF
 		}
 
 		@Override
-		public I_M_Warehouse getWarehouseDest(final IContext context)
+		public Optional<WarehouseId> getWarehouseDest(final IContext context)
 		{
 			return Stream.concat(providers.stream(), Stream.of(defaultProvider))
 					.map(provider -> provider.getWarehouseDest(context))
-					.filter(warehouseDest -> warehouseDest != null)
-					.findFirst()
-					.orElse(null);
+					.map(warehouseDest -> warehouseDest.orElse(null))
+					.filter(Objects::nonNull)
+					.findFirst();
 		}
 	}
 }

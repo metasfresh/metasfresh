@@ -117,7 +117,7 @@ public class ReceiveGoodsCommand
 				final I_M_HU tu = newHUProducer().receiveSingleTU(getQtyToReceive(), packingInfo.getPackingInstructionsId());
 				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
 
-				loadingAndSavingSupportServices.assignQRCode(qrCode, tuId);
+				loadingAndSavingSupportServices.assignQRCodeForReceiptHU(qrCode, tuId);
 
 				// NOTE: returning null because this receiving target is not re-usable
 				// i.e. receiving again to this HU is not supported
@@ -240,13 +240,13 @@ public class ReceiveGoodsCommand
 		if (coProductLine != null)
 		{
 			final UomId uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 		else
 		{
 			final I_PP_Order ppOrder = getPPOrder();
 			final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 	}
 

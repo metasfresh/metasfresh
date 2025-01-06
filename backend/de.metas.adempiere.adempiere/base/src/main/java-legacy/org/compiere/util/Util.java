@@ -29,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -43,6 +44,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * General Utilities
@@ -436,9 +438,14 @@ public class Util
 	 *
 	 * @return true if objects are the same (i.e. o1 == o2)
 	 */
-	public static boolean same(Object o1, Object o2)
+	public static <T> boolean same(@Nullable final T o1, @Nullable final T o2)
 	{
 		return o1 == o2;
+	}
+
+	public static <T> boolean equals(@Nullable final T o1, @Nullable final T o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	/**
@@ -517,6 +524,18 @@ public class Util
 		}
 
 		return out.toByteArray();
+	}
+
+	public static byte[] readBytes(@NonNull final Resource resource)
+	{
+		try
+		{
+			return readBytes(resource.getInputStream());
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Error reading stream", e);
+		}
 	}
 
 	// metas: 03749

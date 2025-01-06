@@ -1,5 +1,6 @@
 package de.metas.currency;
 
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
@@ -51,6 +52,7 @@ public final class CurrencyPrecision
 	public static final CurrencyPrecision ZERO;
 	public static final CurrencyPrecision TWO;
 	public static final CurrencyPrecision FOUR;
+	public static final CurrencyPrecision TEN;
 
 	private static final CurrencyPrecision[] CACHED_VALUES = new CurrencyPrecision[] {
 			ZERO = new CurrencyPrecision(0),
@@ -63,7 +65,7 @@ public final class CurrencyPrecision
 			new CurrencyPrecision(7),
 			new CurrencyPrecision(8),
 			new CurrencyPrecision(9),
-			new CurrencyPrecision(10),
+			TEN = new CurrencyPrecision(10),
 			new CurrencyPrecision(11),
 			new CurrencyPrecision(12),
 	};

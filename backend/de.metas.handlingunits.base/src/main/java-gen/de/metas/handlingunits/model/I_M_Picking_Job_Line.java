@@ -195,6 +195,47 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Manually closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyClosed (boolean IsManuallyClosed);
+
+	/**
+	 * Get Manually closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyClosed();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsManuallyClosed = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsManuallyClosed", null);
+	String COLUMNNAME_IsManuallyClosed = "IsManuallyClosed";
+
+	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
 	 * Set Picking Job.
 	 *
 	 * <br>Type: Search

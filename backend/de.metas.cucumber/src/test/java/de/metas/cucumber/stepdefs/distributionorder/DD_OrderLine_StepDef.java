@@ -24,88 +24,79 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistributionLine_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_Order;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistributionLine_StepDefData;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_OrderLine;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
-import java.util.Optional;
-import java.util.function.Supplier;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-
+@RequiredArgsConstructor
 public class DD_OrderLine_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
-	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	
-	private final M_Product_StepDefData productTable;
-	private final DD_Order_StepDefData ddOrderTable;
-	private final DD_OrderLine_StepDefData ddOrderLineTable;
-	private final M_Locator_StepDefData locatorTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable;
-
-	public DD_OrderLine_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final DD_Order_StepDefData ddOrderTable,
-			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
-			@NonNull final M_Locator_StepDefData locatorTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable)
-	{
-		this.productTable = productTable;
-		this.ddOrderTable = ddOrderTable;
-		this.ddOrderLineTable = ddOrderLineTable;
-		this.locatorTable = locatorTable;
-		this.orderLineTable = orderLineTable;
-		this.ddNetworkLineTable = ddNetworkLineTable;
-	}
+	@NonNull private static final Logger logger = LogManager.getLogger(DD_OrderLine_StepDef.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final DD_Order_StepDefData ddOrderTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseData;
+	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable;
 
 	@Given("metasfresh contains DD_OrderLines:")
 	public void metasfresh_contains_dd_order_lines(@NonNull final DataTable dataTable)
@@ -177,126 +168,174 @@ public class DD_OrderLine_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, DD_OrderLines are found:$")
-	public void find_DDOrderLines(
+	@And("^no DD_OrderLine found for orderLine (.*)$")
+	public void validate_no_DD_OrderLine_found(@NonNull final String orderLineIdentifier)
+	{
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+
+		try
+		{
+			assertThat(queryByOrderLineId(orderLineId).count()).isZero();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
+	}
+
+	@And("^after not more than (.*)s, DD_OrderLine found for orderLine (.*)$")
+	public void validate_DD_OrderLines_found_for_OrderLine(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final String orderLineIdentifier,
+			@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+
+		final HashSet<DDOrderLineId> alreadyMatchedLineIds = new HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(toDDOrderLineQuery(orderLineId, alreadyMatchedLineIds))
+					.validateUsingFunction(ddOrderLine -> checkDDOrderLineMatching(ddOrderLine, row))
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+
+			alreadyMatchedLineIds.add(DDOrderLineId.ofRepoId(ddOrderLineRecord.getDD_OrderLine_ID()));
+			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, ddOrderLineRecord));
+
+			row.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+					.ifPresent(ddOrderIdentifier -> {
+						final DDOrderId actualDDOrderId = DDOrderId.ofRepoId(ddOrderLineRecord.getDD_Order_ID());
+						validateDDOrderId(ddOrderIdentifier, actualDDOrderId);
+					});
+		});
+	}
+
+	private void validateDDOrderId(@NonNull final StepDefDataIdentifier expectedDDOrderIdentifier, @Nullable final DDOrderId actualDDOrderId)
+	{
+		final String actualHuIdentifier = actualDDOrderId != null
+				? ddOrderTable.getFirstIdentifierById(actualDDOrderId).map(StepDefDataIdentifier::getAsString).orElse("?NEW?")
+				: null;
+
+		final String description = "expectedDDOrderIdentifier=" + expectedDDOrderIdentifier + ", actualDDOrderId=" + actualDDOrderId + ", actualHuIdentifier=" + actualHuIdentifier;
+
+		if (expectedDDOrderIdentifier.isNullPlaceholder())
 		{
-			findDDOrderLine(timeoutSec, tableRow);
+			assertThat(actualDDOrderId).as(description).isNull();
+		}
+		else
+		{
+			assertThat(actualDDOrderId).as(description).isNotNull();
+			final DDOrderId expectedDDOrderId = ddOrderTable.getIdOptional(expectedDDOrderIdentifier).orElse(null);
+			if (expectedDDOrderId == null)
+			{
+				ddOrderTable.put(expectedDDOrderIdentifier, ddOrderService.getById(actualDDOrderId));
+			}
+			else
+			{
+				assertThat(actualDDOrderId).as(description).isEqualTo(expectedDDOrderId);
+			}
 		}
 	}
 
-	@And("DD_OrderLines are validated:")
-	public void validate_DD_OrderLines(@NonNull final DataTable dataTable)
+	private IQuery<I_DD_OrderLine> toDDOrderLineQuery(
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final Set<DDOrderLineId> excludeDDOrderLineIds)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		final IQueryBuilder<I_DD_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId);
+
+		if (!excludeDDOrderLineIds.isEmpty())
 		{
-			validateDDOrderLine(tableRow);
+			queryBuilder.addNotInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, excludeDDOrderLineIds);
 		}
+
+		return queryBuilder.create();
 	}
 
-	@And("DD_OrderLines are updated:")
-	public void update_DD_OrderLines(@NonNull final DataTable dataTable)
+	private BooleanWithReason checkDDOrderLineMatching(@NonNull final I_DD_OrderLine actual, @NonNull final DataTableRow expected)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		final BigDecimal qtyEntered = expected.getAsOptionalBigDecimal(I_DD_OrderLine.COLUMNNAME_QtyEntered).orElse(null);
+		if (qtyEntered != null && qtyEntered.compareTo(actual.getQtyEntered()) != 0)
 		{
-			updateDDOrderLine(tableRow);
+			return BooleanWithReason.falseBecause("qtyEntered not matching, expected " + qtyEntered + " but got " + actual.getQtyEntered());
 		}
+
+		final StepDefDataIdentifier productIdentifier = expected.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).orElse(null);
+		if (productIdentifier != null)
+		{
+			final ProductId productIdExpected = productTable.getId(productIdentifier);
+			final ProductId productIdActual = ProductId.ofRepoId(actual.getM_Product_ID());
+			if (!ProductId.equals(productIdExpected, productIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Product_ID not matching, expected " + productIdExpected + " but got " + productIdActual);
+			}
+		}
+
+		final StepDefDataIdentifier fromWarehouseIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID).orElse(null);
+		if (fromWarehouseIdentifier != null)
+		{
+			final WarehouseId fromWarehouseIdExpected = warehouseData.getId(fromWarehouseIdentifier);
+			final WarehouseId fromWarehouseIdActual = WarehouseId.ofRepoId(actual.getM_Warehouse_ID());
+			if (!WarehouseId.equals(fromWarehouseIdExpected, fromWarehouseIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Warehouse_From_ID not matching, expected " + fromWarehouseIdExpected + " but got " + fromWarehouseIdActual);
+			}
+		}
+
+		final StepDefDataIdentifier toWarehouseIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID).orElse(null);
+		if (toWarehouseIdentifier != null)
+		{
+			final WarehouseId toWarehouseIdExpected = warehouseData.getId(toWarehouseIdentifier);
+			final WarehouseId toWarehouseIdActual = WarehouseId.ofRepoId(actual.getM_WarehouseTo_ID());
+			if (!WarehouseId.equals(toWarehouseIdExpected, toWarehouseIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Warehouse_To_ID not matching, expected " + toWarehouseIdExpected + " but got " + toWarehouseIdActual);
+			}
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
-	private void updateDDOrderLine(@NonNull final Map<String, String> tableRow)
+	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)
 	{
-		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_DD_OrderLine ddOrderLineRecord = ddOrderLineTable.get(ddOrderLineIdentifier);
-		assertThat(ddOrderLineRecord).isNotNull();
+		final StringBuilder message = new StringBuilder();
 
-		final BigDecimal qtyOrderedAndEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyOrdered);
-		if (qtyOrderedAndEntered != null)
-		{
-			ddOrderLineRecord.setQtyOrdered(qtyOrderedAndEntered);
-			ddOrderLineRecord.setQtyEntered(qtyOrderedAndEntered);
-		}
+		message.append("Validating no records found for orderLineID :").append("\n")
+				.append(I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
 
-		saveRecord(ddOrderLineRecord);
+		message.append("DD_OrderLine records:").append("\n");
+
+		queryByOrderLineId(orderLineId)
+				.stream(I_DD_OrderLine.class)
+				.forEach(ddOrderLine -> message
+						.append(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID).append(" : ").append(ddOrderLine.getDD_OrderLine_ID()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while validating no DD_OrderLine found for orderLineId: {}, see found records: \n{}", orderLineId, message);
 	}
 
-	private void validateDDOrderLine(@NonNull final Map<String, String> tableRow)
+	@NonNull
+	private IQuery<I_DD_OrderLine> queryByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		final SoftAssertions softly = new SoftAssertions();
-
-		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_DD_OrderLine ddOrderLineRecord = ddOrderLineTable.get(ddOrderLineIdentifier);
-		softly.assertThat(ddOrderLineRecord).isNotNull();
-
-		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyOrdered);
-		if (qtyOrdered != null)
-		{
-			softly.assertThat(ddOrderLineRecord.getQtyOrdered()).isEqualByComparingTo(qtyOrdered);
-		}
-
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyEntered);
-		if (qtyEntered != null)
-		{
-			softly.assertThat(ddOrderLineRecord.getQtyEntered()).isEqualByComparingTo(qtyEntered);
-		}
-
-		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyDelivered);
-		if (qtyDelivered != null)
-		{
-			softly.assertThat(ddOrderLineRecord.getQtyDelivered()).isEqualByComparingTo(qtyDelivered);
-		}
-
-		final Integer line = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_Line);
-		if (line != null)
-		{
-			softly.assertThat(ddOrderLineRecord.getLine()).isEqualByComparingTo(line);
-		}
-
-		final String ddNetworkDistributionLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_DD_NetworkDistributionLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(ddNetworkDistributionLineIdentifier))
-		{
-			final I_DD_NetworkDistributionLine ddNetworkDistributionLineRecord = ddNetworkLineTable.get(ddNetworkDistributionLineIdentifier);
-			softly.assertThat(ddOrderLineRecord.getDD_NetworkDistributionLine_ID()).isEqualTo(ddNetworkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
-		}
-
-		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(productIdentifier))
-		{
-			final I_M_Product productRecord = productTable.get(productIdentifier);
-			softly.assertThat(ddOrderLineRecord.getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
-		}
-
-		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyReserved);
-		if (qtyReserved != null)
-		{
-			softly.assertThat(ddOrderLineRecord.getQtyReserved()).isEqualByComparingTo(qtyReserved);
-		}
-
-		softly.assertAll();
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId)
+				.create();
 	}
 
-	private void findDDOrderLine(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	@NonNull
+	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String identifierStr)
 	{
-		final String soOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine soOrderLineRecord = orderLineTable.get(soOrderLineIdentifier);
-		assertThat(soOrderLineRecord).isNotNull();
+		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(identifierStr);
 
-		final Supplier<Optional<I_DD_OrderLine>> ddOrderLineSupplier = () -> queryBL.createQueryBuilder(I_DD_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID, soOrderLineRecord.getC_OrderLine_ID())
-				.create()
-				.firstOnlyOptional(I_DD_OrderLine.class);
+		final OrderLineId orderLineId = identifierIdsTable.getOptional(identifier, OrderLineId.class)
+				.orElseGet(() -> orderLineTable.getId(identifier));
+		if (orderLineId == null)
+		{
+			throw new AdempiereException("No orderLineId found for " + identifierStr);
+		}
 
-		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ddOrderLineSupplier);
-
-		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		ddOrderLineTable.putOrReplace(ddOrderLineIdentifier, ddOrderLineRecord);
+		return orderLineId;
 	}
 }

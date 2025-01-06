@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api.source;
 
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.api.OLCandFactory;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.AccessLevel;
@@ -73,6 +74,6 @@ public class OLCandIterator implements Iterator<OLCand>
 	@NonNull
 	private OLCand mapToOLCand(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return olCandBL.toOLCand(olCandRecord, orderDefaults);
+		return new OLCandFactory().toOLCand(olCandRecord, orderDefaults);
 	}
 }

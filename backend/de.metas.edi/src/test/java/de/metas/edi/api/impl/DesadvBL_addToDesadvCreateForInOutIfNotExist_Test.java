@@ -127,7 +127,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
@@ -216,7 +217,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()));
+		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test

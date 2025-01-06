@@ -36,7 +36,6 @@ import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.apps.search.Info;
 import org.compiere.apps.search.InfoBuilder;
-import org.compiere.apps.search.InfoFactory;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -1117,7 +1116,6 @@ public class VLookup extends JComponent
 
 		//
 		// Ask the Info Window
-		final String infoFactoryClass = lookup.getInfoFactoryClass();
 		Object result[] = null;
 		boolean cancelled = false;
 		boolean resetValue = false;	// reset value so that is always treated as new entry
@@ -1128,23 +1126,6 @@ public class VLookup extends JComponent
 			cancelled = false;
 			resetValue = false;
 			result = null;
-		}
-		else if (infoFactoryClass != null && infoFactoryClass.trim().length() > 0)
-		{
-			try
-			{
-				@SuppressWarnings("unchecked")
-				final Class<InfoFactory> clazz = (Class<InfoFactory>)this.getClass().getClassLoader().loadClass(infoFactoryClass);
-				InfoFactory factory = clazz.newInstance();
-				Info ig = factory.create(frame, true, lookup.getWindowNo(), tableName, keyColumnName, queryValue, false, whereClause);
-				ig.showWindow(); // show window and wait until the modal dialog closes
-				cancelled = ig.isCancelled();
-				result = ig.getSelectedKeys();
-			}
-			catch (Exception e)
-			{
-				log.error("Failed to load custom InfoFactory - " + e.getLocalizedMessage(), e);
-			}
 		}
 		else if (keyColumnName.equals("M_Product_ID"))
 		{

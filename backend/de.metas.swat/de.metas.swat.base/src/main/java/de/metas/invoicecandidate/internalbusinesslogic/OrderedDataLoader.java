@@ -71,13 +71,13 @@ public class OrderedDataLoader
 
 		if (hasInvalidOrder)
 		{
-			result.qty(Quantitys.createZero(icUomId));
-			result.qtyInStockUom(Quantitys.createZero(stockUomId));
+			result.qty(Quantitys.zero(icUomId));
+			result.qtyInStockUom(Quantitys.zero(stockUomId));
 		}
 		else
 		{
-			result.qty(Quantitys.create(invoiceCandidateRecord.getQtyEntered(), icUomId));
-			result.qtyInStockUom(Quantitys.create(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
+			result.qty(Quantitys.of(invoiceCandidateRecord.getQtyEntered(), icUomId));
+			result.qtyInStockUom(Quantitys.of(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
 		}
 
 		return result.build();

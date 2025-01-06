@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -170,7 +171,7 @@ public class OLCandDAO implements IOLCandDAO
 		if (searchingTimeWindow != null)
 		{
 			olCandsQBuilder.addBetweenFilter(I_C_OLCand.COLUMNNAME_Created, TimeUtil.asTimestamp(searchingTimeWindow.getStartDate()),
-											 TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
+					TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
 		}
 
 		final List<I_C_OLCand> olCands = olCandsQBuilder.create().list();
@@ -228,6 +229,11 @@ public class OLCandDAO implements IOLCandDAO
 	@NonNull
 	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
 	{
+		if (olCandIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
@@ -238,7 +244,7 @@ public class OLCandDAO implements IOLCandDAO
 				));
 	}
 
-	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds,@NonNull final AsyncBatchId asyncBatchId)
+	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
 				.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
@@ -247,5 +253,31 @@ public class OLCandDAO implements IOLCandDAO
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
 				.update(updater);
+	}
+
+	public boolean isAnyRecordProcessed(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, true)
+				.create()
+				.anyMatch();
+	}
+
+	public int deleteRecords(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.delete();
+	}
+
+	public int deleteUnprocessedRecords(@NonNull final IQueryFilter<I_C_OLCand> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
+				.filter(queryFilter)
+				.create()
+				.delete();
 	}
 }

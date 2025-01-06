@@ -1,14 +1,12 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -35,7 +33,10 @@ import lombok.NonNull;
 @FunctionalInterface
 public interface QuantityUOMConverter
 {
-	Quantity convertQuantityTo(Quantity qty, final ProductId productId, final UomId targetUOMId);
+	Quantity convertQuantityTo(
+			@NonNull final Quantity qty,
+			@Nullable final ProductId productId,
+			@NonNull final UomId targetUOMId);
 
 	default BigDecimal convertQty(
 			@Nullable final ProductId productId,

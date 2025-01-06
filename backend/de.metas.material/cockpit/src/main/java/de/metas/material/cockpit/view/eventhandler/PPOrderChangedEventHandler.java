@@ -75,7 +75,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 	private void updateMainData(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getOrgId());
 
 		updateMainDataForPPOrder(ppOrderChangedEvent, orgZoneId);
 		updateMainDataForPPOrderLines(ppOrderChangedEvent, orgZoneId);

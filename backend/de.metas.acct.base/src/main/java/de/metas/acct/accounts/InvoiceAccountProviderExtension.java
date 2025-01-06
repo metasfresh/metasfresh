@@ -8,7 +8,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -25,7 +25,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	@NonNull private final IAccountDAO accountDAO;
 	@NonNull private final InvoiceAcct invoiceAccounts;
 	@NonNull final ClientId clientId;
-	@Nullable private final InvoiceLineId invoiceLineId;
+	@Nullable private final InvoiceAndLineId invoiceAndLineId;
 
 	@Builder
 	private InvoiceAccountProviderExtension(
@@ -33,17 +33,17 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 			//
 			@NonNull final InvoiceAcct invoiceAccounts,
 			@NonNull final ClientId clientId,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		this.accountDAO = accountDAO;
-		if (invoiceLineId != null)
+		if (invoiceAndLineId != null)
 		{
-			invoiceLineId.assertInvoiceId(invoiceAccounts.getInvoiceId());
+			invoiceAndLineId.assertInvoiceId(invoiceAccounts.getInvoiceId());
 		}
 
 		this.invoiceAccounts = invoiceAccounts;
 		this.clientId = clientId;
-		this.invoiceLineId = invoiceLineId;
+		this.invoiceAndLineId = invoiceAndLineId;
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	@NonNull
 	private Optional<Account> getProductAccount(final @NonNull AcctSchemaId acctSchemaId, final @NonNull ProductAcctType acctType)
 	{
-		return invoiceAccounts.getElementValueId(acctSchemaId, acctType.getAccountConceptualName(), invoiceLineId)
+		return invoiceAccounts.getElementValueId(acctSchemaId, acctType.getAccountConceptualName(), invoiceAndLineId)
 				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
 				.map(id -> Account.of(id, acctType.getAccountConceptualName()));
 	}

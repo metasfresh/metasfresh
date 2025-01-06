@@ -129,6 +129,23 @@
             <artifactId>de.metas.distribution.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.postfinance</groupId>
+            <artifactId>de.metas.postfinance.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -151,7 +168,7 @@
      That way we can specify external jars which contain additional things like cucumber tests 
      Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
                             <layout>ZIP</layout>
-                            
+
                             <!-- this also provides the super-jar to the successive docker build 
                                 Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
                                 that is activated by the presence of the scr/main/docker folder -->

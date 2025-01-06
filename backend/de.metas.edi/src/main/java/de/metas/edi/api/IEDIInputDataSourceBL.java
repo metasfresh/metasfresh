@@ -1,6 +1,9 @@
 package de.metas.edi.api;
 
+import de.metas.impex.InputDataSourceId;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -26,5 +29,5 @@ import de.metas.util.ISingletonService;
 
 public interface IEDIInputDataSourceBL extends ISingletonService
 {
-	boolean isEDIInputDataSource(int inputDataSourceId);
+	boolean isEDIInputDataSource(@Nullable final InputDataSourceId inputDataSourceId);
 }

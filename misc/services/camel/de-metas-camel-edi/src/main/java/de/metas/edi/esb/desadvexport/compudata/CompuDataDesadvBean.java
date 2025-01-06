@@ -213,8 +213,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
-		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN())
-				? xmlDesadv.getDropShipLocationID() :
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
+				? xmlDesadv.getDropShipLocationID() : 
 				buyrLocation;
 		return dropShipLocation.getGLN();
 	}
@@ -227,7 +227,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 				buyrLocation;
 		return dropShipLocation.getName();
 	}
-
+	
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -262,7 +262,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
-		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeLUText());
+		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeText());
 		if (packagingCode != null)
 		{
 			final String compudataPackagingCode = switch (packagingCode)
@@ -280,7 +280,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		final String sscc18Value = pack.getPack().getIPASSCC18();
 		p060.setNormalSSCC(sscc18Value);
-		p060.setGrainNummer(pack.getPack().getGTINLUPackingMaterial());
+		p060.setGrainNummer(pack.getPack().getGTINPackingMaterial());
 
 		// p060.setBruttogewicht(xmlInOutLine.getMProductID().getWeight()); // leave empty for now
 		// p060.setVolumen(xmlInOutLine.getMProductID().getVolume()); // leave empty for now
@@ -313,7 +313,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDeliverQTY(formatNumber(
 				packItem.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
-
+		
 		// this is required for the only compudata user that we currently have
 		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
 		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())

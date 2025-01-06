@@ -13,8 +13,15 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -23,6 +30,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductActivityProvider;
@@ -73,8 +81,15 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	@Override
 	protected void init()
 	{
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(ModularContractLogService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ModularContractSettingsService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ProcessModularLogsEnqueuer.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ComputingMethodService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
+		SpringContextHolder.registerJUnitBean(ModularContractService.newInstanceForJUnitTesting());
 	}
 
 	@BeforeAll
@@ -158,7 +173,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
-		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1, lockOwner));
 		assertInvoiceCandidates(candidates, term1);
 	}
 

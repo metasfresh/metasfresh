@@ -65,12 +65,11 @@ public class JsonPickingStepEvent
 	@Nullable BigDecimal catchWeight;
 	boolean pickWholeTU;
 	@Nullable Boolean checkIfAlreadyPacked;
-
 	boolean setBestBeforeDate;
 	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
-
 	boolean setLotNo;
 	@Nullable String lotNo;
+	boolean isCloseTarget;
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;

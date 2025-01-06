@@ -31,7 +31,6 @@ import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class ProcessPickingRequest

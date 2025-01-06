@@ -59,7 +59,7 @@ public class QuantityDeserializer extends StdDeserializer<Quantity>
 			sourceQtyStr = qtyStr;
 			sourceUomRepoId = uomRepoId;
 		}
-		return Quantitys.create(
+		return Quantitys.of(
 				new BigDecimal(qtyStr), UomId.ofRepoId(uomRepoId),
 				new BigDecimal(sourceQtyStr), UomId.ofRepoId(sourceUomRepoId));
 	}

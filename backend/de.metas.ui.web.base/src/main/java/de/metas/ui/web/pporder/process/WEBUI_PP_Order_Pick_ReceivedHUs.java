@@ -43,6 +43,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -79,6 +80,12 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final PPOrderLinesView view = getView();
+		if (!view.getDocStatus().isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("manufacturing order shall be completed");
 		}
 
 		final PPOrderLineRow ppOrderLineRow = getSingleSelectedRow();
@@ -163,11 +170,11 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 		}
 
 		pickingCandidateService.processForHUIds(ProcessPickingRequest.builder()
-														.huIds(ImmutableSet.copyOf(huIds))
-														.shipmentScheduleId(shipmentScheduleId)
-														.ppOrderId(ppOrderId)
+				.huIds(ImmutableSet.copyOf(huIds))
+				.shipmentScheduleId(shipmentScheduleId)
+				.ppOrderId(ppOrderId)
 														.shouldSplitHUIfOverDelivery(!isTakeWholeHU)
-														.build());
+				.build());
 	}
 
 	@Override

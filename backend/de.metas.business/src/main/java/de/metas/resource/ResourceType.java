@@ -22,6 +22,7 @@
 
 package de.metas.resource;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import lombok.AccessLevel;
@@ -35,7 +36,7 @@ import lombok.Value;
 public class ResourceType
 {
 	@NonNull ResourceTypeId id;
-
+	@NonNull ITranslatableString caption;
 	@Getter(AccessLevel.PRIVATE) boolean active;
 
 	@NonNull ProductCategoryId productCategoryId;

@@ -6,12 +6,14 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -30,6 +32,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
 	private int p_M_Product_Category_ID;
@@ -67,17 +71,19 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			final AtomicInteger counter = new AtomicInteger(0);
 
 			queryBuilder.create()
+					.listIds(ProductId::ofRepoId)
 					.stream()
-					.forEach(product -> {
+
+					.forEach(productId -> {
 
 						try
 						{
-							productBOMBL.verifyDefaultBOMProduct(product);
+							productBOMBL.verifyDefaultBOMProduct(productId);
 							counter.incrementAndGet();
 						}
 						catch (final Exception ex)
 						{
-							log.warn("Product is not valid: {}", product, ex);
+							log.warn("Product is not valid: {}", productId, ex);
 						}
 					});
 
@@ -85,8 +91,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		}
 		else
 		{
-			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
-			productBOMBL.verifyDefaultBOMProduct(product);
+			productBOMBL.verifyDefaultBOMProduct(ProductId.ofRepoId(getM_Product_ID()));
 			return MSG_OK;
 		}
 	}
@@ -110,4 +115,6 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		}
 
 	}
+
+
 }

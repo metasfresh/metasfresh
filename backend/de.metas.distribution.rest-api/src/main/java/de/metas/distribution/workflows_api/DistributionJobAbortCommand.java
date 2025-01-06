@@ -56,5 +56,6 @@ public class DistributionJobAbortCommand
 	{
 		distributionJobHUReservationService.releaseAllReservations(job);
 		ddOrderService.unassignFromResponsible(job.getDdOrderId());
+		ddOrderService.removeAllNotStartedSchedules(job.getDdOrderId());
 	}
 }

@@ -40,8 +40,8 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_Locator_ID.Identifier | Value                    | M_Warehouse_ID.Identifier |
       | locator                 | LocatorOutgoing_02022023 | warehouse                 |
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name |
-      | shipper_DHL             | Dhl      |
+      | Identifier  | Name |
+      | shipper_DHL | Dhl  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
       | order_SO   | true    | customer                 | 2023-02-02  | 2023-02-25T00:00:00Z | customerLocation                      | warehouse                     |
@@ -97,8 +97,8 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_Locator_ID.Identifier | Value                    | M_Warehouse_ID.Identifier |
       | locator                 | LocatorIncoming_03022023 | warehouse                 |
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name      |
-      | shipper_DPD             | DPD - Classic |
+      | Identifier  | Name          |
+      | shipper_DPD | DPD - Classic |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | order_PO   | false   | vendor                   | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation                        | warehouse                     | POO             |

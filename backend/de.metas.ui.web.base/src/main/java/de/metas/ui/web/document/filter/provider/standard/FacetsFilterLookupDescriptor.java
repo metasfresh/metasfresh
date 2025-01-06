@@ -68,7 +68,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 	private final DocumentFieldWidgetType fieldWidgetType;
 	@Getter
 	private final boolean numericKey;
-	private final int maxFacetsToFetch;
+	private final int maxFacetsToFetch2;
 	private final LookupDescriptor fieldLookupDescriptor;
 
 	@Builder
@@ -90,7 +90,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		this.fieldName = fieldName;
 		this.fieldWidgetType = fieldWidgetType;
 		this.numericKey = numericKey;
-		this.maxFacetsToFetch = maxFacetsToFetch;
+		this.maxFacetsToFetch2 = maxFacetsToFetch;
 		this.fieldLookupDescriptor = fieldLookupDescriptor;
 	}
 
@@ -143,7 +143,6 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 
 		return view.getFacetFiltersCacheMap()
 				.computeIfAbsent(filterId, () -> createFacetFilterViewCache(view))
-				.getAvailableValues()
 				.pageByOffsetAndLimit(
 						evalCtx.getOffset(0),
 						evalCtx.getLimit(Integer.MAX_VALUE));
@@ -155,11 +154,24 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		final ViewEvaluationCtx viewEvalCtx = view.getViewEvaluationCtx();
 		final String selectionId = view.getDefaultSelectionBeforeFacetsFiltering().getSelectionId();
 
+		final boolean isLimited;
+		final int fetchLimit;
+		if (this.maxFacetsToFetch2 > 0 && this.maxFacetsToFetch2 < Integer.MAX_VALUE)
+		{
+			isLimited = true;
+			fetchLimit = this.maxFacetsToFetch2 + 1; // fetch one more to be able to determine if there are more values than we can fetch
+		}
+		else
+		{
+			isLimited = false;
+			fetchLimit = Integer.MAX_VALUE;
+		}
+
 		List<Object> rawValues = viewDataRepository.retrieveFieldValues(
 				viewEvalCtx,
 				selectionId,
 				fieldName,
-				maxFacetsToFetch);
+				fetchLimit);
 
 		boolean valuesAreOrdered = false;
 		if (fieldWidgetType.isDateOrTime()
@@ -174,16 +186,24 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 			valuesAreOrdered = true;
 		}
 
-		final LookupValuesList lookupValues = rawValues.stream()
+		LookupValuesList lookupValues = rawValues.stream()
 				.map(this::convertRawFieldValueToLookupValue)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(LookupValuesList.collect())
 				.ordered(valuesAreOrdered);
 
+		boolean hasMoreResults = false;
+		if (isLimited && lookupValues.size() > this.maxFacetsToFetch2)
+		{
+			lookupValues = lookupValues.limit(this.maxFacetsToFetch2);
+			hasMoreResults = true;
+		}
+
 		return FacetFilterViewCache.builder()
 				.filterId(filterId)
 				.availableValues(lookupValues)
+				.hasMoreResults(hasMoreResults)
 				.build();
 	}
 

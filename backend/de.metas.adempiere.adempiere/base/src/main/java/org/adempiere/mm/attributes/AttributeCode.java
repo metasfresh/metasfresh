@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import de.metas.util.Check;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 
 /*
@@ -23,12 +25,12 @@ import java.util.Objects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -86,5 +88,15 @@ public final class AttributeCode implements Comparable<AttributeCode>
 	public int compareTo(final AttributeCode other)
 	{
 		return this.code.compareTo(other.code);
+	}
+
+	public static List<String> toStringList(@NonNull final List<AttributeCode> attributeCodes)
+	{
+		if (attributeCodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return attributeCodes.stream().map(AttributeCode::getCode).collect(ImmutableList.toImmutableList());
 	}
 }

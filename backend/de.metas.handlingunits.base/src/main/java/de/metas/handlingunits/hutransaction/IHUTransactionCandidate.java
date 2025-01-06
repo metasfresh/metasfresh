@@ -1,23 +1,21 @@
 package de.metas.handlingunits.hutransaction;
 
-import java.time.ZonedDateTime;
-
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.adempiere.warehouse.LocatorId;
+
+import java.time.ZonedDateTime;
 
 /**
  * Transaction Line Candidate. Use the constructor of {@link HUTransactionCandidate} to get instances.
- *
+ * <p>
  * Based on this object the actual {@link I_M_HU_Trx_Line}s can be created.
  *
  * @author tsa
- *
  */
 public interface IHUTransactionCandidate
 {
@@ -42,7 +40,9 @@ public interface IHUTransactionCandidate
 	 */
 	I_M_HU getM_HU();
 
-	/** @see #getM_HU() */
+	/**
+	 * @see #getM_HU()
+	 */
 	default int getM_HU_ID()
 	{
 		final I_M_HU hu = getM_HU();
@@ -51,7 +51,7 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Gets affected HU Item.
-	 *
+	 * <p>
 	 * If this value is null it means that no HU Item is affected by this transaction but in most of the cases its counter part transaction will affect an HU Item.
 	 *
 	 * <p>
@@ -65,7 +65,7 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Gets actual Virtual HU Item to be used for storing the Qty.
-	 *
+	 * <p>
 	 * NOTE: this VHU needs to be included in {@link #getM_HU_Item()}.
 	 *
 	 * @return VHU item or <code>null</code>
@@ -81,7 +81,7 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Gets transaction product
-	 *
+	 * <p>
 	 * i.e. the product which was transfered.
 	 *
 	 * @return transaction product; never returns null
@@ -101,7 +101,7 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Gets counterpart transaction.
-	 *
+	 * <p>
 	 * NOTE: each transaction shall have a counterpart. i.e. when qty was subtracted from one place, there shall be another place where the Qty was added.
 	 *
 	 * @return counterpart transaction
@@ -110,10 +110,8 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Cross link this transaction with given transaction by cross setting their {@link #getCounterpart()} properties.
-	 *
+	 * <p>
 	 * NOTE: DON'T call it directly. It will be called by API
-	 *
-	 * @param counterpartTrx
 	 */
 	void pair(IHUTransactionCandidate counterpartTrx);
 
@@ -134,7 +132,7 @@ public interface IHUTransactionCandidate
 
 	/**
 	 * Force trxLine to be considered processed and never be actually processed.
-	 *
+	 * <p>
 	 * i.e. don't change HU's storage
 	 */
 	void setSkipProcessing();

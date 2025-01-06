@@ -35,7 +35,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-class ModularLogCreateStatusRepository
+public class ModularLogCreateStatusRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

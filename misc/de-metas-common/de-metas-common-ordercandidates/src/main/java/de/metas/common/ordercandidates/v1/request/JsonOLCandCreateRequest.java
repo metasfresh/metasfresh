@@ -152,7 +152,7 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal discount;
 
-	@Schema(minLength = 1, description = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
+	@Schema(minLength = 1, description = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter records using it")
 	String poReference;
 
 	@Schema(description = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")

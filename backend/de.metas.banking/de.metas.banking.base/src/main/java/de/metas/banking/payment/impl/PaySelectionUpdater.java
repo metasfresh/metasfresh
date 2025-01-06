@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -95,6 +96,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	 * BPartner Group
 	 */
 	private int _bpGroupId = 0;
+
+	private Timestamp _dateInvoiced;
+
+	private String _poReference;
+
 	/**
 	 * Payment Selection
 	 */
@@ -269,6 +275,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		sqlParams.add(C_CurrencyTo_ID); // #4
 		sqlParams.add(payDate); // #5
 
+
+		// filter Org_BP_Account_ID if set
+		{
+			final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
+			sql += "AND (i.Org_BP_Account_ID = ? OR i.Org_BP_Account_ID is null)";
+			sqlParams.add(orgBankAccountId);
+		}
+
 		// Not already paid invoices
 		{
 			sql += " AND i.IsPaid=?";
@@ -288,17 +302,17 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(C_CurrencyTo_ID);
 		}
 
-		// Only those invoices from our tenant (guard, shall not happen)
-		{
-			sql += " AND i.AD_Client_ID=?";
-			sqlParams.add(paySelection.getAD_Client_ID());
-		}
-
 		// Only for Pay Selection's Organization (if set)
 		if (paySelection.getAD_Org_ID() > 0)
 		{
 			sql += " AND i.AD_Org_ID=? ";
 			sqlParams.add(paySelection.getAD_Org_ID());
+		}
+
+		// Only those invoices from our tenant (guard, shall not happen)
+		{
+			sql += " AND i.AD_Client_ID=?";
+			sqlParams.add(paySelection.getAD_Client_ID());
 		}
 
 		//
@@ -383,6 +397,20 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(getC_BP_Group_ID());
 		}
 
+		// DateTrx
+		if (getDateInvoiced() != null)
+		{
+			sql += " AND i.DateAcct=?";
+			sqlParams.add(getDateInvoiced());
+		}
+
+		// Reference
+		if (getPOReference() != null)
+		{
+			sql += " AND i.poreference=?";
+			sqlParams.add(getPOReference());
+		}
+
 		sql += buildSelectSQL_MatchRequirement();
 
 		return sql;
@@ -435,7 +463,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final BigDecimal payDiscountAmt = rs.getBigDecimal("DiscountAmt");
 		candidateBuilder.setDiscountAmt(payDiscountAmt);
 
-		final boolean isSOTrx = DisplayType.toBoolean(rs.getString("IsSOTrx"), false);
+		final boolean isSOTrx = DisplayType.toBooleanNonNull(rs.getString("IsSOTrx"), false);
 		candidateBuilder.setIsSOTrx(isSOTrx);
 
 		final int bpartnerId = rs.getInt("C_BPartner_ID");
@@ -723,6 +751,33 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		_bpGroupId = bpGroupId;
 		return this;
 	}
+
+	private Timestamp getDateInvoiced()
+	{
+		return _dateInvoiced;
+	}
+
+	@Override
+	public IPaySelectionUpdater setDateInvoiced(final Timestamp dateAcct)
+	{
+		assertConfigurable();
+		_dateInvoiced = TimeUtil.copyOf(dateAcct);
+		return this;
+	}
+
+	private String getPOReference()
+	{
+		return _poReference;
+	}
+
+	@Override
+	public IPaySelectionUpdater setPOReference(final String POReference)
+	{
+		assertConfigurable();
+		_poReference = POReference;
+		return this;
+	}
+
 
 	@Override
 	public IPaySelectionUpdater setC_PaySelection(@NonNull final I_C_PaySelection paySelection)

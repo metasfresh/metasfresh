@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.uom;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 public class C_UOM_StepDefData extends StepDefData<I_C_UOM>
+		implements StepDefDataGetIdAware<UomId, I_C_UOM>
 {
 	public C_UOM_StepDefData()
 	{
 		super(I_C_UOM.class);
+	}
+
+	@Override
+	public UomId extractIdFromRecord(final I_C_UOM record)
+	{
+		return UomId.ofRepoId(record.getC_UOM_ID());
 	}
 }

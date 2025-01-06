@@ -149,6 +149,8 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUser2_ID(dimension.getUser2_ID());
 		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
 		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
+		newAccount.setUserElementNumber1(dimension.getUserElementNumber1());
+		newAccount.setUserElementNumber2(dimension.getUserElementNumber2());
 		newAccount.setUserElementString1(dimension.getUserElementString1());
 		newAccount.setUserElementString2(dimension.getUserElementString2());
 		newAccount.setUserElementString3(dimension.getUserElementString3());

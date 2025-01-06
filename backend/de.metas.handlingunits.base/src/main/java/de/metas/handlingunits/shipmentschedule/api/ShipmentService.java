@@ -28,16 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -53,29 +44,28 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,11 +73,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentService implements IShipmentService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -99,34 +89,16 @@ public class ShipmentService implements IShipmentService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
-	private final AsyncBatchService asyncBatchService;
+	@NonNull private final AsyncBatchService asyncBatchService;
 
 	@NonNull
 	public static IShipmentService getInstance()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			final PickingJobRepository pickingJobRepository = new PickingJobRepository();
-			final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-			final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
-			final DefaultPickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
-					pickingJobSlotService,
-					bpartnerBL,
-					new HUQRCodesService(
-							huQRCodesRepository,
-							new GlobalQRCodeService(DoNothingMassPrintingService.instance))
-			);
-			return new ShipmentServiceTestImpl(
-					new ShipmentScheduleWithHUService(
-							new HUReservationService(new HUReservationRepository()),
-							pickingJobRepository,
-							pickingJobLoaderSupportingServicesFactory
-					)
-			);
+			return new ShipmentServiceTestImpl(ShipmentScheduleWithHUService.newInstanceForUnitTesting());
 		}
 		else
 		{
@@ -134,11 +106,10 @@ public class ShipmentService implements IShipmentService
 		}
 	}
 
-	public ShipmentService(@NonNull final AsyncBatchService asyncBatchService)
-	{
-		this.asyncBatchService = asyncBatchService;
-	}
-
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsRequest#isWaitForShipments()} {@code false},<br/>
+	 * and there is already an unprocessed workpackage with the same shipment-schedules, the method will fail.<br/>
+	 */
 	@NonNull
 	public ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
@@ -149,18 +120,25 @@ public class ShipmentService implements IShipmentService
 					.setParameter("GenerateShipmentsRequest", request);
 		}
 
-		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> {
-			validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-
+		if (request.isWaitForShipments())
+		{
+			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
+			return asyncBatchService.executeBatch(() -> {
+				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+				return enqueueShipmentSchedules(request);
+			}, request.getAsyncBatchId());
+		}
+		else
+		{
+			// Just enqueue the workpackages and move on
 			return enqueueShipmentSchedules(request);
-		};
-
-		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
-		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
-		// See ShipmentScheduleEnqueuer.acquireLock(...)
-		return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+		}
 	}
 
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsForSchedulesRequest#isWaitForShipments()} {@code false},<br/>
+	 * the warning from {@link #generateShipments(GenerateShipmentsRequest)} applies.
+	 */
 	@NonNull
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
@@ -181,12 +159,13 @@ public class ShipmentService implements IShipmentService
 									.asyncBatchId(asyncBatchId)
 									.scheduleIds(shipmentScheduleIds)
 									.scheduleToExternalInfo(ImmutableMap.of())
-									.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
+									.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.EMPTY)
 									.quantityTypeToUse(request.getQuantityTypeToUse())
 									.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 									.isShipDateToday(request.getIsShipDateToday())
 									.isCompleteShipment(request.getIsCompleteShipment())
 									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+									.waitForShipments(request.isWaitForShipments())
 									.build()
 					);
 
@@ -276,7 +255,6 @@ public class ShipmentService implements IShipmentService
 		return shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(ids)
 				.values()
 				.stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)
@@ -383,9 +361,9 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
-		final ImmutableMap<ShipmentScheduleId, BigDecimal> shipmentScheduleIdToQtyToDeliver = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
+		QtyToDeliverMap qtyToDeliverMap = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
 
-		if (shipmentScheduleIdToQtyToDeliver.isEmpty())
+		if (qtyToDeliverMap.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -393,9 +371,9 @@ public class ShipmentService implements IShipmentService
 		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
 		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
 				.asyncBatchId(olCandsAsyncBatchId)
-				.scheduleIds(shipmentScheduleIdToQtyToDeliver.keySet())
+				.scheduleIds(qtyToDeliverMap.getShipmentScheduleIds())
 				.scheduleToExternalInfo(ImmutableMap.of())
-				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyToDeliver)
+				.scheduleToQuantityToDeliverOverride(qtyToDeliverMap)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.onTheFlyPickToPackingInstructions(true) // we might need to create a shipper transportation, so we need TUs
 				.isCompleteShipment(true)
@@ -403,10 +381,10 @@ public class ShipmentService implements IShipmentService
 
 		generateShipments(generateShipmentsRequest);
 
-		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyToDeliver.keySet());
+		return retrieveInOutIdsByScheduleIds(qtyToDeliverMap.getShipmentScheduleIds());
 	}
 
-	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
+	private QtyToDeliverMap getShipmentScheduleId2QtyToDeliver(
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
@@ -414,12 +392,12 @@ public class ShipmentService implements IShipmentService
 
 		if (olCandId2OrderLineId == null || olCandId2OrderLineId.isEmpty())
 		{
-			return ImmutableMap.of();
+			return QtyToDeliverMap.EMPTY;
 		}
 
 		final Map<OLCandId, I_C_OLCand> olCandsById = olCandDAO.retrieveByIds(olCandIds);
 
-		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleId2QtyShipped = ImmutableMap.builder();
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleId2QtyShipped = ImmutableMap.builder();
 
 		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entrySet())
 		{
@@ -445,27 +423,39 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+			final StockQtyAndUOMQty qtyToDeliver = getQtyToDeliver(shipmentSchedule, olCand);
+			if (qtyToDeliver != null)
 			{
-				// not specified; -> let metasfresh decide
-				scheduleId2QtyShipped.put(scheduleId,
-						shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
-				continue;
+				scheduleId2QtyShipped.put(scheduleId, qtyToDeliver);
 			}
-			else if (olCand.getQtyShipped().signum() <= 0)
-			{
-				// the caller wants *no* shipment
-				continue;
-			}
-
-			final I_C_UOM olCandUOM = olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
-			final Quantity olCandQtyShipped = Quantity.of(olCand.getQtyShipped(), olCandUOM);
-
-			final Quantity olCandQtyShippedProductUOM = uomConversionBL.convertToProductUOM(olCandQtyShipped, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-
-			scheduleId2QtyShipped.put(scheduleId, olCandQtyShippedProductUOM.toBigDecimal());
 		}
 
-		return scheduleId2QtyShipped.build();
+		return QtyToDeliverMap.ofMap(scheduleId2QtyShipped.build());
+	}
+
+	/**
+	 * @return qty to deliver or null if the caller wants *no* shipment
+	 */
+	@Nullable
+	private StockQtyAndUOMQty getQtyToDeliver(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule, final I_C_OLCand olCand)
+	{
+		final StockQtyAndUOMQty qtyShipped = olCandEffectiveValuesBL.getQtyShipped(olCand).orElse(null);
+		if (qtyShipped == null)
+		{
+			// not specified; -> let metasfresh decide
+			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
+			final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+			return StockQtyAndUOMQtys.ofQtyInStockUOM(qtyToDeliver, productId);
+		}
+		else if (qtyShipped.signum() <= 0)
+		{
+			// the caller wants *no* shipment
+			return null;
+		}
+		else
+		{
+			return qtyShipped;
+		}
+
 	}
 }

@@ -32,6 +32,7 @@ import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.calendar.standard.NonBusinessDay;
 import de.metas.calendar.standard.RecurrentNonBusinessDay;
 import de.metas.calendar.standard.RecurrentNonBusinessDayFrequency;
+import de.metas.calendar.standard.YearId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -79,6 +80,7 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Period findByCalendar(final LocalDateAndOrgId date, @NonNull final CalendarId calendarId)
 	{
 		final Properties ctx = Env.getCtx();
@@ -87,6 +89,20 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	}
 
 	@Override
+	@Nullable
+	public YearId findYearByCalendarAndDate(final LocalDateAndOrgId date, @NonNull final CalendarId calendarId)
+	{
+		final I_C_Period period = findByCalendar(date, calendarId);
+		if(period == null)
+		{
+			return null;
+		}
+
+		return YearId.ofRepoId(period.getC_Year_ID());
+	}
+
+	@Override
+	@Nullable
 	public I_C_Period findByCalendar(final Properties ctx, final LocalDateAndOrgId date, final int calendarId, final String trxName)
 	{
 		final List<I_C_Period> periodsAll = retrievePeriods(ctx, calendarId, date, date, trxName);

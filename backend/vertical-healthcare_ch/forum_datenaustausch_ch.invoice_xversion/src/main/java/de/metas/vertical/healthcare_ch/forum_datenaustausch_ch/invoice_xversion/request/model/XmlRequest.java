@@ -42,7 +42,8 @@ public class XmlRequest
 	@NonNull
 	XmlMode modus;
 
-	long validationStatus;
+	@Nullable
+	Long validationStatus;
 
 	@NonNull
 	XmlProcessing processing;

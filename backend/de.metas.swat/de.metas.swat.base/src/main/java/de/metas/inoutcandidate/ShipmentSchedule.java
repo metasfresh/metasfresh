@@ -98,9 +98,11 @@ public class ShipmentSchedule
 	private APIExportStatus exportStatus;
 
 	@Nullable
-	private ShipperId shipperId;
+	private final ShipperId shipperId;
 
-	private boolean isProcessed;
+	private final boolean isProcessed;
+	private final boolean isClosed;
+	private final boolean isDeliveryStop;
 
 	public boolean hasAttributes(
 			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
